@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
@@ -46,6 +45,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     timeTracking: {
       departure: initialData?.timeTracking.departure || '',
       arrival: initialData?.timeTracking.arrival || '',
+      end: initialData?.timeTracking.end || '',
       breakTime: initialData?.timeTracking.breakTime || '',
       totalHours: initialData?.timeTracking.totalHours || 0,
     },
@@ -86,6 +86,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     const totalHours = calculateTotalHours(
       formData.timeTracking.departure,
       formData.timeTracking.arrival,
+      formData.timeTracking.end,
       formData.timeTracking.breakTime,
       formData.personnel.filter(p => p.trim()).length || personnelCount
     );
@@ -100,6 +101,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   }, [
     formData.timeTracking.departure,
     formData.timeTracking.arrival,
+    formData.timeTracking.end,
     formData.timeTracking.breakTime,
     formData.personnel,
     personnelCount
@@ -160,7 +162,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     }));
   };
 
-  const handleTimeChange = (field: 'departure' | 'arrival' | 'breakTime', value: string) => {
+  const handleTimeChange = (field: 'departure' | 'arrival' | 'end' | 'breakTime', value: string) => {
     setFormData(prev => ({
       ...prev,
       timeTracking: {
@@ -419,7 +421,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
             <div className="space-y-2">
               <Label>Suivi du temps de travail</Label>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="departure">Départ</Label>
                   <Input
@@ -438,6 +440,17 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
                     type="time"
                     value={formatTime(formData.timeTracking.arrival)}
                     onChange={(e) => handleTimeChange('arrival', e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="end">Fin</Label>
+                  <Input
+                    id="end"
+                    type="time"
+                    value={formatTime(formData.timeTracking.end)}
+                    onChange={(e) => handleTimeChange('end', e.target.value)}
                     required
                   />
                 </div>
@@ -590,3 +603,4 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
 };
 
 export default WorkLogForm;
+

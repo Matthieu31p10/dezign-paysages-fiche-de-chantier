@@ -28,6 +28,7 @@ export interface WorkLog {
   timeTracking: {
     departure: string;
     arrival: string;
+    end: string;
     breakTime: string;
     totalHours: number;
   };

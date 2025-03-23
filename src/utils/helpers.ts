@@ -39,16 +39,19 @@ export function timeStringToHours(time: string): number {
 export function calculateTotalHours(
   departureTime: string,
   arrivalTime: string,
+  endTime: string,
   breakTime: string,
   personnelCount: number
 ): number {
   // Convert strings to hours (decimal)
   const departure = timeStringToHours(departureTime);
   const arrival = timeStringToHours(arrivalTime);
+  const end = timeStringToHours(endTime);
   const breakHours = timeStringToHours(breakTime);
   
-  // Calculate hours between departure and arrival, minus break
-  const hoursWorked = Math.max(0, arrival - departure - breakHours);
+  // Calculate hours between departure and end (or arrival if end is not provided), minus break
+  const workingTime = end > 0 ? end - departure : arrival - departure;
+  const hoursWorked = Math.max(0, workingTime - breakHours);
   
   // Multiply by number of personnel
   return hoursWorked * personnelCount;
