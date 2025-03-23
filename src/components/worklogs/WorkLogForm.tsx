@@ -12,25 +12,12 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { calculateTotalHours, formatTime, timeStringToHours } from '@/utils/helpers';
 import { useLocation } from 'react-router-dom';
+import { Plus, Save } from 'lucide-react';
 
 interface WorkLogFormProps {
   initialData?: WorkLog;
   onSuccess?: () => void;
 }
-
-// List of predefined personnel names
-const PERSONNEL_NAMES = [
-  "Jean Dupont",
-  "Marie Martin",
-  "Pierre Durand",
-  "Sophie Petit",
-  "Thomas Bernard",
-  "Laura Dubois",
-  "Nicolas Moreau",
-  "Céline Lambert",
-  "Philippe Robert",
-  "Isabelle Simon"
-];
 
 const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   const navigate = useNavigate();
@@ -42,6 +29,11 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   const preselectedProjectId = searchParams.get('projectId');
   
   const [personnelCount, setPersonnelCount] = useState(initialData?.personnel.length || 1);
+  const [customPersonnelName, setCustomPersonnelName] = useState('');
+  const [savedPersonnelNames, setSavedPersonnelNames] = useState<string[]>(() => {
+    const stored = localStorage.getItem('landscaping-personnel-names');
+    return stored ? JSON.parse(stored) : [];
+  });
   
   const defaultSelectedProjectId = initialData?.projectId || preselectedProjectId || (projectInfos.length > 0 ? projectInfos[0].id : '');
   const selectedProject = getProjectById(defaultSelectedProjectId);
@@ -70,6 +62,11 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
       watering: initialData?.tasksPerformed.watering || 'none',
     },
   });
+
+  // Save personnel names to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('landscaping-personnel-names', JSON.stringify(savedPersonnelNames));
+  }, [savedPersonnelNames]);
 
   // Update duration when project changes
   useEffect(() => {
@@ -219,6 +216,22 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     }));
   };
 
+  const handleAddCustomPersonnelName = () => {
+    if (customPersonnelName.trim() === '') {
+      toast.error('Veuillez saisir un nom');
+      return;
+    }
+    
+    if (savedPersonnelNames.includes(customPersonnelName)) {
+      toast.error('Ce nom existe déjà');
+      return;
+    }
+    
+    setSavedPersonnelNames(prev => [...prev, customPersonnelName]);
+    setCustomPersonnelName('');
+    toast.success('Nom ajouté avec succès');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -346,7 +359,29 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
                 </Button>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-4">
+                <div className="flex gap-2 items-end">
+                  <div className="flex-grow space-y-2">
+                    <Label htmlFor="customPersonnelName">Ajouter un nouveau nom</Label>
+                    <Input
+                      id="customPersonnelName"
+                      placeholder="Nouveau nom et prénom"
+                      value={customPersonnelName}
+                      onChange={(e) => setCustomPersonnelName(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleAddCustomPersonnelName}
+                    className="shrink-0"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
+                
                 {Array.from({ length: personnelCount }).map((_, index) => (
                   <div key={index} className="flex gap-2">
                     <Select
@@ -357,23 +392,13 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
                         <SelectValue placeholder={`Personne ${index + 1}`} />
                       </SelectTrigger>
                       <SelectContent>
-                        {PERSONNEL_NAMES.map((name) => (
+                        {savedPersonnelNames.map((name) => (
                           <SelectItem key={name} value={name}>
                             {name}
                           </SelectItem>
                         ))}
-                        <SelectItem value="custom">Saisie personnalisée</SelectItem>
                       </SelectContent>
                     </Select>
-                    
-                    {formData.personnel[index] === 'custom' && (
-                      <Input
-                        placeholder="Nom et prénom"
-                        value=""
-                        onChange={(e) => handlePersonnelChange(index, e.target.value)}
-                        className="flex-grow"
-                      />
-                    )}
                     
                     {personnelCount > 1 && (
                       <Button
