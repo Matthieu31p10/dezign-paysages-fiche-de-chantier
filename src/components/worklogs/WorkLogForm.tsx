@@ -18,6 +18,20 @@ interface WorkLogFormProps {
   onSuccess?: () => void;
 }
 
+// List of predefined personnel names
+const PERSONNEL_NAMES = [
+  "Jean Dupont",
+  "Marie Martin",
+  "Pierre Durand",
+  "Sophie Petit",
+  "Thomas Bernard",
+  "Laura Dubois",
+  "Nicolas Moreau",
+  "Céline Lambert",
+  "Philippe Robert",
+  "Isabelle Simon"
+];
+
 const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -335,11 +349,31 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
               <div className="space-y-2">
                 {Array.from({ length: personnelCount }).map((_, index) => (
                   <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder={`Nom de la personne ${index + 1}`}
+                    <Select
                       value={formData.personnel[index] || ''}
-                      onChange={(e) => handlePersonnelChange(index, e.target.value)}
-                    />
+                      onValueChange={(value) => handlePersonnelChange(index, value)}
+                    >
+                      <SelectTrigger className="flex-grow">
+                        <SelectValue placeholder={`Personne ${index + 1}`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PERSONNEL_NAMES.map((name) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="custom">Saisie personnalisée</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {formData.personnel[index] === 'custom' && (
+                      <Input
+                        placeholder="Nom et prénom"
+                        value=""
+                        onChange={(e) => handlePersonnelChange(index, e.target.value)}
+                        className="flex-grow"
+                      />
+                    )}
                     
                     {personnelCount > 1 && (
                       <Button

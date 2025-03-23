@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProjectInfo, Team } from '@/types/models';
 import { useApp } from '@/context/AppContext';
