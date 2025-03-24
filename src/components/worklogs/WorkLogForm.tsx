@@ -23,7 +23,6 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   const location = useLocation();
   const { projectInfos, addWorkLog, updateWorkLog, getProjectById } = useApp();
   
-  // Extract projectId from URL if present
   const searchParams = new URLSearchParams(location.search);
   const preselectedProjectId = searchParams.get('projectId');
   
@@ -63,12 +62,10 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     },
   });
 
-  // Save personnel names to localStorage when they change
   useEffect(() => {
     localStorage.setItem('landscaping-personnel-names', JSON.stringify(savedPersonnelNames));
   }, [savedPersonnelNames]);
 
-  // Update duration when project changes
   useEffect(() => {
     if (!initialData) {
       const selectedProject = getProjectById(formData.projectId);
@@ -81,7 +78,6 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     }
   }, [formData.projectId, getProjectById, initialData]);
 
-  // Update total hours when time tracking changes
   useEffect(() => {
     const totalHours = calculateTotalHours(
       formData.timeTracking.departure,
@@ -237,7 +233,6 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (!formData.projectId) {
       toast.error('Veuillez sélectionner un chantier');
       return;
@@ -248,7 +243,6 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
       return;
     }
     
-    // Filter out empty personnel
     const filteredPersonnel = formData.personnel.filter(p => p.trim());
     if (filteredPersonnel.length === 0) {
       toast.error('Veuillez ajouter au moins un membre du personnel');
@@ -456,13 +450,11 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="breakTime">Pause (heures)</Label>
+                  <Label htmlFor="breakTime">Pause</Label>
                   <Input
                     id="breakTime"
-                    type="number"
-                    min="0"
-                    step="0.25"
-                    value={formData.timeTracking.breakTime}
+                    type="time"
+                    value={formatTime(formData.timeTracking.breakTime)}
                     onChange={(e) => handleTimeChange('breakTime', e.target.value)}
                     required
                   />
