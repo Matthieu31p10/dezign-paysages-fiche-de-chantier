@@ -30,12 +30,12 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     name: initialData?.name || '',
     address: initialData?.address || '',
     contact: {
-      phone: initialData?.contact.phone || '',
-      email: initialData?.contact.email || '',
+      phone: initialData?.contact?.phone || '',
+      email: initialData?.contact?.email || '',
     },
     contract: {
-      details: initialData?.contract.details || '',
-      documentUrl: initialData?.contract.documentUrl || '',
+      details: initialData?.contract?.details || '',
+      documentUrl: initialData?.contract?.documentUrl || '',
     },
     annualVisits: initialData?.annualVisits || 0,
     annualTotalHours: initialData?.annualTotalHours || 0,

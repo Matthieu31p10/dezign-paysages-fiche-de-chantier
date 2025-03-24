@@ -595,4 +595,3 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
 };
 
 export default WorkLogForm;
-

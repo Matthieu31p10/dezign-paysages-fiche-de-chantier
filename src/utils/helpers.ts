@@ -34,7 +34,8 @@ export const calculateTotalHours = (
   departure: string,
   arrival: string,
   end: string,
-  breakTime: string
+  breakTime: string,
+  personnelCount: number = 1
 ): number => {
   if (!departure || !arrival || !end || !breakTime) return 0;
 
@@ -66,8 +67,8 @@ export const calculateTotalHours = (
 
     totalTimeMinutes = travelTimeMinutes + workTimeMinutes - breakMinutes;
 
-    // Convert minutes to hours and round to 2 decimal places
-    return Math.round((totalTimeMinutes / 60) * 100) / 100;
+    // Convert minutes to hours, multiply by personnel count, and round to 2 decimal places
+    return Math.round((totalTimeMinutes / 60) * personnelCount * 100) / 100;
   } catch (error) {
     console.error('Error calculating total hours:', error);
     return 0;
