@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ProjectInfo, Team } from '@/types/models';
 import { useApp } from '@/context/AppContext';
@@ -20,13 +21,15 @@ interface ProjectFormProps {
   onSuccess?: () => void;
 }
 
+type ProjectFormData = Omit<ProjectInfo, 'id' | 'createdAt'>;
+
 const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   const navigate = useNavigate();
   const { addProjectInfo, updateProjectInfo, teams, addTeam } = useApp();
   const [newTeamName, setNewTeamName] = useState('');
   const [showNewTeamInput, setShowNewTeamInput] = useState(false);
   
-  const [formData, setFormData] = useState<Omit<ProjectInfo, 'id' | 'createdAt'>>({
+  const [formData, setFormData] = useState<ProjectFormData>({
     name: initialData?.name || '',
     address: initialData?.address || '',
     contact: {
@@ -134,7 +137,7 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     setFormData(prev => ({
       ...prev,
       [field]: date,
-      ...((field === 'endDate' && date) ? { isArchived: true } : {})
+      ...(field === 'endDate' && date ? { isArchived: true } : {})
     }));
   };
 
@@ -162,9 +165,13 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }
     
     if (initialData) {
-      updateProjectInfo({ ...formData, id: initialData.id, createdAt: initialData.createdAt });
+      updateProjectInfo({ 
+        ...formData, 
+        id: initialData.id, 
+        createdAt: initialData.createdAt 
+      });
     } else {
-      addProjectInfo(formData);
+      addProjectInfo(formData as ProjectInfo);
     }
     
     if (onSuccess) {
