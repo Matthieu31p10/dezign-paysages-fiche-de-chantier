@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProjectInfo, Team } from '@/types/models';
 import { useApp } from '@/context/AppContext';
@@ -13,7 +12,7 @@ import { toast } from 'sonner';
 import { Calendar as CalendarIcon, Building2, Home, Landmark } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ProjectFormProps {
@@ -28,6 +27,14 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   const { addProjectInfo, updateProjectInfo, teams, addTeam } = useApp();
   const [newTeamName, setNewTeamName] = useState('');
   const [showNewTeamInput, setShowNewTeamInput] = useState(false);
+  const [startDateInput, setStartDateInput] = useState(
+    initialData?.startDate ? format(new Date(initialData.startDate), 'dd/MM/yyyy') : ''
+  );
+  const [endDateInput, setEndDateInput] = useState(
+    initialData?.endDate ? format(new Date(initialData.endDate), 'dd/MM/yyyy') : ''
+  );
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [endDateOpen, setEndDateOpen] = useState(false);
   
   const [formData, setFormData] = useState<ProjectFormData>({
     name: initialData?.name || '',
@@ -134,11 +141,46 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   };
 
   const handleDateChange = (field: 'startDate' | 'endDate', date: Date | null) => {
+    if (field === 'startDate') {
+      setStartDateInput(date ? format(date, 'dd/MM/yyyy') : '');
+      setStartDateOpen(false);
+    } else {
+      setEndDateInput(date ? format(date, 'dd/MM/yyyy') : '');
+      setEndDateOpen(false);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [field]: date,
       ...(field === 'endDate' && date ? { isArchived: true } : {})
     }));
+  };
+
+  const handleManualDateInput = (field: 'startDate' | 'endDate', value: string) => {
+    if (field === 'startDate') {
+      setStartDateInput(value);
+    } else {
+      setEndDateInput(value);
+    }
+    
+    if (value) {
+      try {
+        const parsedDate = parse(value, 'dd/MM/yyyy', new Date());
+        if (isValid(parsedDate)) {
+          setFormData(prev => ({
+            ...prev,
+            [field]: parsedDate,
+            ...(field === 'endDate' ? { isArchived: true } : {})
+          }));
+        }
+      } catch (error) {
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: null
+      }));
+    }
   };
 
   const formatDate = (date: Date | null) => {
@@ -276,56 +318,68 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Date de début</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.startDate ? (
-                          formatDate(formData.startDate)
-                        ) : (
-                          <span>Sélectionner</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={formData.startDate ? new Date(formData.startDate) : undefined}
-                        onSelect={(date) => handleDateChange('startDate', date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <div className="flex space-x-2">
+                    <Input 
+                      type="text" 
+                      value={startDateInput} 
+                      onChange={(e) => handleManualDateInput('startDate', e.target.value)}
+                      placeholder="JJ/MM/AAAA"
+                      className="w-full"
+                    />
+                    <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          type="button"
+                        >
+                          <CalendarIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                          onSelect={(date) => handleDateChange('startDate', date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Format: JJ/MM/AAAA</p>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Date de fin</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.endDate ? (
-                          formatDate(formData.endDate)
-                        ) : (
-                          <span>Sélectionner</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={formData.endDate ? new Date(formData.endDate) : undefined}
-                        onSelect={(date) => handleDateChange('endDate', date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <div className="flex space-x-2">
+                    <Input 
+                      type="text" 
+                      value={endDateInput} 
+                      onChange={(e) => handleManualDateInput('endDate', e.target.value)}
+                      placeholder="JJ/MM/AAAA"
+                      className="w-full"
+                    />
+                    <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          type="button"
+                        >
+                          <CalendarIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={formData.endDate ? new Date(formData.endDate) : undefined}
+                          onSelect={(date) => handleDateChange('endDate', date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Format: JJ/MM/AAAA</p>
                 </div>
               </div>
 
@@ -505,3 +559,4 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
 };
 
 export default ProjectForm;
+
