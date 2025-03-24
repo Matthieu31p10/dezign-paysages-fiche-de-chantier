@@ -1,12 +1,10 @@
 
 import { ProjectInfo, WorkLog } from '@/types/models';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { formatNumber, calculateAnnualProgress } from '@/utils/helpers';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useNavigate } from 'react-router-dom';
-import { BarChart, ExternalLink } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Building2, Clock, Home, Landmark } from 'lucide-react';
+import { calculateAverageHoursPerVisit, getDaysSinceLastEntry } from '@/utils/helpers';
+import { cn } from '@/lib/utils';
 
 interface ProjectReportCardProps {
   project: ProjectInfo;
@@ -14,121 +12,96 @@ interface ProjectReportCardProps {
 }
 
 const ProjectReportCard = ({ project, workLogs }: ProjectReportCardProps) => {
-  const navigate = useNavigate();
+  // Calculate progress metrics
+  const visitsCompleted = workLogs.length;
+  const visitProgress = project.annualVisits > 0 
+    ? Math.min(100, Math.round((visitsCompleted / project.annualVisits) * 100))
+    : 0;
   
-  const totalCompletedHours = workLogs.reduce((total, log) => total + log.timeTracking.totalHours, 0);
-  const percentageComplete = calculateAnnualProgress(workLogs, project.annualVisits);
+  const totalHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+  const hoursProgress = project.annualTotalHours > 0
+    ? Math.min(100, Math.round((totalHours / project.annualTotalHours) * 100))
+    : 0;
   
-  // Calculate time remaining
-  const remainingVisits = Math.max(0, project.annualVisits - workLogs.length);
-  const remainingHours = Math.max(0, project.annualTotalHours - totalCompletedHours);
+  const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
-  // Calculate efficiency compared to planned duration
-  const plannedHours = workLogs.length * project.visitDuration;
-  const efficiency = plannedHours > 0 ? Math.round((plannedHours / totalCompletedHours) * 100) : 0;
+  const averageHoursPerVisit = calculateAverageHoursPerVisit(workLogs);
   
-  // Tasks statistics
-  const taskStats = {
-    mowing: workLogs.filter(log => log.tasksPerformed.mowing).length,
-    brushcutting: workLogs.filter(log => log.tasksPerformed.brushcutting).length,
-    blower: workLogs.filter(log => log.tasksPerformed.blower).length,
-    manualWeeding: workLogs.filter(log => log.tasksPerformed.manualWeeding).length,
-    whiteVinegar: workLogs.filter(log => log.tasksPerformed.whiteVinegar).length,
-    pruning: workLogs.filter(log => log.tasksPerformed.pruning.done).length,
+  const getProjectTypeIcon = () => {
+    switch (project.projectType) {
+      case 'residence':
+        return <Building2 className="h-4 w-4 text-green-500" />;
+      case 'particular':
+        return <Home className="h-4 w-4 text-blue-400" />;
+      case 'enterprise':
+        return <Landmark className="h-4 w-4 text-orange-500" />;
+      default:
+        return null;
+    }
   };
   
-  // Get the most frequent task
-  const mostFrequentTask = Object.entries(taskStats)
-    .sort((a, b) => b[1] - a[1])[0];
-    
-  // Find most recent pruning progress
-  const pruningLogs = workLogs
-    .filter(log => log.tasksPerformed.pruning.done)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const getProjectTypeColor = () => {
+    switch (project.projectType) {
+      case 'residence':
+        return 'bg-green-50 border-green-200';
+      case 'particular':
+        return 'bg-blue-50 border-blue-200';
+      case 'enterprise':
+        return 'bg-orange-50 border-orange-200';
+      default:
+        return '';
+    }
+  };
   
-  const latestPruningProgress = pruningLogs.length > 0 
-    ? pruningLogs[0].tasksPerformed.pruning.progress 
-    : 0;
-
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
+    <Card className={cn(
+      "border shadow-sm hover:shadow-md transition-shadow", 
+      getProjectTypeColor()
+    )}>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl font-medium truncate">{project.name}</CardTitle>
-            <CardDescription className="line-clamp-1">
-              {project.address}
-            </CardDescription>
-          </div>
+        <div className="flex items-center gap-1.5">
+          {getProjectTypeIcon()}
+          <h3 className="font-semibold text-base">{project.name}</h3>
         </div>
       </CardHeader>
-      
-      <CardContent className="flex-grow space-y-4">
-        <div className="pt-2">
-          <div className="flex justify-between items-center mb-1">
-            <div className="text-sm font-medium">Progression annuelle</div>
-            <div className="text-sm font-medium">{percentageComplete}%</div>
-          </div>
-          <Progress value={percentageComplete} className="h-2" />
-          <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-            <div className="flex justify-between">
-              <span>Passages:</span>
-              <span className="font-medium">{workLogs.length}/{project.annualVisits}</span>
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Passages effectués:</span>
+              <span className="font-medium">{visitsCompleted} / {project.annualVisits}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Heures:</span>
-              <span className="font-medium">{formatNumber(totalCompletedHours)}/{formatNumber(project.annualTotalHours)}</span>
-            </div>
+            <Progress value={visitProgress} className="h-2" />
           </div>
-        </div>
-        
-        <div className="space-y-1">
-          <div className="text-sm font-medium">Activités principales</div>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {mostFrequentTask && mostFrequentTask[1] > 0 && (
-              <Badge variant="secondary">
-                {mostFrequentTask[0] === 'mowing' ? 'Tonte' : 
-                 mostFrequentTask[0] === 'brushcutting' ? 'Débroussaillage' :
-                 mostFrequentTask[0] === 'blower' ? 'Souffleur' :
-                 mostFrequentTask[0] === 'manualWeeding' ? 'Désherbage' :
-                 mostFrequentTask[0] === 'whiteVinegar' ? 'Vinaigre' :
-                 'Taille'}: {mostFrequentTask[1]}
-              </Badge>
-            )}
+          
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Heures utilisées:</span>
+              <span className="font-medium">{totalHours.toFixed(1)} / {project.annualTotalHours}</span>
+            </div>
+            <Progress value={hoursProgress} className="h-2" />
+          </div>
+          
+          <div className="pt-2 grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground">Temps moyen / passage:</span>
+              <div className="flex items-center">
+                <Clock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                <span className="font-medium text-sm">{averageHoursPerVisit.toFixed(1)} h</span>
+              </div>
+            </div>
             
-            {pruningLogs.length > 0 && (
-              <Badge variant="secondary">
-                Taille: {latestPruningProgress}%
-              </Badge>
-            )}
-          </div>
-        </div>
-        
-        <div className="space-y-1">
-          <div className="text-sm font-medium">Reste à effectuer</div>
-          <div className="grid grid-cols-1 gap-1 mt-1 text-sm">
-            <div>
-              <span className="inline-block w-28">Passages:</span>
-              <span className="font-medium">{remainingVisits}</span>
-            </div>
-            <div>
-              <span className="inline-block w-28">Heures:</span>
-              <span className="font-medium">{formatNumber(remainingHours)}</span>
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground">Dernier passage il y a:</span>
+              <div className="font-medium text-sm">
+                {daysSinceLastVisit !== null 
+                  ? `${daysSinceLastVisit} jour${daysSinceLastVisit > 1 ? 's' : ''}`
+                  : 'Aucun passage'}
+              </div>
             </div>
           </div>
         </div>
       </CardContent>
-      
-      <CardFooter className="pt-2 pb-4">
-        <Button 
-          size="sm"
-          className="w-full"
-          onClick={() => navigate(`/projects/${project.id}`)}
-        >
-          <ExternalLink className="w-4 h-4 mr-2" />
-          Détails du chantier
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

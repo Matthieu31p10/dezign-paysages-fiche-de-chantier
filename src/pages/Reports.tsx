@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlobalStats from '@/components/reports/GlobalStats';
 import ProjectReportCard from '@/components/reports/ProjectReportCard';
-import { BarChart3, Calendar } from 'lucide-react';
+import { BarChart3, Calendar, Building2, Home, Landmark, Users } from 'lucide-react';
 
 const Reports = () => {
   const { projectInfos, workLogs, teams } = useApp();
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
+  const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
   
   // Get available years from work logs
   const currentYear = getCurrentYear();
@@ -33,14 +35,34 @@ const Reports = () => {
     return logDate.getFullYear() === selectedYear;
   });
   
+  // Filter projects by team and type
+  const filteredProjects = projectInfos.filter(project => {
+    const matchesTeam = selectedTeam === 'all' || project.team === selectedTeam;
+    const matchesType = selectedType === 'all' || project.projectType === selectedType;
+    return matchesTeam && matchesType;
+  });
+  
   // Group work logs by project
-  const projectWorkLogs = projectInfos.map(project => ({
+  const projectWorkLogs = filteredProjects.map(project => ({
     project,
     logs: yearFilteredLogs.filter(log => log.projectId === project.id),
   }));
   
   // Sort by most active projects first
   projectWorkLogs.sort((a, b) => b.logs.length - a.logs.length);
+  
+  const getProjectTypeIcon = (type: string) => {
+    switch (type) {
+      case 'residence':
+        return <Building2 className="h-4 w-4 text-green-500" />;
+      case 'particular':
+        return <Home className="h-4 w-4 text-blue-400" />;
+      case 'enterprise':
+        return <Landmark className="h-4 w-4 text-orange-500" />;
+      default:
+        return null;
+    }
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -52,13 +74,13 @@ const Reports = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <Select
             value={selectedYear.toString()}
             onValueChange={(value) => setSelectedYear(parseInt(value))}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-24">
               <SelectValue placeholder="Année" />
             </SelectTrigger>
             <SelectContent>
@@ -72,9 +94,64 @@ const Reports = () => {
         </div>
       </div>
       
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <Select
+            value={selectedTeam}
+            onValueChange={setSelectedTeam}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Équipe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les équipes</SelectItem>
+              {teams.map(team => (
+                <SelectItem key={team.id} value={team.id}>
+                  {team.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <Select
+            value={selectedType}
+            onValueChange={setSelectedType}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Type de chantier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les types</SelectItem>
+              <SelectItem value="residence">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-green-500" />
+                  <span>Résidence</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="particular">
+                <div className="flex items-center gap-2">
+                  <Home className="h-4 w-4 text-blue-400" />
+                  <span>Particulier</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="enterprise">
+                <div className="flex items-center gap-2">
+                  <Landmark className="h-4 w-4 text-orange-500" />
+                  <span>Entreprise</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
       <GlobalStats
-        projects={projectInfos}
-        workLogs={workLogs}
+        projects={filteredProjects}
+        workLogs={yearFilteredLogs}
         teams={teams}
         selectedYear={selectedYear}
       />
@@ -86,7 +163,13 @@ const Reports = () => {
             <CardTitle>Bilans par chantier</CardTitle>
           </div>
           <CardDescription>
-            Progression des chantiers pour l'année {selectedYear}
+            {`Progression des chantiers pour l'année ${selectedYear}`}
+            {selectedTeam !== 'all' && ` - Équipe: ${teams.find(t => t.id === selectedTeam)?.name}`}
+            {selectedType !== 'all' && ` - Type: ${
+              selectedType === 'residence' ? 'Résidence' : 
+              selectedType === 'particular' ? 'Particulier' :
+              selectedType === 'enterprise' ? 'Entreprise' : ''
+            }`}
           </CardDescription>
         </CardHeader>
         <CardContent>

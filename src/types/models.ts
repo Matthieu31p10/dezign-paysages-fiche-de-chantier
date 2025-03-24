@@ -16,6 +16,10 @@ export interface ProjectInfo {
   visitDuration: number;
   additionalInfo: string;
   team: string;
+  projectType: 'residence' | 'particular' | 'enterprise' | '';
+  startDate?: Date | null;
+  endDate?: Date | null;
+  isArchived?: boolean;
   createdAt: Date;
 }
 
@@ -50,4 +54,8 @@ export interface WorkLog {
 export interface Team {
   id: string;
   name: string;
+}
+
+export interface AppSettings {
+  companyLogo?: string;
 }

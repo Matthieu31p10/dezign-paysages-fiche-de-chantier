@@ -9,6 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Calendar as CalendarIcon, Building2, Home, Landmark } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface ProjectFormProps {
   initialData?: ProjectInfo;
@@ -37,6 +42,10 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     visitDuration: initialData?.visitDuration || 0,
     additionalInfo: initialData?.additionalInfo || '',
     team: initialData?.team || (teams.length > 0 ? teams[0].id : ''),
+    projectType: initialData?.projectType || '',
+    startDate: initialData?.startDate || null,
+    endDate: initialData?.endDate || null,
+    isArchived: initialData?.isArchived || false,
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -99,8 +108,6 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     const file = e.target.files?.[0];
     
     if (file) {
-      // In a real app, you would upload the file to a server and get a URL
-      // Here we'll just simulate it with a file URL
       const reader = new FileReader();
       reader.onload = () => {
         const documentUrl = reader.result as string;
@@ -116,10 +123,29 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }
   };
 
+  const handleProjectTypeChange = (value: 'residence' | 'particular' | 'enterprise' | '') => {
+    setFormData(prev => ({
+      ...prev,
+      projectType: value
+    }));
+  };
+
+  const handleDateChange = (field: 'startDate' | 'endDate', date: Date | null) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: date,
+      ...((field === 'endDate' && date) ? { isArchived: true } : {})
+    }));
+  };
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return '';
+    return format(date, 'PPP', { locale: fr });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (!formData.name.trim()) {
       toast.error('Le nom du chantier est requis');
       return;
@@ -148,6 +174,19 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }
   };
 
+  const getProjectTypeIcon = () => {
+    switch (formData.projectType) {
+      case 'residence':
+        return <Building2 className="h-4 w-4 text-green-500" />;
+      case 'particular':
+        return <Home className="h-4 w-4 text-blue-400" />;
+      case 'enterprise':
+        return <Landmark className="h-4 w-4 text-orange-500" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="animate-fade-in">
       <Card className="border shadow-sm">
@@ -159,7 +198,6 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
         
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left column */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nom du chantier</Label>
@@ -183,6 +221,105 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
                   placeholder="Adresse complète"
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Type de chantier</Label>
+                <Select
+                  value={formData.projectType}
+                  onValueChange={(value) => handleProjectTypeChange(value as 'residence' | 'particular' | 'enterprise' | '')}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Sélectionner un type">
+                      {formData.projectType && (
+                        <div className="flex items-center gap-2">
+                          {getProjectTypeIcon()}
+                          <span>
+                            {formData.projectType === 'residence' && 'Résidence'}
+                            {formData.projectType === 'particular' && 'Particulier'}
+                            {formData.projectType === 'enterprise' && 'Entreprise'}
+                          </span>
+                        </div>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="residence" className="flex items-center">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-green-500" />
+                        <span>Résidence</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="particular">
+                      <div className="flex items-center gap-2">
+                        <Home className="h-4 w-4 text-blue-400" />
+                        <span>Particulier</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="enterprise">
+                      <div className="flex items-center gap-2">
+                        <Landmark className="h-4 w-4 text-orange-500" />
+                        <span>Entreprise</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Date de début</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.startDate ? (
+                          formatDate(formData.startDate)
+                        ) : (
+                          <span>Sélectionner</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                        onSelect={(date) => handleDateChange('startDate', date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Date de fin</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.endDate ? (
+                          formatDate(formData.endDate)
+                        ) : (
+                          <span>Sélectionner</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formData.endDate ? new Date(formData.endDate) : undefined}
+                        onSelect={(date) => handleDateChange('endDate', date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -254,7 +391,6 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
               </div>
             </div>
 
-            {/* Right column */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="contract.details">Informations du contrat</Label>
