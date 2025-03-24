@@ -13,6 +13,9 @@ import WorkLogEdit from './pages/WorkLogEdit';
 import WorkLogDetail from './components/worklogs/WorkLogDetail';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
+import Login from './components/auth/Login';
+import Unauthorized from './pages/Unauthorized';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import './App.css';
@@ -22,19 +25,26 @@ function App() {
     <AppProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/projects" replace />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="projects/new" element={<ProjectNew />} />
-            <Route path="projects/:id" element={<ProjectDetail />} />
-            <Route path="projects/:id/edit" element={<ProjectEdit />} />
-            <Route path="worklogs" element={<WorkLogs />} />
-            <Route path="worklogs/new" element={<WorkLogNew />} />
-            <Route path="worklogs/:id" element={<WorkLogDetail />} />
-            <Route path="worklogs/:id/edit" element={<WorkLogEdit />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="/projects" replace />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/new" element={<ProjectNew />} />
+              <Route path="projects/:id" element={<ProjectDetail />} />
+              <Route path="projects/:id/edit" element={<ProjectEdit />} />
+              <Route path="worklogs" element={<WorkLogs />} />
+              <Route path="worklogs/new" element={<WorkLogNew />} />
+              <Route path="worklogs/:id" element={<WorkLogDetail />} />
+              <Route path="worklogs/:id/edit" element={<WorkLogEdit />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
           </Route>
         </Routes>
       </Router>

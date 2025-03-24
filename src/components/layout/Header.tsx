@@ -1,15 +1,24 @@
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { FileText, BarChart2, Files, Settings } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileText, BarChart2, Files, Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/context/AppContext';
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { auth, logout } = useApp();
   
   // Check active route
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
   
   return (
@@ -78,6 +87,36 @@ const Header = () => {
             <span className="hidden sm:inline-block">Paramètres</span>
           </Link>
         </Button>
+
+        {auth.isAuthenticated && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="ml-2 px-2">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                {auth.currentUser?.name || auth.currentUser?.username}
+                <p className="font-normal text-xs text-muted-foreground">
+                  {auth.currentUser?.role === 'admin' ? 'Administrateur' : 
+                   auth.currentUser?.role === 'manager' ? 'Gestionnaire' : 'Utilisateur'}
+                </p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="cursor-pointer w-full">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Paramètres
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                <LogOut className="h-4 w-4 mr-2" />
+                Déconnexion
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </nav>
     </header>
   );

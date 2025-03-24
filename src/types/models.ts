@@ -1,3 +1,19 @@
+export type UserRole = 'admin' | 'manager' | 'user';
+
+export interface User {
+  id: string;
+  username: string;
+  password: string; // In a real app, this would be hashed
+  role: UserRole;
+  name?: string;
+  email?: string;
+  createdAt: Date;
+}
+
+export interface AuthState {
+  currentUser: User | null;
+  isAuthenticated: boolean;
+}
 
 export interface ProjectInfo {
   id: string;
@@ -58,4 +74,5 @@ export interface Team {
 
 export interface AppSettings {
   companyLogo?: string;
+  users?: User[];
 }

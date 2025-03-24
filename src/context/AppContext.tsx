@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ProjectInfo, WorkLog, Team, AppSettings } from '@/types/models';
+import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState } from '@/types/models';
 import { toast } from 'sonner';
 
 interface AppContextType {
@@ -8,6 +7,7 @@ interface AppContextType {
   workLogs: WorkLog[];
   teams: Team[];
   settings: AppSettings;
+  auth: AuthState;
   selectedProjectId: string | null;
   addProjectInfo: (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => ProjectInfo;
   updateProjectInfo: (projectInfo: ProjectInfo) => void;
@@ -24,6 +24,13 @@ interface AppContextType {
   getWorkLogsByProjectId: (projectId: string) => WorkLog[];
   getActiveProjects: () => ProjectInfo[];
   getArchivedProjects: () => ProjectInfo[];
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
+  addUser: (user: Omit<User, 'id' | 'createdAt'>) => User | null;
+  updateUser: (user: User) => void;
+  deleteUser: (id: string) => void;
+  getCurrentUser: () => User | null;
+  canUserAccess: (requiredRole: UserRole) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,6 +41,16 @@ const WORKLOGS_STORAGE_KEY = 'landscaping-worklogs';
 const TEAMS_STORAGE_KEY = 'landscaping-teams';
 const SETTINGS_STORAGE_KEY = 'landscaping-settings';
 const SELECTED_PROJECT_KEY = 'landscaping-selected-project';
+const AUTH_STORAGE_KEY = 'landscaping-auth';
+const USERS_STORAGE_KEY = 'landscaping-users';
+
+const DEFAULT_ADMIN: User = {
+  id: 'admin-default',
+  username: 'admin',
+  password: 'admin',
+  role: 'admin',
+  createdAt: new Date(),
+};
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projectInfos, setProjectInfos] = useState<ProjectInfo[]>([]);
@@ -41,6 +58,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [teams, setTeams] = useState<Team[]>([]);
   const [settings, setSettings] = useState<AppSettings>({});
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [auth, setAuth] = useState<AuthState>({
+    currentUser: null,
+    isAuthenticated: false,
+  });
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -50,14 +71,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const storedTeams = localStorage.getItem(TEAMS_STORAGE_KEY);
       const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
       const storedSelectedProject = localStorage.getItem(SELECTED_PROJECT_KEY);
+      const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
 
       if (storedProjects) setProjectInfos(JSON.parse(storedProjects));
       if (storedWorkLogs) setWorkLogs(JSON.parse(storedWorkLogs));
       if (storedTeams) setTeams(JSON.parse(storedTeams));
-      if (storedSettings) setSettings(JSON.parse(storedSettings));
+      if (storedSettings) {
+        const parsedSettings = JSON.parse(storedSettings);
+        if (!parsedSettings.users) {
+          parsedSettings.users = [DEFAULT_ADMIN];
+        }
+        setSettings(parsedSettings);
+      } else {
+        setSettings({ users: [DEFAULT_ADMIN] });
+      }
       if (storedSelectedProject) setSelectedProjectId(storedSelectedProject);
+      if (storedAuth) setAuth(JSON.parse(storedAuth));
 
-      // Initialize with default team if none exists
       if (!storedTeams || JSON.parse(storedTeams).length === 0) {
         const defaultTeam = { id: crypto.randomUUID(), name: 'Équipe principale' };
         setTeams([defaultTeam]);
@@ -87,6 +117,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [settings]);
 
   useEffect(() => {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+  }, [auth]);
+
+  useEffect(() => {
     if (selectedProjectId) {
       localStorage.setItem(SELECTED_PROJECT_KEY, selectedProjectId);
     } else {
@@ -114,13 +148,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteProjectInfo = (id: string) => {
     setProjectInfos((prev) => prev.filter((p) => p.id !== id));
-    
-    // Also delete associated work logs
     setWorkLogs((prev) => prev.filter((w) => w.projectId !== id));
-    
     toast.success('Fiche chantier supprimée');
-    
-    // If the deleted project was selected, clear selection
     if (selectedProjectId === id) {
       setSelectedProjectId(null);
     }
@@ -167,13 +196,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteTeam = (id: string) => {
-    // Don't delete a team if it's assigned to any project
     const teamInUse = projectInfos.some(project => project.team === id);
     if (teamInUse) {
       toast.error('Impossible de supprimer l\'équipe car elle est assignée à un chantier');
       return;
     }
-    
     setTeams((prev) => prev.filter((t) => t.id !== id));
     toast.success('Équipe supprimée');
   };
@@ -206,6 +233,122 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return projectInfos.filter(project => project.isArchived);
   };
 
+  const login = (username: string, password: string): boolean => {
+    const users = settings.users || [];
+    const user = users.find(
+      (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+    );
+
+    if (user) {
+      setAuth({
+        currentUser: user,
+        isAuthenticated: true,
+      });
+      toast.success(`Bienvenue, ${user.name || user.username}`);
+      return true;
+    }
+
+    toast.error('Identifiant ou mot de passe incorrect');
+    return false;
+  };
+
+  const logout = () => {
+    setAuth({
+      currentUser: null,
+      isAuthenticated: false,
+    });
+    toast.success('Déconnexion réussie');
+  };
+
+  const addUser = (userData: Omit<User, 'id' | 'createdAt'>): User | null => {
+    const users = settings.users || [];
+    if (users.some((u) => u.username.toLowerCase() === userData.username.toLowerCase())) {
+      toast.error('Ce nom d\'utilisateur existe déjà');
+      return null;
+    }
+
+    const newUser: User = {
+      ...userData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+    };
+
+    const updatedUsers = [...users, newUser];
+    setSettings((prev) => ({
+      ...prev,
+      users: updatedUsers,
+    }));
+
+    toast.success('Utilisateur ajouté avec succès');
+    return newUser;
+  };
+
+  const updateUser = (updatedUser: User) => {
+    const users = settings.users || [];
+    const updatedUsers = users.map((user) =>
+      user.id === updatedUser.id ? updatedUser : user
+    );
+
+    setSettings((prev) => ({
+      ...prev,
+      users: updatedUsers,
+    }));
+
+    if (auth.currentUser && auth.currentUser.id === updatedUser.id) {
+      setAuth({
+        ...auth,
+        currentUser: updatedUser,
+      });
+    }
+
+    toast.success('Utilisateur mis à jour avec succès');
+  };
+
+  const deleteUser = (id: string) => {
+    if (id === 'admin-default') {
+      toast.error('Impossible de supprimer l\'administrateur par défaut');
+      return;
+    }
+
+    if (auth.currentUser && auth.currentUser.id === id) {
+      toast.error('Impossible de supprimer votre propre compte');
+      return;
+    }
+
+    const users = settings.users || [];
+    const updatedUsers = users.filter((user) => user.id !== id);
+
+    setSettings((prev) => ({
+      ...prev,
+      users: updatedUsers,
+    }));
+
+    toast.success('Utilisateur supprimé avec succès');
+  };
+
+  const getCurrentUser = (): User | null => {
+    return auth.currentUser;
+  };
+
+  const canUserAccess = (requiredRole: UserRole): boolean => {
+    if (!auth.isAuthenticated || !auth.currentUser) {
+      return false;
+    }
+
+    const userRole = auth.currentUser.role;
+
+    switch (requiredRole) {
+      case 'user':
+        return true;
+      case 'manager':
+        return userRole === 'manager' || userRole === 'admin';
+      case 'admin':
+        return userRole === 'admin';
+      default:
+        return false;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -213,6 +356,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         workLogs,
         teams,
         settings,
+        auth,
         selectedProjectId,
         addProjectInfo,
         updateProjectInfo,
@@ -229,6 +373,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         getWorkLogsByProjectId,
         getActiveProjects,
         getArchivedProjects,
+        login,
+        logout,
+        addUser,
+        updateUser,
+        deleteUser,
+        getCurrentUser,
+        canUserAccess,
       }}
     >
       {children}
