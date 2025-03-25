@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ProjectInfo, Team } from '@/types/models';
 import { useApp } from '@/context/AppContext';
@@ -20,7 +21,27 @@ interface ProjectFormProps {
   onSuccess?: () => void;
 }
 
-type ProjectFormData = Omit<ProjectInfo, 'id' | 'createdAt'>;
+type ProjectFormData = {
+  name: string;
+  address: string;
+  contact: {
+    phone: string;
+    email: string;
+  };
+  contract: {
+    details: string;
+    documentUrl?: string;
+  };
+  annualVisits: number;
+  annualTotalHours: number;
+  visitDuration: number;
+  additionalInfo: string;
+  team: string;
+  projectType: 'residence' | 'particular' | 'enterprise' | '';
+  startDate: Date | null;
+  endDate: Date | null;
+  isArchived: boolean;
+};
 
 const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   const navigate = useNavigate();
@@ -174,6 +195,7 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
           }));
         }
       } catch (error) {
+        // Parsing error - do nothing
       }
     } else {
       setFormData(prev => ({
@@ -213,7 +235,8 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
         createdAt: initialData.createdAt 
       });
     } else {
-      addProjectInfo(formData as ProjectInfo);
+      // Cast formData to ProjectInfo for addProjectInfo
+      addProjectInfo(formData as unknown as ProjectInfo);
     }
     
     if (onSuccess) {
@@ -559,4 +582,3 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
 };
 
 export default ProjectForm;
-
