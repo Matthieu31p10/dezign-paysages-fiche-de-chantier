@@ -35,8 +35,11 @@ const Reports = () => {
     return logDate.getFullYear() === selectedYear;
   });
   
+  // Filter out archived projects first
+  const activeProjects = projectInfos.filter(project => !project.isArchived);
+  
   // Filter projects by team and type
-  const filteredProjects = projectInfos.filter(project => {
+  const filteredProjects = activeProjects.filter(project => {
     const matchesTeam = selectedTeam === 'all' || project.team === selectedTeam;
     const matchesType = selectedType === 'all' || project.projectType === selectedType;
     return matchesTeam && matchesType;
@@ -70,7 +73,7 @@ const Reports = () => {
         <div>
           <h1 className="text-2xl font-semibold">Bilans</h1>
           <p className="text-muted-foreground">
-            Consultez les bilans de vos chantiers
+            Consultez les bilans de vos chantiers actifs
           </p>
         </div>
         
@@ -163,7 +166,7 @@ const Reports = () => {
             <CardTitle>Bilans par chantier</CardTitle>
           </div>
           <CardDescription>
-            {`Progression des chantiers pour l'année ${selectedYear}`}
+            {`Progression des chantiers actifs pour l'année ${selectedYear}`}
             {selectedTeam !== 'all' && ` - Équipe: ${teams.find(t => t.id === selectedTeam)?.name}`}
             {selectedType !== 'all' && ` - Type: ${
               selectedType === 'residence' ? 'Résidence' : 
