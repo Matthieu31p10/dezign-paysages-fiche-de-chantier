@@ -1,4 +1,3 @@
-
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNumber } from '@/utils/helpers';
@@ -13,33 +12,27 @@ interface GlobalStatsProps {
 }
 
 const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsProps) => {
-  // Filter work logs by year
-  const yearFilteredLogs = workLogs.filter(log => {
-    const logDate = new Date(log.date);
-    return logDate.getFullYear() === selectedYear;
-  });
-  
   // Total metrics
   const totalPlannedVisits = projects.reduce((sum, project) => sum + project.annualVisits, 0);
-  const totalCompletedVisits = yearFilteredLogs.length;
+  const totalCompletedVisits = workLogs.length;
   const completionRate = totalPlannedVisits > 0 
     ? Math.round((totalCompletedVisits / totalPlannedVisits) * 100) 
     : 0;
   
   const totalPlannedHours = projects.reduce((sum, project) => sum + project.annualTotalHours, 0);
-  const totalCompletedHours = yearFilteredLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+  const totalCompletedHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
   const hoursCompletionRate = totalPlannedHours > 0 
     ? Math.round((totalCompletedHours / totalPlannedHours) * 100) 
     : 0;
   
   // Task statistics
   const taskStats = {
-    mowing: yearFilteredLogs.filter(log => log.tasksPerformed.mowing).length,
-    brushcutting: yearFilteredLogs.filter(log => log.tasksPerformed.brushcutting).length,
-    blower: yearFilteredLogs.filter(log => log.tasksPerformed.blower).length,
-    manualWeeding: yearFilteredLogs.filter(log => log.tasksPerformed.manualWeeding).length,
-    whiteVinegar: yearFilteredLogs.filter(log => log.tasksPerformed.whiteVinegar).length,
-    pruning: yearFilteredLogs.filter(log => log.tasksPerformed.pruning.done).length,
+    mowing: workLogs.filter(log => log.tasksPerformed.mowing).length,
+    brushcutting: workLogs.filter(log => log.tasksPerformed.brushcutting).length,
+    blower: workLogs.filter(log => log.tasksPerformed.blower).length,
+    manualWeeding: workLogs.filter(log => log.tasksPerformed.manualWeeding).length,
+    whiteVinegar: workLogs.filter(log => log.tasksPerformed.whiteVinegar).length,
+    pruning: workLogs.filter(log => log.tasksPerformed.pruning.done).length,
   };
   
   // Get task statistics in descending order
@@ -57,7 +50,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   
   // Project with most visits
   const projectVisitCounts = projects.map(project => {
-    const visits = yearFilteredLogs.filter(log => log.projectId === project.id).length;
+    const visits = workLogs.filter(log => log.projectId === project.id).length;
     return { id: project.id, name: project.name, visits };
   });
   
@@ -67,7 +60,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   const teamWorkLogs = teams.map(team => {
     const teamProjects = projects.filter(project => project.team === team.id);
     const teamProjectIds = teamProjects.map(p => p.id);
-    const logs = yearFilteredLogs.filter(log => teamProjectIds.includes(log.projectId));
+    const logs = workLogs.filter(log => teamProjectIds.includes(log.projectId));
     
     return {
       id: team.id,

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getCurrentYear } from '@/utils/helpers';
@@ -29,23 +28,23 @@ const Reports = () => {
   // Sort years descending
   availableYears.sort((a, b) => b - a);
   
-  // Filter work logs by year
+  // Filter work logs by year first
   const yearFilteredLogs = workLogs.filter(log => {
     const logDate = new Date(log.date);
     return logDate.getFullYear() === selectedYear;
   });
   
-  // Filter out archived projects first
+  // Filter out archived projects first - do this early in the process
   const activeProjects = projectInfos.filter(project => !project.isArchived);
   
-  // Filter projects by team and type
+  // Then filter projects by team and type
   const filteredProjects = activeProjects.filter(project => {
     const matchesTeam = selectedTeam === 'all' || project.team === selectedTeam;
     const matchesType = selectedType === 'all' || project.projectType === selectedType;
     return matchesTeam && matchesType;
   });
   
-  // Group work logs by project
+  // Group work logs by project - use filtered projects to avoid processing archived ones
   const projectWorkLogs = filteredProjects.map(project => ({
     project,
     logs: yearFilteredLogs.filter(log => log.projectId === project.id),
