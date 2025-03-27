@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Calendar as CalendarIcon, Building2, Home, Landmark } from 'lucide-react';
+import { Calendar as CalendarIcon, Building2, Home, Landmark, Droplets, Scissors } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, parse, isValid } from 'date-fns';
@@ -25,6 +25,7 @@ type ProjectFormData = {
   name: string;
   address: string;
   contact: {
+    name: string;
     phone: string;
     email: string;
   };
@@ -32,6 +33,8 @@ type ProjectFormData = {
     details: string;
     documentUrl?: string;
   };
+  irrigation: 'irrigation' | 'none' | 'disabled';
+  mowerType: 'large' | 'small' | 'both';
   annualVisits: number;
   annualTotalHours: number;
   visitDuration: number;
@@ -61,6 +64,7 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     name: initialData?.name || '',
     address: initialData?.address || '',
     contact: {
+      name: initialData?.contact?.name || '',
       phone: initialData?.contact?.phone || '',
       email: initialData?.contact?.email || '',
     },
@@ -68,6 +72,8 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
       details: initialData?.contract?.details || '',
       documentUrl: initialData?.contract?.documentUrl || '',
     },
+    irrigation: initialData?.irrigation || 'none',
+    mowerType: initialData?.mowerType || 'small',
     annualVisits: initialData?.annualVisits || 0,
     annualTotalHours: initialData?.annualTotalHours || 0,
     visitDuration: initialData?.visitDuration || 0,
@@ -125,6 +131,11 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
       return;
     }
     
+    if (savedPersonnelNames.includes(newTeamName)) {
+      toast.error('Ce nom existe déjà');
+      return;
+    }
+    
     const newTeam = addTeam({ name: newTeamName.trim() });
     setFormData((prev) => ({
       ...prev,
@@ -158,6 +169,20 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     setFormData(prev => ({
       ...prev,
       projectType: value
+    }));
+  };
+
+  const handleIrrigationChange = (value: 'irrigation' | 'none' | 'disabled') => {
+    setFormData(prev => ({
+      ...prev,
+      irrigation: value
+    }));
+  };
+
+  const handleMowerTypeChange = (value: 'large' | 'small' | 'both') => {
+    setFormData(prev => ({
+      ...prev,
+      mowerType: value
     }));
   };
 
@@ -237,11 +262,11 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     } else {
       // Create a complete ProjectInfo object
       const newProject: Omit<ProjectInfo, 'id' | 'createdAt'> = {
-        ...formData,
+        ...formData as any,
         // These fields are required in ProjectInfo but handled by the context
       };
       
-      addProjectInfo(newProject as ProjectInfo);
+      addProjectInfo(newProject);
     }
     
     if (onSuccess) {
@@ -412,6 +437,17 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="contact.name">Nom et Prénom du contact</Label>
+                <Input
+                  id="contact.name"
+                  name="contact.name"
+                  value={formData.contact.name}
+                  onChange={handleInputChange}
+                  placeholder="Nom et prénom"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="contact.phone">Téléphone de contact</Label>
                 <Input
                   id="contact.phone"
@@ -432,6 +468,88 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
                   onChange={handleInputChange}
                   placeholder="Email"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="irrigation">Arrosage</Label>
+                <Select
+                  value={formData.irrigation}
+                  onValueChange={(value) => handleIrrigationChange(value as 'irrigation' | 'none' | 'disabled')}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="État de l'arrosage">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="h-4 w-4 text-blue-500" />
+                        <span>
+                          {formData.irrigation === 'irrigation' && 'Arrosage'}
+                          {formData.irrigation === 'none' && "Pas d'arrosage"}
+                          {formData.irrigation === 'disabled' && 'Arrosage désactivé'}
+                        </span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="irrigation">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="h-4 w-4 text-blue-500" />
+                        <span>Arrosage</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="none">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="h-4 w-4 text-gray-400" />
+                        <span>Pas d'arrosage</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="disabled">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="h-4 w-4 text-red-500" />
+                        <span>Arrosage désactivé</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mowerType">Type de tondeuse</Label>
+                <Select
+                  value={formData.mowerType}
+                  onValueChange={(value) => handleMowerTypeChange(value as 'large' | 'small' | 'both')}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Type de tondeuse">
+                      <div className="flex items-center gap-2">
+                        <Scissors className="h-4 w-4 text-green-500" />
+                        <span>
+                          {formData.mowerType === 'large' && 'Grosse machine'}
+                          {formData.mowerType === 'small' && 'Petite machine'}
+                          {formData.mowerType === 'both' && 'Petite machine et grosse machine'}
+                        </span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="large">
+                      <div className="flex items-center gap-2">
+                        <Scissors className="h-4 w-4 text-green-700" />
+                        <span>Grosse machine</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="small">
+                      <div className="flex items-center gap-2">
+                        <Scissors className="h-4 w-4 text-green-500" />
+                        <span>Petite machine</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="both">
+                      <div className="flex items-center gap-2">
+                        <Scissors className="h-4 w-4 text-green-600" />
+                        <span>Petite machine et grosse machine</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

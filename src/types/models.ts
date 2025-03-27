@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -20,6 +21,7 @@ export interface ProjectInfo {
   name: string;
   address: string;
   contact: {
+    name?: string; // Nouveau champ ajouté
     phone: string;
     email: string;
   };
@@ -27,6 +29,8 @@ export interface ProjectInfo {
     details: string;
     documentUrl?: string;
   };
+  irrigation?: 'irrigation' | 'none' | 'disabled'; // Nouveau champ ajouté
+  mowerType?: 'large' | 'small' | 'both'; // Nouveau champ ajouté
   annualVisits: number;
   annualTotalHours: number;
   visitDuration: number;

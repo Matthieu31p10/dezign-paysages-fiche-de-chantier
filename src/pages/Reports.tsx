@@ -6,13 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlobalStats from '@/components/reports/GlobalStats';
 import ProjectReportCard from '@/components/reports/ProjectReportCard';
-import { BarChart3, Calendar, Building2, Home, Landmark, Users } from 'lucide-react';
+import { BarChart3, Calendar, Building2, Home, Landmark, Users, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const Reports = () => {
   const { projectInfos, workLogs, teams } = useApp();
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>('projects');
   
   // Get available years from work logs
   const currentYear = getCurrentYear();
@@ -69,6 +72,25 @@ const Reports = () => {
   
   // Sort by most active projects first
   projectWorkLogs.sort((a, b) => b.logs.length - a.logs.length);
+  
+  // Calcul du cumul des heures par agent
+  const personnelHours = finalFilteredLogs.reduce((acc, log) => {
+    log.personnel.forEach(person => {
+      // Répartir les heures totales également entre chaque personne
+      const hoursPerPerson = log.timeTracking.totalHours / log.personnel.length;
+      
+      if (!acc[person]) {
+        acc[person] = 0;
+      }
+      acc[person] += hoursPerPerson;
+    });
+    return acc;
+  }, {} as Record<string, number>);
+  
+  // Convertir en tableau trié par nombre d'heures décroissant
+  const personnelHoursList = Object.entries(personnelHours)
+    .map(([name, hours]) => ({ name, hours }))
+    .sort((a, b) => b.hours - a.hours);
   
   const getProjectTypeIcon = (type: string) => {
     switch (type) {
@@ -175,42 +197,108 @@ const Reports = () => {
         selectedYear={selectedYear}
       />
       
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            <CardTitle>Bilans par chantier</CardTitle>
-          </div>
-          <CardDescription>
-            {`Progression des chantiers actifs pour l'année ${selectedYear}`}
-            {selectedTeam !== 'all' && ` - Équipe: ${teams.find(t => t.id === selectedTeam)?.name}`}
-            {selectedType !== 'all' && ` - Type: ${
-              selectedType === 'residence' ? 'Résidence' : 
-              selectedType === 'particular' ? 'Particulier' :
-              selectedType === 'enterprise' ? 'Entreprise' : ''
-            }`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {projectWorkLogs.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                Aucun chantier disponible
-              </p>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="projects">
+            <div className="flex items-center gap-1.5">
+              <BarChart3 className="h-4 w-4" />
+              <span>Chantiers</span>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projectWorkLogs.map(({ project, logs }) => (
-                <ProjectReportCard
-                  key={project.id}
-                  project={project}
-                  workLogs={logs}
-                />
-              ))}
+          </TabsTrigger>
+          <TabsTrigger value="personnel">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              <span>Cumul des heures par agent</span>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </TabsTrigger>
+        </TabsList>
+      
+        <TabsContent value="projects">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                <CardTitle>Bilans par chantier</CardTitle>
+              </div>
+              <CardDescription>
+                {`Progression des chantiers actifs pour l'année ${selectedYear}`}
+                {selectedTeam !== 'all' && ` - Équipe: ${teams.find(t => t.id === selectedTeam)?.name}`}
+                {selectedType !== 'all' && ` - Type: ${
+                  selectedType === 'residence' ? 'Résidence' : 
+                  selectedType === 'particular' ? 'Particulier' :
+                  selectedType === 'enterprise' ? 'Entreprise' : ''
+                }`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {projectWorkLogs.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Aucun chantier disponible
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {projectWorkLogs.map(({ project, logs }) => (
+                    <ProjectReportCard
+                      key={project.id}
+                      project={project}
+                      workLogs={logs}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="personnel">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                <CardTitle>Cumul des heures par agent</CardTitle>
+              </div>
+              <CardDescription>
+                {`Heures cumulées par agent pour l'année ${selectedYear}`}
+                {selectedTeam !== 'all' && ` - Équipe: ${teams.find(t => t.id === selectedTeam)?.name}`}
+                {selectedType !== 'all' && ` - Type: ${
+                  selectedType === 'residence' ? 'Résidence' : 
+                  selectedType === 'particular' ? 'Particulier' :
+                  selectedType === 'enterprise' ? 'Entreprise' : ''
+                }`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {personnelHoursList.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Aucune donnée disponible
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableCaption>Cumul des heures de travail par agent pour l'année {selectedYear}</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom de l'agent</TableHead>
+                      <TableHead className="text-right">Heures totales</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {personnelHoursList.map(({ name, hours }) => (
+                      <TableRow key={name}>
+                        <TableCell>{name}</TableCell>
+                        <TableCell className="text-right font-medium">{hours.toFixed(1)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

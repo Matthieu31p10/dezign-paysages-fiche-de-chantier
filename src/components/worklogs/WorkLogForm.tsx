@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
@@ -11,7 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { calculateTotalHours, formatTime, timeStringToHours } from '@/utils/helpers';
 import { useLocation } from 'react-router-dom';
-import { Plus, Save } from 'lucide-react';
+import { Plus, Save, Clock, Filter, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface WorkLogFormProps {
   initialData?: WorkLog;
@@ -21,20 +23,32 @@ interface WorkLogFormProps {
 const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { projectInfos, addWorkLog, updateWorkLog, getProjectById } = useApp();
+  const { projectInfos, workLogs, teams, addWorkLog, updateWorkLog, getProjectById, getWorkLogsByProjectId } = useApp();
   
   const searchParams = new URLSearchParams(location.search);
   const preselectedProjectId = searchParams.get('projectId');
   
+  // Filtrer les projets archivés
+  const activeProjects = projectInfos.filter(project => !project.isArchived);
+  
   const [personnelCount, setPersonnelCount] = useState(initialData?.personnel.length || 1);
   const [customPersonnelName, setCustomPersonnelName] = useState('');
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
   const [savedPersonnelNames, setSavedPersonnelNames] = useState<string[]>(() => {
     const stored = localStorage.getItem('landscaping-personnel-names');
     return stored ? JSON.parse(stored) : [];
   });
   
-  const defaultSelectedProjectId = initialData?.projectId || preselectedProjectId || (projectInfos.length > 0 ? projectInfos[0].id : '');
+  const defaultSelectedProjectId = initialData?.projectId || preselectedProjectId || (activeProjects.length > 0 ? activeProjects[0].id : '');
   const selectedProject = getProjectById(defaultSelectedProjectId);
+  
+  // Calcul de statistiques pour le projet sélectionné
+  const [projectStatistics, setProjectStatistics] = useState({
+    totalHours: 0,
+    completedVisits: 0,
+    averageHoursPerVisit: 0,
+    differenceFromAverage: 0
+  });
   
   const [formData, setFormData] = useState<Omit<WorkLog, 'id' | 'createdAt'>>({
     projectId: defaultSelectedProjectId,
@@ -62,6 +76,11 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     },
   });
 
+  // Filtrer les projets par équipe
+  const filteredProjects = selectedTeamFilter === 'all' 
+    ? activeProjects 
+    : activeProjects.filter(project => project.team === selectedTeamFilter);
+
   useEffect(() => {
     localStorage.setItem('landscaping-personnel-names', JSON.stringify(savedPersonnelNames));
   }, [savedPersonnelNames]);
@@ -77,6 +96,35 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
       }
     }
   }, [formData.projectId, getProjectById, initialData]);
+
+  useEffect(() => {
+    // Calculer les statistiques du projet sélectionné
+    if (formData.projectId) {
+      const projectLogs = getWorkLogsByProjectId(formData.projectId);
+      
+      // Exclure la fiche en cours d'édition si c'est une mise à jour
+      const relevantLogs = initialData 
+        ? projectLogs.filter(log => log.id !== initialData.id) 
+        : projectLogs;
+      
+      const totalHours = relevantLogs.reduce((sum, log) => sum + log.duration, 0);
+      const completedVisits = relevantLogs.length;
+      const averageHoursPerVisit = completedVisits > 0 ? totalHours / completedVisits : 0;
+      
+      // Différence par rapport à la durée actuelle
+      const currentDuration = parseFloat(formData.duration.toString()) || 0;
+      const differenceFromAverage = averageHoursPerVisit > 0 
+        ? (currentDuration - averageHoursPerVisit) 
+        : 0;
+      
+      setProjectStatistics({
+        totalHours,
+        completedVisits,
+        averageHoursPerVisit,
+        differenceFromAverage
+      });
+    }
+  }, [formData.projectId, formData.duration, getWorkLogsByProjectId, initialData]);
 
   useEffect(() => {
     const totalHours = calculateTotalHours(
@@ -111,6 +159,10 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
       projectId: value,
       duration: selectedProject?.visitDuration || 0,
     }));
+  };
+
+  const handleTeamFilterChange = (value: string) => {
+    setSelectedTeamFilter(value);
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,8 +318,25 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
       navigate('/worklogs');
     }
   };
+  
+  // Déterminer la couleur de fond de la carte en fonction du type de projet
+  const getCardBackgroundColor = () => {
+    const project = selectedProject;
+    if (!project) return "";
+    
+    switch (project.projectType) {
+      case 'residence':
+        return "bg-green-50 border-green-200";
+      case 'particular':
+        return "bg-blue-50 border-blue-200";
+      case 'enterprise':
+        return "bg-orange-50 border-orange-200";
+      default:
+        return "";
+    }
+  };
 
-  if (projectInfos.length === 0) {
+  if (activeProjects.length === 0) {
     return (
       <Card className="animate-fade-in">
         <CardHeader>
@@ -287,7 +356,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="animate-fade-in">
-      <Card className="border shadow-sm">
+      <Card className={`border shadow-sm ${getCardBackgroundColor()}`}>
         <CardHeader className="pb-4">
           <CardTitle className="text-xl font-medium">
             {initialData ? 'Modifier la fiche de suivi' : 'Nouvelle fiche de suivi'}
@@ -296,6 +365,28 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
         
         <CardContent className="space-y-6">
           <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+              <div className="flex items-center gap-2 md:w-1/3">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={selectedTeamFilter}
+                  onValueChange={handleTeamFilterChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Filtrer par équipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les équipes</SelectItem>
+                    {teams.map(team => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="projectId">Chantier</Label>
@@ -308,7 +399,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
                     <SelectValue placeholder="Sélectionner un chantier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {projectInfos.map(project => (
+                    {filteredProjects.map(project => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
                       </SelectItem>
@@ -329,16 +420,46 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="duration">Durée du passage (heures)</Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={formData.duration}
-                  onChange={handleDurationChange}
-                  required
-                />
+                <div className="flex flex-col">
+                  <Label htmlFor="duration" className="flex justify-between">
+                    <span>Durée du passage (heures)</span>
+                    {projectStatistics.completedVisits > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        Différence par rapport à la moyenne: 
+                        <Badge className={`ml-1 ${projectStatistics.differenceFromAverage > 0 ? 'bg-yellow-200 text-yellow-800' : 'bg-green-200 text-green-800'}`}>
+                          {projectStatistics.differenceFromAverage > 0 ? '+' : ''}
+                          {projectStatistics.differenceFromAverage.toFixed(1)}h
+                        </Badge>
+                      </span>
+                    )}
+                  </Label>
+                  <Input
+                    id="duration"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={formData.duration}
+                    onChange={handleDurationChange}
+                    required
+                  />
+                  
+                  {projectStatistics.completedVisits > 0 && (
+                    <div className="mt-2 text-xs text-muted-foreground space-y-1">
+                      <div className="flex justify-between">
+                        <span>Total des heures effectuées:</span>
+                        <span>{projectStatistics.totalHours.toFixed(1)}h</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Passages effectués:</span>
+                        <span>{projectStatistics.completedVisits}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Moyenne par passage:</span>
+                        <span>{projectStatistics.averageHoursPerVisit.toFixed(1)}h</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             
