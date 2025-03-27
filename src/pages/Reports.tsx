@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlobalStats from '@/components/reports/GlobalStats';
 import ProjectReportCard from '@/components/reports/ProjectReportCard';
-import { BarChart3, Calendar, Building2, Home, Landmark, Users, Clock } from 'lucide-react';
+import { BarChart3, Calendar, Building2, Home, Landmark, Users, Clock, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 const Reports = () => {
   const { projectInfos, workLogs, teams } = useApp();
@@ -16,6 +17,8 @@ const Reports = () => {
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('projects');
+  const [sortBy, setSortBy] = useState<string>('none');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
   // Get available years from work logs
   const currentYear = getCurrentYear();
@@ -70,8 +73,29 @@ const Reports = () => {
     logs: activeYearFilteredLogs.filter(log => log.projectId === project.id),
   }));
   
-  // Sort by most active projects first
-  projectWorkLogs.sort((a, b) => b.logs.length - a.logs.length);
+  // Sort the project work logs based on the selected sorting option
+  const sortedProjectWorkLogs = [...projectWorkLogs].sort((a, b) => {
+    if (sortBy === 'team') {
+      const teamA = teams.find(t => t.id === a.project.team)?.name || '';
+      const teamB = teams.find(t => t.id === b.project.team)?.name || '';
+      return sortDirection === 'asc' 
+        ? teamA.localeCompare(teamB) 
+        : teamB.localeCompare(teamA);
+    } else if (sortBy === 'lastVisit') {
+      const lastVisitDateA = a.logs.length > 0 
+        ? Math.max(...a.logs.map(log => new Date(log.date).getTime())) 
+        : 0;
+      const lastVisitDateB = b.logs.length > 0 
+        ? Math.max(...b.logs.map(log => new Date(log.date).getTime())) 
+        : 0;
+      return sortDirection === 'asc' 
+        ? lastVisitDateA - lastVisitDateB 
+        : lastVisitDateB - lastVisitDateA;
+    } else {
+      // Default sorting by number of logs (most active first)
+      return b.logs.length - a.logs.length;
+    }
+  });
   
   // Calcul du cumul des heures par agent
   const personnelHours = finalFilteredLogs.reduce((acc, log) => {
@@ -103,6 +127,24 @@ const Reports = () => {
       default:
         return null;
     }
+  };
+  
+  // Toggle sort direction or change sort field
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Get sorting icon based on current sort
+  const getSortIcon = (field: string) => {
+    if (sortBy !== field) return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-4 w-4 text-primary" />
+      : <ArrowDown className="h-4 w-4 text-primary" />;
   };
   
   return (
@@ -229,9 +271,44 @@ const Reports = () => {
                   selectedType === 'enterprise' ? 'Entreprise' : ''
                 }`}
               </CardDescription>
+              
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => toggleSort('team')}
+                  className="flex items-center gap-1.5"
+                >
+                  <span>Trier par équipe</span>
+                  {getSortIcon('team')}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => toggleSort('lastVisit')}
+                  className="flex items-center gap-1.5"
+                >
+                  <span>Trier par dernier passage</span>
+                  {getSortIcon('lastVisit')}
+                </Button>
+                
+                {sortBy !== 'none' && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setSortBy('none');
+                      setSortDirection('asc');
+                    }}
+                  >
+                    Réinitialiser le tri
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
-              {projectWorkLogs.length === 0 ? (
+              {sortedProjectWorkLogs.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">
                     Aucun chantier disponible
@@ -239,11 +316,12 @@ const Reports = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {projectWorkLogs.map(({ project, logs }) => (
+                  {sortedProjectWorkLogs.map(({ project, logs }) => (
                     <ProjectReportCard
                       key={project.id}
                       project={project}
                       workLogs={logs}
+                      teamName={teams.find(t => t.id === project.team)?.name}
                     />
                   ))}
                 </div>

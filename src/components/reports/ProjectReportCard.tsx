@@ -2,16 +2,18 @@
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Building2, Clock, Home, Landmark } from 'lucide-react';
+import { Building2, Clock, Home, Landmark, Users } from 'lucide-react';
 import { calculateAverageHoursPerVisit, getDaysSinceLastEntry } from '@/utils/helpers';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectReportCardProps {
   project: ProjectInfo;
   workLogs: WorkLog[];
+  teamName?: string;
 }
 
-const ProjectReportCard = ({ project, workLogs }: ProjectReportCardProps) => {
+const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardProps) => {
   // Calculate progress metrics
   const visitsCompleted = workLogs.length;
   const visitProgress = project.annualVisits > 0 
@@ -59,9 +61,17 @@ const ProjectReportCard = ({ project, workLogs }: ProjectReportCardProps) => {
       getProjectTypeColor()
     )}>
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-1.5">
-          {getProjectTypeIcon()}
-          <h3 className="font-semibold text-base">{project.name}</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            {getProjectTypeIcon()}
+            <h3 className="font-semibold text-base">{project.name}</h3>
+          </div>
+          {teamName && (
+            <Badge variant="outline" className="bg-slate-50">
+              <Users className="h-3 w-3 mr-1" />
+              {teamName}
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
