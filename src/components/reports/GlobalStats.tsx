@@ -1,3 +1,4 @@
+
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNumber } from '@/utils/helpers';
@@ -5,14 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart2, Clock, Calendar, Users } from 'lucide-react';
 
 interface GlobalStatsProps {
-  projects: ProjectInfo[];
-  workLogs: WorkLog[];
+  projects: ProjectInfo[];  // Ce sont déjà les projets filtrés (non archivés)
+  workLogs: WorkLog[];      // Logs filtrés par année et projets actifs
   teams: { id: string; name: string }[];
   selectedYear: number;
 }
 
 const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsProps) => {
-  // Total metrics
+  // Total metrics - all calculations are now on already filtered data
   const totalPlannedVisits = projects.reduce((sum, project) => sum + project.annualVisits, 0);
   const totalCompletedVisits = workLogs.length;
   const completionRate = totalPlannedVisits > 0 

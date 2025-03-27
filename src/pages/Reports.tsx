@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getCurrentYear } from '@/utils/helpers';
@@ -28,14 +29,20 @@ const Reports = () => {
   // Sort years descending
   availableYears.sort((a, b) => b - a);
   
-  // Filter work logs by year first
+  // Filter out archived projects FIRST - always exclude them from all calculations
+  const activeProjects = projectInfos.filter(project => !project.isArchived);
+  
+  // Filter work logs by year
   const yearFilteredLogs = workLogs.filter(log => {
     const logDate = new Date(log.date);
     return logDate.getFullYear() === selectedYear;
   });
   
-  // Filter out archived projects first - do this early in the process
-  const activeProjects = projectInfos.filter(project => !project.isArchived);
+  // Only include logs that belong to active (non-archived) projects
+  const activeProjectIds = activeProjects.map(project => project.id);
+  const activeYearFilteredLogs = yearFilteredLogs.filter(log => 
+    activeProjectIds.includes(log.projectId)
+  );
   
   // Then filter projects by team and type
   const filteredProjects = activeProjects.filter(project => {
@@ -44,10 +51,20 @@ const Reports = () => {
     return matchesTeam && matchesType;
   });
   
+  // Final filtered logs based on team/type filters
+  const finalFilteredLogs = activeYearFilteredLogs.filter(log => {
+    const project = activeProjects.find(p => p.id === log.projectId);
+    if (!project) return false;
+    
+    const matchesTeam = selectedTeam === 'all' || project.team === selectedTeam;
+    const matchesType = selectedType === 'all' || project.projectType === selectedType;
+    return matchesTeam && matchesType;
+  });
+  
   // Group work logs by project - use filtered projects to avoid processing archived ones
   const projectWorkLogs = filteredProjects.map(project => ({
     project,
-    logs: yearFilteredLogs.filter(log => log.projectId === project.id),
+    logs: activeYearFilteredLogs.filter(log => log.projectId === project.id),
   }));
   
   // Sort by most active projects first
