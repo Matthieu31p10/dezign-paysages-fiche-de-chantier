@@ -131,7 +131,9 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
       return;
     }
     
-    if (savedPersonnelNames.includes(newTeamName)) {
+    // Fix for the savedPersonnelNames error - check against existing team names instead
+    const teamNameExists = teams.some(team => team.name === newTeamName.trim());
+    if (teamNameExists) {
       toast.error('Ce nom existe déjà');
       return;
     }
@@ -254,16 +256,30 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }
     
     if (initialData) {
+      // Fix for the spread types error - use type assertion
       updateProjectInfo({ 
-        ...formData as any, 
+        ...(formData as any), 
         id: initialData.id, 
         createdAt: initialData.createdAt 
       });
     } else {
-      // Create a complete ProjectInfo object
+      // Create a complete ProjectInfo object without spreading
       const newProject: Omit<ProjectInfo, 'id' | 'createdAt'> = {
-        ...formData as any,
-        // These fields are required in ProjectInfo but handled by the context
+        name: formData.name,
+        address: formData.address,
+        contact: formData.contact,
+        contract: formData.contract,
+        irrigation: formData.irrigation,
+        mowerType: formData.mowerType,
+        annualVisits: formData.annualVisits,
+        annualTotalHours: formData.annualTotalHours,
+        visitDuration: formData.visitDuration,
+        additionalInfo: formData.additionalInfo,
+        team: formData.team,
+        projectType: formData.projectType,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        isArchived: formData.isArchived
       };
       
       addProjectInfo(newProject);
