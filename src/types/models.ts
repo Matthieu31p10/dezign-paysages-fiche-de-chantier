@@ -78,5 +78,6 @@ export interface Team {
 
 export interface AppSettings {
   companyLogo?: string;
+  loginBackgroundImage?: string; // New field added for login background
   users?: User[];
 }

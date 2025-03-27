@@ -3,6 +3,7 @@ import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LogoSettings from '@/components/settings/LogoSettings';
 import UserList from '@/components/settings/UserList';
+import LoginSettings from '@/components/settings/LoginSettings';
 
 const Settings = () => {
   const { canUserAccess } = useApp();
@@ -18,13 +19,18 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="logo" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="logo">Logo</TabsTrigger>
+          <TabsTrigger value="login">Connexion</TabsTrigger>
           <TabsTrigger value="users" disabled={!isAdmin}>Utilisateurs</TabsTrigger>
         </TabsList>
         
         <TabsContent value="logo" className="space-y-4 pt-4">
           <LogoSettings />
+        </TabsContent>
+        
+        <TabsContent value="login" className="space-y-4 pt-4">
+          <LoginSettings />
         </TabsContent>
         
         <TabsContent value="users" className="space-y-4 pt-4">
