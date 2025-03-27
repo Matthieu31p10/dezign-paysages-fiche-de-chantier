@@ -230,13 +230,18 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     
     if (initialData) {
       updateProjectInfo({ 
-        ...formData, 
+        ...formData as any, 
         id: initialData.id, 
         createdAt: initialData.createdAt 
       });
     } else {
-      // Cast formData to ProjectInfo for addProjectInfo
-      addProjectInfo(formData as unknown as ProjectInfo);
+      // Create a complete ProjectInfo object
+      const newProject: Omit<ProjectInfo, 'id' | 'createdAt'> = {
+        ...formData,
+        // These fields are required in ProjectInfo but handled by the context
+      };
+      
+      addProjectInfo(newProject as ProjectInfo);
     }
     
     if (onSuccess) {
