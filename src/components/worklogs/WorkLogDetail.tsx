@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -41,6 +40,26 @@ const WorkLogDetail = () => {
   
   const handleEditSuccess = () => {
     setIsEditDialogOpen(false);
+  };
+  
+  const calculateEndTime = () => {
+    if (!workLog) return "--:--";
+    
+    const [departureHour, departureMinute] = workLog.timeTracking.departure.split(':').map(Number);
+    const [arrivalHour, arrivalMinute] = workLog.timeTracking.arrival.split(':').map(Number);
+    const breakTimeMinutes = workLog.timeTracking.breakTime * 60;
+    
+    let departureInMinutes = departureHour * 60 + departureMinute;
+    let arrivalInMinutes = arrivalHour * 60 + arrivalMinute;
+    
+    let totalWorkMinutes = arrivalInMinutes - departureInMinutes;
+    
+    let endTimeInMinutes = departureInMinutes + totalWorkMinutes;
+    
+    const endHour = Math.floor(endTimeInMinutes / 60);
+    const endMinute = endTimeInMinutes % 60;
+    
+    return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
   };
   
   return (
@@ -175,19 +194,7 @@ const WorkLogDetail = () => {
                   
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500">Heure de fin</p>
-                    <p>
-                      {(() => {
-                        const [departureHour, departureMinute] = workLog.timeTracking.departure.split(':').map(Number);
-                        const [arrivalHour, arrivalMinute] = workLog.timeTracking.arrival.split(':').map(Number);
-                        const breakTime = workLog.timeTracking.breakTime;
-                        
-                        let totalMinutes = (arrivalHour - departureHour) * 60 + (arrivalMinute - departureMinute) - (breakTime * 60);
-                        const endHour = Math.floor((departureHour * 60 + departureMinute + totalMinutes) / 60);
-                        const endMinute = Math.floor((departureHour * 60 + departureMinute + totalMinutes) % 60);
-                        
-                        return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
-                      })()}
-                    </p>
+                    <p>{calculateEndTime()}</p>
                   </div>
                   
                   <div className="space-y-1">
@@ -326,4 +333,3 @@ const WorkLogDetail = () => {
 };
 
 export default WorkLogDetail;
-
