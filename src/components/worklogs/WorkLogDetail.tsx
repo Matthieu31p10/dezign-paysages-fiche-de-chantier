@@ -174,6 +174,23 @@ const WorkLogDetail = () => {
                   </div>
                   
                   <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Heure de fin</p>
+                    <p>
+                      {(() => {
+                        const [departureHour, departureMinute] = workLog.timeTracking.departure.split(':').map(Number);
+                        const [arrivalHour, arrivalMinute] = workLog.timeTracking.arrival.split(':').map(Number);
+                        const breakTime = workLog.timeTracking.breakTime;
+                        
+                        let totalMinutes = (arrivalHour - departureHour) * 60 + (arrivalMinute - departureMinute) - (breakTime * 60);
+                        const endHour = Math.floor((departureHour * 60 + departureMinute + totalMinutes) / 60);
+                        const endMinute = Math.floor((departureHour * 60 + departureMinute + totalMinutes) % 60);
+                        
+                        return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+                      })()}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-1">
                     <p className="text-xs text-gray-500">Pause</p>
                     <p>{workLog.timeTracking.breakTime} heures</p>
                   </div>
@@ -309,3 +326,4 @@ const WorkLogDetail = () => {
 };
 
 export default WorkLogDetail;
+
