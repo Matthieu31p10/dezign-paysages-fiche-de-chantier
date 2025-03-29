@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/helpers';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Check, Calendar, Clock, Edit, Trash, User } from 'lucide-react';
+import { Check, Calendar, Clock, Edit, Trash, User, ArrowDownAZ, ArrowUpAZ, CalendarDays } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
   const { deleteWorkLog, getProjectById } = useApp();
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
+  const [sortOption, setSortOption] = useState<string>('date-desc');
   
   // Filter work logs for the selected year
   const yearFilteredLogs = selectedYear 
@@ -46,16 +47,45 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     );
   });
   
-  // Group logs by month
-  const groupedLogs = groupWorkLogsByMonth(filteredLogs);
+  // Sort logs based on the selected option
+  const sortedLogs = [...filteredLogs].sort((a, b) => {
+    switch(sortOption) {
+      case 'date-asc':
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      case 'date-desc':
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      case 'project-asc':
+        const projectA = getProjectById(a.projectId)?.name || '';
+        const projectB = getProjectById(b.projectId)?.name || '';
+        return projectA.localeCompare(projectB);
+      case 'project-desc':
+        const projectNameA = getProjectById(a.projectId)?.name || '';
+        const projectNameB = getProjectById(b.projectId)?.name || '';
+        return projectNameB.localeCompare(projectNameA);
+      case 'hours-asc':
+        return a.timeTracking.totalHours - b.timeTracking.totalHours;
+      case 'hours-desc':
+        return b.timeTracking.totalHours - a.timeTracking.totalHours;
+      default:
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    }
+  });
   
-  // Sort months in reverse chronological order
+  // Group logs by month (after sorting)
+  const groupedLogs = groupWorkLogsByMonth(sortedLogs);
+  
+  // Sort months in the correct order based on the sort option
   const sortedMonths = Object.keys(groupedLogs).sort((a, b) => {
     const [monthA, yearA] = a.split('-').map(Number);
     const [monthB, yearB] = b.split('-').map(Number);
     
-    if (yearA !== yearB) return yearB - yearA;
-    return monthB - monthA;
+    if (sortOption.includes('asc')) {
+      if (yearA !== yearB) return yearA - yearB;
+      return monthA - monthB;
+    } else {
+      if (yearA !== yearB) return yearB - yearA;
+      return monthB - monthA;
+    }
   });
   
   const handleDeleteWorkLog = (id: string) => {
@@ -122,7 +152,24 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
           />
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <Select
+            value={sortOption}
+            onValueChange={(value) => setSortOption(value)}
+          >
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Trier par" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Date (récent → ancien)</SelectItem>
+              <SelectItem value="date-asc">Date (ancien → récent)</SelectItem>
+              <SelectItem value="project-asc">Chantier (A → Z)</SelectItem>
+              <SelectItem value="project-desc">Chantier (Z → A)</SelectItem>
+              <SelectItem value="hours-desc">Heures (plus → moins)</SelectItem>
+              <SelectItem value="hours-asc">Heures (moins → plus)</SelectItem>
+            </SelectContent>
+          </Select>
+          
           <Select
             value={selectedYear.toString()}
             onValueChange={(value) => setSelectedYear(parseInt(value))}

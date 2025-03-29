@@ -17,18 +17,23 @@ const Reports = () => {
   const [sortOption, setSortOption] = useState<string>('name');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   
+  // Safety checks for data
+  const validProjectInfos = Array.isArray(projectInfos) ? projectInfos : [];
+  const validWorkLogs = Array.isArray(workLogs) ? workLogs : [];
+  const validTeams = Array.isArray(teams) ? teams : [];
+  
   // Filter projects by team
   const filteredProjects = selectedTeam === 'all'
-    ? projectInfos
-    : projectInfos.filter(project => project.team === selectedTeam);
+    ? validProjectInfos
+    : validProjectInfos.filter(project => project.team === selectedTeam);
   
   // Sort projects
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (sortOption === 'name') {
       return a.name.localeCompare(b.name);
     } else if (sortOption === 'lastVisit') {
-      const logsA = workLogs.filter(log => log.projectId === a.id);
-      const logsB = workLogs.filter(log => log.projectId === b.id);
+      const logsA = validWorkLogs.filter(log => log.projectId === a.id);
+      const logsB = validWorkLogs.filter(log => log.projectId === b.id);
       
       const daysA = getDaysSinceLastEntry(logsA) || Number.MAX_SAFE_INTEGER;
       const daysB = getDaysSinceLastEntry(logsB) || Number.MAX_SAFE_INTEGER;
@@ -39,7 +44,7 @@ const Reports = () => {
   });
   
   // Get non-archived projects for stats
-  const activeProjects = projectInfos.filter(project => !project.isArchived);
+  const activeProjects = validProjectInfos.filter(project => !project.isArchived);
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -78,7 +83,7 @@ const Reports = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les équipes</SelectItem>
-                  {teams.map(team => (
+                  {validTeams.map(team => (
                     <SelectItem key={team.id} value={team.id}>
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-2" />
@@ -117,8 +122,8 @@ const Reports = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sortedProjects.map(project => {
-                const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
-                const teamName = teams.find(t => t.id === project.team)?.name;
+                const projectWorkLogs = validWorkLogs.filter(log => log.projectId === project.id);
+                const teamName = validTeams.find(t => t.id === project.team)?.name;
                 
                 return (
                   <ProjectReportCard
@@ -136,15 +141,15 @@ const Reports = () => {
         <TabsContent value="stats">
           <GlobalStats 
             projects={activeProjects} 
-            workLogs={workLogs} 
-            teams={teams} 
+            workLogs={validWorkLogs} 
+            teams={validTeams} 
             selectedYear={selectedYear} 
           />
         </TabsContent>
         
         <TabsContent value="tools" className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PDFGenerator />
-          <CalendarView workLogs={workLogs} />
+          <CalendarView workLogs={validWorkLogs} />
         </TabsContent>
       </Tabs>
     </div>

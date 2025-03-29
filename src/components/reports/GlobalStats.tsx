@@ -18,7 +18,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   
   // Filter logs by selected year when component mounts or when selectedYear changes
   useEffect(() => {
-    if (!workLogs) {
+    if (!workLogs || !Array.isArray(workLogs)) {
       setFilteredLogs([]);
       return;
     }
@@ -26,31 +26,31 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   }, [workLogs, selectedYear]);
   
   // Ensure we have valid data to work with
-  if (!projects || !workLogs || !teams) {
+  if (!projects || !Array.isArray(projects) || !workLogs || !Array.isArray(workLogs) || !teams || !Array.isArray(teams)) {
     return <div className="p-4 text-center">Chargement des données...</div>;
   }
   
   // Total metrics - all calculations are now on already filtered data
-  const totalPlannedVisits = projects.reduce((sum, project) => sum + project.annualVisits, 0);
+  const totalPlannedVisits = projects.reduce((sum, project) => sum + (project.annualVisits || 0), 0);
   const totalCompletedVisits = filteredLogs.length;
   const completionRate = totalPlannedVisits > 0 
     ? Math.round((totalCompletedVisits / totalPlannedVisits) * 100) 
     : 0;
   
-  const totalPlannedHours = projects.reduce((sum, project) => sum + project.annualTotalHours, 0);
-  const totalCompletedHours = filteredLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+  const totalPlannedHours = projects.reduce((sum, project) => sum + (project.annualTotalHours || 0), 0);
+  const totalCompletedHours = filteredLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
   const hoursCompletionRate = totalPlannedHours > 0 
     ? Math.round((totalCompletedHours / totalPlannedHours) * 100) 
     : 0;
   
   // Task statistics
   const taskStats = {
-    mowing: filteredLogs.filter(log => log.tasksPerformed.mowing).length,
-    brushcutting: filteredLogs.filter(log => log.tasksPerformed.brushcutting).length,
-    blower: filteredLogs.filter(log => log.tasksPerformed.blower).length,
-    manualWeeding: filteredLogs.filter(log => log.tasksPerformed.manualWeeding).length,
-    whiteVinegar: filteredLogs.filter(log => log.tasksPerformed.whiteVinegar).length,
-    pruning: filteredLogs.filter(log => log.tasksPerformed.pruning.done).length,
+    mowing: filteredLogs.filter(log => log.tasksPerformed?.mowing).length,
+    brushcutting: filteredLogs.filter(log => log.tasksPerformed?.brushcutting).length,
+    blower: filteredLogs.filter(log => log.tasksPerformed?.blower).length,
+    manualWeeding: filteredLogs.filter(log => log.tasksPerformed?.manualWeeding).length,
+    whiteVinegar: filteredLogs.filter(log => log.tasksPerformed?.whiteVinegar).length,
+    pruning: filteredLogs.filter(log => log.tasksPerformed?.pruning?.done).length,
   };
   
   // Get task statistics in descending order
@@ -84,7 +84,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
       id: team.id,
       name: team.name,
       visits: logs.length,
-      hours: logs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0),
+      hours: logs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0),
     };
   });
   
