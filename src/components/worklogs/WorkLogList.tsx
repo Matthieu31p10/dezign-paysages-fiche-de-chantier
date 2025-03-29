@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/helpers';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Check, Calendar, Clock, Edit, Trash, User, ArrowDownAZ, ArrowUpAZ, CalendarDays } from 'lucide-react';
+import { Check, Calendar, Clock, Edit, Trash, User, ArrowDownAZ, ArrowUpAZ, CalendarDays, FileText } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +90,11 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
   
   const handleDeleteWorkLog = (id: string) => {
     deleteWorkLog(id);
+  };
+  
+  // Generate worklog code format (DZFS + 5 digits)
+  const generateWorkLogCode = (index: number) => {
+    return `DZFS${String(index + 1).padStart(5, '0')}`;
   };
   
   if (workLogs.length === 0) {
@@ -196,8 +201,9 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
             </h3>
             
             <div className="space-y-2">
-              {groupedLogs[month].map(log => {
+              {groupedLogs[month].map((log, index) => {
                 const project = getProjectById(log.projectId);
+                const worklogCode = generateWorkLogCode(index);
                 
                 return (
                   <div
@@ -206,6 +212,13 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="bg-brand-50 text-brand-700 font-mono">
+                            <FileText className="w-3.5 h-3.5 mr-1.5" />
+                            {worklogCode}
+                          </Badge>
+                        </div>
+                        
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="bg-brand-50 text-brand-700">
                             {formatDate(log.date)}

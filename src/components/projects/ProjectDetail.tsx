@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -48,6 +47,11 @@ const ProjectDetail = () => {
   
   const totalCompletedHours = workLogs.reduce((total, log) => total + log.timeTracking.totalHours, 0);
   const completedVisits = workLogs.length;
+  
+  // Generate worklog code format (DZFS + 5 digits)
+  const generateWorkLogCode = (index: number) => {
+    return `DZFS${String(index + 1).padStart(5, '0')}`;
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
