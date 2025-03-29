@@ -1,39 +1,56 @@
 
+import { useState, useEffect } from 'react';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatNumber } from '@/utils/helpers';
+import { formatNumber, filterWorkLogsByYear } from '@/utils/helpers';
 import { Badge } from '@/components/ui/badge';
 import { BarChart2, Clock, Calendar, Users } from 'lucide-react';
 
 interface GlobalStatsProps {
-  projects: ProjectInfo[];  // Ce sont déjà les projets filtrés (non archivés)
-  workLogs: WorkLog[];      // Logs filtrés par année et projets actifs
+  projects: ProjectInfo[];  // These are already filtered projects (non archived)
+  workLogs: WorkLog[];      // Logs filtered by year and active projects
   teams: { id: string; name: string }[];
   selectedYear: number;
 }
 
 const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsProps) => {
+  const [filteredLogs, setFilteredLogs] = useState<WorkLog[]>([]);
+  
+  // Filter logs by selected year when component mounts or when selectedYear changes
+  useEffect(() => {
+    if (!workLogs) {
+      setFilteredLogs([]);
+      return;
+    }
+    setFilteredLogs(filterWorkLogsByYear(workLogs, selectedYear));
+  }, [workLogs, selectedYear]);
+  
+  // Ensure we have valid data to work with
+  if (!projects || !workLogs || !teams) {
+    return <div className="p-4 text-center">Chargement des données...</div>;
+  }
+  
   // Total metrics - all calculations are now on already filtered data
   const totalPlannedVisits = projects.reduce((sum, project) => sum + project.annualVisits, 0);
-  const totalCompletedVisits = workLogs.length;
+  const totalCompletedVisits = filteredLogs.length;
   const completionRate = totalPlannedVisits > 0 
     ? Math.round((totalCompletedVisits / totalPlannedVisits) * 100) 
     : 0;
   
   const totalPlannedHours = projects.reduce((sum, project) => sum + project.annualTotalHours, 0);
-  const totalCompletedHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+  const totalCompletedHours = filteredLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
   const hoursCompletionRate = totalPlannedHours > 0 
     ? Math.round((totalCompletedHours / totalPlannedHours) * 100) 
     : 0;
   
   // Task statistics
   const taskStats = {
-    mowing: workLogs.filter(log => log.tasksPerformed.mowing).length,
-    brushcutting: workLogs.filter(log => log.tasksPerformed.brushcutting).length,
-    blower: workLogs.filter(log => log.tasksPerformed.blower).length,
-    manualWeeding: workLogs.filter(log => log.tasksPerformed.manualWeeding).length,
-    whiteVinegar: workLogs.filter(log => log.tasksPerformed.whiteVinegar).length,
-    pruning: workLogs.filter(log => log.tasksPerformed.pruning.done).length,
+    mowing: filteredLogs.filter(log => log.tasksPerformed.mowing).length,
+    brushcutting: filteredLogs.filter(log => log.tasksPerformed.brushcutting).length,
+    blower: filteredLogs.filter(log => log.tasksPerformed.blower).length,
+    manualWeeding: filteredLogs.filter(log => log.tasksPerformed.manualWeeding).length,
+    whiteVinegar: filteredLogs.filter(log => log.tasksPerformed.whiteVinegar).length,
+    pruning: filteredLogs.filter(log => log.tasksPerformed.pruning.done).length,
   };
   
   // Get task statistics in descending order
@@ -51,17 +68,17 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   
   // Project with most visits
   const projectVisitCounts = projects.map(project => {
-    const visits = workLogs.filter(log => log.projectId === project.id).length;
+    const visits = filteredLogs.filter(log => log.projectId === project.id).length;
     return { id: project.id, name: project.name, visits };
   });
   
-  const projectWithMostVisits = projectVisitCounts.sort((a, b) => b.visits - a.visits)[0];
+  const projectWithMostVisits = projectVisitCounts.sort((a, b) => b.visits - a.visits)[0] || { visits: 0 };
   
   // Team statistics
   const teamWorkLogs = teams.map(team => {
     const teamProjects = projects.filter(project => project.team === team.id);
     const teamProjectIds = teamProjects.map(p => p.id);
-    const logs = workLogs.filter(log => teamProjectIds.includes(log.projectId));
+    const logs = filteredLogs.filter(log => teamProjectIds.includes(log.projectId));
     
     return {
       id: team.id,
@@ -71,7 +88,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
     };
   });
   
-  const teamWithMostWork = teamWorkLogs.sort((a, b) => b.hours - a.hours)[0];
+  const teamWithMostWork = teamWorkLogs.sort((a, b) => b.hours - a.hours)[0] || { hours: 0 };
   
   return (
     <div className="space-y-6">
@@ -176,7 +193,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
                   <div className="w-full bg-secondary rounded-full h-1.5">
                     <div
                       className="bg-primary h-1.5 rounded-full"
-                      style={{ width: `${Math.min(100, (task.count / totalCompletedVisits) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (task.count / (totalCompletedVisits || 1)) * 100)}%` }}
                     />
                   </div>
                 </div>

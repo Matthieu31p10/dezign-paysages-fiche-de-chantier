@@ -9,12 +9,13 @@ import PDFGenerator from '@/components/reports/PDFGenerator';
 import CalendarView from '@/components/worklogs/CalendarView';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, BarChart2, Calendar, FileText, Clock, Users } from 'lucide-react';
-import { getDaysSinceLastEntry } from '@/utils/helpers';
+import { getDaysSinceLastEntry, getCurrentYear, getYearsFromWorkLogs } from '@/utils/helpers';
 
 const Reports = () => {
   const { projectInfos, workLogs, teams } = useApp();
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [sortOption, setSortOption] = useState<string>('name');
+  const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   
   // Filter projects by team
   const filteredProjects = selectedTeam === 'all'
@@ -36,6 +37,9 @@ const Reports = () => {
     }
     return 0;
   });
+  
+  // Get non-archived projects for stats
+  const activeProjects = projectInfos.filter(project => !project.isArchived);
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -130,7 +134,12 @@ const Reports = () => {
         </TabsContent>
         
         <TabsContent value="stats">
-          <GlobalStats />
+          <GlobalStats 
+            projects={activeProjects} 
+            workLogs={workLogs} 
+            teams={teams} 
+            selectedYear={selectedYear} 
+          />
         </TabsContent>
         
         <TabsContent value="tools" className="grid grid-cols-1 md:grid-cols-2 gap-4">
