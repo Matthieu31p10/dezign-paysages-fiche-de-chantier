@@ -2,7 +2,7 @@
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Building2, Clock, Home, Landmark, Users } from 'lucide-react';
+import { Building2, Clock, Home, Landmark, Users, Calendar, Timer } from 'lucide-react';
 import { calculateAverageHoursPerVisit, getDaysSinceLastEntry } from '@/utils/helpers';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,13 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
   const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
   const averageHoursPerVisit = calculateAverageHoursPerVisit(workLogs);
+  
+  // Calculate remaining hours and visits
+  const remainingVisits = Math.max(0, project.annualVisits - visitsCompleted);
+  const remainingHours = Math.max(0, project.annualTotalHours - totalHours);
+  const averageHoursPerRemainingVisit = remainingVisits > 0 
+    ? remainingHours / remainingVisits 
+    : 0;
   
   const getProjectTypeIcon = () => {
     switch (project.projectType) {
@@ -109,6 +116,18 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
                   : 'Aucun passage'}
               </div>
             </div>
+            
+            {remainingVisits > 0 && (
+              <div className="space-y-1 col-span-2">
+                <span className="text-xs text-muted-foreground">Heures restantes / passage restant:</span>
+                <div className="flex items-center">
+                  <Timer className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                  <span className="font-medium text-sm">
+                    {averageHoursPerRemainingVisit.toFixed(1)} h ({remainingHours.toFixed(1)}h / {remainingVisits} passages)
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ProjectCard from '@/components/projects/ProjectCard';
+import ProjectListView from '@/components/projects/ProjectListView';
 import ProjectForm from '@/components/projects/ProjectForm';
-import { Plus, FileText, Search, Building2, Home, Landmark, Archive } from 'lucide-react';
+import { Plus, FileText, Search, Building2, Home, Landmark, Archive, LayoutGrid, LayoutList } from 'lucide-react';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Projects = () => {
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('active');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const activeProjects = getActiveProjects();
   const archivedProjects = getArchivedProjects();
@@ -121,7 +123,26 @@ const Projects = () => {
             </Select>
           </div>
           
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <div className="border rounded-md flex">
+              <Button 
+                variant={viewMode === 'grid' ? "secondary" : "ghost"} 
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="px-3"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant={viewMode === 'list' ? "secondary" : "ghost"} 
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="px-3"
+              >
+                <LayoutList className="h-4 w-4" />
+              </Button>
+            </div>
+            
             <TabsList>
               <TabsTrigger value="active" className="flex items-center gap-1">
                 <FileText className="h-4 w-4" />
@@ -161,15 +182,24 @@ const Projects = () => {
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onSelect={handleSelectProject}
-              />
-            ))}
-          </div>
+          {filteredProjects.length > 0 && viewMode === 'grid' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onSelect={handleSelectProject}
+                />
+              ))}
+            </div>
+          )}
+          
+          {filteredProjects.length > 0 && viewMode === 'list' && (
+            <ProjectListView
+              projects={filteredProjects}
+              onSelect={handleSelectProject}
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="archived" className="mt-0">
@@ -194,15 +224,24 @@ const Projects = () => {
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onSelect={handleSelectProject}
-              />
-            ))}
-          </div>
+          {filteredProjects.length > 0 && viewMode === 'grid' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onSelect={handleSelectProject}
+                />
+              ))}
+            </div>
+          )}
+          
+          {filteredProjects.length > 0 && viewMode === 'list' && (
+            <ProjectListView
+              projects={filteredProjects}
+              onSelect={handleSelectProject}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
