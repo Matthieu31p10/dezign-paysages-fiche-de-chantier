@@ -46,6 +46,9 @@ const Reports = () => {
   // Get non-archived projects for stats
   const activeProjects = validProjectInfos.filter(project => !project.isArchived);
   
+  // Get available years for filtering
+  const availableYears = getYearsFromWorkLogs(validWorkLogs);
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -139,6 +142,24 @@ const Reports = () => {
         </TabsContent>
         
         <TabsContent value="stats">
+          <div className="flex justify-end mb-4">
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => setSelectedYear(parseInt(value))}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Année" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <GlobalStats 
             projects={activeProjects} 
             workLogs={validWorkLogs} 
