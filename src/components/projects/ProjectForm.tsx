@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ProjectInfo, Team } from '@/types/models';
+import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -256,14 +256,28 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }
     
     if (initialData) {
-      // Fix for the spread types error - use type assertion
-      updateProjectInfo({ 
-        ...(formData as any), 
-        id: initialData.id, 
-        createdAt: initialData.createdAt 
+      // Fix for the spread types error - create a properly typed object
+      updateProjectInfo({
+        id: initialData.id,
+        createdAt: initialData.createdAt,
+        name: formData.name,
+        address: formData.address,
+        contact: formData.contact,
+        contract: formData.contract,
+        irrigation: formData.irrigation,
+        mowerType: formData.mowerType,
+        annualVisits: formData.annualVisits,
+        annualTotalHours: formData.annualTotalHours,
+        visitDuration: formData.visitDuration,
+        additionalInfo: formData.additionalInfo,
+        team: formData.team,
+        projectType: formData.projectType,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        isArchived: formData.isArchived
       });
     } else {
-      // Create a complete ProjectInfo object without spreading
+      // Create a new project without spreading
       const newProject: Omit<ProjectInfo, 'id' | 'createdAt'> = {
         name: formData.name,
         address: formData.address,

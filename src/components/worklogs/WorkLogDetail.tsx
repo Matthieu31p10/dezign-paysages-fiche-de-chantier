@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -45,20 +46,37 @@ const WorkLogDetail = () => {
   const calculateEndTime = () => {
     if (!workLog) return "--:--";
     
-    const [departureHour, departureMinute] = workLog.timeTracking.departure.split(':').map(Number);
-    const [arrivalHour, arrivalMinute] = workLog.timeTracking.arrival.split(':').map(Number);
+    // Parse time strings into numbers
+    const departureTimeParts = workLog.timeTracking.departure.split(':');
+    const arrivalTimeParts = workLog.timeTracking.arrival.split(':');
+    
+    if (departureTimeParts.length !== 2 || arrivalTimeParts.length !== 2) {
+      return "--:--";
+    }
+    
+    const departureHour = Number(departureTimeParts[0]);
+    const departureMinute = Number(departureTimeParts[1]);
+    const arrivalHour = Number(arrivalTimeParts[0]);
+    const arrivalMinute = Number(arrivalTimeParts[1]);
+    
+    // Calculate break time in minutes
     const breakTimeMinutes = workLog.timeTracking.breakTime * 60;
     
-    let departureInMinutes = departureHour * 60 + departureMinute;
-    let arrivalInMinutes = arrivalHour * 60 + arrivalMinute;
+    // Convert times to minutes for easier calculation
+    const departureInMinutes = departureHour * 60 + departureMinute;
+    const arrivalInMinutes = arrivalHour * 60 + arrivalMinute;
     
-    let totalWorkMinutes = arrivalInMinutes - departureInMinutes;
+    // Calculate total work minutes
+    const totalWorkMinutes = arrivalInMinutes - departureInMinutes;
     
-    let endTimeInMinutes = departureInMinutes + totalWorkMinutes;
+    // Calculate end time in minutes (departure + total work time)
+    const endTimeInMinutes = departureInMinutes + totalWorkMinutes;
     
+    // Convert end time back to hours and minutes
     const endHour = Math.floor(endTimeInMinutes / 60);
     const endMinute = endTimeInMinutes % 60;
     
+    // Format and return the end time
     return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
   };
   
