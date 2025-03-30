@@ -8,6 +8,9 @@ export interface User {
   role: UserRole;
   name?: string;
   email?: string;
+  phone?: string; // Nouveau champ ajouté
+  position?: string; // Nouveau champ ajouté (poste)
+  drivingLicense?: string; // Nouveau champ ajouté (permis)
   createdAt: Date;
 }
 
@@ -21,7 +24,7 @@ export interface ProjectInfo {
   name: string;
   address: string;
   contact: {
-    name?: string; // Nouveau champ ajouté
+    name?: string;
     phone: string;
     email: string;
   };
@@ -29,8 +32,8 @@ export interface ProjectInfo {
     details: string;
     documentUrl?: string;
   };
-  irrigation?: 'irrigation' | 'none' | 'disabled'; // Nouveau champ ajouté
-  mowerType?: 'large' | 'small' | 'both'; // Nouveau champ ajouté
+  irrigation?: 'irrigation' | 'none' | 'disabled';
+  mowerType?: 'large' | 'small' | 'both';
   annualVisits: number;
   annualTotalHours: number;
   visitDuration: number;
@@ -52,8 +55,7 @@ export interface WorkLog {
   timeTracking: {
     departure: string;
     arrival: string;
-    end: string;
-    breakTime: string;
+    breakTime: number;
     totalHours: number;
   };
   tasksPerformed: {
@@ -68,6 +70,8 @@ export interface WorkLog {
     };
     watering: 'none' | 'on' | 'off';
   };
+  notes?: string; // Nouveau champ pour ajouter des notes
+  waterConsumption?: number; // Nouveau champ pour la consommation d'eau en m3
   createdAt: Date;
 }
 
@@ -76,8 +80,17 @@ export interface Team {
   name: string;
 }
 
+export interface CompanyInfo {
+  name: string;
+  address: string;
+  managerName: string;
+  phone: string;
+  email: string;
+}
+
 export interface AppSettings {
   companyLogo?: string;
-  loginBackgroundImage?: string; // New field added for login background
+  loginBackgroundImage?: string;
+  companyInfo?: CompanyInfo;
   users?: User[];
 }

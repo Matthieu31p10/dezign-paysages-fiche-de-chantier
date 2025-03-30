@@ -1,8 +1,11 @@
-
 import { WorkLog, ProjectInfo } from '@/types/models';
 
 export const getCurrentYear = (): number => {
   return new Date().getFullYear();
+};
+
+export const getCurrentMonth = (): number => {
+  return new Date().getMonth() + 1; // getMonth() retourne 0-11, donc +1 pour avoir 1-12
 };
 
 export const formatDate = (date: Date): string => {

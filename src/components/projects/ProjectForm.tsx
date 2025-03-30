@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
@@ -48,7 +47,7 @@ type ProjectFormData = {
 
 const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   const navigate = useNavigate();
-  const { addProjectInfo, updateProjectInfo, teams, addTeam } = useApp();
+  const { addProjectInfo, updateProjectInfo, teams, addTeam, workLogs, getCurrentYear } = useApp();
   const [newTeamName, setNewTeamName] = useState('');
   const [showNewTeamInput, setShowNewTeamInput] = useState(false);
   const [startDateInput, setStartDateInput] = useState(
@@ -84,6 +83,20 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     endDate: initialData?.endDate || null,
     isArchived: initialData?.isArchived || false,
   });
+
+  const getRemainingVisits = (): number => {
+    if (!initialData) return formData.annualVisits;
+    
+    const projectId = initialData.id;
+    const currentYear = getCurrentYear();
+    
+    const completedVisitsThisYear = workLogs.filter(log => {
+      const logDate = new Date(log.date);
+      return log.projectId === projectId && logDate.getFullYear() === currentYear;
+    }).length;
+    
+    return Math.max(0, formData.annualVisits - completedVisitsThisYear);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -131,7 +144,6 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
       return;
     }
     
-    // Fix for the savedPersonnelNames error - check against existing team names instead
     const teamNameExists = teams.some(team => team.name === newTeamName.trim());
     if (teamNameExists) {
       toast.error('Ce nom existe déjà');
@@ -197,11 +209,19 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
       setEndDateOpen(false);
     }
     
-    setFormData(prev => ({
-      ...prev,
-      [field]: date,
-      ...(field === 'endDate' && date ? { isArchived: true } : {})
-    }));
+    if (field === 'endDate' && !date) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: date,
+        isArchived: false
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: date,
+        ...(field === 'endDate' && date ? { isArchived: true } : {})
+      }));
+    }
   };
 
   const handleManualDateInput = (field: 'startDate' | 'endDate', value: string) => {
@@ -225,10 +245,18 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
         // Parsing error - do nothing
       }
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [field]: null
-      }));
+      if (field === 'endDate') {
+        setFormData(prev => ({
+          ...prev,
+          [field]: null,
+          isArchived: false
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [field]: null
+        }));
+      }
     }
   };
 
@@ -256,7 +284,6 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }
     
     if (initialData) {
-      // Fix for the spread types error - create a properly typed object
       updateProjectInfo({
         id: initialData.id,
         createdAt: initialData.createdAt,
@@ -277,7 +304,6 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
         isArchived: formData.isArchived
       });
     } else {
-      // Create a new project without spreading
       const newProject: Omit<ProjectInfo, 'id' | 'createdAt'> = {
         name: formData.name,
         address: formData.address,
@@ -626,6 +652,30 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
                   </Select>
                 )}
               </div>
+
+              {initialData && (
+                <div className="p-3 border rounded-md bg-gray-50">
+                  <h3 className="text-sm font-medium mb-2">Passages restants pour {getCurrentYear()}</h3>
+                  <div className="flex items-center">
+                    <span className="font-medium">{getRemainingVisits()}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      sur {formData.annualVisits} passages annuels
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                    <div
+                      className="bg-brand-500 h-1.5 rounded-full"
+                      style={{ 
+                        width: `${
+                          formData.annualVisits > 0 
+                          ? (getRemainingVisits() / formData.annualVisits) * 100 
+                          : 0
+                        }%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">

@@ -8,15 +8,19 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import WorkLogForm from './WorkLogForm';
-import { Edit, Trash, ArrowLeft, Calendar, Clock, User, Check, X } from 'lucide-react';
+import { Edit, Trash, ArrowLeft, Calendar, Clock, User, Check, X, FileText, Mail, Droplets } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { generatePDF } from '@/utils/pdfGenerator';
+import { toast } from 'sonner';
 
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { workLogs, getProjectById, deleteWorkLog } = useApp();
+  const { workLogs, getProjectById, updateWorkLog, deleteWorkLog, settings } = useApp();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [notes, setNotes] = useState('');
   
   const workLog = workLogs.find(log => log.id === id);
   
@@ -34,6 +38,13 @@ const WorkLogDetail = () => {
   
   const project = getProjectById(workLog.projectId);
   
+  // Initialiser les notes si elles existent déjà
+  useState(() => {
+    if (workLog.notes) {
+      setNotes(workLog.notes);
+    }
+  });
+  
   const handleDeleteWorkLog = () => {
     deleteWorkLog(workLog.id);
     navigate('/worklogs');
@@ -41,6 +52,20 @@ const WorkLogDetail = () => {
   
   const handleEditSuccess = () => {
     setIsEditDialogOpen(false);
+  };
+  
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(e.target.value);
+  };
+  
+  const saveNotes = () => {
+    if (workLog) {
+      updateWorkLog({
+        ...workLog,
+        notes
+      });
+      toast.success("Notes enregistrées");
+    }
   };
   
   const calculateEndTime = () => {
@@ -54,10 +79,10 @@ const WorkLogDetail = () => {
       return "--:--";
     }
     
-    const departureHour = Number(departureTimeParts[0]);
-    const departureMinute = Number(departureTimeParts[1]);
-    const arrivalHour = Number(arrivalTimeParts[0]);
-    const arrivalMinute = Number(arrivalTimeParts[1]);
+    const departureHour = parseInt(departureTimeParts[0], 10);
+    const departureMinute = parseInt(departureTimeParts[1], 10);
+    const arrivalHour = parseInt(arrivalTimeParts[0], 10);
+    const arrivalMinute = parseInt(arrivalTimeParts[1], 10);
     
     // Calculate break time in minutes
     const breakTimeMinutes = workLog.timeTracking.breakTime * 60;
@@ -78,6 +103,61 @@ const WorkLogDetail = () => {
     
     // Format and return the end time
     return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+  };
+  
+  // Calcul de l'écart entre heures effectuées et prévues
+  const calculateHourDifference = () => {
+    if (!workLog || !project) return "N/A";
+    
+    // Récupérer le nombre de passages effectués pour ce chantier
+    const completedVisits = workLogs.filter(log => log.projectId === project.id).length;
+    
+    if (completedVisits === 0) return "N/A";
+    
+    // Heures effectuées sur l'ensemble des passages
+    const totalHoursCompleted = workLogs
+      .filter(log => log.projectId === project.id)
+      .reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+    
+    // Moyenne d'heures par passage
+    const averageHoursPerVisit = totalHoursCompleted / completedVisits;
+    
+    // Écart avec le temps de passage prévu
+    const difference = averageHoursPerVisit - project.visitDuration;
+    
+    const sign = difference >= 0 ? '+' : '';
+    return `${sign}${difference.toFixed(2)} h`;
+  };
+  
+  const handleExportToPDF = async () => {
+    if (!workLog || !project) return;
+    
+    try {
+      const data = {
+        workLog,
+        project,
+        endTime: calculateEndTime(),
+        companyInfo: settings.companyInfo,
+        companyLogo: settings.companyLogo
+      };
+      
+      await generatePDF(data);
+      toast.success("PDF généré avec succès");
+    } catch (error) {
+      toast.error("Erreur lors de la génération du PDF");
+      console.error("PDF generation error:", error);
+    }
+  };
+  
+  // Fonction pour envoyer un email (simulée)
+  const handleSendEmail = () => {
+    if (!project?.contact?.email) {
+      toast.error("Aucune adresse email de contact n'est définie pour ce chantier");
+      return;
+    }
+    
+    // Ici, on simulerait l'envoi d'email
+    toast.success(`Email envoyé à ${project.contact.email}`);
   };
   
   return (
@@ -107,6 +187,25 @@ const WorkLogDetail = () => {
         </div>
         
         <div className="flex flex-wrap gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportToPDF}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Exporter PDF
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleSendEmail}
+            disabled={!project?.contact?.email}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Envoyer par email
+          </Button>
+          
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -181,6 +280,33 @@ const WorkLogDetail = () => {
                 </div>
               </div>
               
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3 border rounded-md bg-gray-50">
+                  <h3 className="text-sm font-medium mb-2">Écart du temps de passage</h3>
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
+                    <span className={`font-medium ${
+                      calculateHourDifference().startsWith('+') ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      {calculateHourDifference()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Écart entre (heures effectuées / passages) et durée prévue
+                  </p>
+                </div>
+                
+                {workLog.waterConsumption !== undefined && (
+                  <div className="p-3 border rounded-md bg-gray-50">
+                    <h3 className="text-sm font-medium mb-2">Consommation d'eau</h3>
+                    <div className="flex items-center">
+                      <Droplets className="w-4 h-4 mr-2 text-blue-500" />
+                      <span className="font-medium">{workLog.waterConsumption} m³</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
               <Separator />
               
               <div className="space-y-3">
@@ -220,6 +346,19 @@ const WorkLogDetail = () => {
                     <p>{workLog.timeTracking.breakTime} heures</p>
                   </div>
                 </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500">Notes et observations</h3>
+                <Textarea 
+                  value={notes} 
+                  onChange={handleNotesChange} 
+                  placeholder="Ajoutez vos notes et observations ici..."
+                  rows={4}
+                />
+                <Button size="sm" onClick={saveNotes}>Enregistrer les notes</Button>
               </div>
             </CardContent>
           </Card>

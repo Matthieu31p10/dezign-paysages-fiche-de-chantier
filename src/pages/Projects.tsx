@@ -10,14 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ProjectCard from '@/components/projects/ProjectCard';
 import ProjectListView from '@/components/projects/ProjectListView';
 import ProjectForm from '@/components/projects/ProjectForm';
-import { Plus, FileText, Search, Building2, Home, Landmark, Archive, LayoutGrid, LayoutList } from 'lucide-react';
+import { Plus, FileText, Search, Building2, Home, Landmark, Archive, LayoutGrid, LayoutList, Users } from 'lucide-react';
 
 const Projects = () => {
   const navigate = useNavigate();
-  const { projectInfos, selectProject, getActiveProjects, getArchivedProjects } = useApp();
+  const { projectInfos, selectProject, getActiveProjects, getArchivedProjects, teams } = useApp();
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('active');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
@@ -38,7 +39,10 @@ const Projects = () => {
       // Filter by project type
       const matchesType = selectedType === 'all' || project.projectType === selectedType;
       
-      return matchesSearch && matchesType;
+      // Filter by team
+      const matchesTeam = selectedTeam === 'all' || project.team === selectedTeam;
+      
+      return matchesSearch && matchesType && matchesTeam;
     });
   };
   
@@ -119,6 +123,26 @@ const Projects = () => {
                     <span>Entreprise</span>
                   </div>
                 </SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select
+              value={selectedTeam}
+              onValueChange={setSelectedTeam}
+            >
+              <SelectTrigger className="w-full md:w-56">
+                <SelectValue placeholder="Équipe responsable" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les équipes</SelectItem>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" />
+                      <span>{team.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
