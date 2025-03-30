@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Users, UserMinus, UserCog } from 'lucide-react';
+import { User, Users, UserMinus, UserCog, Phone, Mail, Briefcase, Car } from 'lucide-react';
 import { UserRole, User as UserType } from '@/types/models';
 import AddUserDialog from './AddUserDialog';
 import EditUserDialog from './EditUserDialog';
@@ -59,39 +59,68 @@ const UserList = ({ isAdmin }: UserListProps) => {
           {settings.users && settings.users.length > 0 ? (
             <div className="grid gap-4">
               {settings.users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-md">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <User className="h-5 w-5 text-primary" />
+                <div key={user.id} className="flex flex-col p-4 border rounded-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.name || user.username}</p>
+                        <p className="text-sm text-muted-foreground">{user.username}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{user.name || user.username}</p>
-                      <p className="text-sm text-muted-foreground">{user.username}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
+                        {getRoleName(user.role)}
+                      </span>
+                      {isAdmin && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => openEditDialog(user)}
+                            title="Modifier"
+                          >
+                            <UserCog className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleDeleteUser(user)}
+                            title="Supprimer"
+                            disabled={user.id === 'admin-default'}
+                          >
+                            <UserMinus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
-                      {getRoleName(user.role)}
-                    </span>
-                    {isAdmin && (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => openEditDialog(user)}
-                          title="Modifier"
-                        >
-                          <UserCog className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => handleDeleteUser(user)}
-                          title="Supprimer"
-                          disabled={user.id === 'admin-default'}
-                        >
-                          <UserMinus className="h-4 w-4" />
-                        </Button>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                    {user.position && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Briefcase className="h-4 w-4" />
+                        <span>Poste: {user.position}</span>
+                      </div>
+                    )}
+                    {user.drivingLicense && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Car className="h-4 w-4" />
+                        <span>Permis: {user.drivingLicense}</span>
+                      </div>
+                    )}
+                    {user.phone && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Phone className="h-4 w-4" />
+                        <span>{user.phone}</span>
+                      </div>
+                    )}
+                    {user.email && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-4 w-4" />
+                        <span>{user.email}</span>
                       </div>
                     )}
                   </div>

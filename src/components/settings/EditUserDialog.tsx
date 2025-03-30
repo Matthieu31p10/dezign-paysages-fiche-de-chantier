@@ -60,12 +60,46 @@ const EditUserDialog = ({ user, isOpen, onOpenChange, onUserChange }: EditUserDi
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="edit-name" className="text-right">
-              Nom
+              Nom & Prénom
             </Label>
             <Input
               id="edit-name"
               value={user.name || ''}
               onChange={(e) => onUserChange({...user, name: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="edit-position" className="text-right">
+              Poste
+            </Label>
+            <Input
+              id="edit-position"
+              value={user.position || ''}
+              onChange={(e) => onUserChange({...user, position: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="edit-license" className="text-right">
+              Permis
+            </Label>
+            <Input
+              id="edit-license"
+              value={user.drivingLicense || ''}
+              onChange={(e) => onUserChange({...user, drivingLicense: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="edit-phone" className="text-right">
+              Téléphone
+            </Label>
+            <Input
+              id="edit-phone"
+              type="tel"
+              value={user.phone || ''}
+              onChange={(e) => onUserChange({...user, phone: e.target.value})}
               className="col-span-3"
             />
           </div>

@@ -23,6 +23,9 @@ const AddUserDialog = ({ isOpen, onOpenChange }: AddUserDialogProps) => {
     role: 'user' as UserRole,
     name: '',
     email: '',
+    phone: '',
+    position: '',
+    drivingLicense: '',
   });
 
   const handleAddUser = () => {
@@ -40,6 +43,9 @@ const AddUserDialog = ({ isOpen, onOpenChange }: AddUserDialogProps) => {
         role: 'user',
         name: '',
         email: '',
+        phone: '',
+        position: '',
+        drivingLicense: '',
       });
     }
   };
@@ -87,12 +93,46 @@ const AddUserDialog = ({ isOpen, onOpenChange }: AddUserDialogProps) => {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="new-name" className="text-right">
-              Nom
+              Nom & Prénom
             </Label>
             <Input
               id="new-name"
               value={newUser.name || ''}
               onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="new-position" className="text-right">
+              Poste
+            </Label>
+            <Input
+              id="new-position"
+              value={newUser.position || ''}
+              onChange={(e) => setNewUser({...newUser, position: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="new-license" className="text-right">
+              Permis
+            </Label>
+            <Input
+              id="new-license"
+              value={newUser.drivingLicense || ''}
+              onChange={(e) => setNewUser({...newUser, drivingLicense: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="new-phone" className="text-right">
+              Téléphone
+            </Label>
+            <Input
+              id="new-phone"
+              type="tel"
+              value={newUser.phone || ''}
+              onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
               className="col-span-3"
             />
           </div>
