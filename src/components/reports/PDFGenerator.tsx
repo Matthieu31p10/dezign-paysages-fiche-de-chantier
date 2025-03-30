@@ -7,18 +7,20 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/context/AppContext';
-import { generateProjectPDF, generateReportPDF, generateWorkLogPDF } from '@/utils/pdfGenerator';
+import { generatePDF, generateProjectPDF, generateReportPDF, generateWorkLogPDF } from '@/utils/pdfGenerator';
 import { FileText, Download, Calendar, FileOutput } from 'lucide-react';
 import { toast } from 'sonner';
+import { WorkLog } from '@/types/models';
 
 const PDFGenerator = () => {
-  const { projectInfos, workLogs, teams, getProjectById } = useApp();
+  const { projectInfos, workLogs, teams, getProjectById, settings } = useApp();
   const [selectedTab, setSelectedTab] = useState('projects');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>('');
   const [includeWorkLogs, setIncludeWorkLogs] = useState(true);
   const [includeTeamInfo, setIncludeTeamInfo] = useState(true);
   const [includeContactInfo, setIncludeContactInfo] = useState(true);
+  const [includeCompanyInfo, setIncludeCompanyInfo] = useState(true);
   
   const handleGenerateProjectPDF = async () => {
     if (!selectedProjectId) {
@@ -56,7 +58,15 @@ const PDFGenerator = () => {
     const project = includeContactInfo ? getProjectById(workLog.projectId) : undefined;
     
     try {
-      const fileName = await generateWorkLogPDF(workLog, project);
+      // Using the new generatePDF function with company info
+      const pdfData = {
+        workLog,
+        project,
+        companyInfo: includeCompanyInfo ? settings.companyInfo : undefined,
+        companyLogo: includeCompanyInfo ? settings.companyLogo : undefined
+      };
+      
+      const fileName = await generatePDF(pdfData);
       toast.success('PDF généré avec succès', {
         description: `Fichier: ${fileName}`
       });
@@ -145,6 +155,20 @@ const PDFGenerator = () => {
                   Inclure les informations d'équipe
                 </label>
               </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-company-info-project"
+                  checked={includeCompanyInfo}
+                  onCheckedChange={(checked) => setIncludeCompanyInfo(checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-company-info-project"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Inclure les informations de l'entreprise
+                </label>
+              </div>
             </div>
             
             <Button 
@@ -192,6 +216,20 @@ const PDFGenerator = () => {
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Inclure les informations de contact
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-company-info"
+                  checked={includeCompanyInfo}
+                  onCheckedChange={(checked) => setIncludeCompanyInfo(checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-company-info"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Inclure les informations de l'entreprise
                 </label>
               </div>
             </div>
