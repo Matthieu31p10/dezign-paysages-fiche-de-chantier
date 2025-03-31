@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { calculateTotalHours, formatTime, timeStringToHours } from '@/utils/helpers';
 import { useLocation } from 'react-router-dom';
-import { Plus, Save, Clock, Filter, Users } from 'lucide-react';
+import { Plus, Save, Clock, Filter, Users, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface WorkLogFormProps {
@@ -73,6 +74,7 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
       },
       watering: initialData?.tasksPerformed.watering || 'none',
     },
+    notes: initialData?.notes || '',
   });
 
   // Filtrer les projets par équipe
@@ -279,6 +281,13 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
     setSavedPersonnelNames(prev => [...prev, customPersonnelName]);
     setCustomPersonnelName('');
     toast.success('Nom ajouté avec succès');
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      notes: e.target.value,
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -693,6 +702,21 @@ const WorkLogForm = ({ initialData, onSuccess }: WorkLogFormProps) => {
                   </Select>
                 </div>
               </div>
+            </div>
+            
+            {/* Nouveau champ pour les notes */}
+            <div className="space-y-2 mt-4 border border-gray-200 rounded-md p-4 bg-gray-50">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-500" />
+                <Label htmlFor="notes" className="text-lg font-medium">Notes et observations</Label>
+              </div>
+              <Textarea
+                id="notes"
+                placeholder="Saisissez ici toutes les informations importantes concernant ce passage (problèmes rencontrés, demandes du client, observations particulières...)"
+                className="min-h-[120px] bg-white"
+                value={formData.notes || ''}
+                onChange={handleNotesChange}
+              />
             </div>
           </div>
         </CardContent>
