@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
@@ -9,71 +9,61 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Calendar as CalendarIcon, Building2, Home, Landmark, Droplets, Scissors } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, parse, isValid } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { getCurrentYear } from '@/utils/helpers';
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { TeamsSelect } from '@/components/teams/TeamsSelect';
 
 interface ProjectFormProps {
   initialData?: ProjectInfo;
   onSuccess?: () => void;
 }
 
-type ProjectFormData = {
-  name: string;
-  address: string;
-  contact: {
-    name: string;
-    phone: string;
-    email: string;
+/**
+ * Helper function to safely convert to a ProjectInfo object
+ */
+const convertToProjectInfo = (data: any): Partial<ProjectInfo> => {
+  return {
+    id: data.id,
+    name: data.name,
+    address: data.address,
+    contact: data.contact,
+    contract: data.contract,
+    irrigation: data.irrigation,
+    mowerType: data.mowerType,
+    annualVisits: data.annualVisits,
+    annualTotalHours: data.annualTotalHours,
+    visitDuration: data.visitDuration,
+    additionalInfo: data.additionalInfo,
+    team: data.team,
+    projectType: data.projectType,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    isArchived: data.isArchived,
+    createdAt: data.createdAt,
   };
-  contract: {
-    details: string;
-    documentUrl?: string;
-  };
-  irrigation: 'irrigation' | 'none' | 'disabled';
-  mowerType: 'large' | 'small' | 'both';
-  annualVisits: number;
-  annualTotalHours: number;
-  visitDuration: number;
-  additionalInfo: string;
-  team: string;
-  projectType: 'residence' | 'particular' | 'enterprise' | '';
-  startDate: Date | null;
-  endDate: Date | null;
-  isArchived: boolean;
 };
 
 const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   const navigate = useNavigate();
-  const { addProjectInfo, updateProjectInfo, teams, addTeam, workLogs } = useApp();
-  const [newTeamName, setNewTeamName] = useState('');
-  const [showNewTeamInput, setShowNewTeamInput] = useState(false);
-  const [startDateInput, setStartDateInput] = useState(
-    initialData?.startDate ? format(new Date(initialData.startDate), 'dd/MM/yyyy') : ''
-  );
-  const [endDateInput, setEndDateInput] = useState(
-    initialData?.endDate ? format(new Date(initialData.endDate), 'dd/MM/yyyy') : ''
-  );
-  const [startDateOpen, setStartDateOpen] = useState(false);
-  const [endDateOpen, setEndDateOpen] = useState(false);
+  const { addProjectInfo, updateProjectInfo, teams } = useApp();
   
-  const [formData, setFormData] = useState<ProjectFormData>({
+  const [formData, setFormData] = useState<Omit<ProjectInfo, 'id' | 'createdAt'>>({
     name: initialData?.name || '',
     address: initialData?.address || '',
     contact: {
-      name: initialData?.contact?.name || '',
-      phone: initialData?.contact?.phone || '',
-      email: initialData?.contact?.email || '',
+      name: initialData?.contact.name || '',
+      phone: initialData?.contact.phone || '',
+      email: initialData?.contact.email || '',
     },
     contract: {
-      details: initialData?.contract?.details || '',
-      documentUrl: initialData?.contract?.documentUrl || '',
+      details: initialData?.contract.details || '',
+      documentUrl: initialData?.contract.documentUrl || '',
     },
     irrigation: initialData?.irrigation || 'none',
-    mowerType: initialData?.mowerType || 'small',
+    mowerType: initialData?.mowerType || 'both',
     annualVisits: initialData?.annualVisits || 0,
     annualTotalHours: initialData?.annualTotalHours || 0,
     visitDuration: initialData?.visitDuration || 0,
@@ -84,246 +74,77 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     endDate: initialData?.endDate || null,
     isArchived: initialData?.isArchived || false,
   });
-
-  const getRemainingVisits = (): number => {
-    if (!initialData) return formData.annualVisits;
-    
-    const projectId = initialData.id;
-    const currentYear = getCurrentYear();
-    
-    const completedVisitsThisYear = workLogs.filter(log => {
-      const logDate = new Date(log.date);
-      return log.projectId === projectId && logDate.getFullYear() === currentYear;
-    }).length;
-    
-    return Math.max(0, formData.annualVisits - completedVisitsThisYear);
-  };
-
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof typeof prev],
-          [child]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
-
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: parseFloat(value) || 0,
-    }));
-  };
-
-  const handleTeamChange = (value: string) => {
-    if (value === 'new') {
-      setShowNewTeamInput(true);
-      return;
-    }
-    
-    setFormData((prev) => ({
-      ...prev,
-      team: value,
-    }));
-  };
-
-  const handleAddNewTeam = () => {
-    if (!newTeamName.trim()) {
-      toast.error('Veuillez saisir un nom d\'équipe');
-      return;
-    }
-    
-    const teamNameExists = teams.some(team => team.name === newTeamName.trim());
-    if (teamNameExists) {
-      toast.error('Ce nom existe déjà');
-      return;
-    }
-    
-    const newTeam = addTeam({ name: newTeamName.trim() });
-    setFormData((prev) => ({
-      ...prev,
-      team: newTeam.id,
-    }));
-    
-    setNewTeamName('');
-    setShowNewTeamInput(false);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const documentUrl = reader.result as string;
-        setFormData((prev) => ({
-          ...prev,
-          contract: {
-            ...prev.contract,
-            documentUrl,
-          },
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleProjectTypeChange = (value: 'residence' | 'particular' | 'enterprise' | '') => {
     setFormData(prev => ({
       ...prev,
-      projectType: value
+      contact: {
+        ...prev.contact,
+        [name]: value,
+      },
     }));
   };
-
-  const handleIrrigationChange = (value: 'irrigation' | 'none' | 'disabled') => {
+  
+  const handleContractChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      irrigation: value
+      contract: {
+        ...prev.contract,
+        [name]: value,
+      },
     }));
   };
-
-  const handleMowerTypeChange = (value: 'large' | 'small' | 'both') => {
+  
+  const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      mowerType: value
+      [name]: value,
     }));
   };
-
-  const handleDateChange = (field: 'startDate' | 'endDate', date: Date | null) => {
-    if (field === 'startDate') {
-      setStartDateInput(date ? format(date, 'dd/MM/yyyy') : '');
-      setStartDateOpen(false);
-    } else {
-      setEndDateInput(date ? format(date, 'dd/MM/yyyy') : '');
-      setEndDateOpen(false);
-    }
-    
-    if (field === 'endDate' && !date) {
-      setFormData(prev => ({
-        ...prev,
-        [field]: date,
-        isArchived: false
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [field]: date,
-        ...(field === 'endDate' && date ? { isArchived: true } : {})
-      }));
-    }
-  };
-
-  const handleManualDateInput = (field: 'startDate' | 'endDate', value: string) => {
-    if (field === 'startDate') {
-      setStartDateInput(value);
-    } else {
-      setEndDateInput(value);
-    }
-    
-    if (value) {
-      try {
-        const parsedDate = parse(value, 'dd/MM/yyyy', new Date());
-        if (isValid(parsedDate)) {
-          setFormData(prev => ({
-            ...prev,
-            [field]: parsedDate,
-            ...(field === 'endDate' ? { isArchived: true } : {})
-          }));
-        }
-      } catch (error) {
-        // Parsing error - do nothing
-      }
-    } else {
-      if (field === 'endDate') {
-        setFormData(prev => ({
-          ...prev,
-          [field]: null,
-          isArchived: false
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          [field]: null
-        }));
-      }
-    }
-  };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return '';
-    return format(date, 'PPP', { locale: fr });
+  
+  const handleDateChange = (name: string, date: Date | undefined) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: date,
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    // Validation
+    if (!formData.name) {
       toast.error('Le nom du chantier est requis');
       return;
     }
-    
-    if (!formData.address.trim()) {
-      toast.error('L\'adresse du chantier est requise');
-      return;
-    }
-    
+
     if (!formData.team) {
-      toast.error('Veuillez sélectionner une équipe');
+      toast.error('Une équipe doit être sélectionnée');
       return;
     }
+
+    const projectData = convertToProjectInfo(formData);
     
     if (initialData) {
       updateProjectInfo({
+        ...projectData,
         id: initialData.id,
         createdAt: initialData.createdAt,
-        name: formData.name,
-        address: formData.address,
-        contact: formData.contact,
-        contract: formData.contract,
-        irrigation: formData.irrigation,
-        mowerType: formData.mowerType,
-        annualVisits: formData.annualVisits,
-        annualTotalHours: formData.annualTotalHours,
-        visitDuration: formData.visitDuration,
-        additionalInfo: formData.additionalInfo,
-        team: formData.team,
-        projectType: formData.projectType,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        isArchived: formData.isArchived
-      });
+      } as ProjectInfo);
+      toast.success('Chantier mis à jour');
     } else {
-      const newProject: Omit<ProjectInfo, 'id' | 'createdAt'> = {
-        name: formData.name,
-        address: formData.address,
-        contact: formData.contact,
-        contract: formData.contract,
-        irrigation: formData.irrigation,
-        mowerType: formData.mowerType,
-        annualVisits: formData.annualVisits,
-        annualTotalHours: formData.annualTotalHours,
-        visitDuration: formData.visitDuration,
-        additionalInfo: formData.additionalInfo,
-        team: formData.team,
-        projectType: formData.projectType,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        isArchived: formData.isArchived
-      };
-      
-      addProjectInfo(newProject);
+      addProjectInfo(projectData as ProjectInfo);
+      toast.success('Chantier ajouté');
     }
     
     if (onSuccess) {
@@ -332,20 +153,7 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
       navigate('/projects');
     }
   };
-
-  const getProjectTypeIcon = () => {
-    switch (formData.projectType) {
-      case 'residence':
-        return <Building2 className="h-4 w-4 text-green-500" />;
-      case 'particular':
-        return <Home className="h-4 w-4 text-blue-400" />;
-      case 'enterprise':
-        return <Landmark className="h-4 w-4 text-orange-500" />;
-      default:
-        return null;
-    }
-  };
-
+  
   return (
     <form onSubmit={handleSubmit} className="animate-fade-in">
       <Card className="border shadow-sm">
@@ -356,8 +164,8 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nom du chantier</Label>
                 <Input
@@ -365,405 +173,264 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Nom du chantier"
                   required
                 />
               </div>
-
+              
               <div className="space-y-2">
-                <Label htmlFor="address">Adresse du chantier</Label>
+                <Label htmlFor="address">Adresse</Label>
                 <Input
                   id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Adresse complète"
-                  required
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label>Type de chantier</Label>
-                <Select
-                  value={formData.projectType}
-                  onValueChange={(value) => handleProjectTypeChange(value as 'residence' | 'particular' | 'enterprise' | '')}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner un type">
-                      {formData.projectType && (
-                        <div className="flex items-center gap-2">
-                          {getProjectTypeIcon()}
-                          <span>
-                            {formData.projectType === 'residence' && 'Résidence'}
-                            {formData.projectType === 'particular' && 'Particulier'}
-                            {formData.projectType === 'enterprise' && 'Entreprise'}
-                          </span>
-                        </div>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="residence" className="flex items-center">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-green-500" />
-                        <span>Résidence</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="particular">
-                      <div className="flex items-center gap-2">
-                        <Home className="h-4 w-4 text-blue-400" />
-                        <span>Particulier</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="enterprise">
-                      <div className="flex items-center gap-2">
-                        <Landmark className="h-4 w-4 text-orange-500" />
-                        <span>Entreprise</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Contact</Label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Date de début</Label>
-                  <div className="flex space-x-2">
-                    <Input 
-                      type="text" 
-                      value={startDateInput} 
-                      onChange={(e) => handleManualDateInput('startDate', e.target.value)}
-                      placeholder="JJ/MM/AAAA"
-                      className="w-full"
-                    />
-                    <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          type="button"
-                        >
-                          <CalendarIcon className="h-4 w-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={formData.startDate ? new Date(formData.startDate) : undefined}
-                          onSelect={(date) => handleDateChange('startDate', date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Format: JJ/MM/AAAA</p>
+                  <Label htmlFor="contactName">Nom du contact</Label>
+                  <Input
+                    id="contactName"
+                    name="name"
+                    value={formData.contact.name || ''}
+                    onChange={handleContactChange}
+                  />
                 </div>
-
+                
                 <div className="space-y-2">
-                  <Label>Date de fin</Label>
-                  <div className="flex space-x-2">
-                    <Input 
-                      type="text" 
-                      value={endDateInput} 
-                      onChange={(e) => handleManualDateInput('endDate', e.target.value)}
-                      placeholder="JJ/MM/AAAA"
-                      className="w-full"
-                    />
-                    <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          type="button"
-                        >
-                          <CalendarIcon className="h-4 w-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={formData.endDate ? new Date(formData.endDate) : undefined}
-                          onSelect={(date) => handleDateChange('endDate', date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Format: JJ/MM/AAAA</p>
+                  <Label htmlFor="contactPhone">Téléphone</Label>
+                  <Input
+                    id="contactPhone"
+                    name="phone"
+                    type="tel"
+                    value={formData.contact.phone}
+                    onChange={handleContactChange}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contactEmail">Email</Label>
+                  <Input
+                    id="contactEmail"
+                    name="email"
+                    type="email"
+                    value={formData.contact.email}
+                    onChange={handleContactChange}
+                  />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="contact.name">Nom et Prénom du contact</Label>
-                <Input
-                  id="contact.name"
-                  name="contact.name"
-                  value={formData.contact.name}
-                  onChange={handleInputChange}
-                  placeholder="Nom et prénom"
-                />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Contrat</Label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contractDetails">Détails du contrat</Label>
+                  <Textarea
+                    id="contractDetails"
+                    name="details"
+                    value={formData.contract.details}
+                    onChange={handleContractChange}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contractDocumentUrl">URL du document</Label>
+                  <Input
+                    id="contractDocumentUrl"
+                    name="documentUrl"
+                    type="url"
+                    value={formData.contract.documentUrl || ''}
+                    onChange={handleContractChange}
+                  />
+                </div>
               </div>
-
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contact.phone">Téléphone de contact</Label>
-                <Input
-                  id="contact.phone"
-                  name="contact.phone"
-                  value={formData.contact.phone}
-                  onChange={handleInputChange}
-                  placeholder="Téléphone"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="contact.email">Email de contact</Label>
-                <Input
-                  id="contact.email"
-                  name="contact.email"
-                  type="email"
-                  value={formData.contact.email}
-                  onChange={handleInputChange}
-                  placeholder="Email"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="irrigation">Arrosage</Label>
+                <Label htmlFor="irrigation">Irrigation</Label>
                 <Select
                   value={formData.irrigation}
-                  onValueChange={(value) => handleIrrigationChange(value as 'irrigation' | 'none' | 'disabled')}
+                  onValueChange={(value) => handleSelectChange('irrigation', value)}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="État de l'arrosage">
-                      <div className="flex items-center gap-2">
-                        <Droplets className="h-4 w-4 text-blue-500" />
-                        <span>
-                          {formData.irrigation === 'irrigation' && 'Arrosage'}
-                          {formData.irrigation === 'none' && "Pas d'arrosage"}
-                          {formData.irrigation === 'disabled' && 'Arrosage désactivé'}
-                        </span>
-                      </div>
-                    </SelectValue>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="irrigation">
-                      <div className="flex items-center gap-2">
-                        <Droplets className="h-4 w-4 text-blue-500" />
-                        <span>Arrosage</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="none">
-                      <div className="flex items-center gap-2">
-                        <Droplets className="h-4 w-4 text-gray-400" />
-                        <span>Pas d'arrosage</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="disabled">
-                      <div className="flex items-center gap-2">
-                        <Droplets className="h-4 w-4 text-red-500" />
-                        <span>Arrosage désactivé</span>
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="none">Aucune</SelectItem>
+                    <SelectItem value="irrigation">Irrigation</SelectItem>
+                    <SelectItem value="disabled">Désactivé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
+              
               <div className="space-y-2">
                 <Label htmlFor="mowerType">Type de tondeuse</Label>
                 <Select
                   value={formData.mowerType}
-                  onValueChange={(value) => handleMowerTypeChange(value as 'large' | 'small' | 'both')}
+                  onValueChange={(value) => handleSelectChange('mowerType', value)}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Type de tondeuse">
-                      <div className="flex items-center gap-2">
-                        <Scissors className="h-4 w-4 text-green-500" />
-                        <span>
-                          {formData.mowerType === 'large' && 'Grosse machine'}
-                          {formData.mowerType === 'small' && 'Petite machine'}
-                          {formData.mowerType === 'both' && 'Petite machine et grosse machine'}
-                        </span>
-                      </div>
-                    </SelectValue>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="large">
-                      <div className="flex items-center gap-2">
-                        <Scissors className="h-4 w-4 text-green-700" />
-                        <span>Grosse machine</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="small">
-                      <div className="flex items-center gap-2">
-                        <Scissors className="h-4 w-4 text-green-500" />
-                        <span>Petite machine</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="both">
-                      <div className="flex items-center gap-2">
-                        <Scissors className="h-4 w-4 text-green-600" />
-                        <span>Petite machine et grosse machine</span>
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="large">Grande</SelectItem>
+                    <SelectItem value="small">Petite</SelectItem>
+                    <SelectItem value="both">Les deux</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
+              
               <div className="space-y-2">
-                <Label htmlFor="team">Équipe responsable</Label>
-                {showNewTeamInput ? (
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTeamName}
-                      onChange={(e) => setNewTeamName(e.target.value)}
-                      placeholder="Nom de la nouvelle équipe"
-                    />
-                    <Button 
-                      type="button" 
-                      onClick={handleAddNewTeam}
-                      size="sm"
-                    >
-                      Ajouter
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowNewTeamInput(false)}
-                    >
-                      Annuler
-                    </Button>
-                  </div>
-                ) : (
-                  <Select
-                    value={formData.team}
-                    onValueChange={handleTeamChange}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Sélectionner une équipe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map((team) => (
-                        <SelectItem key={team.id} value={team.id}>
-                          {team.name}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="new">+ Nouvelle équipe</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                <Label htmlFor="team">Équipe</Label>
+                <TeamsSelect
+                  value={formData.team}
+                  onValueChange={(value) => handleSelectChange('team', value)}
+                />
               </div>
-
-              {initialData && (
-                <div className="p-3 border rounded-md bg-gray-50">
-                  <h3 className="text-sm font-medium mb-2">Passages restants pour {getCurrentYear()}</h3>
-                  <div className="flex items-center">
-                    <span className="font-medium">{getRemainingVisits()}</span>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      sur {formData.annualVisits} passages annuels
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ 
-                        width: `${
-                          formData.annualVisits > 0 
-                          ? (getRemainingVisits() / formData.annualVisits) * 100 
-                          : 0
-                        }%` 
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
-
-            <div className="space-y-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contract.details">Informations du contrat</Label>
-                <Textarea
-                  id="contract.details"
-                  name="contract.details"
-                  value={formData.contract.details}
-                  onChange={handleInputChange}
-                  placeholder="Détails du contrat"
-                  rows={4}
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="contractDocument">Document de contrat (PDF)</Label>
+                <Label htmlFor="annualVisits">Nombre de visites annuelles</Label>
                 <Input
-                  id="contractDocument"
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                />
-                {formData.contract.documentUrl && (
-                  <p className="text-sm text-green-600 mt-1">
-                    Document chargé avec succès
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="annualVisits">Passages annuels</Label>
-                  <Input
-                    id="annualVisits"
-                    name="annualVisits"
-                    type="number"
-                    min="0"
-                    value={formData.annualVisits}
-                    onChange={handleNumberChange}
-                    placeholder="Nombre"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="annualTotalHours">Heures annuelles</Label>
-                  <Input
-                    id="annualTotalHours"
-                    name="annualTotalHours"
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={formData.annualTotalHours}
-                    onChange={handleNumberChange}
-                    placeholder="Heures"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="visitDuration">Durée par passage</Label>
-                  <Input
-                    id="visitDuration"
-                    name="visitDuration"
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={formData.visitDuration}
-                    onChange={handleNumberChange}
-                    placeholder="Heures"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="additionalInfo">Informations complémentaires</Label>
-                <Textarea
-                  id="additionalInfo"
-                  name="additionalInfo"
-                  value={formData.additionalInfo}
+                  id="annualVisits"
+                  name="annualVisits"
+                  type="number"
+                  min="0"
+                  value={formData.annualVisits}
                   onChange={handleInputChange}
-                  placeholder="Remarques supplémentaires"
-                  rows={4}
-                  className="min-h-[100px]"
                 />
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="annualTotalHours">Nombre total d'heures annuelles</Label>
+                <Input
+                  id="annualTotalHours"
+                  name="annualTotalHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.annualTotalHours}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="visitDuration">Durée d'une visite (heures)</Label>
+                <Input
+                  id="visitDuration"
+                  name="visitDuration"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.visitDuration}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="projectType">Type de chantier</Label>
+                <Select
+                  value={formData.projectType}
+                  onValueChange={(value) => handleSelectChange('projectType', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="residence">Résidence</SelectItem>
+                    <SelectItem value="particular">Particulier</SelectItem>
+                    <SelectItem value="enterprise">Entreprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label>Date de début</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.startDate ? (
+                        format(formData.startDate, "PPP")
+                      ) : (
+                        <span>Choisir une date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.startDate}
+                      onSelect={(date) => handleDateChange('startDate', date)}
+                      disabled={(date) =>
+                        date > new Date()
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div>
+                <Label>Date de fin</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.endDate ? (
+                        format(formData.endDate, "PPP")
+                      ) : (
+                        <span>Choisir une date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.endDate}
+                      onSelect={(date) => handleDateChange('endDate', date)}
+                      disabled={(date) =>
+                        date < (formData.startDate || new Date())
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="additionalInfo">Informations complémentaires</Label>
+              <Textarea
+                id="additionalInfo"
+                name="additionalInfo"
+                value={formData.additionalInfo}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
         </CardContent>
@@ -777,7 +444,7 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
             Annuler
           </Button>
           <Button type="submit">
-            {initialData ? 'Mettre à jour' : 'Créer la fiche'}
+            {initialData ? 'Mettre à jour' : 'Créer le chantier'}
           </Button>
         </CardFooter>
       </Card>

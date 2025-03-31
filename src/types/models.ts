@@ -55,7 +55,8 @@ export interface WorkLog {
   timeTracking: {
     departure: string;
     arrival: string;
-    breakTime: number;
+    end: string; // Adding the missing end property
+    breakTime: string; // Changing to string type to match usage
     totalHours: number;
   };
   tasksPerformed: {
