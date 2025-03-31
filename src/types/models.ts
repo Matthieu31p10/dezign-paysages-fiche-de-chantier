@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -55,8 +54,8 @@ export interface WorkLog {
   timeTracking: {
     departure: string;
     arrival: string;
-    end: string; // Adding the missing end property
-    breakTime: string; // Changing to string type to match usage
+    end: string; // Ensuring this property exists
+    breakTime: string; // Using string type to match usage
     totalHours: number;
   };
   tasksPerformed: {
@@ -71,8 +70,8 @@ export interface WorkLog {
     };
     watering: 'none' | 'on' | 'off';
   };
-  notes?: string; // Nouveau champ pour ajouter des notes
-  waterConsumption?: number; // Nouveau champ pour la consommation d'eau en m3
+  notes?: string; // Field for adding notes
+  waterConsumption?: number; // Field for water consumption in m3
   createdAt: Date;
 }
 

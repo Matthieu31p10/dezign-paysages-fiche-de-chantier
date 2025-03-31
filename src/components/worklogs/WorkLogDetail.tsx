@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -38,7 +37,6 @@ const WorkLogDetail = () => {
   
   const project = getProjectById(workLog.projectId);
   
-  // Initialiser les notes si elles existent déjà
   useState(() => {
     if (workLog.notes) {
       setNotes(workLog.notes);
@@ -85,7 +83,12 @@ const WorkLogDetail = () => {
     const arrivalMinute = parseInt(arrivalTimeParts[1], 10);
     
     // Calculate break time in minutes
-    const breakTimeMinutes = workLog.timeTracking.breakTime * 60;
+    let breakTimeMinutes: number;
+    if (typeof workLog.timeTracking.breakTime === 'string') {
+      breakTimeMinutes = parseFloat(workLog.timeTracking.breakTime) * 60;
+    } else {
+      breakTimeMinutes = workLog.timeTracking.breakTime * 60;
+    }
     
     // Convert times to minutes for easier calculation
     const departureInMinutes = departureHour * 60 + departureMinute;
@@ -105,24 +108,19 @@ const WorkLogDetail = () => {
     return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
   };
   
-  // Calcul de l'écart entre heures effectuées et prévues
   const calculateHourDifference = () => {
     if (!workLog || !project) return "N/A";
     
-    // Récupérer le nombre de passages effectués pour ce chantier
     const completedVisits = workLogs.filter(log => log.projectId === project.id).length;
     
     if (completedVisits === 0) return "N/A";
     
-    // Heures effectuées sur l'ensemble des passages
     const totalHoursCompleted = workLogs
       .filter(log => log.projectId === project.id)
       .reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
     
-    // Moyenne d'heures par passage
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
-    // Écart avec le temps de passage prévu
     const difference = averageHoursPerVisit - project.visitDuration;
     
     const sign = difference >= 0 ? '+' : '';
@@ -149,14 +147,12 @@ const WorkLogDetail = () => {
     }
   };
   
-  // Fonction pour envoyer un email (simulée)
   const handleSendEmail = () => {
     if (!project?.contact?.email) {
       toast.error("Aucune adresse email de contact n'est définie pour ce chantier");
       return;
     }
     
-    // Ici, on simulerait l'envoi d'email
     toast.success(`Email envoyé à ${project.contact.email}`);
   };
   
