@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDate } from '@/utils/helpers';
-import { addDays, format } from 'date-fns';
+import { formatDate } from '@/utils/helpers';
+import { cn } from '@/lib/utils';
+import { addDays } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
@@ -60,7 +62,7 @@ interface WorkLogFormProps {
 type FormValues = z.infer<typeof formSchema>;
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, createWorkLog, updateWorkLog, settings } = useApp();
+  const { projectInfos, addWorkLog, updateWorkLog, settings } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [personnelList, setPersonnelList] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -74,7 +76,9 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       personnel: initialData?.personnel?.join(', ') || "",
       departure: initialData?.timeTracking?.departure || "08:00",
       arrival: initialData?.timeTracking?.arrival || "17:00",
-      breakTime: initialData?.timeTracking?.breakTime || 1,
+      breakTime: typeof initialData?.timeTracking?.breakTime === 'string' 
+        ? parseFloat(initialData.timeTracking.breakTime) 
+        : initialData?.timeTracking?.breakTime || 1,
       totalHours: initialData?.timeTracking?.totalHours || 8,
       mowing: initialData?.tasksPerformed?.mowing || false,
       brushcutting: initialData?.tasksPerformed?.brushcutting || false,
@@ -113,11 +117,14 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const calculateAverageHourDifference = () => {
     if (!selectedProject) return "N/A";
     
-    const completedVisits = projectInfos.filter(log => log.id === selectedProject.id).length;
+    const projectWorklogs = projectInfos
+      .filter(p => p.id === selectedProject.id)
+      .flatMap(p => p.workLogs || []);
     
-    if (completedVisits === 0) return "N/A";
+    if (projectWorklogs.length === 0) return "N/A";
     
-    const averageHoursPerVisit = selectedProject.annualTotalHours / selectedProject.annualVisits;
+    const totalHours = projectWorklogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
+    const averageHoursPerVisit = totalHours / projectWorklogs.length;
     
     const difference = averageHoursPerVisit - selectedProject.visitDuration;
     
@@ -133,7 +140,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const onSubmit = async (data: FormValues) => {
     const personnelArray = data.personnel.split(',').map(item => item.trim());
     
-    const payload = {
+    const payload: Omit<WorkLog, 'id' | 'createdAt'> = {
       projectId: data.projectId,
       date: data.date,
       duration: data.duration,
@@ -142,7 +149,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         departure: data.departure,
         arrival: data.arrival,
         end: "17:00", // Default value
-        breakTime: data.breakTime,
+        breakTime: data.breakTime.toString(), // Convert to string
         totalHours: data.totalHours,
       },
       tasksPerformed: {
@@ -164,11 +171,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     try {
       if (initialData) {
         // Update existing work log
-        await updateWorkLog({ ...initialData, ...payload, id: initialData.id });
+        await updateWorkLog({ ...payload, id: initialData.id, createdAt: initialData.createdAt });
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
         // Create new work log
-        await createWorkLog(payload);
+        await addWorkLog(payload);
         toast.success("Fiche de suivi créée avec succès!");
       }
       
