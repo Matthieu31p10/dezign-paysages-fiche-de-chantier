@@ -14,6 +14,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, parse, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getCurrentYear } from '@/utils/helpers';
 
 interface ProjectFormProps {
   initialData?: ProjectInfo;
@@ -47,7 +48,7 @@ type ProjectFormData = {
 
 const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   const navigate = useNavigate();
-  const { addProjectInfo, updateProjectInfo, teams, addTeam, workLogs, getCurrentYear } = useApp();
+  const { addProjectInfo, updateProjectInfo, teams, addTeam, workLogs } = useApp();
   const [newTeamName, setNewTeamName] = useState('');
   const [showNewTeamInput, setShowNewTeamInput] = useState(false);
   const [startDateInput, setStartDateInput] = useState(

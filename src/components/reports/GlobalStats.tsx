@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +12,11 @@ interface GlobalStatsProps {
   workLogs: WorkLog[];      // Logs filtered by year and active projects
   teams: { id: string; name: string }[];
   selectedYear: number;
+}
+
+interface PersonnelHours {
+  name: string;
+  hours: number;
 }
 
 const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsProps) => {
@@ -94,7 +98,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   const teamWithMostWork = teamWorkLogs.sort((a, b) => b.hours - a.hours)[0] || { hours: 0 };
   
   // Personnel statistics - extract all unique personnel from work logs
-  const personnelHours: {name: string, hours: number}[] = [];
+  const personnelHours: PersonnelHours[] = [];
   
   filteredLogs.forEach(log => {
     if (log.personnel && Array.isArray(log.personnel)) {
@@ -114,7 +118,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   
   // Sort personnel by hours worked (descending)
   const sortedPersonnel = personnelHours.sort((a, b) => b.hours - a.hours);
-  const personWithMostHours = sortedPersonnel[0] || { hours: 0 };
+  const personWithMostHours = sortedPersonnel[0] || { name: '', hours: 0 };
   
   return (
     <div className="space-y-6">
@@ -385,7 +389,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
                         className="bg-primary h-1.5 rounded-full"
                         style={{ 
                           width: `${Math.min(100, (person.hours / 
-                            (personWithMostHours?.hours || 1)) * 100)}%` 
+                            (personWithMostHours.hours || 1)) * 100)}%` 
                         }}
                       />
                     </div>

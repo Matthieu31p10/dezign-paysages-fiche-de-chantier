@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
