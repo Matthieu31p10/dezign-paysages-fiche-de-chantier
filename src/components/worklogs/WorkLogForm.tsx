@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import PersonnelSelector from './PersonnelSelector';
 
 const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
@@ -30,13 +32,10 @@ const formSchema = z.object({
     required_error: "La durée est requise.",
     invalid_type_error: "La durée doit être un nombre."
   }).min(0, { message: "La durée doit être positive." }),
-  personnel: z.string().min(1, { message: "Veuillez entrer le nom du personnel présent." }),
+  personnel: z.array(z.string()).min(1, { message: "Au moins un agent doit être sélectionné." }),
   departure: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   arrival: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
-  breakTime: z.number({
-    required_error: "Le temps de pause est requis.",
-    invalid_type_error: "Le temps de pause doit être un nombre."
-  }).min(0, { message: "Le temps de pause doit être positive." }),
+  breakTime: z.string().min(1, { message: "Le temps de pause est requis." }),
   totalHours: z.number({
     required_error: "Le total d'heures est requis.",
     invalid_type_error: "Le total d'heures doit être un nombre."
@@ -61,9 +60,8 @@ interface WorkLogFormProps {
 type FormValues = z.infer<typeof formSchema>;
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, workLogs, createWorkLog, updateWorkLog, settings } = useApp();
+  const { projectInfos, workLogs, createWorkLog, updateWorkLog, settings, addPersonnel } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
-  const [personnelList, setPersonnelList] = useState<string[]>([]);
   const navigate = useNavigate();
   
   const form = useForm<FormValues>({
@@ -72,10 +70,10 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       projectId: initialData?.projectId || "",
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       duration: initialData?.duration || 0,
-      personnel: initialData?.personnel?.join(', ') || "",
+      personnel: initialData?.personnel || [],
       departure: initialData?.timeTracking?.departure || "08:00",
       arrival: initialData?.timeTracking?.arrival || "17:00",
-      breakTime: initialData?.timeTracking?.breakTime || 1,
+      breakTime: initialData?.timeTracking?.breakTime || "1",
       totalHours: initialData?.timeTracking?.totalHours || 8,
       mowing: initialData?.tasksPerformed?.mowing || false,
       brushcutting: initialData?.tasksPerformed?.brushcutting || false,
@@ -89,13 +87,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       waterConsumption: initialData?.waterConsumption || undefined,
     },
   });
-  
-  useEffect(() => {
-    if (initialData) {
-      // When editing, set the personnel list from initial data
-      setPersonnelList(initialData.personnel);
-    }
-  }, [initialData]);
   
   const { handleSubmit, control, watch, setValue, formState: { errors } } = form;
   
@@ -135,13 +126,16 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   };
   
   const onSubmit = async (data: FormValues) => {
-    const personnelArray = data.personnel.split(',').map(item => item.trim());
+    // Save all personnel to the global list for future use
+    data.personnel.forEach(name => {
+      addPersonnel(name);
+    });
     
     const payload = {
       projectId: data.projectId,
       date: data.date,
       duration: data.duration,
-      personnel: personnelArray,
+      personnel: data.personnel,
       timeTracking: {
         departure: data.departure,
         arrival: data.arrival,
@@ -269,9 +263,15 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         </div>
         
         <div>
-          <Label htmlFor="personnel">Personnel présent (séparé par des virgules)</Label>
-          <Input type="text" id="personnel"
-            {...control.register("personnel")}
+          <Controller
+            name="personnel"
+            control={control}
+            render={({ field }) => (
+              <PersonnelSelector
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
           {errors.personnel && (
             <p className="text-sm text-red-500">{errors.personnel.message}</p>
@@ -304,10 +304,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         
         <div>
           <Label htmlFor="breakTime">Temps de pause (heures)</Label>
-          <Input type="number" id="breakTime" step="0.5"
-            {...control.register("breakTime", {
-              valueAsNumber: true,
-            })}
+          <Input type="text" id="breakTime"
+            {...control.register("breakTime")}
           />
           {errors.breakTime && (
             <p className="text-sm text-red-500">{errors.breakTime.message}</p>

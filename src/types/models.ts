@@ -1,4 +1,5 @@
 
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -94,4 +95,6 @@ export interface AppSettings {
   loginBackgroundImage?: string;
   companyInfo?: CompanyInfo;
   users?: User[];
+  personnelList?: string[]; // Added to store the list of personnel
 }
+
