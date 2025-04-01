@@ -81,9 +81,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!parsedSettings.users) {
           parsedSettings.users = [DEFAULT_ADMIN];
         }
+        if (!parsedSettings.personnel) {
+          parsedSettings.personnel = [];
+        }
         setSettings(parsedSettings);
       } else {
-        setSettings({ users: [DEFAULT_ADMIN] });
+        setSettings({ 
+          users: [DEFAULT_ADMIN],
+          personnel: [] 
+        });
       }
       if (storedSelectedProject) setSelectedProjectId(storedSelectedProject);
       if (storedAuth) setAuth(JSON.parse(storedAuth));

@@ -89,9 +89,17 @@ export interface CompanyInfo {
   email: string;
 }
 
+export interface Personnel {
+  id: string;
+  name: string;
+  position?: string;
+  active: boolean;
+}
+
 export interface AppSettings {
   companyLogo?: string;
   loginBackgroundImage?: string;
   companyInfo?: CompanyInfo;
   users?: User[];
+  personnel?: Personnel[];
 }

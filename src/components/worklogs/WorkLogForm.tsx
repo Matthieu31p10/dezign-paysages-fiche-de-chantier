@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import PersonnelDialog from './PersonnelDialog';
 
 const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
@@ -30,7 +32,7 @@ const formSchema = z.object({
     required_error: "La durée est requise.",
     invalid_type_error: "La durée doit être un nombre."
   }).min(0, { message: "La durée doit être positive." }),
-  personnel: z.string().min(1, { message: "Veuillez entrer le nom du personnel présent." }),
+  personnel: z.array(z.string()).min(1, { message: "Veuillez sélectionner au moins une personne." }),
   departure: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   arrival: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   breakTime: z.string().default("1"),
@@ -60,7 +62,6 @@ type FormValues = z.infer<typeof formSchema>;
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
   const { projectInfos, addWorkLog, updateWorkLog, settings } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
-  const [personnelList, setPersonnelList] = useState<string[]>([]);
   const navigate = useNavigate();
   
   const form = useForm<FormValues>({
@@ -69,7 +70,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       projectId: initialData?.projectId || "",
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       duration: initialData?.duration || 0,
-      personnel: initialData?.personnel?.join(', ') || "",
+      personnel: initialData?.personnel || [],
       departure: initialData?.timeTracking?.departure || "08:00",
       arrival: initialData?.timeTracking?.arrival || "17:00",
       breakTime: initialData?.timeTracking?.breakTime || "1",
@@ -87,17 +88,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     },
   });
   
-  useEffect(() => {
-    if (initialData) {
-      // When editing, set the personnel list from initial data
-      setPersonnelList(initialData.personnel);
-    }
-  }, [initialData]);
-  
   const { handleSubmit, control, watch, setValue, formState: { errors } } = form;
   
   const dateValue = watch("date");
   const selectedProjectId = watch("projectId");
+  const selectedPersonnel = watch("personnel");
   
   useEffect(() => {
     if (selectedProjectId) {
@@ -128,14 +123,16 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     return difference.startsWith('+') ? 'text-red-600' : 'text-green-600';
   };
   
+  const handlePersonnelChange = (personnel: string[]) => {
+    setValue('personnel', personnel, { shouldValidate: true });
+  };
+  
   const onSubmit = async (data: FormValues) => {
-    const personnelArray = data.personnel.split(',').map(item => item.trim());
-    
     const payload = {
       projectId: data.projectId,
       date: data.date,
       duration: data.duration,
-      personnel: personnelArray,
+      personnel: data.personnel,
       timeTracking: {
         departure: data.departure,
         arrival: data.arrival,
@@ -263,12 +260,31 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         </div>
         
         <div>
-          <Label htmlFor="personnel">Personnel présent (séparé par des virgules)</Label>
-          <Input type="text" id="personnel"
-            {...control.register("personnel")}
+          <Label htmlFor="personnel">Personnel présent</Label>
+          <Controller
+            name="personnel"
+            control={control}
+            render={({ field }) => (
+              <PersonnelDialog 
+                selectedPersonnel={field.value} 
+                onChange={handlePersonnelChange}
+              />
+            )}
           />
           {errors.personnel && (
             <p className="text-sm text-red-500">{errors.personnel.message}</p>
+          )}
+          {selectedPersonnel.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {selectedPersonnel.map(person => (
+                <span 
+                  key={person}
+                  className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground"
+                >
+                  {person}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
