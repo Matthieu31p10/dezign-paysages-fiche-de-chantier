@@ -31,8 +31,6 @@ interface AppContextType {
   deleteUser: (id: string) => void;
   getCurrentUser: () => User | null;
   canUserAccess: (requiredRole: UserRole) => boolean;
-  savedAgents: string[];
-  addAgent: (agent: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -64,7 +62,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     currentUser: null,
     isAuthenticated: false,
   });
-  const [savedAgents, setSavedAgents] = useState<string[]>([]);
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -99,14 +96,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error) {
       console.error('Error loading data from localStorage:', error);
       toast.error('Erreur lors du chargement des données');
-    }
-  }, []);
-
-  // Load saved agents from localStorage
-  useEffect(() => {
-    const storedAgents = localStorage.getItem('savedAgents');
-    if (storedAgents) {
-      setSavedAgents(JSON.parse(storedAgents));
     }
   }, []);
 
@@ -360,47 +349,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addAgent = (agent: string) => {
-    const newAgents = [...savedAgents, agent];
-    setSavedAgents(newAgents);
-    localStorage.setItem('savedAgents', JSON.stringify(newAgents));
-  };
-
-  const contextValue = {
-    projectInfos,
-    workLogs,
-    teams,
-    settings,
-    auth,
-    selectedProjectId,
-    addProjectInfo,
-    updateProjectInfo,
-    deleteProjectInfo,
-    addWorkLog,
-    updateWorkLog,
-    deleteWorkLog,
-    addTeam,
-    updateTeam,
-    deleteTeam,
-    updateSettings,
-    selectProject,
-    getProjectById,
-    getWorkLogsByProjectId,
-    getActiveProjects,
-    getArchivedProjects,
-    login,
-    logout,
-    addUser,
-    updateUser,
-    deleteUser,
-    getCurrentUser,
-    canUserAccess,
-    savedAgents,
-    addAgent,
-  };
-
   return (
-    <AppContext.Provider value={contextValue}>
+    <AppContext.Provider
+      value={{
+        projectInfos,
+        workLogs,
+        teams,
+        settings,
+        auth,
+        selectedProjectId,
+        addProjectInfo,
+        updateProjectInfo,
+        deleteProjectInfo,
+        addWorkLog,
+        updateWorkLog,
+        deleteWorkLog,
+        addTeam,
+        updateTeam,
+        deleteTeam,
+        updateSettings,
+        selectProject,
+        getProjectById,
+        getWorkLogsByProjectId,
+        getActiveProjects,
+        getArchivedProjects,
+        login,
+        logout,
+        addUser,
+        updateUser,
+        deleteUser,
+        getCurrentUser,
+        canUserAccess,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

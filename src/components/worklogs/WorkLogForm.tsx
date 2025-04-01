@@ -21,7 +21,6 @@ import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { validateTime24H, formatTimeTo24H } from '@/utils/timeHelpers';
-import AgentSelectDropdown from './AgentSelectDropdown';
 
 const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
@@ -32,6 +31,7 @@ const formSchema = z.object({
     required_error: "La durée est requise.",
     invalid_type_error: "La durée doit être un nombre."
   }).min(0, { message: "La durée doit être positive." }),
+  personnel: z.string().min(1, { message: "Veuillez entrer le nom du personnel présent." }),
   departure: z.string()
     .refine(validateTime24H, { message: "L'heure de départ doit être au format 24h (HH:MM)" }),
   arrival: z.string()
@@ -64,7 +64,7 @@ interface WorkLogFormProps {
 type FormValues = z.infer<typeof formSchema>;
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, addWorkLog, updateWorkLog, settings, savedAgents, addAgent } = useApp();
+  const { projectInfos, addWorkLog, updateWorkLog, settings } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [personnelList, setPersonnelList] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -75,6 +75,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       projectId: initialData?.projectId || "",
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       duration: initialData?.duration || 0,
+      personnel: initialData?.personnel?.join(', ') || "",
       departure: initialData?.timeTracking?.departure || "08:00",
       arrival: initialData?.timeTracking?.arrival || "17:00",
       breakTime: typeof initialData?.timeTracking?.breakTime === 'string' 
@@ -96,7 +97,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   
   useEffect(() => {
     if (initialData) {
-      setPersonnelList(initialData.personnel || []);
+      setPersonnelList(initialData.personnel);
     }
   }, [initialData]);
   
@@ -117,16 +118,14 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const calculateAverageHourDifference = () => {
     if (!selectedProject) return "N/A";
     
-    const projectLogs = selectedProject.id ? 
-      projectInfos
-        .filter(p => p.id === selectedProject.id)
-        .flatMap(p => p.workLogs || []) : 
-      [];
+    const projectWorklogs = projectInfos
+      .filter(p => p.id === selectedProject.id)
+      .flatMap(p => p.workLogs || []);
     
-    if (projectLogs.length === 0) return "N/A";
+    if (projectWorklogs.length === 0) return "N/A";
     
-    const totalHours = projectLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
-    const averageHoursPerVisit = totalHours / projectLogs.length;
+    const totalHours = projectWorklogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
+    const averageHoursPerVisit = totalHours / projectWorklogs.length;
     
     const difference = averageHoursPerVisit - selectedProject.visitDuration;
     
@@ -140,16 +139,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   };
   
   const onSubmit = async (data: FormValues) => {
-    if (personnelList.length === 0) {
-      toast.error("Veuillez ajouter au moins un agent");
-      return;
-    }
+    const personnelArray = data.personnel.split(',').map(item => item.trim());
     
     const payload: Omit<WorkLog, 'id' | 'createdAt'> = {
-      projectId: data.projectId,
-      date: data.date,
-      duration: data.duration,
-      personnel: personnelList,
+      ...data,
+      personnel: personnelArray,
       timeTracking: {
         departure: formatTimeTo24H(data.departure),
         arrival: formatTimeTo24H(data.arrival),
@@ -261,7 +255,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         )}
       </div>
       
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="duration">Durée prévue (heures)</Label>
           <Input type="number" id="duration" step="0.5"
@@ -275,12 +269,13 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         </div>
         
         <div>
-          <AgentSelectDropdown
-            value={personnelList}
-            onChange={setPersonnelList}
-            savedAgents={savedAgents}
-            onAddNewAgent={addAgent}
+          <Label htmlFor="personnel">Personnel présent (séparé par des virgules)</Label>
+          <Input type="text" id="personnel"
+            {...control.register("personnel")}
           />
+          {errors.personnel && (
+            <p className="text-sm text-red-500">{errors.personnel.message}</p>
+          )}
         </div>
       </div>
       
