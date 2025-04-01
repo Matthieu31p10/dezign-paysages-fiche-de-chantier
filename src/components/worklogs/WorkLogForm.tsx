@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDate } from '@/utils/helpers';
+import { cn } from "@/lib/utils";
+import { formatDate } from '@/utils/helpers';
 import { addDays, format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,10 +33,7 @@ const formSchema = z.object({
   personnel: z.string().min(1, { message: "Veuillez entrer le nom du personnel présent." }),
   departure: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   arrival: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
-  breakTime: z.number({
-    required_error: "Le temps de pause est requis.",
-    invalid_type_error: "Le temps de pause doit être un nombre."
-  }).min(0, { message: "Le temps de pause doit être positive." }),
+  breakTime: z.string().default("1"),
   totalHours: z.number({
     required_error: "Le total d'heures est requis.",
     invalid_type_error: "Le total d'heures doit être un nombre."
@@ -60,7 +58,7 @@ interface WorkLogFormProps {
 type FormValues = z.infer<typeof formSchema>;
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, createWorkLog, updateWorkLog, settings } = useApp();
+  const { projectInfos, addWorkLog, updateWorkLog, settings } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [personnelList, setPersonnelList] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -74,7 +72,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       personnel: initialData?.personnel?.join(', ') || "",
       departure: initialData?.timeTracking?.departure || "08:00",
       arrival: initialData?.timeTracking?.arrival || "17:00",
-      breakTime: initialData?.timeTracking?.breakTime || 1,
+      breakTime: initialData?.timeTracking?.breakTime || "1",
       totalHours: initialData?.timeTracking?.totalHours || 8,
       mowing: initialData?.tasksPerformed?.mowing || false,
       brushcutting: initialData?.tasksPerformed?.brushcutting || false,
@@ -168,7 +166,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
         // Create new work log
-        await createWorkLog(payload);
+        await addWorkLog(payload);
         toast.success("Fiche de suivi créée avec succès!");
       }
       
@@ -300,10 +298,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         
         <div>
           <Label htmlFor="breakTime">Temps de pause (heures)</Label>
-          <Input type="number" id="breakTime" step="0.5"
-            {...control.register("breakTime", {
-              valueAsNumber: true,
-            })}
+          <Input type="text" id="breakTime"
+            {...control.register("breakTime")}
           />
           {errors.breakTime && (
             <p className="text-sm text-red-500">{errors.breakTime.message}</p>

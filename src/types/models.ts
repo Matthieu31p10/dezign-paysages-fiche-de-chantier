@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -55,7 +56,7 @@ export interface WorkLog {
     departure: string;
     arrival: string;
     end: string; // Ensuring this property exists
-    breakTime: string; // Using string type to match usage
+    breakTime: string; // Keeping this as string to match the form
     totalHours: number;
   };
   tasksPerformed: {
