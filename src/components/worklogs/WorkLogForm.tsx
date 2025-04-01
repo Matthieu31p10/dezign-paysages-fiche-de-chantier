@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, formatDate } from '@/utils/helpers';
+import { formatDate } from '@/utils/helpers';
+import { cn } from '@/lib/utils';
 import { addDays, format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -60,7 +61,7 @@ interface WorkLogFormProps {
 type FormValues = z.infer<typeof formSchema>;
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, createWorkLog, updateWorkLog, settings } = useApp();
+  const { projectInfos, workLogs, createWorkLog, updateWorkLog, settings } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [personnelList, setPersonnelList] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -113,7 +114,10 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const calculateAverageHourDifference = () => {
     if (!selectedProject) return "N/A";
     
-    const completedVisits = projectInfos.filter(log => log.id === selectedProject.id).length;
+    // Get work logs for the selected project
+    const projectWorkLogs = workLogs.filter(log => log.projectId === selectedProject.id);
+    
+    const completedVisits = projectWorkLogs.length;
     
     if (completedVisits === 0) return "N/A";
     

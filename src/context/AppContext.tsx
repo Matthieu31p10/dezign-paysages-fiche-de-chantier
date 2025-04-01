@@ -31,6 +31,7 @@ interface AppContextType {
   deleteUser: (id: string) => void;
   getCurrentUser: () => User | null;
   canUserAccess: (requiredRole: UserRole) => boolean;
+  createWorkLog: (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => WorkLog;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -349,6 +350,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const createWorkLog = addWorkLog;
+
   return (
     <AppContext.Provider
       value={{
@@ -380,6 +383,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteUser,
         getCurrentUser,
         canUserAccess,
+        createWorkLog,
       }}
     >
       {children}
