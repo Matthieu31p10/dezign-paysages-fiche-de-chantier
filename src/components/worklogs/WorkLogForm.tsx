@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +21,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { validateTime24H, formatTimeTo24H } from '@/utils/timeHelpers';
 
 const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
@@ -32,10 +32,8 @@ const formSchema = z.object({
     invalid_type_error: "La durée doit être un nombre."
   }).min(0, { message: "La durée doit être positive." }),
   personnel: z.string().min(1, { message: "Veuillez entrer le nom du personnel présent." }),
-  departure: z.string()
-    .refine(validateTime24H, { message: "L'heure de départ doit être au format 24h (HH:MM)" }),
-  arrival: z.string()
-    .refine(validateTime24H, { message: "L'heure d'arrivée doit être au format 24h (HH:MM)" }),
+  departure: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
+  arrival: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   breakTime: z.number({
     required_error: "Le temps de pause est requis.",
     invalid_type_error: "Le temps de pause doit être un nombre."
@@ -97,6 +95,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   
   useEffect(() => {
     if (initialData) {
+      // When editing, set the personnel list from initial data
       setPersonnelList(initialData.personnel);
     }
   }, [initialData]);
@@ -142,13 +141,15 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     const personnelArray = data.personnel.split(',').map(item => item.trim());
     
     const payload: Omit<WorkLog, 'id' | 'createdAt'> = {
-      ...data,
+      projectId: data.projectId,
+      date: data.date,
+      duration: data.duration,
       personnel: personnelArray,
       timeTracking: {
-        departure: formatTimeTo24H(data.departure),
-        arrival: formatTimeTo24H(data.arrival),
-        end: "17:00",
-        breakTime: data.breakTime.toString(),
+        departure: data.departure,
+        arrival: data.arrival,
+        end: "17:00", // Default value
+        breakTime: data.breakTime.toString(), // Convert to string
         totalHours: data.totalHours,
       },
       tasksPerformed: {
@@ -169,9 +170,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     
     try {
       if (initialData) {
+        // Update existing work log
         await updateWorkLog({ ...payload, id: initialData.id, createdAt: initialData.createdAt });
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
+        // Create new work log
         await addWorkLog(payload);
         toast.success("Fiche de suivi créée avec succès!");
       }
