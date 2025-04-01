@@ -31,9 +31,6 @@ interface AppContextType {
   deleteUser: (id: string) => void;
   getCurrentUser: () => User | null;
   canUserAccess: (requiredRole: UserRole) => boolean;
-  createWorkLog: (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => WorkLog;
-  getPersonnelList: () => string[];
-  addPersonnel: (name: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -84,12 +81,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!parsedSettings.users) {
           parsedSettings.users = [DEFAULT_ADMIN];
         }
-        if (!parsedSettings.personnelList) {
-          parsedSettings.personnelList = [];
-        }
         setSettings(parsedSettings);
       } else {
-        setSettings({ users: [DEFAULT_ADMIN], personnelList: [] });
+        setSettings({ users: [DEFAULT_ADMIN] });
       }
       if (storedSelectedProject) setSelectedProjectId(storedSelectedProject);
       if (storedAuth) setAuth(JSON.parse(storedAuth));
@@ -355,25 +349,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const getPersonnelList = (): string[] => {
-    return settings.personnelList || [];
-  };
-
-  const addPersonnel = (name: string): void => {
-    if (!name.trim()) return;
-    
-    const personnelList = settings.personnelList || [];
-    if (personnelList.includes(name.trim())) return;
-    
-    const updatedList = [...personnelList, name.trim()];
-    setSettings(prev => ({
-      ...prev,
-      personnelList: updatedList,
-    }));
-  };
-
-  const createWorkLog = addWorkLog;
-
   return (
     <AppContext.Provider
       value={{
@@ -405,9 +380,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteUser,
         getCurrentUser,
         canUserAccess,
-        createWorkLog,
-        getPersonnelList,
-        addPersonnel,
       }}
     >
       {children}
