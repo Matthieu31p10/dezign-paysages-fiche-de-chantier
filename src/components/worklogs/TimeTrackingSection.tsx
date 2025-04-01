@@ -8,7 +8,7 @@ interface TimeTrackingSectionProps {
     arrival: string;
     breakTime: string | number;
   };
-  calculateEndTime: () => string;
+  calculateEndTime?: () => string;
 }
 
 const TimeTrackingSection = ({ timeTracking, calculateEndTime }: TimeTrackingSectionProps) => {
@@ -26,10 +26,12 @@ const TimeTrackingSection = ({ timeTracking, calculateEndTime }: TimeTrackingSec
           <p>{timeTracking.arrival}</p>
         </div>
         
-        <div className="space-y-1">
-          <p className="text-xs text-gray-500">Heure de fin</p>
-          <p>{calculateEndTime()}</p>
-        </div>
+        {calculateEndTime && (
+          <div className="space-y-1">
+            <p className="text-xs text-gray-500">Heure de fin</p>
+            <p>{calculateEndTime()}</p>
+          </div>
+        )}
         
         <div className="space-y-1">
           <p className="text-xs text-gray-500">Pause</p>
