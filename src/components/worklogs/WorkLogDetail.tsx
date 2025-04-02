@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -11,7 +12,7 @@ import { Edit, Trash, ArrowLeft, Calendar, Clock, User, Check, X, FileText, Mail
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { generatePDF } from '@/utils/pdfGenerator';
+import { generatePDF } from '@/utils/pdf';
 import { toast } from 'sonner';
 
 const WorkLogDetail = () => {

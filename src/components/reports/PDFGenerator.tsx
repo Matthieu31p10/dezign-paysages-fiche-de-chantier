@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/context/AppContext';
-import { generatePDF, generateProjectPDF, generateReportPDF, generateWorkLogPDF } from '@/utils/pdfGenerator';
+import { generatePDF, generateProjectPDF, generateReportPDF } from '@/utils/pdf';
 import { FileText, Download, Calendar, FileOutput } from 'lucide-react';
 import { toast } from 'sonner';
 import { WorkLog } from '@/types/models';
@@ -59,7 +59,7 @@ const PDFGenerator = () => {
     const project = includeContactInfo ? getProjectById(workLog.projectId) : undefined;
     
     try {
-      // Using the new generatePDF function with company info
+      // Using the generatePDF function with company info
       const pdfData = {
         workLog,
         project,
