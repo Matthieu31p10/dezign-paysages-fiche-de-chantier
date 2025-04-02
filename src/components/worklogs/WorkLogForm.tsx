@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -72,7 +73,7 @@ type FormValues = z.infer<typeof formSchema>;
 const generateTimeOptions = () => {
   const times = [];
   for (let hour = 0; hour < 24; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
+    for (let minute = 0; minute < 60; minute += 5) {
       const formattedHour = hour.toString().padStart(2, '0');
       const formattedMinute = minute.toString().padStart(2, '0');
       times.push(`${formattedHour}:${formattedMinute}`);
