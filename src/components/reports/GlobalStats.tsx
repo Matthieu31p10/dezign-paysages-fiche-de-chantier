@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
-import { ProjectInfo, WorkLog } from '@/types/models';
+import { ProjectInfo, WorkLog, Team } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatNumber, filterWorkLogsByYear } from '@/utils/helpers';
+import { formatNumber, filterWorkLogsByYear, timeStringToHours } from '@/utils/helpers';
 import { Badge } from '@/components/ui/badge';
 import { BarChart2, Clock, Calendar, Users, User } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -98,21 +99,49 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   const teamWithMostWork = teamWorkLogs.sort((a, b) => b.hours - a.hours)[0] || { hours: 0 };
   
   // Personnel statistics - extract all unique personnel from work logs
+  // MODIFIED: Calculate actual working hours for each personnel
   const personnelHours: PersonnelHours[] = [];
   
   filteredLogs.forEach(log => {
-    if (log.personnel && Array.isArray(log.personnel)) {
-      log.personnel.forEach(person => {
-        const personIndex = personnelHours.findIndex(p => p.name === person);
-        if (personIndex >= 0) {
-          personnelHours[personIndex].hours += log.timeTracking.totalHours;
-        } else {
-          personnelHours.push({
-            name: person,
-            hours: log.timeTracking.totalHours
-          });
+    if (log.personnel && Array.isArray(log.personnel) && log.timeTracking) {
+      // Get actual working time per person for this work log
+      // We want to calculate: end time - arrival time - break time (NOT total hours which includes travel)
+      const arrivalTime = log.timeTracking.arrival;
+      const endTime = log.timeTracking.end;
+      const breakTime = log.timeTracking.break;
+      
+      if (arrivalTime && endTime && breakTime) {
+        // Convert times to minutes
+        const arrivalMinutes = timeStringToHours(arrivalTime) * 60;
+        const endMinutes = timeStringToHours(endTime) * 60;
+        const breakMinutes = timeStringToHours(breakTime) * 60;
+        
+        // Calculate work duration in hours (end - arrival - break)
+        let workTimeMinutes = endMinutes - arrivalMinutes - breakMinutes;
+        
+        // Handle case where end time is next day
+        if (endMinutes < arrivalMinutes) {
+          workTimeMinutes = (24 * 60 - arrivalMinutes) + endMinutes - breakMinutes;
         }
-      });
+        
+        // Convert minutes to hours
+        const workTimeHours = workTimeMinutes / 60;
+        
+        // Distribute hours equally to each personnel
+        const hoursPerPerson = workTimeHours / log.personnel.length;
+        
+        log.personnel.forEach(person => {
+          const personIndex = personnelHours.findIndex(p => p.name === person);
+          if (personIndex >= 0) {
+            personnelHours[personIndex].hours += hoursPerPerson;
+          } else {
+            personnelHours.push({
+              name: person,
+              hours: hoursPerPerson
+            });
+          }
+        });
+      }
     }
   });
   
