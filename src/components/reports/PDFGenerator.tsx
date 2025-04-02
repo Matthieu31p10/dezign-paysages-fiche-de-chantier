@@ -11,6 +11,7 @@ import { generatePDF, generateProjectPDF, generateReportPDF, generateWorkLogPDF 
 import { FileText, Download, Calendar, FileOutput } from 'lucide-react';
 import { toast } from 'sonner';
 import { WorkLog } from '@/types/models';
+import CompanyLogo from '../ui/company-logo';
 
 const PDFGenerator = () => {
   const { projectInfos, workLogs, teams, getProjectById, settings } = useApp();
@@ -100,6 +101,12 @@ const PDFGenerator = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {settings.companyLogo && (
+          <div className="mb-4 flex justify-center">
+            <CompanyLogo className="h-16 w-auto" />
+          </div>
+        )}
+        
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="projects">Chantiers</TabsTrigger>
