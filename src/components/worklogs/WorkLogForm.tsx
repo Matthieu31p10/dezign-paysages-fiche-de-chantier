@@ -41,9 +41,9 @@ const formSchema = z.object({
     invalid_type_error: "La durée doit être un nombre."
   }).min(0, { message: "La durée doit être positive." }),
   personnel: z.array(z.string()).min(1, { message: "Veuillez sélectionner au moins une personne." }),
-  departure: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
-  arrival: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
-  end: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
+  departure: z.string().min(1, { message: "L'heure de départ est requise." }),
+  arrival: z.string().min(1, { message: "L'heure d'arrivée est requise." }),
+  end: z.string().min(1, { message: "L'heure de fin est requise." }),
   breakTime: z.string().default("1"),
   totalHours: z.number({
     required_error: "Le total d'heures est requis.",
@@ -69,11 +69,34 @@ interface WorkLogFormProps {
 
 type FormValues = z.infer<typeof formSchema>;
 
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const formattedHour = hour.toString().padStart(2, '0');
+      const formattedMinute = minute.toString().padStart(2, '0');
+      times.push(`${formattedHour}:${formattedMinute}`);
+    }
+  }
+  return times;
+};
+
+const generateBreakOptions = () => {
+  const breaks = [];
+  for (let i = 0.25; i <= 3; i += 0.25) {
+    breaks.push(i.toFixed(2));
+  }
+  return breaks;
+};
+
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
   const { projectInfos, addWorkLog, updateWorkLog, settings, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const navigate = useNavigate();
+  
+  const timeOptions = generateTimeOptions();
+  const breakOptions = generateBreakOptions();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -392,32 +415,104 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
           <TableBody>
             <TableRow>
               <TableCell>
-                <Input type="text" placeholder="HH:MM"
-                  {...control.register("departure")}
+                <Controller
+                  name="departure"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Heure de départ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={`departure-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.departure && (
                   <p className="text-xs text-red-500">{errors.departure.message}</p>
                 )}
               </TableCell>
               <TableCell>
-                <Input type="text" placeholder="HH:MM"
-                  {...control.register("arrival")}
+                <Controller
+                  name="arrival"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Heure d'arrivée" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={`arrival-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.arrival && (
                   <p className="text-xs text-red-500">{errors.arrival.message}</p>
                 )}
               </TableCell>
               <TableCell>
-                <Input type="text" placeholder="HH:MM"
-                  {...control.register("end")}
+                <Controller
+                  name="end"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Fin du chantier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={`end-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.end && (
                   <p className="text-xs text-red-500">{errors.end.message}</p>
                 )}
               </TableCell>
               <TableCell>
-                <Input type="text"
-                  {...control.register("breakTime")}
+                <Controller
+                  name="breakTime"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Pause" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {breakOptions.map((breakTime) => (
+                          <SelectItem key={`break-${breakTime}`} value={breakTime}>
+                            {breakTime} h
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
                 {errors.breakTime && (
                   <p className="text-xs text-red-500">{errors.breakTime.message}</p>
