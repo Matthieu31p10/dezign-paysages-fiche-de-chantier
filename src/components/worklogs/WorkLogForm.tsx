@@ -22,6 +22,15 @@ import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import PersonnelDialog from './PersonnelDialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TeamsSelect } from '../teams/TeamsSelect';
 
 const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
@@ -35,6 +44,7 @@ const formSchema = z.object({
   personnel: z.array(z.string()).min(1, { message: "Veuillez sélectionner au moins une personne." }),
   departure: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   arrival: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
+  end: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Format HH:MM requis." }),
   breakTime: z.string().default("1"),
   totalHours: z.number({
     required_error: "Le total d'heures est requis.",
@@ -50,6 +60,7 @@ const formSchema = z.object({
   watering: z.enum(['none', 'on', 'off']).default('none'),
   notes: z.string().optional(),
   waterConsumption: z.number().optional(),
+  teamFilter: z.string().optional().default(""),
 });
 
 interface WorkLogFormProps {
@@ -60,8 +71,9 @@ interface WorkLogFormProps {
 type FormValues = z.infer<typeof formSchema>;
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, addWorkLog, updateWorkLog, settings } = useApp();
+  const { projectInfos, addWorkLog, updateWorkLog, settings, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
+  const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const navigate = useNavigate();
   
   const form = useForm<FormValues>({
@@ -73,6 +85,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       personnel: initialData?.personnel || [],
       departure: initialData?.timeTracking?.departure || "08:00",
       arrival: initialData?.timeTracking?.arrival || "17:00",
+      end: initialData?.timeTracking?.end || "17:00",
       breakTime: initialData?.timeTracking?.breakTime || "1",
       totalHours: initialData?.timeTracking?.totalHours || 8,
       mowing: initialData?.tasksPerformed?.mowing || false,
@@ -85,23 +98,67 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       watering: initialData?.tasksPerformed?.watering || 'none',
       notes: initialData?.notes || "",
       waterConsumption: initialData?.waterConsumption || undefined,
+      teamFilter: "",
     },
   });
   
-  const { handleSubmit, control, watch, setValue, formState: { errors } } = form;
+  const { handleSubmit, control, watch, setValue, formState: { errors }, getValues } = form;
   
   const dateValue = watch("date");
   const selectedProjectId = watch("projectId");
   const selectedPersonnel = watch("personnel");
+  const teamFilter = watch("teamFilter");
+  const departureTime = watch("departure");
+  const endTime = watch("end");
+  const breakTimeValue = watch("breakTime");
   
+  // Filtrer les projets par équipe
+  useEffect(() => {
+    if (teamFilter) {
+      const filtered = projectInfos.filter(p => p.team === teamFilter);
+      setFilteredProjects(filtered);
+    } else {
+      setFilteredProjects(projectInfos);
+    }
+  }, [teamFilter, projectInfos]);
+  
+  // Mettre à jour le projet sélectionné et sa durée prévue
   useEffect(() => {
     if (selectedProjectId) {
       const project = projectInfos.find(p => p.id === selectedProjectId);
       setSelectedProject(project || null);
+      
+      // Récupérer la durée prévue depuis la fiche de chantier
+      if (project && project.visitDuration) {
+        setValue('duration', project.visitDuration);
+      }
     } else {
       setSelectedProject(null);
     }
-  }, [selectedProjectId, projectInfos]);
+  }, [selectedProjectId, projectInfos, setValue]);
+  
+  // Calculer le total des heures basé sur la formule
+  useEffect(() => {
+    if (departureTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
+      // Convertir les heures en minutes
+      const getMinutes = (timeStr: string) => {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
+      
+      const departureMinutes = getMinutes(departureTime);
+      const endMinutes = getMinutes(endTime);
+      const breakMinutes = parseFloat(breakTimeValue) * 60;
+      
+      let totalMinutes = endMinutes - departureMinutes - breakMinutes;
+      if (totalMinutes < 0) totalMinutes += 24 * 60; // Gérer le passage au jour suivant
+      
+      // Calculer le total d'heures pour toute l'équipe
+      const totalPersonnelHours = (totalMinutes / 60) * selectedPersonnel.length;
+      
+      setValue('totalHours', parseFloat(totalPersonnelHours.toFixed(2)));
+    }
+  }, [departureTime, endTime, breakTimeValue, selectedPersonnel.length, setValue]);
   
   const calculateAverageHourDifference = () => {
     if (!selectedProject) return "N/A";
@@ -127,6 +184,17 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     setValue('personnel', personnel, { shouldValidate: true });
   };
   
+  const handleTeamFilterChange = (team: string) => {
+    setValue('teamFilter', team);
+    // Réinitialiser le projet sélectionné si nécessaire
+    if (selectedProjectId) {
+      const projectExists = projectInfos.some(p => p.id === selectedProjectId && p.team === team);
+      if (!projectExists && team !== "") {
+        setValue('projectId', "");
+      }
+    }
+  };
+  
   const onSubmit = async (data: FormValues) => {
     const payload = {
       projectId: data.projectId,
@@ -136,7 +204,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       timeTracking: {
         departure: data.departure,
         arrival: data.arrival,
-        end: "17:00", // Default value
+        end: data.end,
         breakTime: data.breakTime,
         totalHours: data.totalHours,
       },
@@ -180,158 +248,208 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <div>
-        <Label htmlFor="projectId">Chantier</Label>
-        <Controller
-          name="projectId"
-          control={control}
-          render={({ field }) => (
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner un chantier" />
-              </SelectTrigger>
-              <SelectContent>
-                {projectInfos.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="teamFilter">Filtrer par équipe</Label>
+          <Controller
+            name="teamFilter"
+            control={control}
+            render={({ field }) => (
+              <Select
+                onValueChange={(value) => handleTeamFilterChange(value)}
+                value={field.value}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Toutes les équipes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Toutes les équipes</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="projectId">Chantier</Label>
+          <Controller
+            name="projectId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un chantier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.projectId && (
+            <p className="text-sm text-red-500">{errors.projectId.message}</p>
           )}
-        />
-        {errors.projectId && (
-          <p className="text-sm text-red-500">{errors.projectId.message}</p>
-        )}
-      </div>
-      
-      <div>
-        <Label>Date</Label>
-        <Controller
-          name="date"
-          control={control}
-          render={({ field }) => (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[240px] justify-start text-left font-normal",
-                    !dateValue && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateValue ? formatDate(dateValue) : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateValue}
-                  onSelect={field.onChange}
-                  disabled={(date) =>
-                    date > new Date() || date < addDays(new Date(), -365)
-                  }
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          )}
-        />
-        {errors.date && (
-          <p className="text-sm text-red-500">{errors.date.message}</p>
-        )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Date</Label>
+          <Controller
+            name="date"
+            control={control}
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateValue && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateValue ? formatDate(dateValue) : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dateValue}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < addDays(new Date(), -365)
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          />
+          {errors.date && (
+            <p className="text-sm text-red-500">{errors.date.message}</p>
+          )}
+        </div>
+        
         <div>
           <Label htmlFor="duration">Durée prévue (heures)</Label>
           <Input type="number" id="duration" step="0.5"
             {...control.register("duration", {
               valueAsNumber: true,
             })}
+            readOnly
           />
           {errors.duration && (
             <p className="text-sm text-red-500">{errors.duration.message}</p>
           )}
         </div>
-        
-        <div>
-          <Label htmlFor="personnel">Personnel présent</Label>
-          <Controller
-            name="personnel"
-            control={control}
-            render={({ field }) => (
-              <PersonnelDialog 
-                selectedPersonnel={field.value} 
-                onChange={handlePersonnelChange}
-              />
-            )}
-          />
-          {errors.personnel && (
-            <p className="text-sm text-red-500">{errors.personnel.message}</p>
+      </div>
+      
+      <div>
+        <Label htmlFor="personnel">Personnel présent</Label>
+        <Controller
+          name="personnel"
+          control={control}
+          render={({ field }) => (
+            <PersonnelDialog 
+              selectedPersonnel={field.value} 
+              onChange={handlePersonnelChange}
+            />
           )}
-          {selectedPersonnel.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {selectedPersonnel.map(person => (
-                <span 
-                  key={person}
-                  className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground"
-                >
-                  {person}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        />
+        {errors.personnel && (
+          <p className="text-sm text-red-500">{errors.personnel.message}</p>
+        )}
+        {selectedPersonnel.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {selectedPersonnel.map(person => (
+              <span 
+                key={person}
+                className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground"
+              >
+                {person}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       
       <Separator />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="departure">Heure de départ</Label>
-          <Input type="text" id="departure"
-            {...control.register("departure")}
-          />
-          {errors.departure && (
-            <p className="text-sm text-red-500">{errors.departure.message}</p>
-          )}
-        </div>
+      <div>
+        <Label>Heures de travail</Label>
+        <Table className="mt-2">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Heures de départ</TableHead>
+              <TableHead>Heures d'arrivée</TableHead>
+              <TableHead>Fin du chantier</TableHead>
+              <TableHead>Pause (heures)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>
+                <Input type="text" placeholder="HH:MM"
+                  {...control.register("departure")}
+                />
+                {errors.departure && (
+                  <p className="text-xs text-red-500">{errors.departure.message}</p>
+                )}
+              </TableCell>
+              <TableCell>
+                <Input type="text" placeholder="HH:MM"
+                  {...control.register("arrival")}
+                />
+                {errors.arrival && (
+                  <p className="text-xs text-red-500">{errors.arrival.message}</p>
+                )}
+              </TableCell>
+              <TableCell>
+                <Input type="text" placeholder="HH:MM"
+                  {...control.register("end")}
+                />
+                {errors.end && (
+                  <p className="text-xs text-red-500">{errors.end.message}</p>
+                )}
+              </TableCell>
+              <TableCell>
+                <Input type="text"
+                  {...control.register("breakTime")}
+                />
+                {errors.breakTime && (
+                  <p className="text-xs text-red-500">{errors.breakTime.message}</p>
+                )}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
         
-        <div>
-          <Label htmlFor="arrival">Heure d'arrivée</Label>
-          <Input type="text" id="arrival"
-            {...control.register("arrival")}
-          />
-          {errors.arrival && (
-            <p className="text-sm text-red-500">{errors.arrival.message}</p>
-          )}
-        </div>
-        
-        <div>
-          <Label htmlFor="breakTime">Temps de pause (heures)</Label>
-          <Input type="text" id="breakTime"
-            {...control.register("breakTime")}
-          />
-          {errors.breakTime && (
-            <p className="text-sm text-red-500">{errors.breakTime.message}</p>
-          )}
-        </div>
-        
-        <div>
-          <Label htmlFor="totalHours">Total d'heures</Label>
-          <Input type="number" id="totalHours" step="0.5"
-            {...control.register("totalHours", {
-              valueAsNumber: true,
-            })}
-          />
-          {errors.totalHours && (
-            <p className="text-sm text-red-500">{errors.totalHours.message}</p>
-          )}
+        <div className="mt-4 p-3 border rounded-md bg-blue-50">
+          <div className="flex justify-between items-center">
+            <Label htmlFor="totalHours" className="font-medium">Total des heures (équipe)</Label>
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-blue-500" />
+              <span className="text-xl font-bold">
+                {getValues("totalHours").toFixed(2)} h
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            (Fin du chantier - Heures de départ - Pause) × Nombre de personnel
+          </p>
         </div>
       </div>
       
@@ -375,34 +493,45 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
             </Label>
           </div>
           
-          <div>
-            <Label htmlFor="pruningDone" className="flex items-center space-x-2">
+          <div className="flex items-start space-x-2">
+            <div className="flex items-center space-x-2 mt-0.5">
               <Checkbox id="pruningDone" {...control.register("pruningDone")} />
-              <span>Taille</span>
-            </Label>
+              <Label htmlFor="pruningDone" className="font-normal">Taille</Label>
+            </div>
+            
+            {watch("pruningDone") && (
+              <div className="flex-1">
+                <Controller
+                  control={control}
+                  name="pruningProgress"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value.toString()}
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                    >
+                      <SelectTrigger className="w-full h-8">
+                        <SelectValue placeholder="Progression" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">0%</SelectItem>
+                        <SelectItem value="10">10%</SelectItem>
+                        <SelectItem value="20">20%</SelectItem>
+                        <SelectItem value="30">30%</SelectItem>
+                        <SelectItem value="40">40%</SelectItem>
+                        <SelectItem value="50">50%</SelectItem>
+                        <SelectItem value="60">60%</SelectItem>
+                        <SelectItem value="70">70%</SelectItem>
+                        <SelectItem value="80">80%</SelectItem>
+                        <SelectItem value="90">90%</SelectItem>
+                        <SelectItem value="100">100%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            )}
           </div>
         </div>
-        
-        {watch("pruningDone") && (
-          <div className="mt-4">
-            <Label htmlFor="pruningProgress">Avancement de la taille</Label>
-            <Controller
-              control={control}
-              name="pruningProgress"
-              render={({ field }) => (
-                <Slider
-                  defaultValue={[field.value]}
-                  max={100}
-                  step={1}
-                  onValueChange={(value) => field.onChange(value[0])}
-                />
-              )}
-            />
-            <p className="text-sm text-muted-foreground">
-              {watch("pruningProgress")}%
-            </p>
-          </div>
-        )}
         
         <div className="mt-4">
           <Label htmlFor="watering">Arrosage</Label>

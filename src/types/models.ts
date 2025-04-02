@@ -55,7 +55,7 @@ export interface WorkLog {
   timeTracking: {
     departure: string;
     arrival: string;
-    end: string; // Ensuring this property exists
+    end: string;
     breakTime: string; // Keeping this as string to match the form
     totalHours: number;
   };
