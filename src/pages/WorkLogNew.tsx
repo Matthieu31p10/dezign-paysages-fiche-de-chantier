@@ -24,7 +24,7 @@ const WorkLogNew = () => {
         </div>
       </div>
       
-      <WorkLogForm />
+      <WorkLogForm onSuccess={() => navigate('/worklogs')} />
     </div>
   );
 };

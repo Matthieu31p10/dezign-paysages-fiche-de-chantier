@@ -119,6 +119,10 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
     }));
   };
 
+  const handleCancel = () => {
+    navigate('/projects');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -439,7 +443,7 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
           <Button 
             type="button" 
             variant="outline"
-            onClick={() => navigate('/projects')}
+            onClick={handleCancel}
           >
             Annuler
           </Button>
