@@ -21,8 +21,7 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       else {
         const defaultTeam: Team = {
           id: "default-team",
-          name: "Équipe par défaut",
-          members: []
+          name: "Équipe par défaut"
         };
         setTeams([defaultTeam]);
         localStorage.setItem(TEAMS_STORAGE_KEY, JSON.stringify([defaultTeam]));
