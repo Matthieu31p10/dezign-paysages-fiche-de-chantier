@@ -27,8 +27,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     const primaryColor = [141, 198, 63];
     const primaryColorHex = '#8dc63f';
     
-    // Define margins and positions
-    const margin = 20;
+    // Define margins and positions - reduced for better space usage
+    const margin = 15;
     const width = 210 - (margin * 2);
     
     // Function to draw borders around tables and sections
@@ -42,176 +42,181 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     };
     
     // Draw the outer border (green rectangle)
-    drawRect(margin, margin, width, 257);
+    drawRect(margin, margin, width, 267);
     
-    // Add company logo if available
+    // Add company logo if available - smaller size
     if (data.companyLogo) {
       try {
-        // Add logo to the top left
-        pdf.addImage(data.companyLogo, 'PNG', margin + 5, margin + 5, 30, 30);
+        // Add logo to the top left - smaller size
+        pdf.addImage(data.companyLogo, 'PNG', margin + 5, margin + 5, 25, 25);
       } catch (error) {
         console.error('Error adding company logo:', error);
       }
     }
     
-    // Add company info if available
+    // Add company info if available - compact layout
     if (data.companyInfo) {
-      // Company name on right side in italic
-      pdf.setFont('helvetica', 'italic');
-      pdf.setFontSize(11);
-      pdf.text('Nom entreprise :', margin + 110, margin + 10, { align: 'right' });
+      // Company info on right side - reduced font sizes and spacing
+      const infoStartX = margin + 100;
+      pdf.setFontSize(9);
       
-      // Company info on right side
+      // Company name
+      pdf.setFont('helvetica', 'italic');
+      pdf.text('Nom entreprise :', infoStartX, margin + 10, { align: 'right' });
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.text(data.companyInfo.name, margin + 115, margin + 10);
+      pdf.text(data.companyInfo.name, infoStartX + 5, margin + 10);
       
       // Address
       pdf.setFont('helvetica', 'italic');
-      pdf.text('Adresse :', margin + 110, margin + 17, { align: 'right' });
+      pdf.text('Adresse :', infoStartX, margin + 15, { align: 'right' });
       pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.address, margin + 115, margin + 17);
+      pdf.text(data.companyInfo.address, infoStartX + 5, margin + 15);
       
       // Manager name
       pdf.setFont('helvetica', 'italic');
-      pdf.text('Nom et prénom du gérant :', margin + 110, margin + 24, { align: 'right' });
+      pdf.text('Gérant :', infoStartX, margin + 20, { align: 'right' });
       pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.managerName, margin + 115, margin + 24);
+      pdf.text(data.companyInfo.managerName, infoStartX + 5, margin + 20);
       
       // Phone
       pdf.setFont('helvetica', 'italic');
-      pdf.text('Téléphone :', margin + 110, margin + 31, { align: 'right' });
+      pdf.text('Téléphone :', infoStartX, margin + 25, { align: 'right' });
       pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.phone, margin + 115, margin + 31);
+      pdf.text(data.companyInfo.phone, infoStartX + 5, margin + 25);
       
       // Email
       pdf.setFont('helvetica', 'italic');
-      pdf.text('Email :', margin + 110, margin + 38, { align: 'right' });
+      pdf.text('Email :', infoStartX, margin + 30, { align: 'right' });
       pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.email, margin + 115, margin + 38);
+      pdf.text(data.companyInfo.email, infoStartX + 5, margin + 30);
     }
     
-    // Add worklog details if available
+    // Add worklog details if available - optimized spacing
     if (data.workLog && data.project) {
-      // Add title in right side
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Fiche de suivi', margin + 140, margin + 50);
-      
-      // Add date on left side
+      // Add title in right side - moved up
       pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Dates', margin + 90, margin + 50);
-      pdf.setFontSize(10);
-      pdf.text(formatDate(data.workLog.date), margin + 90, margin + 57);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Fiche de suivi', margin + 140, margin + 40);
       
-      // Section: Fiche de suivi
-      const sectionY = margin + 65;
+      // Add date on left side - moved up
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Date', margin + 90, margin + 40);
+      pdf.setFontSize(9);
+      pdf.text(formatDate(data.workLog.date), margin + 90, margin + 45);
+      
+      // Section: Fiche de suivi - moved up
+      const sectionY = margin + 50;
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       
-      // Add worklog header
-      pdf.setFontSize(11);
+      // Add worklog header - reduced size
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Fiche de suivi :', margin + 5, sectionY + 7);
+      pdf.text('Fiche de suivi :', margin + 5, sectionY + 5);
       
       // Draw green background for project name
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(margin + 70, sectionY, width - 70, 10, 'F');
+      pdf.rect(margin + 70, sectionY, width - 70, 8, 'F');
       
       // Add project name with white text
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(11);
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Nom du chantier', margin + (width/2), sectionY + 7, { align: 'center' });
+      pdf.text('Nom du chantier', margin + (width/2), sectionY + 5, { align: 'center' });
       
       // Reset text color
       pdf.setTextColor(0, 0, 0);
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
+      pdf.setFontSize(9);
       
-      // Project info
-      pdf.text(data.project.name, margin + (width/2), sectionY + 17, { align: 'center' });
+      // Project info - moved up
+      pdf.text(data.project.name, margin + (width/2), sectionY + 15, { align: 'center' });
       
-      // Visit duration info
-      pdf.text('Durée du passage', margin + 25, sectionY + 27);
-      pdf.text(`${data.workLog.duration} heures`, margin + 100, sectionY + 27);
+      // Visit duration info - compact layout
+      pdf.text('Durée du passage', margin + 25, sectionY + 23);
+      pdf.text(`${data.workLog.duration} heures`, margin + 100, sectionY + 23);
       
-      // Time tracking section
-      const timeTrackingY = sectionY + 35;
+      // Time tracking section - moved up
+      const timeTrackingY = sectionY + 30;
       
-      // Header with green background
+      // Header with green background - reduced height
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(margin, timeTrackingY, width, 10, 'F');
+      pdf.rect(margin, timeTrackingY, width, 8, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Suivi de temps', margin + (width/2), timeTrackingY + 7, { align: 'center' });
+      pdf.text('Suivi de temps', margin + (width/2), timeTrackingY + 5, { align: 'center' });
       pdf.setTextColor(0, 0, 0);
       
-      // Create time tracking table
-      const timeTrackTableY = timeTrackingY + 10;
+      // Create time tracking table - reduced height
+      const timeTrackTableY = timeTrackingY + 8;
       const colWidth = width / 4;
       
       // Draw table borders
-      drawRect(margin, timeTrackTableY, width, 20);
+      drawRect(margin, timeTrackTableY, width, 16);
       
       // Draw vertical lines
       for (let i = 1; i < 4; i++) {
-        pdf.line(margin + (colWidth * i), timeTrackTableY, margin + (colWidth * i), timeTrackTableY + 20);
+        pdf.line(margin + (colWidth * i), timeTrackTableY, margin + (colWidth * i), timeTrackTableY + 16);
       }
       
       // Draw horizontal line
-      pdf.line(margin, timeTrackTableY + 10, margin + width, timeTrackTableY + 10);
+      pdf.line(margin, timeTrackTableY + 8, margin + width, timeTrackTableY + 8);
       
       // Time tracking header
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Départ', margin + (colWidth / 2), timeTrackTableY + 7, { align: 'center' });
-      pdf.text('Arrivée', margin + (colWidth / 2) + colWidth, timeTrackTableY + 7, { align: 'center' });
-      pdf.text('Fin', margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 7, { align: 'center' });
-      pdf.text('Pause', margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 7, { align: 'center' });
+      pdf.setFontSize(8);
+      pdf.text('Départ', margin + (colWidth / 2), timeTrackTableY + 5, { align: 'center' });
+      pdf.text('Arrivée', margin + (colWidth / 2) + colWidth, timeTrackTableY + 5, { align: 'center' });
+      pdf.text('Fin', margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 5, { align: 'center' });
+      pdf.text('Pause', margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 5, { align: 'center' });
       
       // Time tracking values
       pdf.setFont('helvetica', 'normal');
-      pdf.text(data.workLog.timeTracking.departure, margin + (colWidth / 2), timeTrackTableY + 17, { align: 'center' });
-      pdf.text(data.workLog.timeTracking.arrival, margin + (colWidth / 2) + colWidth, timeTrackTableY + 17, { align: 'center' });
+      pdf.text(data.workLog.timeTracking.departure, margin + (colWidth / 2), timeTrackTableY + 13, { align: 'center' });
+      pdf.text(data.workLog.timeTracking.arrival, margin + (colWidth / 2) + colWidth, timeTrackTableY + 13, { align: 'center' });
       
       if (data.endTime) {
-        pdf.text(data.endTime, margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 17, { align: 'center' });
+        pdf.text(data.endTime, margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 13, { align: 'center' });
       } else {
-        pdf.text('--:--', margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 17, { align: 'center' });
+        pdf.text('--:--', margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 13, { align: 'center' });
       }
       
-      pdf.text(`${data.workLog.timeTracking.breakTime} h`, margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 17, { align: 'center' });
+      pdf.text(`${data.workLog.timeTracking.breakTime} h`, margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 13, { align: 'center' });
       
-      // Personnel section
-      const personnelY = timeTrackTableY + 30;
+      // Personnel section - moved up and reduced
+      const personnelY = timeTrackTableY + 22;
       pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
       pdf.text('Personnel:', margin + 5, personnelY);
       
-      // Draw rectangle for personnel
-      drawRect(margin, personnelY + 3, width, 15);
+      // Draw rectangle for personnel - reduced height
+      drawRect(margin, personnelY + 2, width, 12);
       
       // Add personnel list
       pdf.setFont('helvetica', 'normal');
-      pdf.text(data.workLog.personnel.join(', '), margin + 5, personnelY + 13);
+      pdf.setFontSize(8);
+      pdf.text(data.workLog.personnel.join(', '), margin + 5, personnelY + 10);
       
-      // Tasks performed section
-      const tasksY = personnelY + 28;
+      // Tasks performed section - moved up
+      const tasksY = personnelY + 18;
       
-      // Header with green background
+      // Header with green background - reduced height
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(margin, tasksY, width, 10, 'F');
+      pdf.rect(margin, tasksY, width, 8, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Travaux effectué', margin + (width/2), tasksY + 7, { align: 'center' });
+      pdf.setFontSize(9);
+      pdf.text('Travaux effectués', margin + (width/2), tasksY + 5, { align: 'center' });
       pdf.setTextColor(0, 0, 0);
       
-      // Draw rectangle for tasks
-      drawRect(margin, tasksY + 10, width, 40);
+      // Draw rectangle for tasks - reduced height
+      drawRect(margin, tasksY + 8, width, 30);
       
       // Add tasks performed
       pdf.setFont('helvetica', 'normal');
-      let taskY = tasksY + 20;
+      pdf.setFontSize(8);
+      let taskY = tasksY + 15;
       const tasksPerformed = [];
       
       if (data.workLog.tasksPerformed.mowing) tasksPerformed.push('Tonte');
@@ -225,45 +230,52 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       const colMaxItems = Math.ceil(tasksPerformed.length / 2);
       for (let i = 0; i < tasksPerformed.length; i++) {
         const xPos = i < colMaxItems ? margin + 5 : margin + (width / 2) + 5;
-        const yPos = i < colMaxItems ? taskY + (i * 7) : taskY + ((i - colMaxItems) * 7);
+        const yPos = i < colMaxItems ? taskY + (i * 6) : taskY + ((i - colMaxItems) * 6);
         pdf.text(`• ${tasksPerformed[i]}`, xPos, yPos);
       }
       
-      // Watering section
-      const wateringY = tasksY + 60;
+      // Watering section - moved up
+      const wateringY = tasksY + 40;
       pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
       pdf.text('Arrosages:', margin + 5, wateringY);
       
-      // Draw rectangle for watering
-      drawRect(margin, wateringY + 3, width, 15);
+      // Draw rectangle for watering - reduced height
+      drawRect(margin, wateringY + 2, width, 12);
       
       // Add watering info
       pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
       const wateringStatus = 
         data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
         data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
         
-      pdf.text(wateringStatus, margin + 5, wateringY + 13);
+      pdf.text(wateringStatus, margin + 5, wateringY + 9);
       
       // Add water consumption if available
       if (data.workLog.waterConsumption !== undefined) {
-        pdf.text(`Consommation d'eau: ${data.workLog.waterConsumption} m³`, margin + 100, wateringY + 13);
+        pdf.text(`Consommation d'eau: ${data.workLog.waterConsumption} m³`, margin + 100, wateringY + 9);
       }
       
-      // Notes section
-      const notesY = wateringY + 28;
+      // Notes section - moved up and increased height to use remaining space
+      const notesY = wateringY + 18;
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Notes et Observation:', margin + 5, notesY);
+      pdf.setFontSize(9);
+      pdf.text('Notes et Observations:', margin + 5, notesY);
       
-      // Draw rectangle for notes
-      drawRect(margin, notesY + 3, width, 40);
+      // Calculate remaining space to bottom of page
+      const remainingSpace = 267 - (notesY - margin);
+      
+      // Draw rectangle for notes - use available space
+      drawRect(margin, notesY + 2, width, remainingSpace - 5);
       
       // Add notes if available
       if (data.workLog.notes) {
         pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
         // Split notes into multiple lines if needed
         const textLines = pdf.splitTextToSize(data.workLog.notes, width - 10);
-        pdf.text(textLines, margin + 5, notesY + 13);
+        pdf.text(textLines, margin + 5, notesY + 9);
       }
     }
     
