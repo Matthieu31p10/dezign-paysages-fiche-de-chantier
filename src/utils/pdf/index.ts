@@ -5,6 +5,19 @@ import { generateProjectPDF } from './projectPDF';
 import { generateReportPDF } from './reportPDF';
 
 /**
+ * PDF options for customizing content
+ */
+export interface PDFOptions {
+  includeContactInfo?: boolean;
+  includeCompanyInfo?: boolean;
+  includePersonnel?: boolean;
+  includeTasks?: boolean;
+  includeWatering?: boolean;
+  includeNotes?: boolean;
+  includeTimeTracking?: boolean;
+}
+
+/**
  * Main PDF generation interface
  */
 interface PDFData {
@@ -13,6 +26,7 @@ interface PDFData {
   endTime?: string;
   companyInfo?: CompanyInfo;
   companyLogo?: string;
+  pdfOptions?: PDFOptions;
 }
 
 /**

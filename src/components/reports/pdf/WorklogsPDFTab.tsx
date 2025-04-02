@@ -9,12 +9,40 @@ import { generatePDF } from '@/utils/pdf';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/helpers';
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+
+interface PDFOptions {
+  includeContactInfo: boolean;
+  includeCompanyInfo: boolean;
+  includePersonnel: boolean;
+  includeTasks: boolean;
+  includeWatering: boolean;
+  includeNotes: boolean;
+  includeTimeTracking: boolean;
+}
 
 const WorklogsPDFTab = () => {
   const { workLogs, getProjectById, settings } = useApp();
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>('');
-  const [includeContactInfo, setIncludeContactInfo] = useState(true);
-  const [includeCompanyInfo, setIncludeCompanyInfo] = useState(true);
+  
+  // Initialize PDF options with default values (all enabled)
+  const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
+    includeContactInfo: true,
+    includeCompanyInfo: true,
+    includePersonnel: true,
+    includeTasks: true,
+    includeWatering: true,
+    includeNotes: true,
+    includeTimeTracking: true
+  });
+  
+  const handleOptionChange = (option: keyof PDFOptions, value: boolean) => {
+    setPdfOptions(prev => ({
+      ...prev,
+      [option]: value
+    }));
+  };
   
   const handleGenerateWorkLogPDF = async () => {
     if (!selectedWorkLogId) {
@@ -25,15 +53,16 @@ const WorklogsPDFTab = () => {
     const workLog = workLogs.find(log => log.id === selectedWorkLogId);
     if (!workLog) return;
     
-    const project = includeContactInfo ? getProjectById(workLog.projectId) : undefined;
+    const project = pdfOptions.includeContactInfo ? getProjectById(workLog.projectId) : undefined;
     
     try {
-      // Using the generatePDF function with company info
+      // Using the generatePDF function with company info and options
       const pdfData = {
         workLog,
         project,
-        companyInfo: includeCompanyInfo ? settings.companyInfo : undefined,
-        companyLogo: includeCompanyInfo ? settings.companyLogo : undefined
+        companyInfo: pdfOptions.includeCompanyInfo ? settings.companyInfo : undefined,
+        companyLogo: pdfOptions.includeCompanyInfo ? settings.companyLogo : undefined,
+        pdfOptions
       };
       
       const fileName = await generatePDF(pdfData);
@@ -70,33 +99,107 @@ const WorklogsPDFTab = () => {
         </Select>
       </div>
       
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="include-contact-info"
-            checked={includeContactInfo}
-            onCheckedChange={(checked) => setIncludeContactInfo(checked as boolean)}
-          />
-          <label 
-            htmlFor="include-contact-info"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Inclure les informations de contact
-          </label>
-        </div>
+      <div className="border rounded-md p-3 space-y-3">
+        <h3 className="font-medium">Options d'affichage</h3>
         
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="include-company-info"
-            checked={includeCompanyInfo}
-            onCheckedChange={(checked) => setIncludeCompanyInfo(checked as boolean)}
-          />
-          <label 
-            htmlFor="include-company-info"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Inclure les informations de l'entreprise
-          </label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-company-info"
+              checked={pdfOptions.includeCompanyInfo}
+              onCheckedChange={(checked) => handleOptionChange('includeCompanyInfo', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-company-info"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Informations de l'entreprise
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-contact-info"
+              checked={pdfOptions.includeContactInfo}
+              onCheckedChange={(checked) => handleOptionChange('includeContactInfo', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-contact-info"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Informations du chantier
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-personnel"
+              checked={pdfOptions.includePersonnel}
+              onCheckedChange={(checked) => handleOptionChange('includePersonnel', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-personnel"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Personnel
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-tasks"
+              checked={pdfOptions.includeTasks}
+              onCheckedChange={(checked) => handleOptionChange('includeTasks', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-tasks"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Travaux effectués
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-watering"
+              checked={pdfOptions.includeWatering}
+              onCheckedChange={(checked) => handleOptionChange('includeWatering', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-watering"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Arrosages
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-notes"
+              checked={pdfOptions.includeNotes}
+              onCheckedChange={(checked) => handleOptionChange('includeNotes', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-notes"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Notes et observations
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-time-tracking"
+              checked={pdfOptions.includeTimeTracking}
+              onCheckedChange={(checked) => handleOptionChange('includeTimeTracking', checked as boolean)}
+            />
+            <label 
+              htmlFor="include-time-tracking"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Suivi de temps
+            </label>
+          </div>
         </div>
       </div>
       
