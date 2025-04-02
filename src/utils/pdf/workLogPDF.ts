@@ -185,7 +185,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.text(`${data.workLog.timeTracking.breakTime} h`, margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 13, { align: 'center' });
       
       // Personnel section - moved up and reduced
-      const personnelY = timeTrackTableY + 22;
+      const personnelY = timeTrackTableY + 24;
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(9);
       pdf.text('Personnel:', margin + 5, personnelY);
@@ -198,10 +198,10 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.setFontSize(8);
       pdf.text(data.workLog.personnel.join(', '), margin + 5, personnelY + 10);
       
-      // Tasks performed section - moved up
-      const tasksY = personnelY + 18;
+      // Tasks performed section - moved up and added a dedicated section
+      const tasksY = personnelY + 20;
       
-      // Header with green background - reduced height
+      // Header with green background for "Travaux effectués"
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.rect(margin, tasksY, width, 8, 'F');
       pdf.setTextColor(255, 255, 255);
@@ -210,32 +210,75 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.text('Travaux effectués', margin + (width/2), tasksY + 5, { align: 'center' });
       pdf.setTextColor(0, 0, 0);
       
-      // Draw rectangle for tasks - reduced height
-      drawRect(margin, tasksY + 8, width, 30);
+      // Draw rectangle for tasks - increased height to fit more content
+      drawRect(margin, tasksY + 8, width, 45);
       
-      // Add tasks performed
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      let taskY = tasksY + 15;
-      const tasksPerformed = [];
+      // Create a two-column layout for tasks
+      const leftColumnX = margin + 5;
+      const rightColumnX = margin + (width/2) + 5;
+      let currentY = tasksY + 16;
       
-      if (data.workLog.tasksPerformed.mowing) tasksPerformed.push('Tonte');
-      if (data.workLog.tasksPerformed.brushcutting) tasksPerformed.push('Débroussailleuse');
-      if (data.workLog.tasksPerformed.blower) tasksPerformed.push('Souffleur');
-      if (data.workLog.tasksPerformed.manualWeeding) tasksPerformed.push('Désherbage manuel');
-      if (data.workLog.tasksPerformed.whiteVinegar) tasksPerformed.push('Vinaigre blanc');
-      if (data.workLog.tasksPerformed.pruning.done) tasksPerformed.push(`Taille (avancement: ${data.workLog.tasksPerformed.pruning.progress}%)`);
+      // Utility function to add task with checkmark
+      const addTask = (label: string, isDone: boolean, x: number, y: number) => {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.text(label, x, y);
+        
+        // Add checkmark or X
+        pdf.text(isDone ? '✓' : '✗', x - 5, y);
+      };
       
-      // Add tasks in two columns
-      const colMaxItems = Math.ceil(tasksPerformed.length / 2);
-      for (let i = 0; i < tasksPerformed.length; i++) {
-        const xPos = i < colMaxItems ? margin + 5 : margin + (width / 2) + 5;
-        const yPos = i < colMaxItems ? taskY + (i * 6) : taskY + ((i - colMaxItems) * 6);
-        pdf.text(`• ${tasksPerformed[i]}`, xPos, yPos);
+      // Add all tasks in left column
+      addTask('Tonte', data.workLog.tasksPerformed.mowing, leftColumnX, currentY);
+      currentY += 8;
+      addTask('Débroussailleuse', data.workLog.tasksPerformed.brushcutting, leftColumnX, currentY);
+      currentY += 8;
+      addTask('Souffleur', data.workLog.tasksPerformed.blower, leftColumnX, currentY);
+      currentY += 8;
+      addTask('Désherbage manuel', data.workLog.tasksPerformed.manualWeeding, leftColumnX, currentY);
+      
+      // Reset Y for right column
+      currentY = tasksY + 16;
+      
+      // Add tasks in right column
+      addTask('Vinaigre blanc', data.workLog.tasksPerformed.whiteVinegar, rightColumnX, currentY);
+      currentY += 8;
+      
+      // Add pruning with progress if done
+      addTask('Taille', data.workLog.tasksPerformed.pruning.done, rightColumnX, currentY);
+      
+      if (data.workLog.tasksPerformed.pruning.done) {
+        currentY += 8;
+        pdf.text(`Avancement: ${data.workLog.tasksPerformed.pruning.progress}%`, rightColumnX + 5, currentY);
+        
+        // Add progress bar
+        const progressBarWidth = 40;
+        const progressBarHeight = 2;
+        const progressX = rightColumnX + 5;
+        const progressY = currentY + 3;
+        
+        // Draw progress bar background
+        pdf.setDrawColor(200, 200, 200);
+        pdf.setFillColor(200, 200, 200);
+        pdf.rect(progressX, progressY, progressBarWidth, progressBarHeight, 'F');
+        
+        // Draw progress
+        pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.rect(progressX, progressY, (progressBarWidth * data.workLog.tasksPerformed.pruning.progress) / 100, progressBarHeight, 'F');
       }
       
-      // Watering section - moved up
-      const wateringY = tasksY + 40;
+      currentY += 16;
+      
+      // Add watering status
+      const wateringStatus = 
+        data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
+        data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
+      
+      pdf.text(`Arrosage: ${wateringStatus}`, rightColumnX, currentY);
+      
+      // Watering section moved down after tasks performed
+      const wateringY = tasksY + 55;
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(9);
       pdf.text('Arrosages:', margin + 5, wateringY);
@@ -246,10 +289,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       // Add watering info
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
-      const wateringStatus = 
-        data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
-        data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
-        
+      
       pdf.text(wateringStatus, margin + 5, wateringY + 9);
       
       // Add water consumption if available
@@ -257,7 +297,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
         pdf.text(`Consommation d'eau: ${data.workLog.waterConsumption} m³`, margin + 100, wateringY + 9);
       }
       
-      // Notes section - moved up and increased height to use remaining space
+      // Notes section - moved down and adjusted height
       const notesY = wateringY + 18;
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(9);
