@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -112,7 +111,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const endTime = watch("end");
   const breakTimeValue = watch("breakTime");
   
-  // Filtrer les projets par équipe
   useEffect(() => {
     if (teamFilter) {
       const filtered = projectInfos.filter(p => p.team === teamFilter);
@@ -122,13 +120,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     }
   }, [teamFilter, projectInfos]);
   
-  // Mettre à jour le projet sélectionné et sa durée prévue
   useEffect(() => {
     if (selectedProjectId) {
       const project = projectInfos.find(p => p.id === selectedProjectId);
       setSelectedProject(project || null);
       
-      // Récupérer la durée prévue depuis la fiche de chantier
       if (project && project.visitDuration) {
         setValue('duration', project.visitDuration);
       }
@@ -137,10 +133,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     }
   }, [selectedProjectId, projectInfos, setValue]);
   
-  // Calculer le total des heures basé sur la formule
   useEffect(() => {
     if (departureTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
-      // Convertir les heures en minutes
       const getMinutes = (timeStr: string) => {
         const [hours, minutes] = timeStr.split(':').map(Number);
         return hours * 60 + minutes;
@@ -151,9 +145,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       const breakMinutes = parseFloat(breakTimeValue) * 60;
       
       let totalMinutes = endMinutes - departureMinutes - breakMinutes;
-      if (totalMinutes < 0) totalMinutes += 24 * 60; // Gérer le passage au jour suivant
+      if (totalMinutes < 0) totalMinutes += 24 * 60;
       
-      // Calculer le total d'heures pour toute l'équipe
       const totalPersonnelHours = (totalMinutes / 60) * selectedPersonnel.length;
       
       setValue('totalHours', parseFloat(totalPersonnelHours.toFixed(2)));
@@ -186,7 +179,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   
   const handleTeamFilterChange = (team: string) => {
     setValue('teamFilter', team);
-    // Réinitialiser le projet sélectionné si nécessaire
     if (selectedProjectId) {
       const projectExists = projectInfos.some(p => p.id === selectedProjectId && p.team === team);
       if (!projectExists && team !== "") {
@@ -226,11 +218,9 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     
     try {
       if (initialData) {
-        // Update existing work log
         await updateWorkLog({ ...initialData, ...payload, id: initialData.id });
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
-        // Create new work log
         await addWorkLog(payload);
         toast.success("Fiche de suivi créée avec succès!");
       }
@@ -263,7 +253,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
                   <SelectValue placeholder="Toutes les équipes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les équipes</SelectItem>
+                  <SelectItem value="all-teams">Toutes les équipes</SelectItem>
                   {teams.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}

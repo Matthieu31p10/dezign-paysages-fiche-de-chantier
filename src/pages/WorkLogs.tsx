@@ -31,7 +31,7 @@ const WorkLogs = () => {
     const matchesYear = logDate.getFullYear() === selectedYear;
     
     // Filtre par mois (si sélectionné)
-    const matchesMonth = selectedMonth === 'all' || logDate.getMonth() === (selectedMonth as number - 1);
+    const matchesMonth = selectedMonth === 'all' || logDate.getMonth() === (typeof selectedMonth === 'number' ? selectedMonth - 1 : 0);
     
     return matchesProject && matchesTeam && matchesYear && matchesMonth;
   });
@@ -116,13 +116,13 @@ const WorkLogs = () => {
             <SelectContent>
               {availableYears.length > 0 ? (
                 availableYears.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
+                  <SelectItem key={year.toString()} value={year.toString()}>
+                    {year.toString()}
                   </SelectItem>
                 ))
               ) : (
                 <SelectItem value={getCurrentYear().toString()}>
-                  {getCurrentYear()}
+                  {getCurrentYear().toString()}
                 </SelectItem>
               )}
             </SelectContent>

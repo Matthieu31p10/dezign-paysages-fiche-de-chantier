@@ -33,7 +33,7 @@ export const TeamsSelect = ({ value, onValueChange }: TeamsSelectProps) => {
             </SelectItem>
           ))
         ) : (
-          <SelectItem value="" disabled>
+          <SelectItem value="no-teams-available" disabled>
             Aucune équipe disponible
           </SelectItem>
         )}

@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Team } from '@/types/models';
 import { TeamsContextType } from './types';
 import { toast } from 'sonner';
-import { useProjects } from './ProjectsContext';
 
 const TeamsContext = createContext<TeamsContextType | undefined>(undefined);
 
@@ -12,18 +11,19 @@ const TEAMS_STORAGE_KEY = 'landscaping-teams';
 
 export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [teams, setTeams] = useState<Team[]>([]);
-  const { projectInfos } = useProjects();
 
   // Load data from localStorage on initial render
   useEffect(() => {
     try {
       const storedTeams = localStorage.getItem(TEAMS_STORAGE_KEY);
-      
-      if (storedTeams) {
-        setTeams(JSON.parse(storedTeams));
-      } else {
-        // Add default team if none exists
-        const defaultTeam = { id: crypto.randomUUID(), name: 'Équipe principale' };
+      if (storedTeams) setTeams(JSON.parse(storedTeams));
+      // Initialize with a default team if none exist
+      else {
+        const defaultTeam: Team = {
+          id: "default-team",
+          name: "Équipe par défaut",
+          members: []
+        };
         setTeams([defaultTeam]);
         localStorage.setItem(TEAMS_STORAGE_KEY, JSON.stringify([defaultTeam]));
       }
@@ -56,11 +56,12 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteTeam = (id: string) => {
-    const teamInUse = projectInfos.some(project => project.team === id);
-    if (teamInUse) {
-      toast.error('Impossible de supprimer l\'équipe car elle est assignée à un chantier');
+    // Prevent deleting the last team
+    if (teams.length <= 1) {
+      toast.error('Impossible de supprimer la dernière équipe');
       return;
     }
+    
     setTeams((prev) => prev.filter((t) => t.id !== id));
     toast.success('Équipe supprimée');
   };
