@@ -1,6 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
+import { AppProviders } from './context/AppProviders';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
 import WorkLogs from './pages/WorkLogs';
@@ -22,7 +22,7 @@ import './App.css';
 
 function App() {
   return (
-    <AppProvider>
+    <AppProviders>
       <Router>
         <Routes>
           {/* Public routes */}
@@ -50,7 +50,7 @@ function App() {
       </Router>
       <Toaster />
       <SonnerToaster position="top-right" richColors />
-    </AppProvider>
+    </AppProviders>
   );
 }
 
