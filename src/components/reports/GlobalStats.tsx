@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,18 +99,22 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
   const teamWithMostWork = teamWorkLogs.sort((a, b) => b.hours - a.hours)[0] || { hours: 0 };
   
   // Personnel statistics - extract all unique personnel from work logs
+  // For each log, divide the total hours by the number of personnel
   const personnelHours: PersonnelHours[] = [];
   
   filteredLogs.forEach(log => {
-    if (log.personnel && Array.isArray(log.personnel)) {
+    if (log.personnel && Array.isArray(log.personnel) && log.personnel.length > 0) {
+      // Calculate hours per person by dividing the total hours by the number of personnel
+      const hoursPerPerson = log.timeTracking.totalHours / log.personnel.length;
+      
       log.personnel.forEach(person => {
         const personIndex = personnelHours.findIndex(p => p.name === person);
         if (personIndex >= 0) {
-          personnelHours[personIndex].hours += log.timeTracking.totalHours;
+          personnelHours[personIndex].hours += hoursPerPerson;
         } else {
           personnelHours.push({
             name: person,
-            hours: log.timeTracking.totalHours
+            hours: hoursPerPerson
           });
         }
       });
