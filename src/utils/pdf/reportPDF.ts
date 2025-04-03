@@ -2,6 +2,7 @@
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { formatDate } from '../date';
 import jsPDF from 'jspdf';
+import { calculateWaterConsumptionStats } from '../statistics';
 
 /**
  * Generate a comprehensive report PDF with all projects and work logs
@@ -62,11 +63,44 @@ export const generateReportPDF = async (projects: ProjectInfo[], workLogs: WorkL
       if (projectWorkLogs.length > 0) {
         const lastVisit = new Date(Math.max(...projectWorkLogs.map(log => new Date(log.date).getTime())));
         pdf.text(`Dernière visite: ${formatDate(lastVisit)}`, 25, currentY);
+        currentY += 7;
       } else {
         pdf.text('Aucune visite enregistrée', 25, currentY);
+        currentY += 7;
       }
       
-      currentY += 15;
+      // Add water consumption data if project has irrigation
+      if (project.irrigation === 'irrigation') {
+        const waterStats = calculateWaterConsumptionStats(projectWorkLogs);
+        
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Bilan de consommation d\'eau:', 25, currentY);
+        currentY += 7;
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Consommation totale: ${waterStats.totalConsumption} m³`, 30, currentY);
+        currentY += 7;
+        
+        if (waterStats.lastReading) {
+          pdf.text(`Dernier relevé: ${formatDate(waterStats.lastReading.date)} - ${waterStats.lastReading.consumption} m³`, 30, currentY);
+          currentY += 7;
+        }
+        
+        if (waterStats.monthlyConsumption.length > 0) {
+          pdf.text('Consommation mensuelle:', 30, currentY);
+          currentY += 5;
+          
+          waterStats.monthlyConsumption.forEach(monthly => {
+            const monthName = new Date(2023, monthly.month, 1).toLocaleString('fr-FR', { month: 'long' });
+            pdf.text(`- ${monthName}: ${monthly.consumption} m³`, 35, currentY);
+            currentY += 5;
+          });
+          
+          currentY += 2;
+        }
+      }
+      
+      currentY += 8;
     });
     
     // Save the PDF

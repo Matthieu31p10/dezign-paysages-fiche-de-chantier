@@ -245,8 +245,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
         pdf.setTextColor(0, 0, 0);
         
         // Draw rectangle for tasks - height will depend on content
-        const tasksHeight = 45;
-        drawRect(margin, currentY + 8, width, tasksHeight);
+        const tasksBoxHeight = 45;
+        drawRect(margin, currentY + 8, width, tasksBoxHeight);
         
         // Create a two-column layout for tasks
         const leftColumnX = margin + 5;
@@ -312,7 +312,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
         
         pdf.text(`Arrosage: ${wateringStatus}`, rightColumnX, tasksY);
         
-        currentY += 8 + tasksHeight;
+        currentY += 8 + tasksBoxHeight;
       }
       
       // Watering section
