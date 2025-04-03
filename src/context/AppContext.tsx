@@ -7,7 +7,7 @@ import { useWorkLogs } from './WorkLogsContext';
 import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
 
-// Define the AppContextType more explicitly here since we're not using it from types
+// Define the AppContextType explicitly here
 interface AppContextType {
   auth: AuthContextType;
   projects: ProjectsContextType;
