@@ -51,18 +51,9 @@ export const generateProjectPDF = async (project: ProjectInfo, workLogs: WorkLog
       const headers = ['Date', 'Durée', 'Personnel', 'Tâches principales'];
       const rows = workLogs.map(log => {
         const tasks = [];
-        if (log.tasksPerformed.watering !== 'none') {
-          tasks.push('Arrosage');
-        }
-        
-        // Add custom tasks
-        if (log.tasksPerformed.customTasks) {
-          Object.entries(log.tasksPerformed.customTasks).forEach(([taskId, isDone]) => {
-            if (isDone) {
-              tasks.push(`Tâche ${taskId.slice(0, 4)}`);
-            }
-          });
-        }
+        if (log.tasksPerformed.mowing) tasks.push('Tonte');
+        if (log.tasksPerformed.brushcutting) tasks.push('Débroussaillage');
+        if (log.tasksPerformed.pruning.done) tasks.push('Taille');
         
         return [
           formatDate(log.date),
