@@ -277,41 +277,23 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
                     </div>
                     
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {log.tasksPerformed.mowing && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Tonte
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.brushcutting && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Débroussaillage
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.blower && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Souffleur
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.manualWeeding && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Désherbage manuel
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.whiteVinegar && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Vinaigre blanc
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.pruning.done && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Taille {log.tasksPerformed.pruning.progress}%
-                        </Badge>
-                      )}
                       {log.tasksPerformed.watering !== 'none' && (
                         <Badge variant="outline" className="bg-slate-50">
                           Arrosage {log.tasksPerformed.watering === 'on' ? 'allumé' : 'coupé'}
                         </Badge>
                       )}
+                      
+                      {log.tasksPerformed.customTasks && Object.entries(log.tasksPerformed.customTasks).map(([taskId, isCompleted]) => {
+                        if (isCompleted) {
+                          const progress = log.tasksPerformed.customTasksProgress?.[taskId];
+                          return (
+                            <Badge key={taskId} variant="outline" className="bg-slate-50">
+                              {taskId} {progress !== undefined ? `${progress}%` : ''}
+                            </Badge>
+                          );
+                        }
+                        return null;
+                      })}
                     </div>
                   </div>
                 );
