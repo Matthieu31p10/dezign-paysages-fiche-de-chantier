@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,7 +61,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       notes: initialData?.notes || "",
       waterConsumption: initialData?.waterConsumption || undefined,
       teamFilter: "",
-      customTasks: initialData?.tasksPerformed?.customTasks || {},
     },
   });
   
@@ -194,7 +192,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           progress: data.pruningProgress,
         },
         watering: data.watering,
-        customTasks: data.customTasks,
       },
       notes: data.notes,
       waterConsumption: data.waterConsumption,
@@ -248,7 +245,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         control={control}
         register={register}
         watch={watch}
-        setValue={setValue}
       />
       
       {selectedProject && (

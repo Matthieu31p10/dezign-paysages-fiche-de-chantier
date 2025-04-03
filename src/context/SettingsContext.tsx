@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppSettings, CustomTask } from '@/types/models';
+import { AppSettings } from '@/types/models';
 import { SettingsContextType } from './types';
+import { toast } from 'sonner';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -11,53 +12,38 @@ const SETTINGS_STORAGE_KEY = 'landscaping-settings';
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<AppSettings>({});
 
-  // Load settings from localStorage on initial render
+  // Load data from localStorage on initial render
   useEffect(() => {
     try {
       const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (storedSettings) setSettings(JSON.parse(storedSettings));
+      if (storedSettings) {
+        const parsedSettings = JSON.parse(storedSettings);
+        if (!parsedSettings.personnel) {
+          parsedSettings.personnel = [];
+        }
+        setSettings(parsedSettings);
+      } else {
+        setSettings({ 
+          personnel: [] 
+        });
+      }
     } catch (error) {
       console.error('Error loading settings from localStorage:', error);
+      toast.error('Erreur lors du chargement des paramètres');
     }
   }, []);
 
-  // Save settings to localStorage whenever they change
+  // Save data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 
-  // Update settings
   const updateSettings = (newSettings: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
-  };
-
-  // Add a custom task
-  const addCustomTask = (taskName: string): CustomTask => {
-    const newTask: CustomTask = {
-      id: crypto.randomUUID(),
-      name: taskName,
-    };
-
-    setSettings((prev) => {
-      const customTasks = prev.customTasks || [];
-      return {
-        ...prev,
-        customTasks: [...customTasks, newTask],
-      };
-    });
-
-    return newTask;
-  };
-
-  // Delete a custom task
-  const deleteCustomTask = (id: string) => {
-    setSettings((prev) => {
-      const customTasks = prev.customTasks || [];
-      return {
-        ...prev,
-        customTasks: customTasks.filter((task) => task.id !== id),
-      };
-    });
+    setSettings(prev => ({
+      ...prev,
+      ...newSettings
+    }));
+    toast.success('Paramètres mis à jour');
   };
 
   return (
@@ -65,8 +51,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         settings,
         updateSettings,
-        addCustomTask,
-        deleteCustomTask,
       }}
     >
       {children}
