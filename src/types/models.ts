@@ -66,16 +66,22 @@ export interface WorkLog {
   };
   tasksPerformed: {
     mowing: boolean;
+    mowingProgress: number;
     brushcutting: boolean;
+    brushcuttingProgress: number;
     blower: boolean;
+    blowerProgress: number;
     manualWeeding: boolean;
+    manualWeedingProgress: number;
     whiteVinegar: boolean;
+    whiteVinegarProgress: number;
     pruning: {
       done: boolean;
       progress: number;
     };
     watering: 'none' | 'on' | 'off';
     customTasks?: { [id: string]: boolean }; // Add custom tasks
+    customTasksProgress?: { [id: string]: number }; // Add custom tasks progress
   };
   notes?: string; // Field for adding notes
   waterConsumption?: number; // Field for water consumption in m3
