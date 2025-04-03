@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { WorkLog } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
@@ -20,20 +19,17 @@ interface WorkLogListProps {
 
 const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
   const navigate = useNavigate();
-  const { deleteWorkLog, getProjectById } = useApp();
+  const { deleteWorkLog, getProjectById, settings } = useApp();
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [sortOption, setSortOption] = useState<string>('date-desc');
   
-  // Filter work logs for the selected year
   const yearFilteredLogs = selectedYear 
     ? filterWorkLogsByYear(workLogs, selectedYear) 
     : workLogs;
   
-  // Get available years from the work logs
   const availableYears = getYearsFromWorkLogs(workLogs);
   
-  // Filter logs by search term
   const filteredLogs = yearFilteredLogs.filter(log => {
     if (!search.trim()) return true;
     
@@ -47,7 +43,6 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     );
   });
   
-  // Sort logs based on the selected option
   const sortedLogs = [...filteredLogs].sort((a, b) => {
     switch(sortOption) {
       case 'date-asc':
@@ -71,10 +66,8 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     }
   });
   
-  // Group logs by month (after sorting)
   const groupedLogs = groupWorkLogsByMonth(sortedLogs);
   
-  // Sort months in the correct order based on the sort option
   const sortedMonths = Object.keys(groupedLogs).sort((a, b) => {
     const [monthA, yearA] = a.split('-').map(Number);
     const [monthB, yearB] = b.split('-').map(Number);
@@ -92,7 +85,6 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     deleteWorkLog(id);
   };
   
-  // Generate worklog code format (DZFS + 5 digits)
   const generateWorkLogCode = (index: number) => {
     return `DZFS${String(index + 1).padStart(5, '0')}`;
   };
@@ -277,41 +269,27 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
                     </div>
                     
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {log.tasksPerformed.mowing && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Tonte
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.brushcutting && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Débroussaillage
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.blower && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Souffleur
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.manualWeeding && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Désherbage manuel
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.whiteVinegar && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Vinaigre blanc
-                        </Badge>
-                      )}
-                      {log.tasksPerformed.pruning.done && (
-                        <Badge variant="outline" className="bg-slate-50">
-                          Taille {log.tasksPerformed.pruning.progress}%
-                        </Badge>
-                      )}
                       {log.tasksPerformed.watering !== 'none' && (
                         <Badge variant="outline" className="bg-slate-50">
                           Arrosage {log.tasksPerformed.watering === 'on' ? 'allumé' : 'coupé'}
                         </Badge>
                       )}
+                      
+                      {log.tasksPerformed.customTasks && Object.entries(log.tasksPerformed.customTasks).map(([taskId, isDone]) => {
+                        if (!isDone) return null;
+                        
+                        const customTask = settings.customTasks?.find(task => task.id === taskId);
+                        if (!customTask) return null;
+                        
+                        const progress = log.tasksPerformed.customTasksProgress?.[taskId];
+                        const progressText = progress !== undefined ? ` ${progress}%` : '';
+                        
+                        return (
+                          <Badge key={taskId} variant="outline" className="bg-slate-50">
+                            {customTask.name}{progressText}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </div>
                 );

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +17,12 @@ interface GlobalStatsProps {
 interface PersonnelHours {
   name: string;
   hours: number;
+}
+
+interface TaskCount {
+  id: string;
+  name: string;
+  count: number;
 }
 
 const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsProps) => {
@@ -51,27 +56,32 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
     ? Math.round((totalCompletedHours / totalPlannedHours) * 100) 
     : 0;
   
-  // Task statistics
-  const taskStats = {
-    mowing: filteredLogs.filter(log => log.tasksPerformed?.mowing).length,
-    brushcutting: filteredLogs.filter(log => log.tasksPerformed?.brushcutting).length,
-    blower: filteredLogs.filter(log => log.tasksPerformed?.blower).length,
-    manualWeeding: filteredLogs.filter(log => log.tasksPerformed?.manualWeeding).length,
-    whiteVinegar: filteredLogs.filter(log => log.tasksPerformed?.whiteVinegar).length,
-    pruning: filteredLogs.filter(log => log.tasksPerformed?.pruning?.done).length,
-  };
+  // Count custom tasks and their frequency
+  const taskCounts: { [id: string]: TaskCount } = {};
+  
+  filteredLogs.forEach(log => {
+    if (log.tasksPerformed?.customTasks) {
+      Object.entries(log.tasksPerformed.customTasks).forEach(([taskId, isDone]) => {
+        if (isDone) {
+          if (!taskCounts[taskId]) {
+            taskCounts[taskId] = {
+              id: taskId,
+              name: `Tâche ${taskId.slice(0, 4)}`, // Default name
+              count: 0
+            };
+          }
+          taskCounts[taskId].count++;
+        }
+      });
+    }
+  });
   
   // Get task statistics in descending order
-  const sortedTasks = Object.entries(taskStats)
-    .sort((a, b) => b[1] - a[1])
-    .map(([task, count]) => ({
-      name: task === 'mowing' ? 'Tonte' : 
-           task === 'brushcutting' ? 'Débroussaillage' :
-           task === 'blower' ? 'Souffleur' :
-           task === 'manualWeeding' ? 'Désherbage' :
-           task === 'whiteVinegar' ? 'Vinaigre' :
-           'Taille',
-      count
+  const sortedTasks = Object.values(taskCounts)
+    .sort((a, b) => b.count - a.count)
+    .map(task => ({
+      name: task.name,
+      count: task.count
     }));
   
   // Project with most visits
@@ -248,6 +258,12 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
                       </div>
                     </div>
                   ))}
+                  
+                  {sortedTasks.length === 0 && (
+                    <p className="text-center text-muted-foreground py-4">
+                      Aucune donnée d'activité disponible
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
