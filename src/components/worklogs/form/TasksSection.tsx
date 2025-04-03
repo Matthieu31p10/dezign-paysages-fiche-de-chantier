@@ -1,11 +1,16 @@
 
-import React from 'react';
-import { Controller, Control, UseFormRegister } from 'react-hook-form';
+import React, { useState } from 'react';
+import { Controller, Control, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { z } from 'zod';
 import { formSchema } from './schema';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import CustomTaskDialog from './CustomTaskDialog';
+import { useApp } from '@/context/AppContext';
+import { CustomTask } from '@/types/models';
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -13,16 +18,43 @@ interface TasksSectionProps {
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
   watch: (name: string) => any;
+  setValue: UseFormSetValue<FormValues>;
 }
 
 const TasksSection: React.FC<TasksSectionProps> = ({ 
   control, 
   register, 
-  watch 
+  watch,
+  setValue
 }) => {
+  const { settings } = useApp();
+  const [customTaskDialogOpen, setCustomTaskDialogOpen] = useState(false);
+  const customTasks = settings.customTasks || [];
+  
+  const handleCustomTaskChange = (taskId: string, checked: boolean) => {
+    const currentCustomTasks = watch('customTasks') || {};
+    setValue('customTasks', { 
+      ...currentCustomTasks, 
+      [taskId]: checked 
+    });
+  };
+
   return (
     <div>
-      <Label>Travaux effectués</Label>
+      <div className="flex items-center justify-between mb-2">
+        <Label>Travaux effectués</Label>
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setCustomTaskDialogOpen(true)}
+          className="flex items-center text-xs"
+        >
+          <PlusCircle className="h-3.5 w-3.5 mr-1" />
+          Ajouter une tâche
+        </Button>
+      </div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="mowing" className="flex items-center space-x-2">
@@ -97,6 +129,20 @@ const TasksSection: React.FC<TasksSectionProps> = ({
             </div>
           )}
         </div>
+        
+        {/* Custom tasks */}
+        {customTasks.map((task: CustomTask) => (
+          <div key={task.id}>
+            <Label className="flex items-center space-x-2">
+              <Checkbox 
+                id={`custom-task-${task.id}`}
+                checked={watch('customTasks')?.[task.id] || false}
+                onCheckedChange={(checked) => handleCustomTaskChange(task.id, checked === true)}
+              />
+              <span>{task.name}</span>
+            </Label>
+          </div>
+        ))}
       </div>
       
       <div className="mt-4">
@@ -118,6 +164,11 @@ const TasksSection: React.FC<TasksSectionProps> = ({
           )}
         />
       </div>
+      
+      <CustomTaskDialog 
+        open={customTaskDialogOpen} 
+        onOpenChange={setCustomTaskDialogOpen} 
+      />
     </div>
   );
 };

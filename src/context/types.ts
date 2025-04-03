@@ -1,5 +1,5 @@
 
-import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel } from '@/types/models';
+import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask } from '@/types/models';
 
 export interface ProjectsContextType {
   projectInfos: ProjectInfo[];
@@ -31,6 +31,8 @@ export interface TeamsContextType {
 export interface SettingsContextType {
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
+  addCustomTask: (taskName: string) => CustomTask;
+  deleteCustomTask: (id: string) => void;
 }
 
 export interface AuthContextType {
