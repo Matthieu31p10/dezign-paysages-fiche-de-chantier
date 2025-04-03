@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { WorkLog } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, formatTime } from '@/utils/helpers';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash, User, Clock, FileText } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
@@ -31,6 +31,9 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
   const project = getProjectById(workLog.projectId);
   const worklogCode = generateWorkLogCode(index);
   
+  // Format the creation time from the createdAt date
+  const registrationTime = workLog.createdAt ? formatTime(new Date(workLog.createdAt)) : '';
+  
   return (
     <div
       key={workLog.id}
@@ -43,6 +46,11 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
               <FileText className="w-3.5 h-3.5 mr-1.5" />
               {worklogCode}
             </Badge>
+            {registrationTime && (
+              <span className="text-xs text-muted-foreground">
+                Enregistré à {registrationTime}
+              </span>
+            )}
           </div>
           
           <div className="flex items-center gap-2">
