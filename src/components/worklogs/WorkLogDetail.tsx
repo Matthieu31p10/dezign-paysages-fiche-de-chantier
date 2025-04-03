@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { generatePDF } from '@/utils/pdf';
 import { toast } from 'sonner';
+import { CustomTask } from '@/types/models';
 
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -361,82 +362,40 @@ const WorkLogDetail = () => {
             
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Tonte</span>
-                  {workLog.tasksPerformed.mowing ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Débroussailleuse</span>
-                  {workLog.tasksPerformed.brushcutting ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Souffleur</span>
-                  {workLog.tasksPerformed.blower ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Désherbage manuel</span>
-                  {workLog.tasksPerformed.manualWeeding ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Vinaigre blanc</span>
-                  {workLog.tasksPerformed.whiteVinegar ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Taille</span>
-                  {workLog.tasksPerformed.pruning.done ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                
-                {workLog.tasksPerformed.pruning.done && (
-                  <div className="pl-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Avancement</span>
-                      <span className="text-sm font-medium">
-                        {workLog.tasksPerformed.pruning.progress}%
-                      </span>
-                    </div>
-                    <div className="mt-1">
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className="bg-brand-500 h-1.5 rounded-full"
-                          style={{ width: `${workLog.tasksPerformed.pruning.progress}%` }}
-                        />
+                {workLog.tasksPerformed.customTasks && Object.entries(workLog.tasksPerformed.customTasks).map(([taskId, isDone]) => {
+                  const taskName = settings.customTasks?.find((t: CustomTask) => t.id === taskId)?.name || taskId;
+                  const progress = workLog.tasksPerformed.customTasksProgress?.[taskId] || 0;
+                  
+                  return (
+                    <div key={taskId} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{taskName}</span>
+                        {isDone ? (
+                          <Check className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <X className="w-4 h-4 text-gray-300" />
+                        )}
                       </div>
+                      
+                      {isDone && progress > 0 && (
+                        <div className="pl-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Avancement</span>
+                            <span className="text-sm font-medium">{progress}%</span>
+                          </div>
+                          <div className="mt-1">
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div
+                                className="bg-brand-500 h-1.5 rounded-full"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })}
               </div>
               
               <Separator />

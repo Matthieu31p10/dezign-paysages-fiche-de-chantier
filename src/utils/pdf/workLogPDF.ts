@@ -1,5 +1,4 @@
-
-import { ProjectInfo, WorkLog, CompanyInfo } from '@/types/models';
+import { ProjectInfo, WorkLog, CompanyInfo, CustomTask } from '@/types/models';
 import { formatDate } from '../date';
 import jsPDF from 'jspdf';
 
@@ -19,6 +18,7 @@ interface PDFData {
   endTime?: string;
   companyInfo?: CompanyInfo;
   companyLogo?: string;
+  customTasks?: CustomTask[];
   pdfOptions?: PDFOptions;
 }
 
@@ -234,7 +234,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       }
       
       // Tasks performed section
-      if (options.includeTasks) {
+      if (options.includeTasks && data.workLog?.tasksPerformed?.customTasks) {
         // Header with green background for "Travaux effectués"
         pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.rect(margin, currentY, width, 8, 'F');
@@ -263,54 +263,87 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
           pdf.text(isDone ? '✓' : '✗', x - 5, y);
         };
         
-        // Add all tasks in left column
-        addTask('Tonte', data.workLog.tasksPerformed.mowing, leftColumnX, tasksY);
-        tasksY += 8;
-        addTask('Débroussailleuse', data.workLog.tasksPerformed.brushcutting, leftColumnX, tasksY);
-        tasksY += 8;
-        addTask('Souffleur', data.workLog.tasksPerformed.blower, leftColumnX, tasksY);
-        tasksY += 8;
-        addTask('Désherbage manuel', data.workLog.tasksPerformed.manualWeeding, leftColumnX, tasksY);
+        // Get custom tasks and split into left and right columns
+        const customTaskEntries = Object.entries(data.workLog.tasksPerformed.customTasks);
+        const halfLength = Math.ceil(customTaskEntries.length / 2);
         
-        // Reset Y for right column
-        tasksY = currentY + 16;
-        
-        // Add tasks in right column
-        addTask('Vinaigre blanc', data.workLog.tasksPerformed.whiteVinegar, rightColumnX, tasksY);
-        tasksY += 8;
-        
-        // Add pruning with progress if done
-        addTask('Taille', data.workLog.tasksPerformed.pruning.done, rightColumnX, tasksY);
-        
-        if (data.workLog.tasksPerformed.pruning.done) {
-          tasksY += 8;
-          pdf.text(`Avancement: ${data.workLog.tasksPerformed.pruning.progress}%`, rightColumnX + 5, tasksY);
+        // Left column tasks
+        let leftY = tasksY;
+        for (let i = 0; i < halfLength; i++) {
+          const [taskId, isDone] = customTaskEntries[i];
+          // Find task name from data
+          const taskName = data.customTasks?.find(t => t.id === taskId)?.name || taskId;
           
-          // Add progress bar
-          const progressBarWidth = 40;
-          const progressBarHeight = 2;
-          const progressX = rightColumnX + 5;
-          const progressY = tasksY + 3;
+          addTask(taskName, isDone, leftColumnX, leftY);
           
-          // Draw progress bar background
-          pdf.setDrawColor(200, 200, 200);
-          pdf.setFillColor(200, 200, 200);
-          pdf.rect(progressX, progressY, progressBarWidth, progressBarHeight, 'F');
+          // Add progress if available
+          if (isDone && data.workLog.tasksPerformed.customTasksProgress?.[taskId]) {
+            leftY += 8;
+            const progress = data.workLog.tasksPerformed.customTasksProgress[taskId];
+            pdf.text(`Avancement: ${progress}%`, leftColumnX + 5, leftY);
+            
+            // Add progress bar
+            const progressBarWidth = 40;
+            const progressBarHeight = 2;
+            const progressX = leftColumnX + 5;
+            const progressY = leftY + 3;
+            
+            // Draw progress bar background
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setFillColor(200, 200, 200);
+            pdf.rect(progressX, progressY, progressBarWidth, progressBarHeight, 'F');
+            
+            // Draw progress
+            pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            pdf.rect(progressX, progressY, (progressBarWidth * progress) / 100, progressBarHeight, 'F');
+          }
           
-          // Draw progress
-          pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.rect(progressX, progressY, (progressBarWidth * data.workLog.tasksPerformed.pruning.progress) / 100, progressBarHeight, 'F');
+          leftY += 10;
         }
         
-        tasksY += 16;
+        // Right column tasks
+        let rightY = tasksY;
+        for (let i = halfLength; i < customTaskEntries.length; i++) {
+          const [taskId, isDone] = customTaskEntries[i];
+          // Find task name from data
+          const taskName = data.customTasks?.find(t => t.id === taskId)?.name || taskId;
+          
+          addTask(taskName, isDone, rightColumnX, rightY);
+          
+          // Add progress if available
+          if (isDone && data.workLog.tasksPerformed.customTasksProgress?.[taskId]) {
+            rightY += 8;
+            const progress = data.workLog.tasksPerformed.customTasksProgress[taskId];
+            pdf.text(`Avancement: ${progress}%`, rightColumnX + 5, rightY);
+            
+            // Add progress bar
+            const progressBarWidth = 40;
+            const progressBarHeight = 2;
+            const progressX = rightColumnX + 5;
+            const progressY = rightY + 3;
+            
+            // Draw progress bar background
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setFillColor(200, 200, 200);
+            pdf.rect(progressX, progressY, progressBarWidth, progressBarHeight, 'F');
+            
+            // Draw progress
+            pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            pdf.rect(progressX, progressY, (progressBarWidth * progress) / 100, progressBarHeight, 'F');
+          }
+          
+          rightY += 10;
+        }
         
-        // Add watering status in the tasks section
+        // Add watering status at the bottom of tasks section
         const wateringStatus = 
           data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
           data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
         
-        pdf.text(`Arrosage: ${wateringStatus}`, rightColumnX, tasksY);
+        const maxY = Math.max(leftY, rightY);
+        pdf.text(`Arrosage: ${wateringStatus}`, rightColumnX, maxY);
         
         currentY += 8 + tasksBoxHeight;
       }

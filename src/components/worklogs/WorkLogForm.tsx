@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -51,18 +50,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       end: initialData?.timeTracking?.end || "17:00",
       breakTime: initialData?.timeTracking?.breakTime || "00:00",
       totalHours: initialData?.timeTracking?.totalHours || 8,
-      mowing: initialData?.tasksPerformed?.mowing || false,
-      mowingProgress: initialData?.tasksPerformed?.mowingProgress || 0,
-      brushcutting: initialData?.tasksPerformed?.brushcutting || false,
-      brushcuttingProgress: initialData?.tasksPerformed?.brushcuttingProgress || 0,
-      blower: initialData?.tasksPerformed?.blower || false,
-      blowerProgress: initialData?.tasksPerformed?.blowerProgress || 0,
-      manualWeeding: initialData?.tasksPerformed?.manualWeeding || false,
-      manualWeedingProgress: initialData?.tasksPerformed?.manualWeedingProgress || 0,
-      whiteVinegar: initialData?.tasksPerformed?.whiteVinegar || false,
-      whiteVinegarProgress: initialData?.tasksPerformed?.whiteVinegarProgress || 0,
-      pruningDone: initialData?.tasksPerformed?.pruning?.done || false,
-      pruningProgress: initialData?.tasksPerformed?.pruning?.progress || 0,
       watering: initialData?.tasksPerformed?.watering || 'none',
       notes: initialData?.notes || "",
       waterConsumption: initialData?.waterConsumption || undefined,
@@ -190,20 +177,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         totalHours: data.totalHours,
       },
       tasksPerformed: {
-        mowing: data.mowing,
-        mowingProgress: data.mowingProgress,
-        brushcutting: data.brushcutting,
-        brushcuttingProgress: data.brushcuttingProgress,
-        blower: data.blower,
-        blowerProgress: data.blowerProgress,
-        manualWeeding: data.manualWeeding,
-        manualWeedingProgress: data.manualWeedingProgress,
-        whiteVinegar: data.whiteVinegar,
-        whiteVinegarProgress: data.whiteVinegarProgress,
-        pruning: {
-          done: data.pruningDone,
-          progress: data.pruningProgress,
-        },
         watering: data.watering,
         customTasks: data.customTasks,
         customTasksProgress: data.customTasksProgress,
