@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
 import { AppProviders } from './context/AppProviders';
+import { AppProvider } from './context/AppContext';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
 import WorkLogs from './pages/WorkLogs';
