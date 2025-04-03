@@ -63,6 +63,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       waterConsumption: initialData?.waterConsumption || undefined,
       teamFilter: "",
       customTasks: initialData?.tasksPerformed?.customTasks || {},
+      tasksProgress: initialData?.tasksPerformed?.tasksProgress || {},
     },
   });
   
@@ -195,6 +196,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         },
         watering: data.watering,
         customTasks: data.customTasks,
+        tasksProgress: data.tasksProgress, // Ajout des progrès des tâches
       },
       notes: data.notes,
       waterConsumption: data.waterConsumption,

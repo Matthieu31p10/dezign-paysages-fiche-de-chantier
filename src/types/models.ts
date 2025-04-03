@@ -76,6 +76,7 @@ export interface WorkLog {
     };
     watering: 'none' | 'on' | 'off';
     customTasks?: { [id: string]: boolean }; // Add custom tasks
+    tasksProgress?: { [id: string]: number }; // Progression de chaque tâche en pourcentage
   };
   notes?: string; // Field for adding notes
   waterConsumption?: number; // Field for water consumption in m3

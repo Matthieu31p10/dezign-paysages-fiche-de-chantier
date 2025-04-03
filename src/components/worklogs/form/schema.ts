@@ -31,6 +31,7 @@ export const formSchema = z.object({
   waterConsumption: z.number().optional(),
   teamFilter: z.string().optional().default(""),
   customTasks: z.record(z.string(), z.boolean()).default({}),
+  tasksProgress: z.record(z.string(), z.number()).default({}),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
