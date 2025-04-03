@@ -42,7 +42,7 @@ function App() {
                 <Route path="worklogs" element={<WorkLogs />} />
                 <Route path="worklogs/new" element={<WorkLogNew />} />
                 <Route path="worklogs/:id" element={<WorkLogDetail />} />
-                <Route path="worklogs/:id/edit" element={<WorkLogEdit />} />
+                <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
