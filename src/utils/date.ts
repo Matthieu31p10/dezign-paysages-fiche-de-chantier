@@ -29,9 +29,25 @@ export const formatDateTime = (date: Date): string => {
   });
 };
 
-export const formatTime = (time: string): string => {
-  if (!time) return '';
-  return time;
+export const formatTime = (date: Date | string): string => {
+  if (!date) return '';
+  
+  // If date is a string, return it directly
+  if (typeof date === 'string') {
+    return date;
+  }
+  
+  // If date is a Date object, format it to HH:MM
+  try {
+    return date.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return '';
+  }
 };
 
 // Group work logs by month
