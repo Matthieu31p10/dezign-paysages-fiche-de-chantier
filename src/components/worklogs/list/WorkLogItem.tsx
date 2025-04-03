@@ -111,8 +111,6 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
         
         {workLog.tasksPerformed.customTasks && Object.entries(workLog.tasksPerformed.customTasks).map(([taskId, isCompleted]) => {
           if (isCompleted) {
-            // The error is here - customTasksProgress doesn't exist in the type
-            // Let's modify this to not try to access it
             return (
               <Badge key={taskId} variant="outline" className="bg-slate-50">
                 {taskId}
