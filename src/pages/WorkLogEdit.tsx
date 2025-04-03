@@ -41,7 +41,7 @@ const WorkLogEdit = () => {
         </div>
       </div>
       
-      <WorkLogForm initialData={workLog} />
+      <WorkLogForm initialData={workLog} onSuccess={() => navigate(`/worklogs/${id}`)} />
     </div>
   );
 };

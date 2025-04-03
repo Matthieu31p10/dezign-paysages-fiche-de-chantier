@@ -112,17 +112,20 @@ const WorkLogDetail = () => {
   const calculateHourDifference = () => {
     if (!workLog || !project) return "N/A";
     
-    const completedVisits = workLogs.filter(log => log.projectId === project.id).length;
+    // Get all work logs for this project
+    const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
+    const completedVisits = projectWorkLogs.length;
     
     if (completedVisits === 0) return "N/A";
     
-    const totalHoursCompleted = workLogs
-      .filter(log => log.projectId === project.id)
-      .reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+    // Calculate total hours from all work logs for this project
+    const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
     
+    // Calculate average hours per visit
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
-    const difference = averageHoursPerVisit - project.visitDuration;
+    // Calculate the difference between the planned duration and the average hours per visit
+    const difference = project.visitDuration - averageHoursPerVisit;
     
     const sign = difference >= 0 ? '+' : '';
     return `${sign}${difference.toFixed(2)} h`;
@@ -155,6 +158,15 @@ const WorkLogDetail = () => {
     }
     
     toast.success(`Email envoyé à ${project.contact.email}`);
+  };
+  
+  // Calculate total team hours
+  const calculateTotalTeamHours = () => {
+    if (!workLog) return 0;
+    
+    // Total hours is the work time multiplied by the number of personnel
+    const totalTeamHours = workLog.timeTracking.totalHours;
+    return totalTeamHours.toFixed(2);
   };
   
   return (
@@ -269,10 +281,10 @@ const WorkLogDetail = () => {
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500">Temps total</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Temps total (équipe)</h3>
                   <p className="flex items-center">
                     <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-                    {workLog.timeTracking.totalHours.toFixed(2)} heures
+                    {calculateTotalTeamHours()} heures
                   </p>
                 </div>
               </div>
@@ -283,13 +295,13 @@ const WorkLogDetail = () => {
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
                     <span className={`font-medium ${
-                      calculateHourDifference().startsWith('+') ? 'text-red-600' : 'text-green-600'
+                      calculateHourDifference().startsWith('+') ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {calculateHourDifference()}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Écart entre (heures effectuées / passages) et durée prévue
+                    Durée prévue - (heures effectuées / nombre de passages)
                   </p>
                 </div>
                 

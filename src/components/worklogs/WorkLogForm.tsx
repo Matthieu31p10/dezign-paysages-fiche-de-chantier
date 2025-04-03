@@ -91,7 +91,7 @@ const generateBreakOptions = () => {
 };
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, addWorkLog, updateWorkLog, settings, teams } = useApp();
+  const { projectInfos, workLogs, addWorkLog, updateWorkLog, settings, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const navigate = useNavigate();
@@ -177,16 +177,23 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     }
   }, [departureTime, endTime, breakTimeValue, selectedPersonnel.length, setValue]);
   
-  const calculateAverageHourDifference = () => {
+  const calculateHourDifference = () => {
     if (!selectedProject) return "N/A";
     
-    const completedVisits = projectInfos.filter(log => log.id === selectedProject.id).length;
+    // Get all work logs for this project
+    const projectWorkLogs = workLogs.filter(log => log.projectId === selectedProject.id);
+    const completedVisits = projectWorkLogs.length;
     
     if (completedVisits === 0) return "N/A";
     
-    const averageHoursPerVisit = selectedProject.annualTotalHours / selectedProject.annualVisits;
+    // Calculate total hours from all work logs for this project
+    const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
     
-    const difference = averageHoursPerVisit - selectedProject.visitDuration;
+    // Calculate average hours per visit
+    const averageHoursPerVisit = totalHoursCompleted / completedVisits;
+    
+    // Calculate the difference between the planned duration and the average hours per visit
+    const difference = selectedProject.visitDuration - averageHoursPerVisit;
     
     const sign = difference >= 0 ? '+' : '';
     return `${sign}${difference.toFixed(2)} h`;
@@ -194,7 +201,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   
   const getDifferenceClass = (difference: string) => {
     if (difference === "N/A") return "";
-    return difference.startsWith('+') ? 'text-red-600' : 'text-green-600';
+    return difference.startsWith('+') ? 'text-green-600' : 'text-red-600';
   };
   
   const handlePersonnelChange = (personnel: string[]) => {
@@ -209,6 +216,10 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         setValue('projectId', "");
       }
     }
+  };
+  
+  const handleCancel = () => {
+    navigate('/worklogs');
   };
   
   const onSubmit = async (data: FormValues) => {
@@ -647,13 +658,13 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
               <span className={`font-medium ${
-                getDifferenceClass(calculateAverageHourDifference())
+                getDifferenceClass(calculateHourDifference())
               }`}>
-                {calculateAverageHourDifference()}
+                {calculateHourDifference()}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Écart entre (heures effectuées / passages) et durée prévue
+              Durée prévue - (heures effectuées / nombre de passages)
             </p>
           </div>
           
@@ -683,9 +694,14 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
         )}
       </div>
       
-      <Button type="submit">
-        {initialData ? "Mettre à jour la fiche" : "Créer la fiche"}
-      </Button>
+      <div className="flex justify-between">
+        <Button type="button" variant="outline" onClick={handleCancel}>
+          Annuler
+        </Button>
+        <Button type="submit">
+          {initialData ? "Mettre à jour la fiche" : "Créer la fiche"}
+        </Button>
+      </div>
     </form>
   );
 };
