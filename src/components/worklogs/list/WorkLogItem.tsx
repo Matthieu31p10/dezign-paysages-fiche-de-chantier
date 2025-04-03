@@ -102,24 +102,7 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
         </div>
       </div>
       
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {workLog.tasksPerformed.watering !== 'none' && (
-          <Badge variant="outline" className="bg-slate-50">
-            Arrosage {workLog.tasksPerformed.watering === 'on' ? 'allumé' : 'coupé'}
-          </Badge>
-        )}
-        
-        {workLog.tasksPerformed.customTasks && Object.entries(workLog.tasksPerformed.customTasks).map(([taskId, isCompleted]) => {
-          if (isCompleted) {
-            return (
-              <Badge key={taskId} variant="outline" className="bg-slate-50">
-                {taskId}
-              </Badge>
-            );
-          }
-          return null;
-        })}
-      </div>
+      {/* Removed the task badges to remove duplication of information that's already recorded in the system */}
     </div>
   );
 };
