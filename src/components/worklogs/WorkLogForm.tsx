@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Clock } from 'lucide-react';
+import { CalendarIcon, Clock, AlertCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from "@/lib/utils";
 import { formatDate } from '@/utils/helpers';
@@ -30,6 +30,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TeamsSelect } from '../teams/TeamsSelect';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 
 const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
@@ -65,6 +72,8 @@ const formSchema = z.object({
 interface WorkLogFormProps {
   initialData?: WorkLog;
   onSuccess?: () => void;
+  projectInfos: ProjectInfo[];
+  existingWorkLogs: WorkLog[];
 }
 
 type FormValues = z.infer<typeof formSchema>;
@@ -89,8 +98,8 @@ const generateBreakOptions = () => {
   return breaks;
 };
 
-const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => {
-  const { projectInfos, workLogs, addWorkLog, updateWorkLog, settings, teams } = useApp();
+const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess, projectInfos, existingWorkLogs }) => {
+  const { addWorkLog, updateWorkLog, settings, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const [timeDeviation, setTimeDeviation] = useState<string>("N/A");
@@ -196,7 +205,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       return;
     }
     
-    const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
+    const projectWorkLogs = existingWorkLogs.filter(log => log.projectId === project.id);
     const completedVisits = projectWorkLogs.length;
     
     if (completedVisits === 0) {
@@ -666,20 +675,39 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       </div>
       
       {selectedProject && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          <div className="p-3 border rounded-md bg-gray-50">
-            <h3 className="text-sm font-medium mb-2">Écart du temps de passage</h3>
-            <div className="flex items-center">
-              <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-              <span className={`font-medium ${timeDeviationClass}`}>
-                {timeDeviation}
-              </span>
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Informations sur le chantier</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-2">
+                <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium">Durée prévue</h4>
+                  <p className="text-lg font-bold">{selectedProject.visitDuration} heures</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium">Écart du temps de passage</h4>
+                  <p className={`text-lg font-bold ${timeDeviationClass}`}>
+                    {timeDeviation}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Durée prévue - (heures effectuées / nombre de passages)
+                  </p>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Durée prévue - (heures effectuées / nombre de passages)
-            </p>
-          </div>
-          
+          </CardContent>
+        </Card>
+      )}
+      
+      {selectedProject && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           {selectedProject.irrigation !== 'none' && (
             <div>
               <Label htmlFor="waterConsumption">Consommation d'eau (m³)</Label>

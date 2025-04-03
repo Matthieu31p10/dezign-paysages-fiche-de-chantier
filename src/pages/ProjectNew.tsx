@@ -7,6 +7,10 @@ import { ArrowLeft } from 'lucide-react';
 const ProjectNew = () => {
   const navigate = useNavigate();
   
+  const handleCancel = () => {
+    navigate('/projects');
+  };
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -24,7 +28,7 @@ const ProjectNew = () => {
         </div>
       </div>
       
-      <ProjectForm />
+      <ProjectForm onCancel={handleCancel} />
     </div>
   );
 };

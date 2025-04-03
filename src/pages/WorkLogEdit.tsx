@@ -10,6 +10,7 @@ const WorkLogEdit = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { workLogs } = useWorkLogs();
+  const { projectInfos } = useApp();
   
   const workLog = workLogs.find(log => log.id === id);
   
@@ -42,7 +43,12 @@ const WorkLogEdit = () => {
         </div>
       </div>
       
-      <WorkLogForm initialData={workLog} onSuccess={() => navigate(`/worklogs/${id}`)} />
+      <WorkLogForm 
+        initialData={workLog} 
+        onSuccess={() => navigate(`/worklogs/${id}`)} 
+        projectInfos={projectInfos}
+        existingWorkLogs={workLogs}
+      />
     </div>
   );
 };

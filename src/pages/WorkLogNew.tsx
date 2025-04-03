@@ -3,9 +3,13 @@ import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 
 const WorkLogNew = () => {
   const navigate = useNavigate();
+  const { projectInfos } = useApp();
+  const { workLogs } = useWorkLogs();
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -24,7 +28,11 @@ const WorkLogNew = () => {
         </div>
       </div>
       
-      <WorkLogForm onSuccess={() => navigate('/worklogs')} />
+      <WorkLogForm 
+        onSuccess={() => navigate('/worklogs')} 
+        projectInfos={projectInfos}
+        existingWorkLogs={workLogs}
+      />
     </div>
   );
 };
