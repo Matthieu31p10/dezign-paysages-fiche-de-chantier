@@ -8,17 +8,17 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ requiredRole = 'user' }: ProtectedRouteProps) => {
-  const { auth } = useApp();
+  const { auth, canUserAccess } = useApp();
   const location = useLocation();
 
   // Check if the user is authenticated
-  if (!auth.auth.isAuthenticated) {
+  if (!auth.isAuthenticated) {
     // Redirect to the login page, but save the current location
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Check if the user has the required role
-  if (requiredRole && !auth.auth.canUserAccess(requiredRole)) {
+  if (requiredRole && !canUserAccess(requiredRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

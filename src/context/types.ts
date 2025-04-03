@@ -43,18 +43,3 @@ export interface AuthContextType {
   getCurrentUser: () => User | null;
   canUserAccess: (requiredRole: UserRole) => boolean;
 }
-
-// Add the missing types
-export interface AuthProviderProps {
-  children: React.ReactNode;
-  currentUser?: User | null;
-  isAuthenticated?: boolean;
-}
-
-export interface AppContextType {
-  auth: AuthState;
-  projects: ProjectsContextType;
-  workLogs: WorkLogsContextType;
-  teams: TeamsContextType;
-  settings: SettingsContextType;
-}

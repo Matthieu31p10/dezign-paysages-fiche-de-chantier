@@ -1,17 +1,17 @@
 
 import { useState } from 'react';
 import { WorkLog } from '@/types/models';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { formatDate } from '@/utils/helpers';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Check, Calendar, Clock, Edit, Trash, User, ArrowDownAZ, ArrowUpAZ, CalendarDays, FileText } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { getCurrentYear } from '@/utils/helpers';
-import { WorkLogListHeader } from './WorkLogListHeader';
-import { WorkLogMonthGroup } from './WorkLogMonthGroup';
-import { WorkLogListEmpty } from './WorkLogListEmpty';
-import { WorkLogNoResults } from './WorkLogNoResults';
-import { 
-  groupWorkLogsByMonth, 
-  getYearsFromWorkLogs, 
-  filterWorkLogsByYear 
-} from '@/utils/helpers';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { groupWorkLogsByMonth, formatMonthYear, getCurrentYear, getYearsFromWorkLogs, filterWorkLogsByYear } from '@/utils/helpers';
 
 interface WorkLogListProps {
   workLogs: WorkLog[];
@@ -19,23 +19,19 @@ interface WorkLogListProps {
 }
 
 const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
+  const navigate = useNavigate();
   const { deleteWorkLog, getProjectById } = useApp();
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [sortOption, setSortOption] = useState<string>('date-desc');
   
-  // Get available years from the work logs
-  const availableYears = getYearsFromWorkLogs(workLogs);
-  
-  // If no workLogs, show empty state
-  if (workLogs.length === 0) {
-    return <WorkLogListEmpty projectId={projectId} />;
-  }
-  
   // Filter work logs for the selected year
   const yearFilteredLogs = selectedYear 
     ? filterWorkLogsByYear(workLogs, selectedYear) 
     : workLogs;
+  
+  // Get available years from the work logs
+  const availableYears = getYearsFromWorkLogs(workLogs);
   
   // Filter logs by search term
   const filteredLogs = yearFilteredLogs.filter(log => {
@@ -50,19 +46,6 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
       log.personnel.some(p => p.toLowerCase().includes(searchLower))
     );
   });
-  
-  // If no results after filtering, show no results component
-  if (filteredLogs.length === 0) {
-    return (
-      <WorkLogNoResults 
-        search={search}
-        setSearch={setSearch}
-        selectedYear={selectedYear}
-        setSelectedYear={setSelectedYear}
-        availableYears={availableYears}
-      />
-    );
-  }
   
   // Sort logs based on the selected option
   const sortedLogs = [...filteredLogs].sort((a, b) => {
@@ -109,28 +92,232 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     deleteWorkLog(id);
   };
   
+  // Generate worklog code format (DZFS + 5 digits)
+  const generateWorkLogCode = (index: number) => {
+    return `DZFS${String(index + 1).padStart(5, '0')}`;
+  };
+  
+  if (workLogs.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground mb-4">Aucune fiche de suivi disponible</p>
+        <Button onClick={() => navigate(projectId ? `/worklogs/new?projectId=${projectId}` : '/worklogs/new')}>
+          Créer une fiche de suivi
+        </Button>
+      </div>
+    );
+  }
+  
+  if (filteredLogs.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center justify-between">
+          <div className="w-full md:w-64">
+            <Input
+              placeholder="Rechercher..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => setSelectedYear(parseInt(value))}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Année" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Aucun résultat trouvé</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-4">
-      <WorkLogListHeader
-        search={search}
-        setSearch={setSearch}
-        sortOption={sortOption}
-        setSortOption={setSortOption}
-        selectedYear={selectedYear}
-        setSelectedYear={setSelectedYear}
-        availableYears={availableYears}
-      />
+      <div className="flex flex-col gap-2 md:flex-row md:items-center justify-between">
+        <div className="w-full md:w-64">
+          <Input
+            placeholder="Rechercher..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <Select
+            value={sortOption}
+            onValueChange={(value) => setSortOption(value)}
+          >
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Trier par" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Date (récent → ancien)</SelectItem>
+              <SelectItem value="date-asc">Date (ancien → récent)</SelectItem>
+              <SelectItem value="project-asc">Chantier (A → Z)</SelectItem>
+              <SelectItem value="project-desc">Chantier (Z → A)</SelectItem>
+              <SelectItem value="hours-desc">Heures (plus → moins)</SelectItem>
+              <SelectItem value="hours-asc">Heures (moins → plus)</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={(value) => setSelectedYear(parseInt(value))}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Année" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map(year => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
       <div className="space-y-6">
         {sortedMonths.map(month => (
-          <WorkLogMonthGroup
-            key={month}
-            month={month}
-            logs={groupedLogs[month]}
-            projectId={projectId}
-            onDeleteWorkLog={handleDeleteWorkLog}
-            getProjectById={getProjectById}
-          />
+          <div key={month} className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {formatMonthYear(month)}
+            </h3>
+            
+            <div className="space-y-2">
+              {groupedLogs[month].map((log, index) => {
+                const project = getProjectById(log.projectId);
+                const worklogCode = generateWorkLogCode(index);
+                
+                return (
+                  <div
+                    key={log.id}
+                    className="border rounded-lg p-4 bg-white hover:shadow transition-shadow"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="bg-brand-50 text-brand-700 font-mono">
+                            <FileText className="w-3.5 h-3.5 mr-1.5" />
+                            {worklogCode}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="bg-brand-50 text-brand-700">
+                            {formatDate(log.date)}
+                          </Badge>
+                          {!projectId && project && (
+                            <Badge variant="secondary">
+                              {project.name}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                          <div className="flex items-center text-sm">
+                            <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                            {log.timeTracking.totalHours.toFixed(2)} heures
+                          </div>
+                          
+                          <div className="flex items-center text-sm">
+                            <User className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                            {log.personnel.length} personnes
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/worklogs/${log.id}`)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Trash className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Cette action est irréversible. Elle supprimera définitivement la fiche de suivi.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteWorkLog(log.id)}>
+                                Supprimer
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {log.tasksPerformed.mowing && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Tonte
+                        </Badge>
+                      )}
+                      {log.tasksPerformed.brushcutting && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Débroussaillage
+                        </Badge>
+                      )}
+                      {log.tasksPerformed.blower && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Souffleur
+                        </Badge>
+                      )}
+                      {log.tasksPerformed.manualWeeding && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Désherbage manuel
+                        </Badge>
+                      )}
+                      {log.tasksPerformed.whiteVinegar && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Vinaigre blanc
+                        </Badge>
+                      )}
+                      {log.tasksPerformed.pruning.done && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Taille {log.tasksPerformed.pruning.progress}%
+                        </Badge>
+                      )}
+                      {log.tasksPerformed.watering !== 'none' && (
+                        <Badge variant="outline" className="bg-slate-50">
+                          Arrosage {log.tasksPerformed.watering === 'on' ? 'allumé' : 'coupé'}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -138,6 +325,3 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
 };
 
 export default WorkLogList;
-
-// Fix missing import
-import { formatDate } from '@/utils/helpers';

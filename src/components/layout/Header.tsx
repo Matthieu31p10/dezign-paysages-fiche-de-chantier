@@ -9,7 +9,7 @@ import { useApp } from '@/context/AppContext';
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { auth } = useApp();
+  const { auth, logout } = useApp();
   
   // Check active route
   const isActive = (path: string) => {
@@ -17,7 +17,7 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    auth.logout();
+    logout();
     navigate('/login');
   };
   
@@ -88,7 +88,7 @@ const Header = () => {
           </Link>
         </Button>
 
-        {auth.auth.isAuthenticated && (
+        {auth.isAuthenticated && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="ml-2 px-2">
@@ -97,10 +97,10 @@ const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>
-                {auth.auth.getCurrentUser()?.name || auth.auth.getCurrentUser()?.username}
+                {auth.currentUser?.name || auth.currentUser?.username}
                 <p className="font-normal text-xs text-muted-foreground">
-                  {auth.auth.getCurrentUser()?.role === 'admin' ? 'Administrateur' : 
-                   auth.auth.getCurrentUser()?.role === 'manager' ? 'Gestionnaire' : 'Utilisateur'}
+                  {auth.currentUser?.role === 'admin' ? 'Administrateur' : 
+                   auth.currentUser?.role === 'manager' ? 'Gestionnaire' : 'Utilisateur'}
                 </p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
