@@ -6,7 +6,7 @@ export const calculateTotalHours = (
   breakTime: string,
   personnelCount: number = 1
 ): number => {
-  if (!departure || !arrival || !end || !breakTime) return 0;
+  if (!departure || !arrival || !end) return 0;
 
   try {
     // Convert times to minutes since midnight
@@ -19,22 +19,22 @@ export const calculateTotalHours = (
     const departureMinutes = getMinutes(departure);
     const arrivalMinutes = getMinutes(arrival);
     const endMinutes = getMinutes(end);
-    const breakMinutes = getMinutes(breakTime);
+    const breakMinutes = breakTime ? getMinutes(breakTime) : 0;
 
-    // Calculate total time accounting for arrival, departure, and break
+    // Calculate travel time
     let travelTimeMinutes = arrivalMinutes - departureMinutes;
+    if (travelTimeMinutes < 0) {
+      travelTimeMinutes += 24 * 60; // Handle crossing midnight
+    }
+
+    // Calculate work time
     let workTimeMinutes = endMinutes - arrivalMinutes;
-    let totalTimeMinutes = travelTimeMinutes + workTimeMinutes - breakMinutes;
-
-    // Handle cases where times span midnight
-    if (arrivalMinutes < departureMinutes) {
-      travelTimeMinutes = (24 * 60 - departureMinutes) + arrivalMinutes;
-    }
-    if (endMinutes < arrivalMinutes) {
-      workTimeMinutes = (24 * 60 - arrivalMinutes) + endMinutes;
+    if (workTimeMinutes < 0) {
+      workTimeMinutes += 24 * 60; // Handle crossing midnight
     }
 
-    totalTimeMinutes = travelTimeMinutes + workTimeMinutes - breakMinutes;
+    // Calculate total time
+    const totalTimeMinutes = travelTimeMinutes + workTimeMinutes - breakMinutes;
 
     // Convert minutes to hours, multiply by personnel count, and round to 2 decimal places
     return Math.round((totalTimeMinutes / 60) * personnelCount * 100) / 100;

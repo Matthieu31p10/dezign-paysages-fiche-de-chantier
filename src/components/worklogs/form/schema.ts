@@ -14,7 +14,7 @@ export const formSchema = z.object({
   departure: z.string().min(1, { message: "L'heure de départ est requise." }),
   arrival: z.string().min(1, { message: "L'heure d'arrivée est requise." }),
   end: z.string().min(1, { message: "L'heure de fin est requise." }),
-  breakTime: z.string().default("1"),
+  breakTime: z.string().default("00:00"),
   totalHours: z.number({
     required_error: "Le total d'heures est requis.",
     invalid_type_error: "Le total d'heures doit être un nombre."

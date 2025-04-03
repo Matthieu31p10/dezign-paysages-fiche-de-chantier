@@ -30,14 +30,6 @@ const generateTimeOptions = () => {
   return times;
 };
 
-const generateBreakOptions = () => {
-  const breaks = [];
-  for (let i = 0; i <= 3; i += 0.25) {
-    breaks.push(i.toFixed(2));
-  }
-  return breaks;
-};
-
 interface TimeTrackingSectionProps {
   control: Control<FormValues>;
   errors: Record<string, any>;
@@ -52,7 +44,6 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
   getValues 
 }) => {
   const timeOptions = generateTimeOptions();
-  const breakOptions = generateBreakOptions();
   
   return (
     <div>
@@ -159,9 +150,9 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
                       <SelectValue placeholder="Pause" />
                     </SelectTrigger>
                     <SelectContent>
-                      {breakOptions.map((breakTime) => (
-                        <SelectItem key={`break-${breakTime}`} value={breakTime}>
-                          {breakTime} h
+                      {timeOptions.map((time) => (
+                        <SelectItem key={`break-${time}`} value={time}>
+                          {time}
                         </SelectItem>
                       ))}
                     </SelectContent>

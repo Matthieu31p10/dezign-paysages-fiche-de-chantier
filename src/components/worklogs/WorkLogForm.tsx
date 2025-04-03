@@ -7,6 +7,7 @@ import { ProjectInfo, WorkLog } from '@/types/models';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { calculateTotalHours } from '@/utils/time';
 
 // Import schema and sub-components
 import { formSchema, FormValues } from './form/schema';
@@ -46,9 +47,9 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       duration: initialData?.duration || 0,
       personnel: initialData?.personnel || [],
       departure: initialData?.timeTracking?.departure || "08:00",
-      arrival: initialData?.timeTracking?.arrival || "17:00",
+      arrival: initialData?.timeTracking?.arrival || "09:00",
       end: initialData?.timeTracking?.end || "17:00",
-      breakTime: initialData?.timeTracking?.breakTime || "1",
+      breakTime: initialData?.timeTracking?.breakTime || "00:00",
       totalHours: initialData?.timeTracking?.totalHours || 8,
       mowing: initialData?.tasksPerformed?.mowing || false,
       brushcutting: initialData?.tasksPerformed?.brushcutting || false,
@@ -69,6 +70,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   const selectedProjectId = watch("projectId");
   const teamFilter = watch("teamFilter");
   const departureTime = watch("departure");
+  const arrivalTime = watch("arrival");
   const endTime = watch("end");
   const breakTimeValue = watch("breakTime");
   const totalHours = watch("totalHours");
@@ -107,24 +109,18 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   }, [totalHours, selectedProject]);
   
   useEffect(() => {
-    if (departureTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
-      const getMinutes = (timeStr: string) => {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;
-      };
+    if (departureTime && arrivalTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
+      const calculatedTotalHours = calculateTotalHours(
+        departureTime,
+        arrivalTime,
+        endTime,
+        breakTimeValue,
+        selectedPersonnel.length
+      );
       
-      const departureMinutes = getMinutes(departureTime);
-      const endMinutes = getMinutes(endTime);
-      const breakMinutes = parseFloat(breakTimeValue) * 60;
-      
-      let totalMinutes = endMinutes - departureMinutes - breakMinutes;
-      if (totalMinutes < 0) totalMinutes += 24 * 60;
-      
-      const totalPersonnelHours = (totalMinutes / 60) * selectedPersonnel.length;
-      
-      setValue('totalHours', parseFloat(totalPersonnelHours.toFixed(2)));
+      setValue('totalHours', calculatedTotalHours);
     }
-  }, [departureTime, endTime, breakTimeValue, selectedPersonnel.length, setValue]);
+  }, [departureTime, arrivalTime, endTime, breakTimeValue, selectedPersonnel.length, setValue]);
   
   const calculateTimeDeviation = (project: ProjectInfo | null) => {
     if (!project) {
