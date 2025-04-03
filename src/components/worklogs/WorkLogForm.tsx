@@ -92,7 +92,7 @@ const generateTimeOptions = () => {
 
 const generateBreakOptions = () => {
   const breaks = [];
-  for (let i = 0.25; i <= 3; i += 0.25) {
+  for (let i = 0; i <= 3; i += 0.25) {
     breaks.push(i.toFixed(2));
   }
   return breaks;

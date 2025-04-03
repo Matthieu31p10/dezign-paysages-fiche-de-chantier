@@ -1,10 +1,10 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useApp } from '@/context/AppContext';
 
 const WorkLogEdit = () => {
   const navigate = useNavigate();

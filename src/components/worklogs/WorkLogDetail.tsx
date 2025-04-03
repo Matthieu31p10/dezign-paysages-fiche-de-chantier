@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -70,7 +69,6 @@ const WorkLogDetail = () => {
   const calculateEndTime = () => {
     if (!workLog) return "--:--";
     
-    // Parse time strings into numbers
     const departureTimeParts = workLog.timeTracking.departure.split(':');
     const arrivalTimeParts = workLog.timeTracking.arrival.split(':');
     
@@ -83,7 +81,6 @@ const WorkLogDetail = () => {
     const arrivalHour = parseInt(arrivalTimeParts[0], 10);
     const arrivalMinute = parseInt(arrivalTimeParts[1], 10);
     
-    // Calculate break time in minutes
     let breakTimeMinutes: number;
     if (typeof workLog.timeTracking.breakTime === 'string') {
       breakTimeMinutes = parseFloat(workLog.timeTracking.breakTime) * 60;
@@ -91,40 +88,31 @@ const WorkLogDetail = () => {
       breakTimeMinutes = workLog.timeTracking.breakTime * 60;
     }
     
-    // Convert times to minutes for easier calculation
     const departureInMinutes = departureHour * 60 + departureMinute;
     const arrivalInMinutes = arrivalHour * 60 + arrivalMinute;
     
-    // Calculate total work minutes
     const totalWorkMinutes = arrivalInMinutes - departureInMinutes;
     
-    // Calculate end time in minutes (departure + total work time)
     const endTimeInMinutes = departureInMinutes + totalWorkMinutes;
     
-    // Convert end time back to hours and minutes
     const endHour = Math.floor(endTimeInMinutes / 60);
     const endMinute = endTimeInMinutes % 60;
     
-    // Format and return the end time
     return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
   };
   
   const calculateHourDifference = () => {
     if (!workLog || !project) return "N/A";
     
-    // Get all work logs for this project
     const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
     const completedVisits = projectWorkLogs.length;
     
     if (completedVisits === 0) return "N/A";
     
-    // Calculate total hours from all work logs for this project
     const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
     
-    // Calculate average hours per visit
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
-    // Calculate the difference between the planned duration and the average hours per visit
     const difference = project.visitDuration - averageHoursPerVisit;
     
     const sign = difference >= 0 ? '+' : '';
@@ -160,11 +148,9 @@ const WorkLogDetail = () => {
     toast.success(`Email envoyé à ${project.contact.email}`);
   };
   
-  // Calculate total team hours
   const calculateTotalTeamHours = () => {
     if (!workLog) return 0;
     
-    // Total hours is the work time multiplied by the number of personnel
     const totalTeamHours = workLog.timeTracking.totalHours;
     return totalTeamHours.toFixed(2);
   };
@@ -215,20 +201,14 @@ const WorkLogDetail = () => {
             Envoyer par email
           </Button>
           
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Edit className="w-4 h-4 mr-2" />
-                Modifier
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Modifier la fiche de suivi</DialogTitle>
-              </DialogHeader>
-              <WorkLogForm initialData={workLog} onSuccess={handleEditSuccess} />
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(`/worklogs/edit/${workLog.id}`)}
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Modifier
+          </Button>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
