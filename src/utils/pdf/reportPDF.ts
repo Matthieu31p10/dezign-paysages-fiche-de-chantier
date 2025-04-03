@@ -35,6 +35,15 @@ export const generateReportPDF = async (projects: ProjectInfo[], workLogs: WorkL
     const totalHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
     pdf.text(`Heures totales travaillées: ${totalHours.toFixed(2)}h`, 20, 60);
     
+    // Calculate total water consumption
+    const totalWaterConsumption = workLogs.reduce((sum, log) => {
+      return sum + (log.waterConsumption || 0);
+    }, 0);
+    
+    if (totalWaterConsumption > 0) {
+      pdf.text(`Consommation d'eau totale: ${totalWaterConsumption.toFixed(2)}m³`, 20, 70);
+    }
+    
     // Add projects summary (one per page)
     let currentY = 80;
     const maxY = 270; // Max height for A4 before needing new page
@@ -58,6 +67,18 @@ export const generateReportPDF = async (projects: ProjectInfo[], workLogs: WorkL
       
       pdf.text(`Heures travaillées: ${projectTotalHours.toFixed(2)}h / ${project.annualTotalHours}h`, 25, currentY);
       currentY += 7;
+      
+      // Add water consumption if relevant
+      if (project.irrigation === 'irrigation') {
+        const projectWaterConsumption = projectWorkLogs.reduce((sum, log) => {
+          return sum + (log.waterConsumption || 0);
+        }, 0);
+        
+        if (projectWaterConsumption > 0) {
+          pdf.text(`Consommation d'eau: ${projectWaterConsumption.toFixed(2)}m³`, 25, currentY);
+          currentY += 7;
+        }
+      }
       
       if (projectWorkLogs.length > 0) {
         const lastVisit = new Date(Math.max(...projectWorkLogs.map(log => new Date(log.date).getTime())));
