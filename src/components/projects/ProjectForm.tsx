@@ -19,6 +19,7 @@ import { TeamsSelect } from '@/components/teams/TeamsSelect';
 interface ProjectFormProps {
   initialData?: ProjectInfo;
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 /**
@@ -46,7 +47,7 @@ const convertToProjectInfo = (data: any): Partial<ProjectInfo> => {
   };
 };
 
-const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
+const ProjectForm = ({ initialData, onSuccess, onCancel }: ProjectFormProps) => {
   const navigate = useNavigate();
   const { addProjectInfo, updateProjectInfo, teams } = useApp();
   
@@ -120,7 +121,11 @@ const ProjectForm = ({ initialData, onSuccess }: ProjectFormProps) => {
   };
 
   const handleCancel = () => {
-    navigate('/projects');
+    if (onCancel) {
+      onCancel();
+    } else {
+      navigate('/projects');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

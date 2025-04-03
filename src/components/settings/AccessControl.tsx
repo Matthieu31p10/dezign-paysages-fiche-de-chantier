@@ -141,7 +141,6 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
                                 id={`${user.id}-${permission.id}`}
                                 checked={hasPermission(user.id, permission.id)}
                                 disabled={!isAdmin || user.id === 'admin-default' || !hasModuleAccess(user.id, module.id)}
-                                size="sm"
                                 className="scale-75"
                                 onCheckedChange={(checked) => {
                                   setPermissions(prev => ({
