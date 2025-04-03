@@ -39,9 +39,8 @@ export const TeamsSelect = ({ value, onValueChange }: TeamsSelectProps) => {
         <Select
           value={value}
           onValueChange={onValueChange}
-          className="flex-1"
         >
-          <SelectTrigger>
+          <SelectTrigger className="flex-1">
             <SelectValue placeholder="Sélectionner une équipe" />
           </SelectTrigger>
           <SelectContent>

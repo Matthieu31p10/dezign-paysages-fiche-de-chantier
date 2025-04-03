@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -20,6 +21,7 @@ import {
   TeamsContextType,
   AppContextType,
   SettingsContextType,
+  AuthContextType,
 } from './types';
 import { AuthProvider } from './AuthContext';
 import { ProjectsProvider } from './ProjectsContext';
@@ -59,7 +61,7 @@ export const useAppContext = () => {
 
 // Custom hook to access all contexts
 export const useApp = () => {
-  const auth = useContext(React.createContext<AuthProviderProps | undefined>(undefined));
+  const auth = useContext(React.createContext<AuthContextType | undefined>(undefined));
   const projects = useContext(React.createContext<ProjectsContextType | undefined>(undefined));
   const worklogs = useContext(React.createContext<WorkLogsContextType | undefined>(undefined));
   const teams = useContext(React.createContext<TeamsContextType | undefined>(undefined));
