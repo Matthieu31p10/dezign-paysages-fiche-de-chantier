@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -94,6 +93,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const { projectInfos, workLogs, addWorkLog, updateWorkLog, settings, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
+  const [timeDeviation, setTimeDeviation] = useState<string>("N/A");
+  const [timeDeviationClass, setTimeDeviationClass] = useState<string>("");
   const navigate = useNavigate();
   
   const timeOptions = generateTimeOptions();
@@ -134,6 +135,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
   const departureTime = watch("departure");
   const endTime = watch("end");
   const breakTimeValue = watch("breakTime");
+  const totalHours = watch("totalHours");
   
   useEffect(() => {
     if (teamFilter) {
@@ -152,10 +154,20 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
       if (project && project.visitDuration) {
         setValue('duration', project.visitDuration);
       }
+      
+      calculateTimeDeviation(project);
     } else {
       setSelectedProject(null);
+      setTimeDeviation("N/A");
+      setTimeDeviationClass("");
     }
   }, [selectedProjectId, projectInfos, setValue]);
+  
+  useEffect(() => {
+    if (selectedProject && totalHours) {
+      calculateTimeDeviation(selectedProject);
+    }
+  }, [totalHours, selectedProject]);
   
   useEffect(() => {
     if (departureTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
@@ -177,31 +189,33 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
     }
   }, [departureTime, endTime, breakTimeValue, selectedPersonnel.length, setValue]);
   
-  const calculateHourDifference = () => {
-    if (!selectedProject) return "N/A";
+  const calculateTimeDeviation = (project: ProjectInfo | null) => {
+    if (!project) {
+      setTimeDeviation("N/A");
+      setTimeDeviationClass("");
+      return;
+    }
     
-    // Get all work logs for this project
-    const projectWorkLogs = workLogs.filter(log => log.projectId === selectedProject.id);
+    const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
     const completedVisits = projectWorkLogs.length;
     
-    if (completedVisits === 0) return "N/A";
+    if (completedVisits === 0) {
+      setTimeDeviation("N/A");
+      setTimeDeviationClass("");
+      return;
+    }
     
-    // Calculate total hours from all work logs for this project
     const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
     
-    // Calculate average hours per visit
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
-    // Calculate the difference between the planned duration and the average hours per visit
-    const difference = selectedProject.visitDuration - averageHoursPerVisit;
+    const difference = project.visitDuration - averageHoursPerVisit;
     
     const sign = difference >= 0 ? '+' : '';
-    return `${sign}${difference.toFixed(2)} h`;
-  };
-  
-  const getDifferenceClass = (difference: string) => {
-    if (difference === "N/A") return "";
-    return difference.startsWith('+') ? 'text-green-600' : 'text-red-600';
+    const formattedDifference = `${sign}${difference.toFixed(2)} h`;
+    
+    setTimeDeviation(formattedDifference);
+    setTimeDeviationClass(difference >= 0 ? 'text-green-600' : 'text-red-600');
   };
   
   const handlePersonnelChange = (personnel: string[]) => {
@@ -657,10 +671,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ initialData, onSuccess }) => 
             <h3 className="text-sm font-medium mb-2">Écart du temps de passage</h3>
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-              <span className={`font-medium ${
-                getDifferenceClass(calculateHourDifference())
-              }`}>
-                {calculateHourDifference()}
+              <span className={`font-medium ${timeDeviationClass}`}>
+                {timeDeviation}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">

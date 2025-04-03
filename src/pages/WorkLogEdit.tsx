@@ -4,11 +4,12 @@ import { useApp } from '@/context/AppContext';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 
 const WorkLogEdit = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { workLogs } = useApp();
+  const { workLogs } = useWorkLogs();
   
   const workLog = workLogs.find(log => log.id === id);
   
