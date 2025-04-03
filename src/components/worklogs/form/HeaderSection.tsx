@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { formSchema } from './schema';
 import { ProjectInfo, Team } from '@/types/models';
 import PersonnelDialog from '../PersonnelDialog';
+import { TeamsSelect } from '@/components/teams/TeamsSelect';
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -41,6 +42,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
 }) => {
   const dateValue = watch("date");
   const selectedPersonnel = watch("personnel");
+  const teamFilter = watch("teamFilter");
   
   return (
     <>
@@ -51,22 +53,13 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             name="teamFilter"
             control={control}
             render={({ field }) => (
-              <Select
-                onValueChange={(value) => handleTeamFilterChange(value)}
+              <TeamsSelect
                 value={field.value}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Toutes les équipes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-teams">Toutes les équipes</SelectItem>
-                  {teams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  handleTeamFilterChange(value);
+                }}
+              />
             )}
           />
         </div>

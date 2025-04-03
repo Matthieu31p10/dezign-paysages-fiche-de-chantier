@@ -1,67 +1,81 @@
-
-import React, { createContext, useContext } from 'react';
-import { useProjects } from './ProjectsContext';
-import { useWorkLogs } from './WorkLogsContext';
-import { useTeams } from './TeamsContext';
-import { useSettings } from './SettingsContext';
-import { useAuth } from './AuthContext';
-import { 
-  ProjectsContextType, 
-  WorkLogsContextType, 
-  TeamsContextType, 
-  SettingsContextType, 
-  AuthContextType 
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
+import {
+  ProjectInfo,
+  WorkLog,
+  Team,
+  User,
+  AppSettings,
+  Personnel,
+} from '@/types/models';
+import {
+  AuthProviderProps,
+  ProjectsContextType,
+  WorkLogsContextType,
+  TeamsContextType,
+  AppContextType,
+  SettingsContextType,
 } from './types';
+import { AuthProvider } from './AuthContext';
+import { ProjectsProvider } from './ProjectsContext';
+import { WorkLogsProvider } from './WorkLogsContext';
+import { TeamsProvider } from './TeamsContext';
+import { SettingsProvider } from './SettingsContext';
 
-// Create a type that combines all the context types
-type AppContextType = ProjectsContextType & 
-  WorkLogsContextType & 
-  TeamsContextType & 
-  SettingsContextType & 
-  AuthContextType & {
-    // Add any additional app-wide methods or state here
-  };
+interface AppProviderProps {
+  children: ReactNode;
+}
 
-// Create the context
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Create a provider component
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const projects = useProjects();
-  const workLogs = useWorkLogs();
-  const teams = useTeams();
-  const settings = useSettings();
-  const auth = useAuth();
-
-  // Combine all contexts
-  const value: AppContextType = {
-    // Projects context
-    ...projects,
-    
-    // WorkLogs context
-    ...workLogs,
-    
-    // Teams context
-    ...teams,
-    
-    // Settings context
-    ...settings,
-    
-    // Auth context
-    ...auth,
-  };
-
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  return (
+    <AuthProvider>
+      <TeamsProvider>
+        <ProjectsProvider>
+          <WorkLogsProvider>
+            <SettingsProvider>
+              {children}
+            </SettingsProvider>
+          </WorkLogsProvider>
+        </ProjectsProvider>
+      </TeamsProvider>
+    </AuthProvider>
+  );
 };
 
-// Create a custom hook for using the context
-export const useApp = () => {
+export const useAppContext = () => {
   const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
+  if (!context) {
+    throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;
 };
 
-// Export for backward compatibility
-export { AppContext };
+// Custom hook to access all contexts
+export const useApp = () => {
+  const auth = useContext(React.createContext<AuthProviderProps | undefined>(undefined));
+  const projects = useContext(React.createContext<ProjectsContextType | undefined>(undefined));
+  const worklogs = useContext(React.createContext<WorkLogsContextType | undefined>(undefined));
+  const teams = useContext(React.createContext<TeamsContextType | undefined>(undefined));
+  const settings = useContext(React.createContext<SettingsContextType | undefined>(undefined));
+
+  if (!auth || !projects || !worklogs || !teams || !settings) {
+    throw new Error(
+      'useApp must be used within an AppProvider containing all context providers'
+    );
+  }
+
+  return {
+    ...auth,
+    ...projects,
+    ...worklogs,
+    ...teams,
+    ...settings,
+  };
+};
