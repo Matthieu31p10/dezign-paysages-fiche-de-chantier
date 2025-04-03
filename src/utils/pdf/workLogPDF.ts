@@ -1,6 +1,6 @@
 
 import { ProjectInfo, WorkLog, CompanyInfo } from '@/types/models';
-import { formatDate } from '../helpers';
+import { formatDate } from '../date';
 import jsPDF from 'jspdf';
 
 interface PDFOptions {
