@@ -46,6 +46,11 @@ export interface ProjectInfo {
   createdAt: Date;
 }
 
+export interface CustomTask {
+  id: string;
+  name: string;
+}
+
 export interface WorkLog {
   id: string;
   projectId: string;
@@ -70,6 +75,7 @@ export interface WorkLog {
       progress: number;
     };
     watering: 'none' | 'on' | 'off';
+    customTasks?: { [id: string]: boolean }; // Add custom tasks
   };
   notes?: string; // Field for adding notes
   waterConsumption?: number; // Field for water consumption in m3
@@ -102,4 +108,5 @@ export interface AppSettings {
   companyInfo?: CompanyInfo;
   users?: User[];
   personnel?: Personnel[];
+  customTasks?: CustomTask[]; // Add custom tasks to settings
 }

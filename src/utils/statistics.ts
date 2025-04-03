@@ -1,5 +1,5 @@
 
-import { WorkLog } from '@/types/models';
+import { WorkLog, CustomTask } from '@/types/models';
 
 // Calculate average hours per visit
 export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
@@ -97,5 +97,76 @@ export const calculateWaterConsumptionStats = (workLogs: WorkLog[]): WaterConsum
     totalConsumption: Number(totalConsumption.toFixed(2)),
     monthlyConsumption,
     lastReading
+  };
+};
+
+// Calculate task statistics
+export interface TaskStatistics {
+  totalTasks: number;
+  taskCounts: {
+    mowing: number;
+    brushcutting: number;
+    blower: number;
+    manualWeeding: number;
+    whiteVinegar: number;
+    pruning: number;
+    customTasks: {
+      [id: string]: {
+        count: number;
+        name: string;
+      }
+    }
+  }
+}
+
+export const calculateTaskStatistics = (workLogs: WorkLog[], customTasks: CustomTask[]): TaskStatistics => {
+  const taskCounts = {
+    mowing: 0,
+    brushcutting: 0,
+    blower: 0, 
+    manualWeeding: 0,
+    whiteVinegar: 0,
+    pruning: 0,
+    customTasks: {} as { [id: string]: { count: number; name: string } }
+  };
+  
+  // Initialize custom tasks counts
+  customTasks.forEach(task => {
+    taskCounts.customTasks[task.id] = {
+      count: 0,
+      name: task.name
+    };
+  });
+  
+  // Count tasks
+  workLogs.forEach(log => {
+    if (log.tasksPerformed.mowing) taskCounts.mowing++;
+    if (log.tasksPerformed.brushcutting) taskCounts.brushcutting++;
+    if (log.tasksPerformed.blower) taskCounts.blower++;
+    if (log.tasksPerformed.manualWeeding) taskCounts.manualWeeding++;
+    if (log.tasksPerformed.whiteVinegar) taskCounts.whiteVinegar++;
+    if (log.tasksPerformed.pruning.done) taskCounts.pruning++;
+    
+    // Count custom tasks
+    if (log.tasksPerformed.customTasks) {
+      Object.entries(log.tasksPerformed.customTasks).forEach(([id, isDone]) => {
+        if (isDone && taskCounts.customTasks[id]) {
+          taskCounts.customTasks[id].count++;
+        }
+      });
+    }
+  });
+  
+  const totalTasks = taskCounts.mowing + 
+    taskCounts.brushcutting + 
+    taskCounts.blower + 
+    taskCounts.manualWeeding + 
+    taskCounts.whiteVinegar + 
+    taskCounts.pruning + 
+    Object.values(taskCounts.customTasks).reduce((sum, task) => sum + task.count, 0);
+  
+  return {
+    totalTasks,
+    taskCounts
   };
 };
