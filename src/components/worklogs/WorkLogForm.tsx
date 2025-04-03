@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,7 +37,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const [timeDeviation, setTimeDeviation] = useState<string>("N/A");
   const [timeDeviationClass, setTimeDeviationClass] = useState<string>("");
-  const [previousWaterConsumption, setPreviousWaterConsumption] = useState<number | null>(null);
   const navigate = useNavigate();
   
   const form = useForm<FormValues>({
@@ -95,27 +95,12 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       }
       
       calculateTimeDeviation(project);
-      
-      if (project && project.irrigation !== 'none') {
-        const projectLogs = existingWorkLogs
-          .filter(log => log.projectId === selectedProjectId && log.waterConsumption !== undefined)
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        
-        if (projectLogs.length > 0 && initialData?.id !== projectLogs[0].id) {
-          setPreviousWaterConsumption(projectLogs[0].waterConsumption || null);
-        } else {
-          setPreviousWaterConsumption(null);
-        }
-      } else {
-        setPreviousWaterConsumption(null);
-      }
     } else {
       setSelectedProject(null);
       setTimeDeviation("N/A");
       setTimeDeviationClass("");
-      setPreviousWaterConsumption(null);
     }
-  }, [selectedProjectId, projectInfos, setValue, existingWorkLogs, initialData]);
+  }, [selectedProjectId, projectInfos, setValue]);
   
   useEffect(() => {
     if (selectedProject && totalHours) {
@@ -276,7 +261,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           project={selectedProject}
           register={register}
           errors={errors}
-          previousWaterConsumption={previousWaterConsumption}
         />
       )}
       
