@@ -13,33 +13,61 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
   const { form } = useWorkLogForm();
   const { formState } = form;
   const isSubmitting = formState.isSubmitting;
+  const isFormValid = formState.isValid;
+  
+  const getSubmitButtonText = () => {
+    if (isSubmitting) {
+      return isEditing ? "Mise à jour..." : "Création...";
+    }
+    return isEditing ? "Mettre à jour la fiche" : "Créer la fiche";
+  };
 
   return (
     <div className="flex justify-between">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={onCancel}
-        disabled={isSubmitting}
-      >
-        Annuler
-      </Button>
-      
-      <Button 
-        type="submit"
-        disabled={isSubmitting || formState.isSubmitting || !formState.isValid}
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {isEditing ? "Mise à jour..." : "Création..."}
-          </>
-        ) : (
-          isEditing ? "Mettre à jour la fiche" : "Créer la fiche"
-        )}
-      </Button>
+      <CancelButton onCancel={onCancel} disabled={isSubmitting} />
+      <SubmitButton 
+        isSubmitting={isSubmitting} 
+        isDisabled={isSubmitting || !isFormValid}
+        buttonText={getSubmitButtonText()}
+      />
     </div>
   );
 };
+
+interface CancelButtonProps {
+  onCancel: () => void;
+  disabled: boolean;
+}
+
+const CancelButton: React.FC<CancelButtonProps> = ({ onCancel, disabled }) => (
+  <Button 
+    type="button" 
+    variant="outline" 
+    onClick={onCancel}
+    disabled={disabled}
+  >
+    Annuler
+  </Button>
+);
+
+interface SubmitButtonProps {
+  isSubmitting: boolean;
+  isDisabled: boolean;
+  buttonText: string;
+}
+
+const SubmitButton: React.FC<SubmitButtonProps> = ({ 
+  isSubmitting, 
+  isDisabled,
+  buttonText
+}) => (
+  <Button 
+    type="submit"
+    disabled={isDisabled}
+  >
+    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+    {buttonText}
+  </Button>
+);
 
 export default ActionButtons;
