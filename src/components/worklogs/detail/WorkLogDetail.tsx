@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { WorkLogDetailContext } from './WorkLogDetailContext';
+import { WorkLogDetailContext, WorkLogDetailProvider } from './WorkLogDetailContext';
 import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
 import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
@@ -48,22 +48,18 @@ const WorkLogDetail = () => {
   );
   
   return (
-    <WorkLogDetailContext.Provider value={contextValues}>
+    <WorkLogDetailProvider value={contextValues}>
       <div className="animate-fade-in space-y-6">
-        <DetailHeader 
-          projectName={project?.name || 'Chantier inconnu'} 
-          workLogDate={workLog.date}
-          children={<HeaderActions workLogId={id} />} 
-        />
+        <div className="flex justify-between items-start">
+          <DetailHeader />
+          <HeaderActions workLogId={id} />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="col-span-1 md:col-span-2 space-y-6">
             <Card>
               <CardContent className="pt-6">
-                <WorkLogDetails 
-                  workLog={workLog} 
-                  project={project}
-                />
+                <WorkLogDetails />
               </CardContent>
             </Card>
             
@@ -84,7 +80,7 @@ const WorkLogDetail = () => {
         isOpen={contextValues.isDeleteDialogOpen}
         onOpenChange={contextValues.setIsDeleteDialogOpen}
       />
-    </WorkLogDetailContext.Provider>
+    </WorkLogDetailProvider>
   );
 };
 
