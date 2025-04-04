@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
@@ -37,11 +37,11 @@ const WorkLogDetail = () => {
   
   const project = getProjectById(workLog.projectId);
   
-  useState(() => {
+  useEffect(() => {
     if (workLog.notes) {
       setNotes(workLog.notes);
     }
-  });
+  }, [workLog.notes]);
   
   const handleDeleteWorkLog = () => {
     deleteWorkLog(workLog.id);
@@ -68,37 +68,7 @@ const WorkLogDetail = () => {
   
   const calculateEndTime = () => {
     if (!workLog) return "--:--";
-    
-    const departureTimeParts = workLog.timeTracking.departure.split(':');
-    const arrivalTimeParts = workLog.timeTracking.arrival.split(':');
-    
-    if (departureTimeParts.length !== 2 || arrivalTimeParts.length !== 2) {
-      return "--:--";
-    }
-    
-    const departureHour = parseInt(departureTimeParts[0], 10);
-    const departureMinute = parseInt(departureTimeParts[1], 10);
-    const arrivalHour = parseInt(arrivalTimeParts[0], 10);
-    const arrivalMinute = parseInt(arrivalTimeParts[1], 10);
-    
-    let breakTimeMinutes: number;
-    if (typeof workLog.timeTracking.breakTime === 'string') {
-      breakTimeMinutes = parseFloat(workLog.timeTracking.breakTime) * 60;
-    } else {
-      breakTimeMinutes = workLog.timeTracking.breakTime * 60;
-    }
-    
-    const departureInMinutes = departureHour * 60 + departureMinute;
-    const arrivalInMinutes = arrivalHour * 60 + arrivalMinute;
-    
-    const totalWorkMinutes = arrivalInMinutes - departureInMinutes;
-    
-    const endTimeInMinutes = departureInMinutes + totalWorkMinutes;
-    
-    const endHour = Math.floor(endTimeInMinutes / 60);
-    const endMinute = endTimeInMinutes % 60;
-    
-    return `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+    return workLog.timeTracking.end || "--:--";
   };
   
   const calculateHourDifference = () => {
@@ -126,7 +96,7 @@ const WorkLogDetail = () => {
       const data = {
         workLog,
         project,
-        endTime: calculateEndTime(),
+        endTime: workLog.timeTracking.end || calculateEndTime(),
         companyInfo: settings.companyInfo,
         companyLogo: settings.companyLogo
       };
@@ -327,7 +297,7 @@ const WorkLogDetail = () => {
                   
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500">Heure de fin</p>
-                    <p>{calculateEndTime()}</p>
+                    <p>{workLog.timeTracking.end || calculateEndTime()}</p>
                   </div>
                   
                   <div className="space-y-1">

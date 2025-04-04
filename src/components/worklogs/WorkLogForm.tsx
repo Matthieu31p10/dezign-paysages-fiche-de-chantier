@@ -51,19 +51,12 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       end: initialData?.timeTracking?.end || "17:00",
       breakTime: initialData?.timeTracking?.breakTime || "00:00",
       totalHours: initialData?.timeTracking?.totalHours || 8,
-      mowing: initialData?.tasksPerformed?.mowing || false,
-      brushcutting: initialData?.tasksPerformed?.brushcutting || false,
-      blower: initialData?.tasksPerformed?.blower || false,
-      manualWeeding: initialData?.tasksPerformed?.manualWeeding || false,
-      whiteVinegar: initialData?.tasksPerformed?.whiteVinegar || false,
-      pruningDone: initialData?.tasksPerformed?.pruning?.done || false,
-      pruningProgress: initialData?.tasksPerformed?.pruning?.progress || 0,
-      watering: initialData?.tasksPerformed?.watering || 'none',
       notes: initialData?.notes || "",
       waterConsumption: initialData?.waterConsumption || undefined,
       teamFilter: "",
       customTasks: initialData?.tasksPerformed?.customTasks || {},
       tasksProgress: initialData?.tasksPerformed?.tasksProgress || {},
+      watering: initialData?.tasksPerformed?.watering || 'none',
     },
   });
   
@@ -180,23 +173,25 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       timeTracking: {
         departure: data.departure,
         arrival: data.arrival,
-        end: data.end,
+        end: data.end,  // On s'assure que end est bien enregistré
         breakTime: data.breakTime,
         totalHours: data.totalHours,
       },
       tasksPerformed: {
-        mowing: data.mowing,
-        brushcutting: data.brushcutting,
-        blower: data.blower,
-        manualWeeding: data.manualWeeding,
-        whiteVinegar: data.whiteVinegar,
-        pruning: {
-          done: data.pruningDone,
-          progress: data.pruningProgress,
-        },
         watering: data.watering,
         customTasks: data.customTasks,
-        tasksProgress: data.tasksProgress, // Ajout des progrès des tâches
+        tasksProgress: data.tasksProgress,
+        // On conserve pruning pour la compatibilité avec le code existant
+        pruning: { 
+          done: false,
+          progress: 0
+        },
+        // On ajoute ces champs à false pour la compatibilité avec le code existant
+        mowing: false,
+        brushcutting: false,
+        blower: false,
+        manualWeeding: false,
+        whiteVinegar: false
       },
       notes: data.notes,
       waterConsumption: data.waterConsumption,

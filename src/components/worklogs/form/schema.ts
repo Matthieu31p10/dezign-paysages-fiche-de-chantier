@@ -19,19 +19,12 @@ export const formSchema = z.object({
     required_error: "Le total d'heures est requis.",
     invalid_type_error: "Le total d'heures doit être un nombre."
   }).min(0, { message: "Le total d'heures doit être positive." }),
-  mowing: z.boolean().default(false),
-  brushcutting: z.boolean().default(false),
-  blower: z.boolean().default(false),
-  manualWeeding: z.boolean().default(false),
-  whiteVinegar: z.boolean().default(false),
-  pruningDone: z.boolean().default(false),
-  pruningProgress: z.number().min(0).max(100).default(0),
-  watering: z.enum(['none', 'on', 'off']).default('none'),
   notes: z.string().optional(),
   waterConsumption: z.number().optional(),
   teamFilter: z.string().optional().default(""),
   customTasks: z.record(z.string(), z.boolean()).default({}),
   tasksProgress: z.record(z.string(), z.number()).default({}),
+  watering: z.enum(['none', 'on', 'off']).default('none'),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
