@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 import { useApp } from '@/context/AppContext';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Separator } from '@/components/ui/separator';
@@ -31,7 +33,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   projectInfos, 
   existingWorkLogs 
 }) => {
-  const { addWorkLog, updateWorkLog, settings, teams } = useApp();
+  const { addWorkLog, updateWorkLog } = useWorkLogs();
+  const { settings, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const [timeDeviation, setTimeDeviation] = useState<string>("N/A");
@@ -163,7 +166,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     navigate('/worklogs');
   };
   
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = (data: FormValues) => {
     console.log("Submitting form data:", data);
     
     const payload = {
@@ -180,8 +183,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       },
       tasksPerformed: {
         watering: data.watering,
-        customTasks: data.customTasks,
-        tasksProgress: data.tasksProgress,
+        customTasks: data.customTasks || {},
+        tasksProgress: data.tasksProgress || {},
         pruning: { 
           done: false,
           progress: 0
@@ -201,11 +204,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     try {
       if (initialData) {
         console.log("Updating worklog with ID:", initialData.id);
-        await updateWorkLog({ ...payload, id: initialData.id, createdAt: initialData.createdAt });
+        updateWorkLog({ ...payload, id: initialData.id, createdAt: initialData.createdAt });
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
         console.log("Creating new worklog");
-        await addWorkLog(payload);
+        addWorkLog(payload);
         toast.success("Fiche de suivi créée avec succès!");
       }
       
