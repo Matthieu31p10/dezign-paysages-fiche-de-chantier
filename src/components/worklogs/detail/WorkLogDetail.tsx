@@ -9,6 +9,9 @@ import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
 import CustomTasksCard from './CustomTasksCard';
 import NotesSection from './NotesSection';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, 
+         AlertDialogContent, AlertDialogDescription, AlertDialogFooter, 
+         AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const WorkLogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,24 +44,31 @@ const WorkLogDetail: React.FC = () => {
   }, [workLog.notes]);
   
   const handleDeleteWorkLog = () => {
-    // Sécurité: confirmation avant suppression
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette fiche de suivi ?')) {
+    try {
       deleteWorkLog(workLog.id);
       toast.success("Fiche de suivi supprimée avec succès");
       navigate('/worklogs');
+    } catch (error) {
+      console.error("Error deleting work log:", error);
+      toast.error("Erreur lors de la suppression de la fiche de suivi");
     }
   };
   
   const handleSaveNotes = () => {
     if (workLog) {
-      // Sécurité: validation des données
-      const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
-      
-      updateWorkLog({
-        ...workLog,
-        notes: sanitizedNotes
-      });
-      toast.success("Notes enregistrées");
+      try {
+        // Sécurité: validation des données
+        const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
+        
+        updateWorkLog({
+          ...workLog,
+          notes: sanitizedNotes
+        });
+        toast.success("Notes enregistrées avec succès");
+      } catch (error) {
+        console.error("Error saving notes:", error);
+        toast.error("Erreur lors de l'enregistrement des notes");
+      }
     }
   };
   
@@ -86,7 +96,10 @@ const WorkLogDetail: React.FC = () => {
   };
   
   const handleExportToPDF = async () => {
-    if (!workLog || !project) return;
+    if (!workLog || !project) {
+      toast.error("Données insuffisantes pour générer le PDF");
+      return;
+    }
     
     try {
       // Sécurité: vérification des données avant génération

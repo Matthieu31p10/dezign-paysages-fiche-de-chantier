@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useWorkLogDetail } from './WorkLogDetailContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, 
+         AlertDialogContent, AlertDialogDescription, AlertDialogFooter, 
+         AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const NotesSection: React.FC = () => {
   const { notes, setNotes, handleSaveNotes } = useWorkLogDetail();
@@ -16,6 +19,10 @@ const NotesSection: React.FC = () => {
       // Tronquer si dépasse la limite
       setNotes(e.target.value.substring(0, 2000));
     }
+  };
+  
+  const confirmSaveNotes = () => {
+    handleSaveNotes();
   };
   
   return (
@@ -37,9 +44,27 @@ const NotesSection: React.FC = () => {
             <span className="text-xs text-muted-foreground">
               {notes.length}/2000 caractères
             </span>
-            <Button size="sm" onClick={handleSaveNotes}>
-              Enregistrer les notes
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm">
+                  Enregistrer les notes
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmer l'enregistrement</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Voulez-vous enregistrer ces notes pour cette fiche de suivi ?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmSaveNotes}>
+                    Enregistrer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </CardContent>

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
@@ -24,46 +23,57 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   const onSubmit = (data: FormValues) => {
     console.log("Submitting form data:", data);
     
-    const payload = {
-      projectId: data.projectId,
-      date: data.date,
-      duration: data.duration,
-      personnel: data.personnel,
-      timeTracking: {
-        departure: data.departure,
-        arrival: data.arrival,
-        end: data.end,
-        breakTime: data.breakTime,
-        totalHours: data.totalHours,
-      },
-      tasksPerformed: {
-        watering: data.watering,
-        customTasks: data.customTasks || {},
-        tasksProgress: data.tasksProgress || {},
-        pruning: { 
-          done: false,
-          progress: 0
-        },
-        mowing: false,
-        brushcutting: false,
-        blower: false,
-        manualWeeding: false,
-        whiteVinegar: false
-      },
-      notes: data.notes,
-      waterConsumption: data.waterConsumption,
-    };
-    
-    console.log("Final payload:", payload);
-    
     try {
+      // Validation de sécurité des données
+      if (!data.projectId || !data.date || data.personnel.length === 0) {
+        toast.error("Données invalides. Veuillez vérifier les champs obligatoires.");
+        return;
+      }
+      
+      const payload = {
+        projectId: data.projectId,
+        date: data.date,
+        duration: data.duration,
+        personnel: data.personnel,
+        timeTracking: {
+          departure: data.departure,
+          arrival: data.arrival,
+          end: data.end,
+          breakTime: data.breakTime,
+          totalHours: data.totalHours,
+        },
+        tasksPerformed: {
+          watering: data.watering,
+          customTasks: data.customTasks || {},
+          tasksProgress: data.tasksProgress || {},
+          pruning: { 
+            done: false,
+            progress: 0
+          },
+          mowing: false,
+          brushcutting: false,
+          blower: false,
+          manualWeeding: false,
+          whiteVinegar: false
+        },
+        notes: data.notes ? data.notes.substring(0, 2000) : "", // Sécurité: limitation de la taille
+        waterConsumption: data.waterConsumption,
+      };
+      
+      console.log("Final payload:", payload);
+      
       if (initialData) {
         console.log("Updating worklog with ID:", initialData.id);
-        updateWorkLog({ ...payload, id: initialData.id, createdAt: initialData.createdAt });
+        updateWorkLog({ 
+          ...payload, 
+          id: initialData.id, 
+          createdAt: initialData.createdAt 
+        });
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
         console.log("Creating new worklog");
-        addWorkLog(payload);
+        const newWorkLog = addWorkLog(payload);
+        console.log("New worklog created with ID:", newWorkLog.id);
         toast.success("Fiche de suivi créée avec succès!");
       }
       

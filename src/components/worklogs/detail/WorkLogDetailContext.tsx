@@ -30,6 +30,13 @@ export const WorkLogDetailProvider: React.FC<{
       // Vérification supplémentaire de sécurité
       const sanitized = notes.substring(0, 2000);
       value.setNotes(sanitized);
+    },
+    handleSaveNotes: () => {
+      try {
+        value.handleSaveNotes();
+      } catch (error) {
+        console.error("Error saving notes:", error);
+      }
     }
   };
   
