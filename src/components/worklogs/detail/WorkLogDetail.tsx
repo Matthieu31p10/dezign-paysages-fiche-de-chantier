@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { WorkLogDetailContext, PDFOptions } from './WorkLogDetailContext';
+import { WorkLogDetailContext } from './WorkLogDetailContext';
 import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
 import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
@@ -11,6 +11,7 @@ import CustomTasksCard from './CustomTasksCard';
 import NotesSection from './NotesSection';
 import DeleteWorkLogDialog from './DeleteWorkLogDialog';
 import HeaderActions from './HeaderActions';
+import PDFOptionsDialog from './PDFOptionsDialog';
 
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,9 +53,8 @@ const WorkLogDetail = () => {
         <DetailHeader 
           projectName={project?.name || 'Chantier inconnu'} 
           workLogDate={workLog.date}
-        >
-          <HeaderActions workLogId={id} />
-        </DetailHeader>
+          children={<HeaderActions workLogId={id} />} 
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="col-span-1 md:col-span-2 space-y-6">
@@ -80,7 +80,10 @@ const WorkLogDetail = () => {
         </div>
       </div>
       
-      <DeleteWorkLogDialog />
+      <DeleteWorkLogDialog 
+        isOpen={contextValues.isDeleteDialogOpen}
+        onOpenChange={contextValues.setIsDeleteDialogOpen}
+      />
     </WorkLogDetailContext.Provider>
   );
 };
