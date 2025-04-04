@@ -18,7 +18,7 @@ export interface PDFOptions {
 }
 
 /**
- * Main PDF generation interface with security validations
+ * Main PDF generation interface
  */
 interface PDFData {
   workLog?: WorkLog;
@@ -30,33 +30,13 @@ interface PDFData {
 }
 
 /**
- * Generate a PDF based on the provided data with security checks
+ * Generate a PDF based on the provided data
  */
 export const generatePDF = async (data: PDFData): Promise<string> => {
-  // Sécurité: validation des données avant génération
-  if (!data.workLog) {
-    throw new Error('Données de fiche de suivi manquantes');
-  }
-  
-  // Vérification de sécurité supplémentaire
-  try {
-    // Vérifier que tous les champs requis sont présents
-    if (!data.workLog.personnel || data.workLog.personnel.length === 0) {
-      throw new Error('Personnel manquant dans la fiche de suivi');
-    }
-    
-    if (!data.workLog.projectId) {
-      throw new Error('ID de projet manquant dans la fiche de suivi');
-    }
-    
-    return generateWorkLogPDF(data);
-  } catch (error) {
-    console.error('Erreur lors de la validation des données PDF:', error);
-    throw error;
-  }
+  return generateWorkLogPDF(data);
 };
 
-// Exporter les fonctions de génération PDF spécifiques
+// Export the specific PDF generator functions
 export {
   generateWorkLogPDF,
   generateProjectPDF,

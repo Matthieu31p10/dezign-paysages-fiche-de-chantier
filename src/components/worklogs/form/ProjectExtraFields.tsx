@@ -1,24 +1,38 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProjectInfo, WorkLog } from '@/types/models';
+import { UseFormRegister } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { z } from 'zod';
+import { formSchema } from './schema';
 import { formatDate } from '@/utils/date';
-import { useWorkLogForm } from './WorkLogFormContext';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const WaterConsumptionSection: React.FC = () => {
-  const { selectedProject, form, existingWorkLogs } = useWorkLogForm();
-  const { register, formState: { errors } } = form;
+type FormValues = z.infer<typeof formSchema>;
+
+interface ProjectExtraFieldsProps {
+  project: ProjectInfo;
+  register: UseFormRegister<FormValues>;
+  errors: Record<string, any>;
+  existingWorkLogs?: WorkLog[];
+}
+
+const ProjectExtraFields: React.FC<ProjectExtraFieldsProps> = ({ 
+  project, 
+  register, 
+  errors,
+  existingWorkLogs = []
+}) => {
+  if (!project || project.irrigation === 'none') return null;
   
-  if (!selectedProject || selectedProject.irrigation === 'none') return null;
-  
-  // Filter the work logs for this project that have water consumption data
+  // Filtrer les journaux de travail pour ce projet qui ont des données de consommation d'eau
   const waterConsumptionLogs = existingWorkLogs
-    .filter(log => log.projectId === selectedProject.id && log.waterConsumption !== undefined)
+    .filter(log => log.projectId === project.id && log.waterConsumption !== undefined)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  // Calculate the total water consumption for this project
+  // Calculer la consommation totale d'eau pour ce projet
   const totalWaterConsumption = waterConsumptionLogs.reduce(
     (total, log) => total + (log.waterConsumption || 0), 
     0
@@ -85,4 +99,4 @@ const WaterConsumptionSection: React.FC = () => {
   );
 };
 
-export default WaterConsumptionSection;
+export default ProjectExtraFields;

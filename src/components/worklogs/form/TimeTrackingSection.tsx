@@ -1,13 +1,26 @@
 
 import React from 'react';
+import { Control, FieldErrors, UseFormWatch, UseFormGetValues } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useWorkLogForm } from './WorkLogFormContext';
+import { z } from 'zod';
+import { formSchema } from './schema';
 
-const TimeTrackingSection: React.FC = () => {
-  const { form } = useWorkLogForm();
-  const { control } = form;
-  
+type FormValues = z.infer<typeof formSchema>;
+
+interface TimeTrackingSectionProps {
+  control: Control<FormValues>;
+  errors: FieldErrors<FormValues>;
+  watch: UseFormWatch<FormValues>;
+  getValues: UseFormGetValues<FormValues>;
+}
+
+const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({ 
+  control, 
+  errors, 
+  watch, 
+  getValues 
+}) => {
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium">Suivi du temps</h2>

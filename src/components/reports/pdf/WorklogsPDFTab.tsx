@@ -9,7 +9,8 @@ import { generatePDF } from '@/utils/pdf';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/helpers';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 interface PDFOptions {
   includeContactInfo: boolean;
@@ -25,7 +26,7 @@ const WorklogsPDFTab = () => {
   const { workLogs, getProjectById, settings } = useApp();
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>('');
   
-  // Options PDF avec valeurs par défaut (toutes activées)
+  // Initialize PDF options with default values (all enabled)
   const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
     includeContactInfo: true,
     includeCompanyInfo: true,
@@ -34,12 +35,6 @@ const WorklogsPDFTab = () => {
     includeWatering: true,
     includeNotes: true,
     includeTimeTracking: true
-  });
-  
-  // Sécurité: vérifier que les fiches de suivi sont disponibles
-  const availableWorkLogs = workLogs.filter(log => {
-    const project = getProjectById(log.projectId);
-    return project && log.personnel && log.personnel.length > 0;
   });
   
   const handleOptionChange = (option: keyof PDFOptions, value: boolean) => {
@@ -56,21 +51,12 @@ const WorklogsPDFTab = () => {
     }
     
     const workLog = workLogs.find(log => log.id === selectedWorkLogId);
-    if (!workLog) {
-      toast.error('Fiche de suivi non trouvée');
-      return;
-    }
-    
-    // Sécurité: vérification supplémentaire
-    if (!workLog.personnel || workLog.personnel.length === 0) {
-      toast.error('Cette fiche de suivi n\'a pas de personnel assigné');
-      return;
-    }
+    if (!workLog) return;
     
     const project = pdfOptions.includeContactInfo ? getProjectById(workLog.projectId) : undefined;
     
     try {
-      // Utilisation de la fonction generatePDF avec les informations de l'entreprise et les options
+      // Using the generatePDF function with company info and options
       const pdfData = {
         workLog,
         project,
@@ -101,18 +87,14 @@ const WorklogsPDFTab = () => {
             <SelectValue placeholder="Choisir une fiche de suivi" />
           </SelectTrigger>
           <SelectContent>
-            {availableWorkLogs.length === 0 ? (
-              <SelectItem value="none" disabled>Aucune fiche de suivi disponible</SelectItem>
-            ) : (
-              availableWorkLogs.map(workLog => {
-                const project = getProjectById(workLog.projectId);
-                return (
-                  <SelectItem key={workLog.id} value={workLog.id}>
-                    {formatDate(workLog.date)} - {project?.name || 'Chantier inconnu'}
-                  </SelectItem>
-                );
-              })
-            )}
+            {workLogs.map(workLog => {
+              const project = getProjectById(workLog.projectId);
+              return (
+                <SelectItem key={workLog.id} value={workLog.id}>
+                  {formatDate(workLog.date)} - {project?.name || 'Chantier inconnu'}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
@@ -221,31 +203,14 @@ const WorklogsPDFTab = () => {
         </div>
       </div>
       
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button 
-            disabled={!selectedWorkLogId || availableWorkLogs.length === 0}
-            className="w-full"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Générer PDF
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Générer un PDF</AlertDialogTitle>
-            <AlertDialogDescription>
-              Voulez-vous générer un PDF pour la fiche de suivi sélectionnée ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleGenerateWorkLogPDF}>
-              Générer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Button 
+        onClick={handleGenerateWorkLogPDF}
+        disabled={!selectedWorkLogId}
+        className="w-full"
+      >
+        <FileText className="h-4 w-4 mr-2" />
+        Générer PDF
+      </Button>
     </div>
   );
 };

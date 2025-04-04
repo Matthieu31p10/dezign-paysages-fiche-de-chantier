@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Controller } from 'react-hook-form';
+import { Controller, Control } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -10,11 +11,18 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { addDays } from 'date-fns';
 import { formatDate } from '@/utils/helpers';
+import { z } from 'zod';
+import { formSchema } from './schema';
 import { ProjectInfo, Team } from '@/types/models';
 import PersonnelDialog from '../PersonnelDialog';
-import { useWorkLogForm } from './WorkLogFormContext';
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface HeaderSectionProps {
+  control: Control<FormValues>;
+  errors: Record<string, any>;
+  watch: (name: string) => any;
+  setValue: (name: string, value: any, options?: any) => void;
   teams: Team[];
   filteredProjects: ProjectInfo[];
   handleTeamFilterChange: (team: string) => void;
@@ -22,14 +30,15 @@ interface HeaderSectionProps {
 }
 
 const HeaderSection: React.FC<HeaderSectionProps> = ({ 
+  control, 
+  errors, 
+  watch, 
+  setValue,
   teams,
   filteredProjects,
   handleTeamFilterChange,
   handlePersonnelChange
 }) => {
-  const { form } = useWorkLogForm();
-  const { control, watch, formState: { errors } } = form;
-  
   const dateValue = watch("date");
   const selectedPersonnel = watch("personnel");
   
@@ -71,7 +80,6 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                value={field.value}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un chantier" />
@@ -133,20 +141,11 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
         
         <div>
           <Label htmlFor="duration">Durée prévue (heures)</Label>
-          <Controller
-            name="duration"
-            control={control}
-            render={({ field }) => (
-              <input 
-                type="number" 
-                id="duration" 
-                step="0.5"
-                className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={field.value}
-                onChange={field.onChange}
-                readOnly 
-              />
-            )}
+          <Input type="number" id="duration" step="0.5"
+            {...control.register("duration", {
+              valueAsNumber: true,
+            })}
+            readOnly
           />
           {errors.duration && (
             <p className="text-sm text-red-500">{errors.duration.message}</p>
