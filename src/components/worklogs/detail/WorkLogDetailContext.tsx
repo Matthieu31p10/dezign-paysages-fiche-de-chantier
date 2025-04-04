@@ -13,6 +13,7 @@ interface WorkLogDetailContextType {
   handleSaveNotes: () => void;
   confirmDelete: () => void;
   handleDeleteWorkLog: () => void;
+  handleExportToPDF: () => void;
   handleSendEmail: () => void;
 }
 
