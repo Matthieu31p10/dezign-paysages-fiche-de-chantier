@@ -1,32 +1,20 @@
 
 import React, { useState } from 'react';
-import { Controller, Control, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { z } from 'zod';
-import { formSchema } from './schema';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 import CustomTaskDialog from './CustomTaskDialog';
 import { useApp } from '@/context/AppContext';
 import { CustomTask } from '@/types/models';
+import { useWorkLogForm } from './WorkLogFormContext';
 
-type FormValues = z.infer<typeof formSchema>;
-
-interface TasksSectionProps {
-  control: Control<FormValues>;
-  register: UseFormRegister<FormValues>;
-  watch: (name: string) => any;
-  setValue: UseFormSetValue<FormValues>;
-}
-
-const TasksSection: React.FC<TasksSectionProps> = ({ 
-  control, 
-  register, 
-  watch,
-  setValue
-}) => {
+const TasksSection: React.FC = () => {
   const { settings } = useApp();
+  const { form } = useWorkLogForm();
+  const { control, watch, setValue } = form;
+  
   const [customTaskDialogOpen, setCustomTaskDialogOpen] = useState(false);
   const customTasks = settings.customTasks || [];
   
@@ -61,7 +49,7 @@ const TasksSection: React.FC<TasksSectionProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <Label>Travaux effectués</Label>
+        <Label>Tâches personnalisées</Label>
         <Button 
           type="button" 
           variant="outline" 
@@ -75,7 +63,6 @@ const TasksSection: React.FC<TasksSectionProps> = ({
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Custom tasks */}
         {customTasks.map((task: CustomTask) => (
           <div key={task.id} className="space-y-2 border rounded-md p-3">
             <div className="flex items-center justify-between">
@@ -129,7 +116,7 @@ const TasksSection: React.FC<TasksSectionProps> = ({
                     className="h-7 w-7 p-0"
                     onClick={() => handleDeleteTask(task.id)}
                   >
-                    <PlusCircle className="h-3.5 w-3.5 rotate-45 text-destructive" />
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
                   </Button>
                 </div>
               )}
@@ -144,7 +131,7 @@ const TasksSection: React.FC<TasksSectionProps> = ({
           name="watering"
           control={control}
           render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner une option" />
               </SelectTrigger>

@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/context/AppContext';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { calculateTotalHours } from '@/utils/time';
 
@@ -14,10 +13,11 @@ import { formSchema, FormValues } from './form/schema';
 import HeaderSection from './form/HeaderSection';
 import TimeTrackingSection from './form/TimeTrackingSection';
 import TasksSection from './form/TasksSection';
-import ProjectInfoCard from './form/ProjectInfoCard';
-import ProjectExtraFields from './form/ProjectExtraFields';
 import NotesSection from './form/NotesSection';
 import ActionButtons from './form/ActionButtons';
+import { WorkLogFormProvider } from './form/WorkLogFormContext';
+import ProjectInfoSection from './form/ProjectInfoSection';
+import WorkLogFormSubmitHandler from './form/WorkLogFormSubmitHandler';
 
 interface WorkLogFormProps {
   initialData?: WorkLog;
@@ -32,7 +32,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   projectInfos, 
   existingWorkLogs 
 }) => {
-  const { addWorkLog, updateWorkLog, settings, teams } = useApp();
+  const { teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const [timeDeviation, setTimeDeviation] = useState<string>("N/A");
@@ -60,7 +60,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     },
   });
   
-  const { handleSubmit, control, watch, setValue, formState: { errors }, getValues, register } = form;
+  const { watch, setValue } = form;
   
   const selectedProjectId = watch("projectId");
   const teamFilter = watch("teamFilter");
@@ -68,8 +68,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   const arrivalTime = watch("arrival");
   const endTime = watch("end");
   const breakTimeValue = watch("breakTime");
-  const totalHours = watch("totalHours");
   const selectedPersonnel = watch("personnel");
+  const totalHours = watch("totalHours");
   
   useEffect(() => {
     if (teamFilter) {
@@ -164,117 +164,44 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     navigate('/worklogs');
   };
   
-  const onSubmit = async (data: FormValues) => {
-    const payload = {
-      projectId: data.projectId,
-      date: data.date,
-      duration: data.duration,
-      personnel: data.personnel,
-      timeTracking: {
-        departure: data.departure,
-        arrival: data.arrival,
-        end: data.end,  // On s'assure que end est bien enregistré
-        breakTime: data.breakTime,
-        totalHours: data.totalHours,
-      },
-      tasksPerformed: {
-        watering: data.watering,
-        customTasks: data.customTasks,
-        tasksProgress: data.tasksProgress,
-        // On conserve pruning pour la compatibilité avec le code existant
-        pruning: { 
-          done: false,
-          progress: 0
-        },
-        // On ajoute ces champs à false pour la compatibilité avec le code existant
-        mowing: false,
-        brushcutting: false,
-        blower: false,
-        manualWeeding: false,
-        whiteVinegar: false
-      },
-      notes: data.notes,
-      waterConsumption: data.waterConsumption,
-    };
-    
-    try {
-      if (initialData) {
-        await updateWorkLog({ ...initialData, ...payload, id: initialData.id });
-        toast.success("Fiche de suivi mise à jour avec succès!");
-      } else {
-        await addWorkLog(payload);
-        toast.success("Fiche de suivi créée avec succès!");
-      }
-      
-      if (onSuccess) {
-        onSuccess();
-      }
-      
-      navigate('/worklogs');
-    } catch (error) {
-      console.error("Error saving work log:", error);
-      toast.error("Erreur lors de la sauvegarde de la fiche de suivi.");
-    }
-  };
-  
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <HeaderSection 
-        control={control}
-        errors={errors}
-        watch={watch}
-        setValue={setValue}
-        teams={teams}
-        filteredProjects={filteredProjects}
-        handleTeamFilterChange={handleTeamFilterChange}
-        handlePersonnelChange={handlePersonnelChange}
-      />
-      
-      <Separator />
-      
-      <TimeTrackingSection 
-        control={control}
-        errors={errors}
-        watch={watch}
-        getValues={getValues}
-      />
-      
-      <Separator />
-      
-      <TasksSection 
-        control={control}
-        register={register}
-        watch={watch}
-        setValue={setValue}
-      />
-      
-      {selectedProject && (
-        <ProjectInfoCard 
-          project={selectedProject}
-          timeDeviation={timeDeviation}
-          timeDeviationClass={timeDeviationClass}
-        />
-      )}
-      
-      {selectedProject && (
-        <ProjectExtraFields 
-          project={selectedProject}
-          register={register}
-          errors={errors}
-          existingWorkLogs={existingWorkLogs}
-        />
-      )}
-      
-      <NotesSection 
-        register={register}
-        errors={errors}
-      />
-      
-      <ActionButtons 
-        onCancel={handleCancel}
-        isEditing={!!initialData}
-      />
-    </form>
+    <FormProvider {...form}>
+      <WorkLogFormProvider
+        form={form}
+        initialData={initialData}
+        projectInfos={projectInfos}
+        existingWorkLogs={existingWorkLogs}
+        selectedProject={selectedProject}
+        timeDeviation={timeDeviation}
+        timeDeviationClass={timeDeviationClass}
+      >
+        <WorkLogFormSubmitHandler onSuccess={onSuccess}>
+          <HeaderSection 
+            teams={teams}
+            filteredProjects={filteredProjects}
+            handleTeamFilterChange={handleTeamFilterChange}
+            handlePersonnelChange={handlePersonnelChange}
+          />
+          
+          <Separator />
+          
+          <TimeTrackingSection />
+          
+          <Separator />
+          
+          <TasksSection />
+          
+          <ProjectInfoSection />
+          
+          <NotesSection />
+          
+          <ActionButtons 
+            onCancel={handleCancel}
+            isEditing={!!initialData}
+          />
+        </WorkLogFormSubmitHandler>
+      </WorkLogFormProvider>
+    </FormProvider>
   );
 };
 

@@ -27,30 +27,57 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem(WORKLOGS_STORAGE_KEY, JSON.stringify(workLogs));
+    try {
+      localStorage.setItem(WORKLOGS_STORAGE_KEY, JSON.stringify(workLogs));
+    } catch (error) {
+      console.error('Error saving work logs to localStorage:', error);
+      toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
+    }
   }, [workLogs]);
 
   const addWorkLog = (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => {
+    // Validation des données
+    if (!workLog.projectId || !workLog.date || workLog.personnel.length === 0) {
+      throw new Error('Données invalides pour la fiche de suivi');
+    }
+    
     const newWorkLog: WorkLog = {
       ...workLog,
       id: crypto.randomUUID(),
       createdAt: new Date(),
     };
+    
+    // Utilisation de la méthode fonctionnelle pour mise à jour de l'état
     setWorkLogs((prev) => [...prev, newWorkLog]);
-    toast.success('Fiche de suivi ajoutée');
+    console.log("WorkLog added successfully:", newWorkLog);
     return newWorkLog;
   };
 
   const updateWorkLog = (workLog: WorkLog) => {
-    setWorkLogs((prev) =>
-      prev.map((w) => (w.id === workLog.id ? workLog : w))
-    );
-    toast.success('Fiche de suivi mise à jour');
+    // Validation des données
+    if (!workLog.id || !workLog.projectId || !workLog.date) {
+      throw new Error('Données invalides pour la mise à jour de la fiche de suivi');
+    }
+    
+    setWorkLogs((prev) => {
+      const exists = prev.some(w => w.id === workLog.id);
+      if (!exists) {
+        console.error(`WorkLog with ID ${workLog.id} not found for update`);
+        throw new Error(`Fiche de suivi avec ID ${workLog.id} introuvable`);
+      }
+      return prev.map((w) => (w.id === workLog.id ? workLog : w));
+    });
+    console.log("WorkLog updated successfully:", workLog);
   };
 
   const deleteWorkLog = (id: string) => {
-    setWorkLogs((prev) => prev.filter((w) => w.id !== id));
-    toast.success('Fiche de suivi supprimée');
+    setWorkLogs((prev) => {
+      const exists = prev.some(w => w.id === id);
+      if (!exists) {
+        console.error(`WorkLog with ID ${id} not found for deletion`);
+      }
+      return prev.filter((w) => w.id !== id);
+    });
   };
 
   const deleteWorkLogsByProjectId = (projectId: string) => {
