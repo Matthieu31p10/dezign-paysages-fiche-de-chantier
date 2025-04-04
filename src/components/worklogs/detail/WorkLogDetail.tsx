@@ -11,13 +11,16 @@ import CustomTasksCard from './CustomTasksCard';
 import NotesSection from './NotesSection';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, 
          AlertDialogContent, AlertDialogDescription, AlertDialogFooter, 
-         AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+         AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const WorkLogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { workLogs, getProjectById, updateWorkLog, deleteWorkLog, settings } = useApp();
   const [notes, setNotes] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const workLog = workLogs.find(log => log.id === id);
   
@@ -25,12 +28,10 @@ const WorkLogDetail: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <h2 className="text-xl font-medium mb-4">Fiche de suivi non trouvée</h2>
-        <button onClick={() => navigate('/worklogs')} className="bg-brand-500 text-white px-4 py-2 rounded-md flex items-center">
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+        <Button onClick={() => navigate('/worklogs')} variant="default" className="flex items-center">
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à la liste
-        </button>
+        </Button>
       </div>
     );
   }
@@ -44,6 +45,7 @@ const WorkLogDetail: React.FC = () => {
   }, [workLog.notes]);
   
   const handleDeleteWorkLog = () => {
+    setIsDeleteDialogOpen(false);
     try {
       deleteWorkLog(workLog.id);
       toast.success("Fiche de suivi supprimée avec succès");
@@ -52,6 +54,10 @@ const WorkLogDetail: React.FC = () => {
       console.error("Error deleting work log:", error);
       toast.error("Erreur lors de la suppression de la fiche de suivi");
     }
+  };
+  
+  const confirmDelete = () => {
+    setIsDeleteDialogOpen(true);
   };
   
   const handleSaveNotes = () => {
@@ -73,7 +79,7 @@ const WorkLogDetail: React.FC = () => {
   };
   
   const calculateEndTime = () => {
-    if (!workLog) return "--:--";
+    if (!workLog || !workLog.timeTracking) return "--:--";
     return workLog.timeTracking.end || "--:--";
   };
   
@@ -85,9 +91,16 @@ const WorkLogDetail: React.FC = () => {
     
     if (completedVisits === 0) return "N/A";
     
-    const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+    const totalHoursCompleted = projectWorkLogs.reduce((sum, log => {
+      if (log.timeTracking && typeof log.timeTracking.totalHours === 'number') {
+        return sum + log.timeTracking.totalHours;
+      }
+      return sum;
+    }), 0);
     
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
+    
+    if (!project.visitDuration) return "N/A";
     
     const difference = project.visitDuration - averageHoursPerVisit;
     
@@ -111,7 +124,7 @@ const WorkLogDetail: React.FC = () => {
       const data = {
         workLog,
         project,
-        endTime: workLog.timeTracking.end || calculateEndTime(),
+        endTime: workLog.timeTracking?.end || calculateEndTime(),
         companyInfo: settings.companyInfo,
         companyLogo: settings.companyLogo
       };
@@ -141,7 +154,9 @@ const WorkLogDetail: React.FC = () => {
   };
   
   const calculateTotalTeamHours = () => {
-    if (!workLog) return "0";
+    if (!workLog || !workLog.timeTracking || typeof workLog.timeTracking.totalHours !== 'number') {
+      return "0";
+    }
     
     const totalTeamHours = workLog.timeTracking.totalHours;
     return totalTeamHours.toFixed(2);
@@ -156,7 +171,7 @@ const WorkLogDetail: React.FC = () => {
     calculateHourDifference,
     calculateTotalTeamHours,
     handleSaveNotes,
-    handleDeleteWorkLog,
+    confirmDelete,
     handleExportToPDF,
     handleSendEmail
   };
@@ -180,6 +195,24 @@ const WorkLogDetail: React.FC = () => {
           </div>
         </div>
       </WorkLogDetailProvider>
+      
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette fiche de suivi ? 
+              Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteWorkLog} className="bg-destructive text-destructive-foreground">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

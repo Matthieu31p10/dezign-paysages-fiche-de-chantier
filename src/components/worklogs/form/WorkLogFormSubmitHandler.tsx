@@ -16,7 +16,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   children
 }) => {
   const { form, initialData } = useWorkLogForm();
-  const { handleSubmit } = form;
+  const { handleSubmit, formState } = form;
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   const navigate = useNavigate();
   
@@ -25,25 +25,31 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     
     try {
       // Validation de sécurité des données
-      if (!data.projectId || !data.date || data.personnel.length === 0) {
+      if (!data.projectId || !data.date || !data.personnel || data.personnel.length === 0) {
         toast.error("Données invalides. Veuillez vérifier les champs obligatoires.");
         return;
       }
       
+      // Sécurisation des données
+      const safePersonnel = Array.isArray(data.personnel) ? data.personnel : [];
+      const safeDuration = typeof data.duration === 'number' ? data.duration : 0;
+      const safeBreakTime = data.breakTime || "00:00";
+      const safeTotalHours = typeof data.totalHours === 'number' ? data.totalHours : 0;
+      
       const payload = {
         projectId: data.projectId,
         date: data.date,
-        duration: data.duration,
-        personnel: data.personnel,
+        duration: safeDuration,
+        personnel: safePersonnel,
         timeTracking: {
-          departure: data.departure,
-          arrival: data.arrival,
-          end: data.end,
-          breakTime: data.breakTime,
-          totalHours: data.totalHours,
+          departure: data.departure || "08:00",
+          arrival: data.arrival || "09:00",
+          end: data.end || "17:00",
+          breakTime: safeBreakTime,
+          totalHours: safeTotalHours,
         },
         tasksPerformed: {
-          watering: data.watering,
+          watering: data.watering || 'none',
           customTasks: data.customTasks || {},
           tasksProgress: data.tasksProgress || {},
           pruning: { 
@@ -57,7 +63,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
           whiteVinegar: false
         },
         notes: data.notes ? data.notes.substring(0, 2000) : "", // Sécurité: limitation de la taille
-        waterConsumption: data.waterConsumption,
+        waterConsumption: data.waterConsumption || undefined,
       };
       
       console.log("Final payload:", payload);
@@ -87,6 +93,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       toast.error("Erreur lors de la sauvegarde de la fiche de suivi.");
     }
   };
+  
+  const isSubmitting = formState.isSubmitting;
   
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

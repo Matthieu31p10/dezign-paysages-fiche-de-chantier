@@ -1,4 +1,4 @@
 
-import WorkLogDetail from './detail/WorkLogDetail';
+import DetailComponent from './detail/WorkLogDetail';
 
-export default WorkLogDetail;
+export default DetailComponent;
