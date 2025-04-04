@@ -13,8 +13,18 @@ interface WorkLogDetailContextType {
   handleSaveNotes: () => void;
   confirmDelete: () => void;
   handleDeleteWorkLog: () => void;
-  handleExportToPDF: () => void;
+  handleExportToPDF: (options: PDFOptions) => void;
   handleSendEmail: () => void;
+}
+
+export interface PDFOptions {
+  includeContactInfo: boolean;
+  includeCompanyInfo: boolean;
+  includePersonnel: boolean;
+  includeTasks: boolean;
+  includeWatering: boolean;
+  includeNotes: boolean;
+  includeTimeTracking: boolean;
 }
 
 const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);

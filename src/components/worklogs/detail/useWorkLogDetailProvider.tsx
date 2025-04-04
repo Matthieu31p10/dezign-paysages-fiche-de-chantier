@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { WorkLog, ProjectInfo } from '@/types/models';
+import { generatePDF } from '@/utils/pdf';
+import { PDFOptions } from './WorkLogDetailContext';
 
 export const useWorkLogDetailProvider = (
   workLog: WorkLog,
@@ -95,6 +97,38 @@ export const useWorkLogDetailProvider = (
     return totalTeamHours.toFixed(2);
   };
   
+  const handleExportToPDF = async (options: PDFOptions) => {
+    try {
+      // Vérification de la présence des données nécessaires
+      if (!workLog) {
+        toast.error("Données de fiche de suivi manquantes");
+        return;
+      }
+      
+      if (!workLog.personnel || workLog.personnel.length === 0) {
+        toast.error("Cette fiche de suivi n'a pas de personnel assigné");
+        return;
+      }
+      
+      const pdfData = {
+        workLog,
+        project: options.includeContactInfo ? project : undefined,
+        endTime: calculateEndTime(),
+        companyInfo: options.includeCompanyInfo ? settings.companyInfo : undefined,
+        companyLogo: options.includeCompanyInfo ? settings.companyLogo : undefined,
+        pdfOptions: options
+      };
+      
+      const fileName = await generatePDF(pdfData);
+      toast.success('PDF généré avec succès', {
+        description: `Fichier: ${fileName}`
+      });
+    } catch (error) {
+      console.error("Erreur lors de la génération du PDF:", error);
+      toast.error("Erreur lors de la génération du PDF");
+    }
+  };
+  
   const handleSendEmail = () => {
     if (!project?.contact?.email) {
       toast.error("Aucune adresse email de contact n'est définie pour ce chantier");
@@ -122,6 +156,7 @@ export const useWorkLogDetailProvider = (
     calculateEndTime,
     calculateHourDifference,
     calculateTotalTeamHours,
+    handleExportToPDF,
     handleSendEmail
   };
 };
