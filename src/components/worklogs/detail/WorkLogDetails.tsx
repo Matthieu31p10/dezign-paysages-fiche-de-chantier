@@ -2,13 +2,25 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, User, Droplets } from 'lucide-react';
+import { Calendar, Clock, User, Droplets, Trash2 } from 'lucide-react';
 import { formatDate } from '@/utils/helpers';
 import { useWorkLogDetail } from './WorkLogDetailContext';
 import NotesSection from './NotesSection';
 
 const WorkLogDetails: React.FC = () => {
   const { workLog, calculateEndTime, calculateHourDifference, calculateTotalTeamHours } = useWorkLogDetail();
+  
+  // Fonction pour convertir le code de gestion des déchets en texte lisible
+  const getWasteManagementText = (wasteCode?: string) => {
+    switch (wasteCode) {
+      case 'one_big_bag': return '1 Big-bag';
+      case 'two_big_bags': return '2 Big-bags';
+      case 'half_dumpster': return '1/2 Benne';
+      case 'one_dumpster': return '1 Benne';
+      case 'none': 
+      default: return 'Aucun';
+    }
+  };
   
   return (
     <Card>
@@ -59,16 +71,26 @@ const WorkLogDetails: React.FC = () => {
             </p>
           </div>
           
-          {workLog.waterConsumption !== undefined && (
-            <div className="p-3 border rounded-md bg-gray-50">
-              <h3 className="text-sm font-medium mb-2">Consommation d'eau</h3>
-              <div className="flex items-center">
-                <Droplets className="w-4 h-4 mr-2 text-blue-500" />
-                <span className="font-medium">{workLog.waterConsumption} m³</span>
-              </div>
+          <div className="p-3 border rounded-md bg-gray-50">
+            <h3 className="text-sm font-medium mb-2">Gestion des déchets</h3>
+            <div className="flex items-center">
+              <Trash2 className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="font-medium">
+                {getWasteManagementText(workLog.wasteManagement)}
+              </span>
             </div>
-          )}
+          </div>
         </div>
+        
+        {workLog.waterConsumption !== undefined && (
+          <div className="p-3 border rounded-md bg-gray-50">
+            <h3 className="text-sm font-medium mb-2">Consommation d'eau</h3>
+            <div className="flex items-center">
+              <Droplets className="w-4 h-4 mr-2 text-blue-500" />
+              <span className="font-medium">{workLog.waterConsumption} m³</span>
+            </div>
+          </div>
+        )}
         
         <Separator />
         

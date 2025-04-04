@@ -80,6 +80,7 @@ export interface WorkLog {
   };
   notes?: string; // Field for adding notes
   waterConsumption?: number; // Field for water consumption in m3
+  wasteManagement?: 'none' | 'one_big_bag' | 'two_big_bags' | 'half_dumpster' | 'one_dumpster'; // New field for waste management
   createdAt: Date;
 }
 

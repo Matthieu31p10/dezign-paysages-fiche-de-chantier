@@ -26,6 +26,7 @@ export const formSchema = z.object({
   customTasks: z.record(z.string(), z.boolean().optional()).optional().default({}),
   tasksProgress: z.record(z.string(), z.number().optional()).optional().default({}),
   watering: z.enum(['none', 'on', 'off']).default('none'),
+  wasteManagement: z.enum(['none', 'one_big_bag', 'two_big_bags', 'half_dumpster', 'one_dumpster']).default('none'),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

@@ -10,6 +10,7 @@ import HeaderSection from './form/HeaderSection';
 import TimeTrackingSection from './form/TimeTrackingSection';
 import TasksSection from './form/TasksSection';
 import NotesSection from './form/NotesSection';
+import WasteManagementSection from './form/WasteManagementSection';
 import ActionButtons from './form/ActionButtons';
 import { WorkLogFormProvider } from './form/WorkLogFormContext';
 import ProjectInfoSection from './form/ProjectInfoSection';
@@ -72,6 +73,10 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           <Separator />
           
           <TasksSection />
+          
+          <Separator />
+          
+          <WasteManagementSection />
           
           <ProjectInfoSection />
           

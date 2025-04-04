@@ -1,4 +1,3 @@
-
 import { ProjectInfo, WorkLog, CompanyInfo } from '@/types/models';
 import { formatDate } from '../date';
 import jsPDF from 'jspdf';
@@ -35,6 +34,18 @@ const sanitizeText = (text?: string): string => {
 const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
+};
+
+// Fonction pour obtenir le texte pour la gestion des déchets
+const getWasteManagementText = (wasteCode?: string): string => {
+  switch (wasteCode) {
+    case 'one_big_bag': return '1 Big-bag';
+    case 'two_big_bags': return '2 Big-bags';
+    case 'half_dumpster': return '1/2 Benne';
+    case 'one_dumpster': return '1 Benne';
+    case 'none': 
+    default: return 'Aucune collecte';
+  }
 };
 
 // Cette fonction gère la génération de PDF pour les fiches de suivi
@@ -340,8 +351,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       currentY += 5;
     }
     
-    // Section: Arrosages
-    if (options.includeWatering && data.workLog) {
+    // Section: Arrosages et déchets
+    if ((options.includeWatering || data.workLog.wasteManagement) && data.workLog) {
       // Encadré vert pour le titre de section
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.rect(margin, currentY, width, 8, 'F');
@@ -350,19 +361,22 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('ARROSAGES', margin + 5, currentY + 5);
+      pdf.text('ARROSAGES ET COLLECTE DES DÉCHETS', margin + 5, currentY + 5);
       pdf.setTextColor(0, 0, 0);
       
       currentY += 8;
       
-      // Statut d'arrosage
+      // Statut d'arrosage et gestion des déchets
       const wateringStatus = 
         data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
         data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
       
+      const wasteManagement = getWasteManagementText(data.workLog.wasteManagement);
+      
       const wateringData = [
         ['État arrosage:', wateringStatus],
-        ['Consommation eau:', data.workLog.waterConsumption !== undefined ? `${data.workLog.waterConsumption} m³` : 'Non renseigné']
+        ['Consommation eau:', data.workLog.waterConsumption !== undefined ? `${data.workLog.waterConsumption} m³` : 'Non renseigné'],
+        ['Collecte déchets:', wasteManagement]
       ];
       
       // @ts-ignore

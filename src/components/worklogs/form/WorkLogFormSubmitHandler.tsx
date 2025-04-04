@@ -87,6 +87,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         },
         notes: data.notes ? data.notes.substring(0, 2000) : "",
         waterConsumption: data.waterConsumption || undefined,
+        wasteManagement: data.wasteManagement || 'none',
       };
       
       console.log("Payload for submission:", payload);
