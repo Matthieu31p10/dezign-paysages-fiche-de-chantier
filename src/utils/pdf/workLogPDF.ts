@@ -1,3 +1,4 @@
+
 import { ProjectInfo, WorkLog, CompanyInfo } from '@/types/models';
 import { formatDate } from '../date';
 import jsPDF from 'jspdf';
@@ -109,7 +110,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Ajouter les informations de l'entreprise si disponibles
     if (options.includeCompanyInfo && data.companyInfo) {
-      const infoStartX = margin + 80;
+      const infoStartX = margin + 35;
       pdf.setFontSize(9);
       
       // En-tête avec titre central
@@ -150,7 +151,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       const projectInfo = [
         ['Chantier:', sanitizeText(data.project.name), 'Date:', formatDate(data.workLog.date)],
         ['Adresse:', sanitizeText(data.project.address), 'Durée prévue:', `${data.workLog.duration} heures`],
-        ['Contact:', sanitizeText(data.project.contact.name || ''), 'Téléphone:', sanitizeText(data.project.contact.phone)]
+        ['Contact:', sanitizeText(data.project.contact?.name || ''), 'Téléphone:', sanitizeText(data.project.contact?.phone)]
       ];
       
       // @ts-ignore - Le type jspdf-autotable n'est pas reconnu par TypeScript
@@ -190,10 +191,10 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       
       currentY += 8;
       
-      // Créer un tableau pour le suivi de temps
+      // Créer un tableau pour le suivi de temps - Optimisé en 2 colonnes
       const timeTracking = [
         ['Départ:', data.workLog.timeTracking.departure, 'Arrivée:', data.workLog.timeTracking.arrival],
-        ['Fin:', data.workLog.timeTracking.end || data.endTime || '--:--', 'Pause:', `${data.workLog.timeTracking.breakTime}`],
+        ['Fin:', data.workLog.timeTracking.end || data.endTime || '--:--', 'Pause:', `${data.workLog.timeTracking.breakTime} h`],
         ['Total heures:', `${data.workLog.timeTracking.totalHours.toFixed(2)} h`, '', '']
       ];
       
@@ -207,16 +208,16 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
           cellPadding: 3,
         },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 30 },
-          1: { cellWidth: 30 },
-          2: { fontStyle: 'bold', cellWidth: 30 },
-          3: { cellWidth: 30 }
+          0: { fontStyle: 'bold', cellWidth: 40 },
+          1: { cellWidth: 40 },
+          2: { fontStyle: 'bold', cellWidth: 40 },
+          3: { cellWidth: 40 }
         },
         margin: { left: margin, right: margin }
       });
       
       // @ts-ignore
-      currentY = pdf.lastAutoTable.finalY + 10;
+      currentY = pdf.lastAutoTable.finalY + 5;
     }
     
     // Section: Personnel
@@ -257,70 +258,37 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       });
       
       // @ts-ignore
-      currentY = pdf.lastAutoTable.finalY + 10;
+      currentY = pdf.lastAutoTable.finalY + 5;
     }
     
-    // Section: Travaux effectués
+    // Section: Tâches personnalisées
     if (options.includeTasks && data.workLog) {
-      // Encadré vert pour le titre de section
-      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(margin, currentY, width, 8, 'F');
+      // Vérifier s'il y a des tâches personnalisées
+      const hasCustomTasks = data.workLog.tasksPerformed.customTasks && 
+                            Object.entries(data.workLog.tasksPerformed.customTasks).length > 0;
       
-      // Titre de section
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('TRAVAUX EFFECTUÉS', margin + 5, currentY + 5);
-      pdf.setTextColor(0, 0, 0);
-      
-      currentY += 8;
-      
-      // Préparer les tâches standards
-      const standardTasks = [
-        ['Tonte', data.workLog.tasksPerformed.mowing ? '✓' : '✗', 'Vinaigre blanc', data.workLog.tasksPerformed.whiteVinegar ? '✓' : '✗'],
-        ['Débroussailleuse', data.workLog.tasksPerformed.brushcutting ? '✓' : '✗', 'Taille', data.workLog.tasksPerformed.pruning.done ? '✓' : '✗'],
-        ['Souffleur', data.workLog.tasksPerformed.blower ? '✓' : '✗', 'Avancement taille', data.workLog.tasksPerformed.pruning.done ? `${data.workLog.tasksPerformed.pruning.progress}%` : ''],
-        ['Désherbage manuel', data.workLog.tasksPerformed.manualWeeding ? '✓' : '✗', '', '']
-      ];
-      
-      // @ts-ignore
-      pdf.autoTable({
-        startY: currentY,
-        body: standardTasks,
-        theme: 'plain',
-        styles: {
-          fontSize: 9,
-          cellPadding: 3,
-        },
-        columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 40 },
-          1: { cellWidth: 10, halign: 'center' },
-          2: { fontStyle: 'bold', cellWidth: 40 },
-          3: { cellWidth: 10, halign: 'center' }
-        },
-        margin: { left: margin, right: margin }
-      });
-      
-      // @ts-ignore
-      currentY = pdf.lastAutoTable.finalY + 5;
-      
-      // Tâches personnalisées
-      if (data.workLog.tasksPerformed.customTasks && Object.keys(data.workLog.tasksPerformed.customTasks).length > 0) {
-        pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Tâches personnalisées:', margin + 5, currentY + 5);
+      if (hasCustomTasks) {
+        // Encadré vert pour le titre de section
+        pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.rect(margin, currentY, width, 8, 'F');
         
-        currentY += 7;
+        // Titre de section
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('TÂCHES PERSONNALISÉES', margin + 5, currentY + 5);
+        pdf.setTextColor(0, 0, 0);
+        
+        currentY += 8;
         
         // Préparer les tâches personnalisées
         const customTasksArray = Object.entries(data.workLog.tasksPerformed.customTasks)
-          .map(([taskId, done]) => {
+          .filter(([_, done]) => done) // Ne montrer que les tâches effectuées
+          .map(([taskId, _]) => {
             const progress = data.workLog.tasksPerformed.tasksProgress?.[taskId] || 0;
             return [
-              sanitizeText(taskId), // Sécurité: sanitiser les IDs
-              done ? '✓' : '✗',
-              'Avancement',
-              `${progress}%`
+              sanitizeText(taskId), // ID de la tâche (nom)
+              `${progress}%`        // Progression en pourcentage
             ];
           });
         
@@ -335,10 +303,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
               cellPadding: 3,
             },
             columnStyles: {
-              0: { fontStyle: 'bold', cellWidth: 40 },
-              1: { cellWidth: 10, halign: 'center' },
-              2: { fontStyle: 'bold', cellWidth: 40 },
-              3: { cellWidth: 10, halign: 'center' }
+              0: { fontStyle: 'bold', cellWidth: 150 },
+              1: { cellWidth: 30, halign: 'center' }
             },
             margin: { left: margin, right: margin }
           });
@@ -347,8 +313,6 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
           currentY = pdf.lastAutoTable.finalY + 5;
         }
       }
-      
-      currentY += 5;
     }
     
     // Section: Arrosages et déchets
@@ -361,7 +325,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('ARROSAGES ET COLLECTE DES DÉCHETS', margin + 5, currentY + 5);
+      pdf.text('ARROSAGE ET COLLECTE DES DÉCHETS', margin + 5, currentY + 5);
       pdf.setTextColor(0, 0, 0);
       
       currentY += 8;
@@ -374,9 +338,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       const wasteManagement = getWasteManagementText(data.workLog.wasteManagement);
       
       const wateringData = [
-        ['État arrosage:', wateringStatus],
-        ['Consommation eau:', data.workLog.waterConsumption !== undefined ? `${data.workLog.waterConsumption} m³` : 'Non renseigné'],
-        ['Collecte déchets:', wasteManagement]
+        ['État arrosage:', wateringStatus, 'Collecte déchets:', wasteManagement],
+        ['Consommation eau:', data.workLog.waterConsumption !== undefined ? `${data.workLog.waterConsumption} m³` : 'Non renseigné', '', '']
       ];
       
       // @ts-ignore
@@ -390,13 +353,15 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
         },
         columnStyles: {
           0: { fontStyle: 'bold', cellWidth: 40 },
-          1: { cellWidth: 40 }
+          1: { cellWidth: 40 },
+          2: { fontStyle: 'bold', cellWidth: 40 },
+          3: { cellWidth: 40 }
         },
         margin: { left: margin, right: margin }
       });
       
       // @ts-ignore
-      currentY = pdf.lastAutoTable.finalY + 10;
+      currentY = pdf.lastAutoTable.finalY + 5;
     }
     
     // Section: Notes

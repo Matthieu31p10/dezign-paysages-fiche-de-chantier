@@ -43,7 +43,6 @@ const WorkLogDetail: React.FC = () => {
     calculateEndTime,
     calculateHourDifference,
     calculateTotalTeamHours,
-    handleExportToPDF,
     handleSendEmail
   } = useWorkLogDetailProvider(workLog, project, workLogs, updateWorkLog, deleteWorkLog, settings);
   
@@ -58,7 +57,6 @@ const WorkLogDetail: React.FC = () => {
     handleSaveNotes,
     handleDeleteWorkLog,
     confirmDelete,
-    handleExportToPDF,
     handleSendEmail
   };
   
