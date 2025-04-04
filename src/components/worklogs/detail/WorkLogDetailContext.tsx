@@ -11,6 +11,7 @@ interface WorkLogDetailContextType {
   calculateHourDifference: () => string;
   calculateTotalTeamHours: () => string;
   handleSaveNotes: () => void;
+  confirmDelete: () => void;
   handleDeleteWorkLog: () => void;
   handleExportToPDF: () => void;
   handleSendEmail: () => void;

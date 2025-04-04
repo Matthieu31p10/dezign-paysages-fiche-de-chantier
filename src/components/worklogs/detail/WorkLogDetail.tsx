@@ -91,12 +91,12 @@ const WorkLogDetail: React.FC = () => {
     
     if (completedVisits === 0) return "N/A";
     
-    const totalHoursCompleted = projectWorkLogs.reduce((sum, log => {
+    const totalHoursCompleted = projectWorkLogs.reduce((total, log) => {
       if (log.timeTracking && typeof log.timeTracking.totalHours === 'number') {
-        return sum + log.timeTracking.totalHours;
+        return total + log.timeTracking.totalHours;
       }
-      return sum;
-    }), 0);
+      return total;
+    }, 0);
     
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
@@ -171,6 +171,7 @@ const WorkLogDetail: React.FC = () => {
     calculateHourDifference,
     calculateTotalTeamHours,
     handleSaveNotes,
+    handleDeleteWorkLog,
     confirmDelete,
     handleExportToPDF,
     handleSendEmail
