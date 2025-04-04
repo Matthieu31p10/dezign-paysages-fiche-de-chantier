@@ -1,4 +1,6 @@
 
+// Fix the WorkLogDetailContext by adding the export declaration
+
 import React, { createContext, useContext, useState } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 
@@ -15,6 +17,8 @@ interface WorkLogDetailContextType {
   handleDeleteWorkLog: () => void;
   handleExportToPDF: (options: PDFOptions) => void;
   handleSendEmail: () => void;
+  isDeleteDialogOpen: boolean;
+  setIsDeleteDialogOpen: (isOpen: boolean) => void;
 }
 
 export interface PDFOptions {
@@ -27,7 +31,8 @@ export interface PDFOptions {
   includeTimeTracking: boolean;
 }
 
-const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
+// Export the context so it can be imported elsewhere
+export const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
 
 export const WorkLogDetailProvider: React.FC<{
   children: React.ReactNode;

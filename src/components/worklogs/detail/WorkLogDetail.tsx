@@ -1,88 +1,86 @@
 
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Navigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { WorkLogDetailProvider } from './WorkLogDetailContext';
+import { WorkLogDetailContext, WorkLogDetailProvider } from './WorkLogDetailContext';
+import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
 import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
 import CustomTasksCard from './CustomTasksCard';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import NotesSection from './NotesSection';
 import DeleteWorkLogDialog from './DeleteWorkLogDialog';
-import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
+import HeaderActions from './HeaderActions';
+import PDFOptionsDialog from './PDFOptionsDialog';
 
-const WorkLogDetail: React.FC = () => {
+const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { workLogs, getProjectById, updateWorkLog, deleteWorkLog, settings } = useApp();
+  const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
+  const [isLoading, setIsLoading] = useState(true);
   
+  // Get work log data
   const workLog = workLogs.find(log => log.id === id);
+  const project = workLog ? getProjectById(workLog.projectId) : undefined;
+
+  const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
-  if (!workLog) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <h2 className="text-xl font-medium mb-4">Fiche de suivi non trouvée</h2>
-        <Button onClick={() => navigate('/worklogs')} variant="default" className="flex items-center">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour à la liste
-        </Button>
-      </div>
-    );
+  useEffect(() => {
+    if (id) {
+      setIsLoading(false);
+    }
+  }, [id]);
+  
+  if (isLoading) {
+    return <div>Chargement...</div>;
   }
   
-  const project = getProjectById(workLog.projectId);
+  if (!workLog || !id) {
+    return <Navigate to="/worklogs" />;
+  }
   
-  const {
-    notes,
-    setNotes,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    handleDeleteWorkLog,
-    confirmDelete,
-    handleSaveNotes,
-    calculateEndTime,
-    calculateHourDifference,
-    calculateTotalTeamHours,
-    handleExportToPDF,
-    handleSendEmail
-  } = useWorkLogDetailProvider(workLog, project, workLogs, updateWorkLog, deleteWorkLog, settings);
-  
-  const contextValue = {
-    workLog,
-    project,
-    notes,
-    setNotes,
-    calculateEndTime,
-    calculateHourDifference,
-    calculateTotalTeamHours,
-    handleSaveNotes,
-    handleDeleteWorkLog,
-    confirmDelete,
-    handleExportToPDF,
-    handleSendEmail
-  };
+  const contextValues = useWorkLogDetailProvider(
+    workLog, 
+    project, 
+    workLogs,
+    updateWorkLog,
+    deleteWorkLog,
+    settings
+  );
   
   return (
-    <div className="space-y-6 animate-fade-in">
-      <WorkLogDetailProvider value={contextValue}>
-        <DetailHeader />
+    <WorkLogDetailProvider value={contextValues}>
+      <div className="animate-fade-in space-y-6">
+        <div className="flex justify-between items-start">
+          <DetailHeader />
+          <HeaderActions workLogId={id} />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            <WorkLogDetails />
+          <div className="col-span-1 md:col-span-2 space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <WorkLogDetails />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <NotesSection />
+              </CardContent>
+            </Card>
           </div>
           
-          <div>
+          <div className="space-y-6">
             <CustomTasksCard />
           </div>
         </div>
-        
-        <DeleteWorkLogDialog 
-          isOpen={isDeleteDialogOpen} 
-          onOpenChange={setIsDeleteDialogOpen} 
-        />
-      </WorkLogDetailProvider>
-    </div>
+      </div>
+      
+      <DeleteWorkLogDialog 
+        isOpen={contextValues.isDeleteDialogOpen}
+        onOpenChange={contextValues.setIsDeleteDialogOpen}
+      />
+    </WorkLogDetailProvider>
   );
 };
 
