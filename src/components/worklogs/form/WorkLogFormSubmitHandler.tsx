@@ -107,7 +107,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   };
   
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit, (errors) => console.error("Form errors:", errors))} className="space-y-8">
       {children}
     </form>
   );

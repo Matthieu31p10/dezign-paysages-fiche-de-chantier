@@ -13,7 +13,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
   const { form } = useWorkLogForm();
   const { formState } = form;
   const isSubmitting = formState.isSubmitting;
-  const isFormValid = !Object.keys(formState.errors).length;
   
   return (
     <div className="flex justify-between">
