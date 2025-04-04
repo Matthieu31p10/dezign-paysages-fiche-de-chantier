@@ -13,7 +13,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
   const { form } = useWorkLogForm();
   const { formState } = form;
   const isSubmitting = formState.isSubmitting;
-  const isFormValid = formState.isValid;
+  const isFormValid = !Object.keys(formState.errors).length;
   
   return (
     <div className="flex justify-between">
@@ -28,7 +28,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
       
       <Button 
         type="submit"
-        disabled={isSubmitting || !isFormValid}
+        disabled={isSubmitting}
         className="min-w-32"
       >
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -21,9 +21,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   const navigate = useNavigate();
   
   const onSubmit = async (data: FormValues) => {
-    console.log("Submitting form data:", data);
-    
     try {
+      console.log("Submitting form data:", data);
+      
       // Validation des données
       if (!data.projectId || !data.date || !data.personnel || data.personnel.length === 0) {
         toast.error("Données invalides. Veuillez vérifier les champs obligatoires.");
@@ -74,7 +74,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       if (initialData) {
         console.log("Updating worklog with ID:", initialData.id);
-        updateWorkLog({ 
+        await updateWorkLog({ 
           ...payload, 
           id: initialData.id, 
           createdAt: initialData.createdAt 
@@ -89,7 +89,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         }
       } else {
         console.log("Creating new worklog");
-        const newWorkLog = addWorkLog(payload);
+        const newWorkLog = await addWorkLog(payload);
         console.log("New worklog created with ID:", newWorkLog.id);
         toast.success("Fiche de suivi créée avec succès!");
         
