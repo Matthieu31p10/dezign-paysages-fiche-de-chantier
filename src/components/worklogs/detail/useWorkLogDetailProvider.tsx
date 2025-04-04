@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { WorkLog, ProjectInfo } from '@/types/models';
-import { generatePDF } from '@/utils/pdf';
 
 export const useWorkLogDetailProvider = (
   workLog: WorkLog,
@@ -96,35 +95,6 @@ export const useWorkLogDetailProvider = (
     return totalTeamHours.toFixed(2);
   };
   
-  const handleExportToPDF = async () => {
-    if (!workLog || !project) {
-      toast.error("Données insuffisantes pour générer le PDF");
-      return;
-    }
-    
-    try {
-      // Sécurité: vérification des données avant génération
-      if (!workLog.personnel || workLog.personnel.length === 0) {
-        toast.error("Impossible de générer le PDF: personnel manquant");
-        return;
-      }
-      
-      const data = {
-        workLog,
-        project,
-        endTime: workLog.timeTracking?.end || calculateEndTime(),
-        companyInfo: settings.companyInfo,
-        companyLogo: settings.companyLogo
-      };
-      
-      const fileName = await generatePDF(data);
-      toast.success(`PDF généré avec succès: ${fileName}`);
-    } catch (error) {
-      toast.error("Erreur lors de la génération du PDF");
-      console.error("PDF generation error:", error);
-    }
-  };
-  
   const handleSendEmail = () => {
     if (!project?.contact?.email) {
       toast.error("Aucune adresse email de contact n'est définie pour ce chantier");
@@ -152,7 +122,6 @@ export const useWorkLogDetailProvider = (
     calculateEndTime,
     calculateHourDifference,
     calculateTotalTeamHours,
-    handleExportToPDF,
     handleSendEmail
   };
 };
