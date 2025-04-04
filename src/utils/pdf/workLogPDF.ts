@@ -2,6 +2,7 @@
 import { ProjectInfo, WorkLog, CompanyInfo } from '@/types/models';
 import { formatDate } from '../date';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface PDFOptions {
   includeContactInfo?: boolean;
@@ -22,27 +23,45 @@ interface PDFData {
   pdfOptions?: PDFOptions;
 }
 
-// This function handles PDF generation for work logs
+// Fonction sécurisée pour nettoyer les textes avant insertion dans le PDF
+const sanitizeText = (text?: string): string => {
+  if (!text) return '';
+  // Supprime les caractères potentiellement dangereux
+  return text.replace(/[^\w\s\.,;:!?()\-–—@€$£¥%&*+=#]/g, '')
+    .substring(0, 1000); // Limite la longueur
+};
+
+// Fonction pour tronquer le texte si trop long
+const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
+// Cette fonction gère la génération de PDF pour les fiches de suivi
 export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
-  console.log('Generating PDF with data:', data);
-  
   try {
-    // Initialize PDF with A4 format
+    // Sécurité: vérification des données avant génération
+    if (!data.workLog) {
+      throw new Error('Données de fiche de suivi manquantes');
+    }
+    
+    // Initialisation du PDF au format A4
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
     });
     
-    // Define colors (green color similar to the image template)
+    // Définir les couleurs (vert similaire au template)
     const primaryColor = [141, 198, 63];
     const primaryColorHex = '#8dc63f';
     
-    // Define margins and positions - reduced for better space usage
+    // Définir les marges et positions
     const margin = 15;
     const width = 210 - (margin * 2);
+    const pageHeight = 297 - (margin * 2);
     
-    // Default options if not provided
+    // Options par défaut si non fournies
     const options: PDFOptions = data.pdfOptions || {
       includeContactInfo: true,
       includeCompanyInfo: true,
@@ -53,7 +72,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       includeTimeTracking: true
     };
     
-    // Function to draw borders around tables and sections
+    // Fonction pour dessiner des bordures autour des tableaux et sections
     const drawRect = (x: number, y: number, w: number, h: number, color?: number[]) => {
       if (color) {
         pdf.setDrawColor(color[0], color[1], color[2]);
@@ -63,315 +82,366 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.rect(x, y, w, h, 'S');
     };
     
-    // Draw the outer border (green rectangle)
-    drawRect(margin, margin, width, 267);
+    // Dessiner la bordure extérieure (rectangle vert)
+    drawRect(margin, margin, width, pageHeight);
     
-    // Add company logo if available - smaller size
+    // Ajouter le logo de l'entreprise si disponible
+    let currentY = margin + 10;
+    
     if (options.includeCompanyInfo && data.companyLogo) {
       try {
-        // Add logo to the top left - smaller size
-        pdf.addImage(data.companyLogo, 'PNG', margin + 5, margin + 5, 25, 25);
+        pdf.addImage(data.companyLogo, 'PNG', margin + 5, currentY, 25, 25);
       } catch (error) {
-        console.error('Error adding company logo:', error);
+        console.error('Erreur lors de l\'ajout du logo:', error);
       }
     }
     
-    // Add company info if available - compact layout
+    // Ajouter les informations de l'entreprise si disponibles
     if (options.includeCompanyInfo && data.companyInfo) {
-      // Company info on right side - reduced font sizes and spacing
-      const infoStartX = margin + 100;
+      const infoStartX = margin + 80;
       pdf.setFontSize(9);
       
-      // Company name
-      pdf.setFont('helvetica', 'italic');
-      pdf.text('Nom entreprise :', infoStartX, margin + 10, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.name, infoStartX + 5, margin + 10);
-      
-      // Address
-      pdf.setFont('helvetica', 'italic');
-      pdf.text('Adresse :', infoStartX, margin + 15, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.address, infoStartX + 5, margin + 15);
-      
-      // Manager name
-      pdf.setFont('helvetica', 'italic');
-      pdf.text('Gérant :', infoStartX, margin + 20, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.managerName, infoStartX + 5, margin + 20);
-      
-      // Phone
-      pdf.setFont('helvetica', 'italic');
-      pdf.text('Téléphone :', infoStartX, margin + 25, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.phone, infoStartX + 5, margin + 25);
-      
-      // Email
-      pdf.setFont('helvetica', 'italic');
-      pdf.text('Email :', infoStartX, margin + 30, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(data.companyInfo.email, infoStartX + 5, margin + 30);
-    }
-    
-    // Tracking vertical position to adapt layout based on enabled options
-    let currentY = margin + 40;
-    
-    // Add worklog details if available - optimized spacing
-    if (data.workLog) {
-      // Add title in right side 
-      pdf.setFontSize(11);
+      // En-tête avec titre central
+      pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Fiche de suivi', margin + 140, currentY);
+      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.text('FICHE DE SUIVI', 105, currentY + 5, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
       
-      // Add date on left side
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Date', margin + 90, currentY);
+      // Informations de l'entreprise
       pdf.setFontSize(9);
-      pdf.text(formatDate(data.workLog.date), margin + 90, currentY + 5);
-      
-      currentY += 10;
-      
-      // Section: Fiche de suivi
-      if (options.includeContactInfo && data.project) {
-        pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        
-        // Add worklog header
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('Fiche de suivi :', margin + 5, currentY + 5);
-        
-        // Draw green background for project name
-        pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.rect(margin + 70, currentY, width - 70, 8, 'F');
-        
-        // Add project name with white text
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Nom du chantier', margin + (width/2), currentY + 5, { align: 'center' });
-        
-        // Reset text color
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
-        
-        // Project info
-        pdf.text(data.project.name, margin + (width/2), currentY + 15, { align: 'center' });
-        
-        // Visit duration info
-        pdf.text('Durée du passage', margin + 25, currentY + 23);
-        pdf.text(`${data.workLog.duration} heures`, margin + 100, currentY + 23);
-        
-        currentY += 30;
-      }
-      
-      // Time tracking section
-      if (options.includeTimeTracking) {
-        // Header with green background
-        pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.rect(margin, currentY, width, 8, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Suivi de temps', margin + (width/2), currentY + 5, { align: 'center' });
-        pdf.setTextColor(0, 0, 0);
-        
-        // Create time tracking table
-        const timeTrackTableY = currentY + 8;
-        const colWidth = width / 4;
-        
-        // Draw table borders
-        drawRect(margin, timeTrackTableY, width, 16);
-        
-        // Draw vertical lines
-        for (let i = 1; i < 4; i++) {
-          pdf.line(margin + (colWidth * i), timeTrackTableY, margin + (colWidth * i), timeTrackTableY + 16);
-        }
-        
-        // Draw horizontal line
-        pdf.line(margin, timeTrackTableY + 8, margin + width, timeTrackTableY + 8);
-        
-        // Time tracking header
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(8);
-        pdf.text('Départ', margin + (colWidth / 2), timeTrackTableY + 5, { align: 'center' });
-        pdf.text('Arrivée', margin + (colWidth / 2) + colWidth, timeTrackTableY + 5, { align: 'center' });
-        pdf.text('Fin', margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 5, { align: 'center' });
-        pdf.text('Pause', margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 5, { align: 'center' });
-        
-        // Time tracking values
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(data.workLog.timeTracking.departure, margin + (colWidth / 2), timeTrackTableY + 13, { align: 'center' });
-        pdf.text(data.workLog.timeTracking.arrival, margin + (colWidth / 2) + colWidth, timeTrackTableY + 13, { align: 'center' });
-        
-        if (data.endTime) {
-          pdf.text(data.endTime, margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 13, { align: 'center' });
-        } else {
-          pdf.text('--:--', margin + (colWidth / 2) + (colWidth * 2), timeTrackTableY + 13, { align: 'center' });
-        }
-        
-        pdf.text(`${data.workLog.timeTracking.breakTime} h`, margin + (colWidth / 2) + (colWidth * 3), timeTrackTableY + 13, { align: 'center' });
-        
-        currentY = timeTrackTableY + 24;
-      }
-      
-      // Personnel section
-      if (options.includePersonnel) {
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('Personnel:', margin + 5, currentY);
-        
-        // Draw rectangle for personnel
-        drawRect(margin, currentY + 2, width, 12);
-        
-        // Add personnel list
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.text(data.workLog.personnel.join(', '), margin + 5, currentY + 10);
-        
-        currentY += 20;
-      }
-      
-      // Tasks performed section
-      if (options.includeTasks) {
-        // Header with green background for "Travaux effectués"
-        pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.rect(margin, currentY, width, 8, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('Travaux effectués', margin + (width/2), currentY + 5, { align: 'center' });
-        pdf.setTextColor(0, 0, 0);
-        
-        // Draw rectangle for tasks - height will depend on content
-        const tasksBoxHeight = 45;
-        drawRect(margin, currentY + 8, width, tasksBoxHeight);
-        
-        // Create a two-column layout for tasks
-        const leftColumnX = margin + 5;
-        const rightColumnX = margin + (width/2) + 5;
-        let tasksY = currentY + 16;
-        
-        // Utility function to add task with checkmark
-        const addTask = (label: string, isDone: boolean, x: number, y: number) => {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(8);
-          pdf.text(label, x, y);
-          
-          // Add checkmark or X
-          pdf.text(isDone ? '✓' : '✗', x - 5, y);
-        };
-        
-        // Add all tasks in left column
-        addTask('Tonte', data.workLog.tasksPerformed.mowing, leftColumnX, tasksY);
-        tasksY += 8;
-        addTask('Débroussailleuse', data.workLog.tasksPerformed.brushcutting, leftColumnX, tasksY);
-        tasksY += 8;
-        addTask('Souffleur', data.workLog.tasksPerformed.blower, leftColumnX, tasksY);
-        tasksY += 8;
-        addTask('Désherbage manuel', data.workLog.tasksPerformed.manualWeeding, leftColumnX, tasksY);
-        
-        // Reset Y for right column
-        tasksY = currentY + 16;
-        
-        // Add tasks in right column
-        addTask('Vinaigre blanc', data.workLog.tasksPerformed.whiteVinegar, rightColumnX, tasksY);
-        tasksY += 8;
-        
-        // Add pruning with progress if done
-        addTask('Taille', data.workLog.tasksPerformed.pruning.done, rightColumnX, tasksY);
-        
-        if (data.workLog.tasksPerformed.pruning.done) {
-          tasksY += 8;
-          pdf.text(`Avancement: ${data.workLog.tasksPerformed.pruning.progress}%`, rightColumnX + 5, tasksY);
-          
-          // Add progress bar
-          const progressBarWidth = 40;
-          const progressBarHeight = 2;
-          const progressX = rightColumnX + 5;
-          const progressY = tasksY + 3;
-          
-          // Draw progress bar background
-          pdf.setDrawColor(200, 200, 200);
-          pdf.setFillColor(200, 200, 200);
-          pdf.rect(progressX, progressY, progressBarWidth, progressBarHeight, 'F');
-          
-          // Draw progress
-          pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.rect(progressX, progressY, (progressBarWidth * data.workLog.tasksPerformed.pruning.progress) / 100, progressBarHeight, 'F');
-        }
-        
-        tasksY += 16;
-        
-        // Add watering status in the tasks section
-        const wateringStatus = 
-          data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
-          data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
-        
-        pdf.text(`Arrosage: ${wateringStatus}`, rightColumnX, tasksY);
-        
-        currentY += 8 + tasksBoxHeight;
-      }
-      
-      // Watering section
-      if (options.includeWatering) {
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('Arrosages:', margin + 5, currentY);
-        
-        // Draw rectangle for watering
-        drawRect(margin, currentY + 2, width, 12);
-        
-        // Add watering info
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        
-        const wateringStatus = 
-          data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
-          data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
-        
-        pdf.text(wateringStatus, margin + 5, currentY + 9);
-        
-        // Add water consumption if available
-        if (data.workLog.waterConsumption !== undefined) {
-          pdf.text(`Consommation d'eau: ${data.workLog.waterConsumption} m³`, margin + 100, currentY + 9);
-        }
-        
-        currentY += 18;
-      }
-      
-      // Notes section
-      if (options.includeNotes) {
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('Notes et Observations:', margin + 5, currentY);
-        
-        // Calculate remaining space to bottom of page
-        const remainingSpace = 267 - (currentY - margin);
-        
-        // Draw rectangle for notes - use available space
-        drawRect(margin, currentY + 2, width, remainingSpace - 5);
-        
-        // Add notes if available
-        if (data.workLog.notes) {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(8);
-          // Split notes into multiple lines if needed
-          const textLines = pdf.splitTextToSize(data.workLog.notes, width - 10);
-          pdf.text(textLines, margin + 5, currentY + 9);
-        }
-      }
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(sanitizeText(data.companyInfo.name), infoStartX, currentY + 12);
+      pdf.text(sanitizeText(data.companyInfo.address), infoStartX, currentY + 17);
+      pdf.text(`Tél: ${sanitizeText(data.companyInfo.phone)}`, infoStartX, currentY + 22);
+      pdf.text(`Email: ${sanitizeText(data.companyInfo.email)}`, infoStartX, currentY + 27);
     }
     
-    // Save the PDF (in a real implementation)
-    const fileName = `Fiche_Suivi_${data.project?.name}_${formatDate(data.workLog?.date || new Date())}.pdf`;
+    currentY = margin + 40;
+    
+    // Section: Informations du chantier
+    if (options.includeContactInfo && data.project && data.workLog) {
+      // Encadré vert pour le titre de section
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(margin, currentY, width, 8, 'F');
+      
+      // Titre de section
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('INFORMATIONS CHANTIER', margin + 5, currentY + 5);
+      pdf.setTextColor(0, 0, 0);
+      
+      // Table d'information
+      currentY += 8;
+      
+      // Créer un tableau pour les informations du chantier
+      const projectInfo = [
+        ['Chantier:', sanitizeText(data.project.name), 'Date:', formatDate(data.workLog.date)],
+        ['Adresse:', sanitizeText(data.project.address), 'Durée prévue:', `${data.workLog.duration} heures`],
+        ['Contact:', sanitizeText(data.project.contact.name || ''), 'Téléphone:', sanitizeText(data.project.contact.phone)]
+      ];
+      
+      // @ts-ignore - Le type jspdf-autotable n'est pas reconnu par TypeScript
+      pdf.autoTable({
+        startY: currentY,
+        body: projectInfo,
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2,
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 30 },
+          1: { cellWidth: 80 },
+          2: { fontStyle: 'bold', cellWidth: 30 },
+          3: { cellWidth: 40 }
+        },
+        margin: { left: margin, right: margin }
+      });
+      
+      // @ts-ignore - Récupérer la position finale du tableau
+      currentY = pdf.lastAutoTable.finalY + 10;
+    }
+    
+    // Section: Suivi de temps
+    if (options.includeTimeTracking && data.workLog) {
+      // Encadré vert pour le titre de section
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(margin, currentY, width, 8, 'F');
+      
+      // Titre de section
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('SUIVI DE TEMPS', margin + 5, currentY + 5);
+      pdf.setTextColor(0, 0, 0);
+      
+      currentY += 8;
+      
+      // Créer un tableau pour le suivi de temps
+      const timeTracking = [
+        ['Départ:', data.workLog.timeTracking.departure, 'Arrivée:', data.workLog.timeTracking.arrival],
+        ['Fin:', data.workLog.timeTracking.end || data.endTime || '--:--', 'Pause:', `${data.workLog.timeTracking.breakTime}`],
+        ['Total heures:', `${data.workLog.timeTracking.totalHours.toFixed(2)} h`, '', '']
+      ];
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: currentY,
+        body: timeTracking,
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 30 },
+          1: { cellWidth: 30 },
+          2: { fontStyle: 'bold', cellWidth: 30 },
+          3: { cellWidth: 30 }
+        },
+        margin: { left: margin, right: margin }
+      });
+      
+      // @ts-ignore
+      currentY = pdf.lastAutoTable.finalY + 10;
+    }
+    
+    // Section: Personnel
+    if (options.includePersonnel && data.workLog) {
+      // Encadré vert pour le titre de section
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(margin, currentY, width, 8, 'F');
+      
+      // Titre de section
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('PERSONNEL', margin + 5, currentY + 5);
+      pdf.setTextColor(0, 0, 0);
+      
+      currentY += 8;
+      
+      // Liste du personnel
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      
+      // Sécurité: valider et sanitiser la liste du personnel
+      const personnel = data.workLog.personnel
+        .map(p => sanitizeText(p))
+        .filter(p => p.length > 0)
+        .join(', ');
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: currentY,
+        body: [[personnel]],
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 5,
+        },
+        margin: { left: margin, right: margin }
+      });
+      
+      // @ts-ignore
+      currentY = pdf.lastAutoTable.finalY + 10;
+    }
+    
+    // Section: Travaux effectués
+    if (options.includeTasks && data.workLog) {
+      // Encadré vert pour le titre de section
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(margin, currentY, width, 8, 'F');
+      
+      // Titre de section
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('TRAVAUX EFFECTUÉS', margin + 5, currentY + 5);
+      pdf.setTextColor(0, 0, 0);
+      
+      currentY += 8;
+      
+      // Préparer les tâches standards
+      const standardTasks = [
+        ['Tonte', data.workLog.tasksPerformed.mowing ? '✓' : '✗', 'Vinaigre blanc', data.workLog.tasksPerformed.whiteVinegar ? '✓' : '✗'],
+        ['Débroussailleuse', data.workLog.tasksPerformed.brushcutting ? '✓' : '✗', 'Taille', data.workLog.tasksPerformed.pruning.done ? '✓' : '✗'],
+        ['Souffleur', data.workLog.tasksPerformed.blower ? '✓' : '✗', 'Avancement taille', data.workLog.tasksPerformed.pruning.done ? `${data.workLog.tasksPerformed.pruning.progress}%` : ''],
+        ['Désherbage manuel', data.workLog.tasksPerformed.manualWeeding ? '✓' : '✗', '', '']
+      ];
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: currentY,
+        body: standardTasks,
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 40 },
+          1: { cellWidth: 10, halign: 'center' },
+          2: { fontStyle: 'bold', cellWidth: 40 },
+          3: { cellWidth: 10, halign: 'center' }
+        },
+        margin: { left: margin, right: margin }
+      });
+      
+      // @ts-ignore
+      currentY = pdf.lastAutoTable.finalY + 5;
+      
+      // Tâches personnalisées
+      if (data.workLog.tasksPerformed.customTasks && Object.keys(data.workLog.tasksPerformed.customTasks).length > 0) {
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Tâches personnalisées:', margin + 5, currentY + 5);
+        
+        currentY += 7;
+        
+        // Préparer les tâches personnalisées
+        const customTasksArray = Object.entries(data.workLog.tasksPerformed.customTasks)
+          .map(([taskId, done]) => {
+            const progress = data.workLog.tasksPerformed.tasksProgress?.[taskId] || 0;
+            return [
+              sanitizeText(taskId), // Sécurité: sanitiser les IDs
+              done ? '✓' : '✗',
+              'Avancement',
+              `${progress}%`
+            ];
+          });
+        
+        if (customTasksArray.length > 0) {
+          // @ts-ignore
+          pdf.autoTable({
+            startY: currentY,
+            body: customTasksArray,
+            theme: 'plain',
+            styles: {
+              fontSize: 9,
+              cellPadding: 3,
+            },
+            columnStyles: {
+              0: { fontStyle: 'bold', cellWidth: 40 },
+              1: { cellWidth: 10, halign: 'center' },
+              2: { fontStyle: 'bold', cellWidth: 40 },
+              3: { cellWidth: 10, halign: 'center' }
+            },
+            margin: { left: margin, right: margin }
+          });
+          
+          // @ts-ignore
+          currentY = pdf.lastAutoTable.finalY + 5;
+        }
+      }
+      
+      currentY += 5;
+    }
+    
+    // Section: Arrosages
+    if (options.includeWatering && data.workLog) {
+      // Encadré vert pour le titre de section
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(margin, currentY, width, 8, 'F');
+      
+      // Titre de section
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('ARROSAGES', margin + 5, currentY + 5);
+      pdf.setTextColor(0, 0, 0);
+      
+      currentY += 8;
+      
+      // Statut d'arrosage
+      const wateringStatus = 
+        data.workLog.tasksPerformed.watering === 'none' ? 'Pas d\'arrosage' :
+        data.workLog.tasksPerformed.watering === 'on' ? 'Allumé' : 'Coupé';
+      
+      const wateringData = [
+        ['État arrosage:', wateringStatus],
+        ['Consommation eau:', data.workLog.waterConsumption !== undefined ? `${data.workLog.waterConsumption} m³` : 'Non renseigné']
+      ];
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: currentY,
+        body: wateringData,
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 40 },
+          1: { cellWidth: 40 }
+        },
+        margin: { left: margin, right: margin }
+      });
+      
+      // @ts-ignore
+      currentY = pdf.lastAutoTable.finalY + 10;
+    }
+    
+    // Section: Notes
+    if (options.includeNotes && data.workLog && data.workLog.notes) {
+      // Encadré vert pour le titre de section
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(margin, currentY, width, 8, 'F');
+      
+      // Titre de section
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('NOTES ET OBSERVATIONS', margin + 5, currentY + 5);
+      pdf.setTextColor(0, 0, 0);
+      
+      currentY += 8;
+      
+      // Sécurité: nettoyer et limiter les notes
+      const cleanNotes = sanitizeText(data.workLog.notes);
+      
+      // Diviser les notes en lignes pour s'adapter à la largeur disponible
+      const textLines = pdf.splitTextToSize(cleanNotes, width - 10);
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: currentY,
+        body: [[textLines.join('\n')]],
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 5,
+          overflow: 'linebreak',
+          minCellHeight: 20
+        },
+        margin: { left: margin, right: margin }
+      });
+    }
+    
+    // Ajouter un pied de page avec la date de génération
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+    const today = new Date();
+    pdf.text(`Document généré le ${formatDate(today)}`, 105, 287, { align: 'center' });
+    
+    // Ajouter un numéro de page
+    pdf.setFontSize(8);
+    pdf.text('Page 1/1', 180, 287);
+    
+    // Générer un nom de fichier sécurisé
+    const projectName = data.project?.name ? sanitizeText(data.project.name).replace(/[^a-z0-9]/gi, '_') : 'chantier';
+    const dateStr = formatDate(data.workLog.date).replace(/\//g, '-');
+    const fileName = `Fiche_Suivi_${projectName}_${dateStr}.pdf`;
+    
+    // Sauvegarder le PDF
     pdf.save(fileName);
     
     return fileName;
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Erreur lors de la génération du PDF:', error);
     throw error;
   }
 };

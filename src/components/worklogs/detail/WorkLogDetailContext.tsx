@@ -22,8 +22,19 @@ export const WorkLogDetailProvider: React.FC<{
   children: React.ReactNode;
   value: WorkLogDetailContextType;
 }> = ({ children, value }) => {
+  // Sécurité: validation des données avant de les passer au contexte
+  const validatedValue = {
+    ...value,
+    notes: value.notes ? value.notes.substring(0, 2000) : "", // Limite à 2000 caractères
+    setNotes: (notes: string) => {
+      // Vérification supplémentaire de sécurité
+      const sanitized = notes.substring(0, 2000);
+      value.setNotes(sanitized);
+    }
+  };
+  
   return (
-    <WorkLogDetailContext.Provider value={value}>
+    <WorkLogDetailContext.Provider value={validatedValue}>
       {children}
     </WorkLogDetailContext.Provider>
   );

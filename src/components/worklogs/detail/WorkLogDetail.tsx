@@ -8,6 +8,7 @@ import { WorkLogDetailProvider } from './WorkLogDetailContext';
 import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
 import CustomTasksCard from './CustomTasksCard';
+import NotesSection from './NotesSection';
 
 const WorkLogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,15 +41,22 @@ const WorkLogDetail: React.FC = () => {
   }, [workLog.notes]);
   
   const handleDeleteWorkLog = () => {
-    deleteWorkLog(workLog.id);
-    navigate('/worklogs');
+    // Sécurité: confirmation avant suppression
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette fiche de suivi ?')) {
+      deleteWorkLog(workLog.id);
+      toast.success("Fiche de suivi supprimée avec succès");
+      navigate('/worklogs');
+    }
   };
   
   const handleSaveNotes = () => {
     if (workLog) {
+      // Sécurité: validation des données
+      const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
+      
       updateWorkLog({
         ...workLog,
-        notes
+        notes: sanitizedNotes
       });
       toast.success("Notes enregistrées");
     }
@@ -81,6 +89,12 @@ const WorkLogDetail: React.FC = () => {
     if (!workLog || !project) return;
     
     try {
+      // Sécurité: vérification des données avant génération
+      if (!workLog.personnel || workLog.personnel.length === 0) {
+        toast.error("Impossible de générer le PDF: personnel manquant");
+        return;
+      }
+      
       const data = {
         workLog,
         project,
@@ -89,8 +103,8 @@ const WorkLogDetail: React.FC = () => {
         companyLogo: settings.companyLogo
       };
       
-      await generatePDF(data);
-      toast.success("PDF généré avec succès");
+      const fileName = await generatePDF(data);
+      toast.success(`PDF généré avec succès: ${fileName}`);
     } catch (error) {
       toast.error("Erreur lors de la génération du PDF");
       console.error("PDF generation error:", error);
@@ -100,6 +114,13 @@ const WorkLogDetail: React.FC = () => {
   const handleSendEmail = () => {
     if (!project?.contact?.email) {
       toast.error("Aucune adresse email de contact n'est définie pour ce chantier");
+      return;
+    }
+    
+    // Sécurité: vérification de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(project.contact.email)) {
+      toast.error("L'adresse email du contact n'est pas valide");
       return;
     }
     
@@ -135,6 +156,10 @@ const WorkLogDetail: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <WorkLogDetails />
+            
+            <div className="mt-6">
+              <NotesSection />
+            </div>
           </div>
           
           <div>
