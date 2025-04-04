@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -164,6 +165,9 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   };
   
   const onSubmit = async (data: FormValues) => {
+    // Affichage des données pour le débogage
+    console.log("Submitting form data:", data);
+    
     const payload = {
       projectId: data.projectId,
       date: data.date,
@@ -172,7 +176,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       timeTracking: {
         departure: data.departure,
         arrival: data.arrival,
-        end: data.end,  // On s'assure que end est bien enregistré
+        end: data.end,
         breakTime: data.breakTime,
         totalHours: data.totalHours,
       },
@@ -196,20 +200,24 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       waterConsumption: data.waterConsumption,
     };
     
+    console.log("Final payload:", payload);
+    
     try {
       if (initialData) {
-        await updateWorkLog({ ...initialData, ...payload, id: initialData.id });
+        console.log("Updating worklog with ID:", initialData.id);
+        await updateWorkLog({ ...payload, id: initialData.id, createdAt: initialData.createdAt });
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
+        console.log("Creating new worklog");
         await addWorkLog(payload);
         toast.success("Fiche de suivi créée avec succès!");
       }
       
       if (onSuccess) {
         onSuccess();
+      } else {
+        navigate('/worklogs');
       }
-      
-      navigate('/worklogs');
     } catch (error) {
       console.error("Error saving work log:", error);
       toast.error("Erreur lors de la sauvegarde de la fiche de suivi.");
