@@ -15,8 +15,6 @@ interface WorkLogDetailContextType {
   handleDeleteWorkLog: () => void;
   handleExportToPDF: (options: PDFOptions) => void;
   handleSendEmail: () => void;
-  isDeleteDialogOpen: boolean;
-  setIsDeleteDialogOpen: (isOpen: boolean) => void;
 }
 
 export interface PDFOptions {
@@ -29,8 +27,7 @@ export interface PDFOptions {
   includeTimeTracking: boolean;
 }
 
-// Export the context so it can be imported elsewhere
-export const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
+const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
 
 export const WorkLogDetailProvider: React.FC<{
   children: React.ReactNode;

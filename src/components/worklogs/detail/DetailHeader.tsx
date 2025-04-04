@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '@/utils/helpers';
+import HeaderActions from './HeaderActions';
 import { useWorkLogDetail } from './WorkLogDetailContext';
 
 const DetailHeader: React.FC = () => {
@@ -35,6 +36,8 @@ const DetailHeader: React.FC = () => {
           Fiche de suivi du {formatDate(workLog.date)}
         </p>
       </div>
+      
+      <HeaderActions workLogId={workLog.id} />
     </div>
   );
 };
