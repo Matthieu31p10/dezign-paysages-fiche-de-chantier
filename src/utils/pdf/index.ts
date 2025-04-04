@@ -1,8 +1,33 @@
 
+import { WorkLog, ProjectInfo, CompanyInfo } from '@/types/models';
 import { generateWorkLogPDF } from './workLogPDF';
 import { generateProjectPDF } from './projectPDF';
 import { generateReportPDF } from './reportPDF';
-import { PDFOptions, PDFData } from './types';
+
+/**
+ * PDF options for customizing content
+ */
+export interface PDFOptions {
+  includeContactInfo?: boolean;
+  includeCompanyInfo?: boolean;
+  includePersonnel?: boolean;
+  includeTasks?: boolean;
+  includeWatering?: boolean;
+  includeNotes?: boolean;
+  includeTimeTracking?: boolean;
+}
+
+/**
+ * Main PDF generation interface with security validations
+ */
+interface PDFData {
+  workLog?: WorkLog;
+  project?: ProjectInfo;
+  endTime?: string;
+  companyInfo?: CompanyInfo;
+  companyLogo?: string;
+  pdfOptions?: PDFOptions;
+}
 
 /**
  * Generate a PDF based on the provided data with security checks
@@ -30,9 +55,6 @@ export const generatePDF = async (data: PDFData): Promise<string> => {
     throw error;
   }
 };
-
-// Exporter les types
-export type { PDFOptions, PDFData };
 
 // Exporter les fonctions de génération PDF spécifiques
 export {
