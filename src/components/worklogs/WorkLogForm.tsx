@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/context/AppContext';
 import { ProjectInfo, WorkLog } from '@/types/models';
@@ -218,63 +217,65 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   };
   
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <HeaderSection 
-        control={control}
-        errors={errors}
-        watch={watch}
-        setValue={setValue}
-        teams={teams}
-        filteredProjects={filteredProjects}
-        handleTeamFilterChange={handleTeamFilterChange}
-        handlePersonnelChange={handlePersonnelChange}
-      />
-      
-      <Separator />
-      
-      <TimeTrackingSection 
-        control={control}
-        errors={errors}
-        watch={watch}
-        getValues={getValues}
-      />
-      
-      <Separator />
-      
-      <TasksSection 
-        control={control}
-        register={register}
-        watch={watch}
-        setValue={setValue}
-      />
-      
-      {selectedProject && (
-        <ProjectInfoCard 
-          project={selectedProject}
-          timeDeviation={timeDeviation}
-          timeDeviationClass={timeDeviationClass}
+    <FormProvider {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <HeaderSection 
+          control={control}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+          teams={teams}
+          filteredProjects={filteredProjects}
+          handleTeamFilterChange={handleTeamFilterChange}
+          handlePersonnelChange={handlePersonnelChange}
         />
-      )}
-      
-      {selectedProject && (
-        <ProjectExtraFields 
-          project={selectedProject}
+        
+        <Separator />
+        
+        <TimeTrackingSection 
+          control={control}
+          errors={errors}
+          watch={watch}
+          getValues={getValues}
+        />
+        
+        <Separator />
+        
+        <TasksSection 
+          control={control}
+          register={register}
+          watch={watch}
+          setValue={setValue}
+        />
+        
+        {selectedProject && (
+          <ProjectInfoCard 
+            project={selectedProject}
+            timeDeviation={timeDeviation}
+            timeDeviationClass={timeDeviationClass}
+          />
+        )}
+        
+        {selectedProject && (
+          <ProjectExtraFields 
+            project={selectedProject}
+            register={register}
+            errors={errors}
+            existingWorkLogs={existingWorkLogs}
+          />
+        )}
+        
+        <NotesSection 
           register={register}
           errors={errors}
-          existingWorkLogs={existingWorkLogs}
         />
-      )}
-      
-      <NotesSection 
-        register={register}
-        errors={errors}
-      />
-      
-      <ActionButtons 
-        onCancel={handleCancel}
-        isEditing={!!initialData}
-      />
-    </form>
+        
+        <ActionButtons 
+          onCancel={handleCancel}
+          isEditing={!!initialData}
+        />
+      </form>
+    </FormProvider>
   );
 };
 
