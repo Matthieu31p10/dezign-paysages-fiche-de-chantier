@@ -76,12 +76,12 @@ const WorkLogDetail: React.FC = () => {
             <CustomTasksCard />
           </div>
         </div>
+        
+        <DeleteWorkLogDialog 
+          isOpen={isDeleteDialogOpen} 
+          onOpenChange={setIsDeleteDialogOpen} 
+        />
       </WorkLogDetailProvider>
-      
-      <DeleteWorkLogDialog 
-        isOpen={isDeleteDialogOpen} 
-        onOpenChange={setIsDeleteDialogOpen} 
-      />
     </div>
   );
 };
