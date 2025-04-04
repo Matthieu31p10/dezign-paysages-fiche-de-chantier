@@ -13,10 +13,12 @@ const WORKLOGS_STORAGE_KEY = 'landscaping-worklogs';
 
 export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workLogs, setWorkLogs] = useState<WorkLog[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load data from localStorage on initial render
+  // Charger les données depuis localStorage au montage initial
   useEffect(() => {
     try {
+      setIsLoading(true);
       const storedWorkLogs = localStorage.getItem(WORKLOGS_STORAGE_KEY);
       if (storedWorkLogs) {
         const parsedLogs = JSON.parse(storedWorkLogs);
@@ -26,19 +28,23 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error) {
       console.error('Error loading work logs from localStorage:', error);
       toast.error('Erreur lors du chargement des fiches de suivi');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  // Save data to localStorage whenever it changes
+  // Sauvegarder les données dans localStorage chaque fois qu'elles changent
   useEffect(() => {
-    try {
-      localStorage.setItem(WORKLOGS_STORAGE_KEY, JSON.stringify(workLogs));
-      console.log("Saved work logs to storage:", workLogs);
-    } catch (error) {
-      console.error('Error saving work logs to localStorage:', error);
-      toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
+    if (!isLoading) {
+      try {
+        localStorage.setItem(WORKLOGS_STORAGE_KEY, JSON.stringify(workLogs));
+        console.log("Saved work logs to storage:", workLogs);
+      } catch (error) {
+        console.error('Error saving work logs to localStorage:', error);
+        toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
+      }
     }
-  }, [workLogs]);
+  }, [workLogs, isLoading]);
 
   const addWorkLog = (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => {
     // Validation des données

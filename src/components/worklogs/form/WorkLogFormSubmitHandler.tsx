@@ -24,7 +24,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     console.log("Submitting form data:", data);
     
     try {
-      // Validation de sécurité des données
+      // Validation des données
       if (!data.projectId || !data.date || !data.personnel || data.personnel.length === 0) {
         toast.error("Données invalides. Veuillez vérifier les champs obligatoires.");
         return;
@@ -37,8 +37,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       const safeTotalHours = typeof data.totalHours === 'number' ? data.totalHours : 0;
       
       // Assurer que customTasks et tasksProgress sont des objets
-      const safeCustomTasks = typeof data.customTasks === 'object' ? data.customTasks : {};
-      const safeTasksProgress = typeof data.tasksProgress === 'object' ? data.tasksProgress : {};
+      const safeCustomTasks = typeof data.customTasks === 'object' && data.customTasks !== null ? data.customTasks : {};
+      const safeTasksProgress = typeof data.tasksProgress === 'object' && data.tasksProgress !== null ? data.tasksProgress : {};
       
       const payload = {
         projectId: data.projectId,
@@ -80,17 +80,25 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
           createdAt: initialData.createdAt 
         });
         toast.success("Fiche de suivi mise à jour avec succès!");
+        
+        // Navigation après mise à jour
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/worklogs');
+        }
       } else {
         console.log("Creating new worklog");
         const newWorkLog = addWorkLog(payload);
         console.log("New worklog created with ID:", newWorkLog.id);
         toast.success("Fiche de suivi créée avec succès!");
-      }
-      
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        navigate('/worklogs');
+        
+        // Navigation après création
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/worklogs');
+        }
       }
     } catch (error) {
       console.error("Error saving work log:", error);

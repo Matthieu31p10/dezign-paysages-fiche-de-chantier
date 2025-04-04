@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
+import { Card } from '@/components/ui/card';
 
 const WorkLogNew = () => {
   const navigate = useNavigate();
@@ -28,11 +29,16 @@ const WorkLogNew = () => {
         </div>
       </div>
       
-      <WorkLogForm 
-        onSuccess={() => navigate('/worklogs')} 
-        projectInfos={projectInfos}
-        existingWorkLogs={workLogs}
-      />
+      <Card className="p-6">
+        <WorkLogForm 
+          onSuccess={() => {
+            console.log("Form submitted successfully, navigating to /worklogs");
+            navigate('/worklogs');
+          }} 
+          projectInfos={projectInfos}
+          existingWorkLogs={workLogs}
+        />
+      </Card>
     </div>
   );
 };
