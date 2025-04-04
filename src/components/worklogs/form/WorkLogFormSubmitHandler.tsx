@@ -16,11 +16,11 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   children
 }) => {
   const { form, initialData } = useWorkLogForm();
-  const { handleSubmit, formState } = form;
+  const { handleSubmit } = form;
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   const navigate = useNavigate();
   
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     console.log("Submitting form data:", data);
     
     try {
