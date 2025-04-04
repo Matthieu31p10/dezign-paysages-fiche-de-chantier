@@ -326,179 +326,39 @@ const WorkLogDetail = () => {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Travaux effectués</CardTitle>
+              <CardTitle className="text-lg">Tâches personnalisées</CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Tonte</span>
-                  {workLog.tasksPerformed.mowing ? (
-                    <div className="flex items-center">
-                      <Check className="w-4 h-4 text-green-600 mr-2" />
-                      {workLog.tasksPerformed.tasksProgress && 'mowing' in workLog.tasksPerformed.tasksProgress && (
-                        <span className="text-sm font-medium">{workLog.tasksPerformed.tasksProgress.mowing}%</span>
-                      )}
-                    </div>
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                {workLog.tasksPerformed.mowing && workLog.tasksPerformed.tasksProgress && 'mowing' in workLog.tasksPerformed.tasksProgress && (
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ width: `${workLog.tasksPerformed.tasksProgress.mowing}%` }}
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Débroussailleuse</span>
-                  {workLog.tasksPerformed.brushcutting ? (
-                    <div className="flex items-center">
-                      <Check className="w-4 h-4 text-green-600 mr-2" />
-                      {workLog.tasksPerformed.tasksProgress && 'brushcutting' in workLog.tasksPerformed.tasksProgress && (
-                        <span className="text-sm font-medium">{workLog.tasksPerformed.tasksProgress.brushcutting}%</span>
-                      )}
-                    </div>
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                {workLog.tasksPerformed.brushcutting && workLog.tasksPerformed.tasksProgress && 'brushcutting' in workLog.tasksPerformed.tasksProgress && (
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ width: `${workLog.tasksPerformed.tasksProgress.brushcutting}%` }}
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Souffleur</span>
-                  {workLog.tasksPerformed.blower ? (
-                    <div className="flex items-center">
-                      <Check className="w-4 h-4 text-green-600 mr-2" />
-                      {workLog.tasksPerformed.tasksProgress && 'blower' in workLog.tasksPerformed.tasksProgress && (
-                        <span className="text-sm font-medium">{workLog.tasksPerformed.tasksProgress.blower}%</span>
-                      )}
-                    </div>
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                {workLog.tasksPerformed.blower && workLog.tasksPerformed.tasksProgress && 'blower' in workLog.tasksPerformed.tasksProgress && (
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ width: `${workLog.tasksPerformed.tasksProgress.blower}%` }}
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Désherbage manuel</span>
-                  {workLog.tasksPerformed.manualWeeding ? (
-                    <div className="flex items-center">
-                      <Check className="w-4 h-4 text-green-600 mr-2" />
-                      {workLog.tasksPerformed.tasksProgress && 'manualWeeding' in workLog.tasksPerformed.tasksProgress && (
-                        <span className="text-sm font-medium">{workLog.tasksPerformed.tasksProgress.manualWeeding}%</span>
-                      )}
-                    </div>
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                {workLog.tasksPerformed.manualWeeding && workLog.tasksPerformed.tasksProgress && 'manualWeeding' in workLog.tasksPerformed.tasksProgress && (
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ width: `${workLog.tasksPerformed.tasksProgress.manualWeeding}%` }}
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Vinaigre blanc</span>
-                  {workLog.tasksPerformed.whiteVinegar ? (
-                    <div className="flex items-center">
-                      <Check className="w-4 h-4 text-green-600 mr-2" />
-                      {workLog.tasksPerformed.tasksProgress && 'whiteVinegar' in workLog.tasksPerformed.tasksProgress && (
-                        <span className="text-sm font-medium">{workLog.tasksPerformed.tasksProgress.whiteVinegar}%</span>
-                      )}
-                    </div>
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                {workLog.tasksPerformed.whiteVinegar && workLog.tasksPerformed.tasksProgress && 'whiteVinegar' in workLog.tasksPerformed.tasksProgress && (
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ width: `${workLog.tasksPerformed.tasksProgress.whiteVinegar}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Taille</span>
-                  {workLog.tasksPerformed.pruning.done ? (
-                    <div className="flex items-center">
-                      <Check className="w-4 h-4 text-green-600 mr-2" />
-                      <span className="text-sm font-medium">{workLog.tasksPerformed.pruning.progress}%</span>
-                    </div>
-                  ) : (
-                    <X className="w-4 h-4 text-gray-300" />
-                  )}
-                </div>
-                
-                {workLog.tasksPerformed.pruning.done && (
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-brand-500 h-1.5 rounded-full"
-                      style={{ width: `${workLog.tasksPerformed.pruning.progress}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-              
-              {workLog.tasksPerformed.customTasks && Object.entries(workLog.tasksPerformed.customTasks).length > 0 && (
-                <>
-                  <Separator />
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Tâches personnalisées</h3>
+              {workLog.tasksPerformed.customTasks && Object.entries(workLog.tasksPerformed.customTasks).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(workLog.tasksPerformed.customTasks).map(([taskId, isCompleted]) => {
+                    if (!isCompleted) return null;
                     
-                    {Object.entries(workLog.tasksPerformed.customTasks).map(([taskId, isCompleted]) => {
-                      if (!isCompleted) return null;
-                      
-                      const taskName = settings.customTasks?.find(t => t.id === taskId)?.name || taskId;
-                      const progress = workLog.tasksPerformed.tasksProgress?.[taskId] || 0;
-                      
-                      return (
-                        <div key={taskId} className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm">{taskName}</span>
-                            <div className="flex items-center">
-                              <Check className="w-4 h-4 text-green-600 mr-2" />
-                              <span className="text-sm font-medium">{progress}%</span>
-                            </div>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
-                            <div
-                              className="bg-brand-500 h-1.5 rounded-full"
-                              style={{ width: `${progress}%` }}
-                            />
+                    const taskName = settings.customTasks?.find(t => t.id === taskId)?.name || taskId;
+                    const progress = workLog.tasksPerformed.tasksProgress?.[taskId] || 0;
+                    
+                    return (
+                      <div key={taskId} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">{taskName}</span>
+                          <div className="flex items-center">
+                            <Check className="w-4 h-4 text-green-600 mr-2" />
+                            <span className="text-sm font-medium">{progress}%</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div
+                            className="bg-brand-500 h-1.5 rounded-full"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Aucune tâche personnalisée n'a été réalisée.</p>
               )}
               
               <Separator />

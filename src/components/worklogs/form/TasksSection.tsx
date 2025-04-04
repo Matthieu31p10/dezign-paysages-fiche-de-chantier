@@ -61,7 +61,7 @@ const TasksSection: React.FC<TasksSectionProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <Label>Travaux effectués</Label>
+        <Label>Tâches personnalisées</Label>
         <Button 
           type="button" 
           variant="outline" 

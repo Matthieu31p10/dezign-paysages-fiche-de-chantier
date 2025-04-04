@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -165,7 +164,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   };
   
   const onSubmit = async (data: FormValues) => {
-    // Affichage des données pour le débogage
     console.log("Submitting form data:", data);
     
     const payload = {
@@ -184,12 +182,10 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         watering: data.watering,
         customTasks: data.customTasks,
         tasksProgress: data.tasksProgress,
-        // On conserve pruning pour la compatibilité avec le code existant
         pruning: { 
           done: false,
           progress: 0
         },
-        // On ajoute ces champs à false pour la compatibilité avec le code existant
         mowing: false,
         brushcutting: false,
         blower: false,
