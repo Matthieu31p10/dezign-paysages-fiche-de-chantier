@@ -51,29 +51,6 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
     ? Math.round((totalCompletedHours / totalPlannedHours) * 100) 
     : 0;
   
-  // Task statistics
-  const taskStats = {
-    mowing: filteredLogs.filter(log => log.tasksPerformed?.mowing).length,
-    brushcutting: filteredLogs.filter(log => log.tasksPerformed?.brushcutting).length,
-    blower: filteredLogs.filter(log => log.tasksPerformed?.blower).length,
-    manualWeeding: filteredLogs.filter(log => log.tasksPerformed?.manualWeeding).length,
-    whiteVinegar: filteredLogs.filter(log => log.tasksPerformed?.whiteVinegar).length,
-    pruning: filteredLogs.filter(log => log.tasksPerformed?.pruning?.done).length,
-  };
-  
-  // Get task statistics in descending order
-  const sortedTasks = Object.entries(taskStats)
-    .sort((a, b) => b[1] - a[1])
-    .map(([task, count]) => ({
-      name: task === 'mowing' ? 'Tonte' : 
-           task === 'brushcutting' ? 'Débroussaillage' :
-           task === 'blower' ? 'Souffleur' :
-           task === 'manualWeeding' ? 'Désherbage' :
-           task === 'whiteVinegar' ? 'Vinaigre' :
-           'Taille',
-      count
-    }));
-  
   // Project with most visits
   const projectVisitCounts = projects.map(project => {
     const visits = filteredLogs.filter(log => log.projectId === project.id).length;
@@ -222,36 +199,7 @@ const GlobalStats = ({ projects, workLogs, teams, selectedYear }: GlobalStatsPro
             </Card>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-1">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <BarChart2 className="w-5 h-5 mr-2 text-primary" />
-                  Activités les plus fréquentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {sortedTasks.slice(0, 5).map((task, index) => (
-                    <div key={index} className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">{task.name}</span>
-                        <Badge variant="outline" className="bg-brand-50 text-brand-700">
-                          {task.count} fois
-                        </Badge>
-                      </div>
-                      <div className="w-full bg-secondary rounded-full h-1.5">
-                        <div
-                          className="bg-primary h-1.5 rounded-full"
-                          style={{ width: `${Math.min(100, (task.count / (totalCompletedVisits || 1)) * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="md:col-span-1">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center">
