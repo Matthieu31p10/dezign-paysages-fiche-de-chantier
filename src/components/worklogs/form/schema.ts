@@ -22,8 +22,9 @@ export const formSchema = z.object({
   notes: z.string().optional(),
   waterConsumption: z.number().optional(),
   teamFilter: z.string().optional().default(""),
-  customTasks: z.record(z.string(), z.boolean()).default({}),
-  tasksProgress: z.record(z.string(), z.number()).default({}),
+  // Modifié pour accepter des booléens ou être indéfini/null
+  customTasks: z.record(z.string(), z.boolean().optional()).optional().default({}),
+  tasksProgress: z.record(z.string(), z.number().optional()).optional().default({}),
   watering: z.enum(['none', 'on', 'off']).default('none'),
 });
 

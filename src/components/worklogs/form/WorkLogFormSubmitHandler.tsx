@@ -22,6 +22,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   
   const onSubmit = async (data: FormValues) => {
     try {
+      console.log("Raw form data:", data);
+      
       // Validate required fields
       if (!data.projectId || !data.date) {
         toast.error("Veuillez sélectionner un projet et une date.");
@@ -38,9 +40,23 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         return;
       }
 
-      // Handle custom tasks: if undefined or empty, use an empty object
-      const safeCustomTasks = data.customTasks && Object.keys(data.customTasks).length > 0 
-        ? data.customTasks 
+      // Handle custom tasks with proper validation and defaults
+      let safeCustomTasks = {};
+      if (data.customTasks) {
+        // Filter out any undefined values to prevent validation issues
+        Object.keys(data.customTasks).forEach(key => {
+          if (typeof data.customTasks?.[key] === 'boolean') {
+            safeCustomTasks[key] = data.customTasks[key];
+          } else {
+            // Default to false for any invalid values
+            safeCustomTasks[key] = false;
+          }
+        });
+      }
+
+      // Ensure tasksProgress is a valid object
+      const safeTasksProgress = data.tasksProgress && typeof data.tasksProgress === 'object' 
+        ? data.tasksProgress 
         : {};
 
       const payload = {
@@ -58,7 +74,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         tasksPerformed: {
           watering: data.watering || 'none',
           customTasks: safeCustomTasks,
-          tasksProgress: data.tasksProgress || {},
+          tasksProgress: safeTasksProgress,
           pruning: { 
             done: false,
             progress: 0
@@ -75,15 +91,18 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       console.log("Payload for submission:", payload);
       
+      let result;
       if (initialData) {
-        await updateWorkLog({ 
+        result = await updateWorkLog({ 
           ...payload, 
           id: initialData.id, 
           createdAt: initialData.createdAt 
         });
+        console.log("Worklog updated successfully:", result);
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
-        await addWorkLog(payload);
+        result = await addWorkLog(payload);
+        console.log("Worklog created successfully:", result);
         toast.success("Fiche de suivi créée avec succès!");
       }
       
@@ -102,7 +121,16 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit, (errors) => {
       console.error("Form validation errors:", errors);
-      toast.error("Veuillez vérifier les champs du formulaire.");
+      // Show more specific error messages based on the validation errors
+      if (errors.projectId) {
+        toast.error("Veuillez sélectionner un projet.");
+      } else if (errors.personnel) {
+        toast.error("Veuillez sélectionner au moins un membre du personnel.");
+      } else if (errors.customTasks) {
+        toast.error("Problème avec les tâches personnalisées. Veuillez réessayer.");
+      } else {
+        toast.error("Veuillez vérifier les champs du formulaire.");
+      }
     })} className="space-y-8">
       {children}
     </form>
@@ -110,4 +138,3 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
 };
 
 export default WorkLogFormSubmitHandler;
-
