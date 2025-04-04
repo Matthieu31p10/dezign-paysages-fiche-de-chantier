@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash, Mail } from 'lucide-react';
+import { Edit, Trash, FileText, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkLogDetail } from './WorkLogDetailContext';
 
@@ -11,10 +11,19 @@ interface HeaderActionsProps {
 
 const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
   const navigate = useNavigate();
-  const { confirmDelete, handleSendEmail } = useWorkLogDetail();
+  const { confirmDelete, handleExportToPDF, handleSendEmail } = useWorkLogDetail();
   
   return (
     <div className="flex flex-wrap gap-2">
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={handleExportToPDF}
+      >
+        <FileText className="w-4 h-4 mr-2" />
+        Exporter PDF
+      </Button>
+      
       <Button 
         variant="outline" 
         size="sm"
