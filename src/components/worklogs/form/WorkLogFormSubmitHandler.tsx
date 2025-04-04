@@ -36,6 +36,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       const safeBreakTime = data.breakTime || "00:00";
       const safeTotalHours = typeof data.totalHours === 'number' ? data.totalHours : 0;
       
+      // Assurer que customTasks et tasksProgress sont des objets
+      const safeCustomTasks = typeof data.customTasks === 'object' ? data.customTasks : {};
+      const safeTasksProgress = typeof data.tasksProgress === 'object' ? data.tasksProgress : {};
+      
       const payload = {
         projectId: data.projectId,
         date: data.date,
@@ -50,8 +54,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         },
         tasksPerformed: {
           watering: data.watering || 'none',
-          customTasks: data.customTasks || {},
-          tasksProgress: data.tasksProgress || {},
+          customTasks: safeCustomTasks,
+          tasksProgress: safeTasksProgress,
           pruning: { 
             done: false,
             progress: 0
@@ -93,8 +97,6 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       toast.error("Erreur lors de la sauvegarde de la fiche de suivi.");
     }
   };
-  
-  const isSubmitting = formState.isSubmitting;
   
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

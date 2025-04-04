@@ -18,7 +18,7 @@ export const useWorkLogDetailProvider = (
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   useEffect(() => {
-    if (workLog.notes) {
+    if (workLog && workLog.notes) {
       setNotes(workLog.notes);
     }
   }, [workLog.notes]);

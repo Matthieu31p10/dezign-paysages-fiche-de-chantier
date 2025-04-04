@@ -39,25 +39,28 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   const [timeDeviationClass, setTimeDeviationClass] = useState<string>("");
   const navigate = useNavigate();
   
+  // Préparation des valeurs par défaut pour le formulaire
+  const defaultValues: Partial<FormValues> = {
+    projectId: initialData?.projectId || "",
+    date: initialData?.date ? new Date(initialData.date) : new Date(),
+    duration: initialData?.duration || 0,
+    personnel: initialData?.personnel || [],
+    departure: initialData?.timeTracking?.departure || "08:00",
+    arrival: initialData?.timeTracking?.arrival || "09:00",
+    end: initialData?.timeTracking?.end || "17:00",
+    breakTime: initialData?.timeTracking?.breakTime || "00:00",
+    totalHours: initialData?.timeTracking?.totalHours || 8,
+    notes: initialData?.notes || "",
+    waterConsumption: initialData?.waterConsumption || undefined,
+    teamFilter: "",
+    customTasks: initialData?.tasksPerformed?.customTasks || {},
+    tasksProgress: initialData?.tasksPerformed?.tasksProgress || {},
+    watering: initialData?.tasksPerformed?.watering || 'none',
+  };
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      projectId: initialData?.projectId || "",
-      date: initialData?.date ? new Date(initialData.date) : new Date(),
-      duration: initialData?.duration || 0,
-      personnel: initialData?.personnel || [],
-      departure: initialData?.timeTracking?.departure || "08:00",
-      arrival: initialData?.timeTracking?.arrival || "09:00",
-      end: initialData?.timeTracking?.end || "17:00",
-      breakTime: initialData?.timeTracking?.breakTime || "00:00",
-      totalHours: initialData?.timeTracking?.totalHours || 8,
-      notes: initialData?.notes || "",
-      waterConsumption: initialData?.waterConsumption || undefined,
-      teamFilter: "",
-      customTasks: initialData?.tasksPerformed?.customTasks || {},
-      tasksProgress: initialData?.tasksPerformed?.tasksProgress || {},
-      watering: initialData?.tasksPerformed?.watering || 'none',
-    },
+    defaultValues,
   });
   
   const { watch, setValue } = form;
@@ -105,15 +108,19 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
   
   useEffect(() => {
     if (departureTime && arrivalTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
-      const calculatedTotalHours = calculateTotalHours(
-        departureTime,
-        arrivalTime,
-        endTime,
-        breakTimeValue,
-        selectedPersonnel.length
-      );
-      
-      setValue('totalHours', calculatedTotalHours);
+      try {
+        const calculatedTotalHours = calculateTotalHours(
+          departureTime,
+          arrivalTime,
+          endTime,
+          breakTimeValue,
+          selectedPersonnel.length
+        );
+        
+        setValue('totalHours', calculatedTotalHours);
+      } catch (error) {
+        console.error("Error calculating total hours:", error);
+      }
     }
   }, [departureTime, arrivalTime, endTime, breakTimeValue, selectedPersonnel.length, setValue]);
   
@@ -133,11 +140,13 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
       return;
     }
     
-    const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+    const totalHoursCompleted = projectWorkLogs.reduce((sum, log) => {
+      return sum + (log.timeTracking?.totalHours || 0);
+    }, 0);
     
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
-    const difference = project.visitDuration - averageHoursPerVisit;
+    const difference = (project.visitDuration || 0) - averageHoursPerVisit;
     
     const sign = difference >= 0 ? '+' : '';
     const formattedDifference = `${sign}${difference.toFixed(2)} h`;
