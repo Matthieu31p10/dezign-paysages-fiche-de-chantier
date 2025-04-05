@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { WorkLogDetailContext, WorkLogDetailProvider } from './WorkLogDetailContext';
+import { WorkLogDetailProvider } from './WorkLogDetailContext';
 import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
 import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
@@ -11,18 +11,15 @@ import CustomTasksCard from './CustomTasksCard';
 import NotesSection from './NotesSection';
 import DeleteWorkLogDialog from './DeleteWorkLogDialog';
 import HeaderActions from './HeaderActions';
-import PDFOptionsDialog from './PDFOptionsDialog';
 
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Get work log data
-  const workLog = workLogs.find(log => log.id === id);
+  // Initialize these variables outside of any conditions to maintain hook order
+  const workLog = id ? workLogs.find(log => log.id === id) : undefined;
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
-
-  const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -30,10 +27,12 @@ const WorkLogDetail = () => {
     }
   }, [id]);
   
+  // Early return for loading state - before any hooks that depend on loaded data
   if (isLoading) {
     return <div>Chargement...</div>;
   }
   
+  // Early return for invalid data - before any hooks that depend on valid data
   if (!workLog || !id) {
     return <Navigate to="/worklogs" />;
   }
@@ -48,7 +47,11 @@ const WorkLogDetail = () => {
   );
   
   return (
-    <WorkLogDetailProvider value={contextValues}>
+    <WorkLogDetailProvider value={{
+      ...contextValues,
+      workLog,  // Make sure to pass workLog to the context
+      project   // Make sure to pass project to the context
+    }}>
       <div className="animate-fade-in space-y-6">
         <div className="flex justify-between items-start">
           <DetailHeader />
