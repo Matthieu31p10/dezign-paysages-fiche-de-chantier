@@ -4,6 +4,13 @@ import 'jspdf-autotable';
 import { WorkTask } from '@/types/workTask';
 import { formatDate } from '../helpers';
 
+// Add the missing type declaration for jsPDF with autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => any;
+  }
+}
+
 interface WorkTaskPDFOptions {
   workTask: WorkTask;
   fileName?: string;

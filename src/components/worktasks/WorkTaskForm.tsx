@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
@@ -84,7 +83,6 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     initialData?.tasksPerformed.customTasks || {}
   );
   
-  // Initialize form with default values or data from initialData
   const form = useForm<WorkTaskFormValues>({
     resolver: zodResolver(workTaskSchema),
     defaultValues: initialData ? {
@@ -131,12 +129,10 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     }
   });
 
-  // State for supplies table
   const [supplies, setSupplies] = useState<WorkTaskSupplier[]>(
     initialData?.supplies || []
   );
 
-  // Add new person to personnel list
   const handleAddPerson = () => {
     if (newPerson.trim() && !personnel.includes(newPerson.trim())) {
       const updatedPersonnel = [...personnel, newPerson.trim()];
@@ -146,14 +142,12 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     }
   };
 
-  // Remove person from personnel list
   const handleRemovePerson = (personToRemove: string) => {
     const updatedPersonnel = personnel.filter(person => person !== personToRemove);
     setPersonnel(updatedPersonnel);
     form.setValue('personnel', updatedPersonnel);
   };
 
-  // Add new supply row
   const handleAddSupply = () => {
     const newSupply: WorkTaskSupplier = {
       supplier: '',
@@ -166,7 +160,6 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     form.setValue('supplies', [...supplies, newSupply]);
   };
 
-  // Update supply row
   const handleUpdateSupply = (index: number, field: keyof WorkTaskSupplier, value: any) => {
     const updatedSupplies = [...supplies];
     updatedSupplies[index] = {
@@ -177,14 +170,12 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     form.setValue('supplies', updatedSupplies);
   };
 
-  // Remove supply row
   const handleRemoveSupply = (index: number) => {
     const updatedSupplies = supplies.filter((_, i) => i !== index);
     setSupplies(updatedSupplies);
     form.setValue('supplies', updatedSupplies);
   };
 
-  // Calculate time values when time inputs change
   const calculateTimeValues = () => {
     const timeTracking = form.getValues('timeTracking');
     if (timeTracking.departure && timeTracking.arrival && timeTracking.end) {
@@ -193,13 +184,10 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
       const endTime = convertTimeToMinutes(timeTracking.end);
       const breakTimeMinutes = convertTimeToMinutes(timeTracking.breakTime || '00:00');
 
-      // Calculate travel time (aller + retour)
       const travelHours = (arrivalTime - departureTime) / 60;
       
-      // Calculate work time (fin - arrivée - pause)
       const workHours = (endTime - arrivalTime - breakTimeMinutes) / 60;
       
-      // Calculate total time
       const totalHours = travelHours + workHours;
       
       form.setValue('timeTracking.travelHours', Math.round(travelHours * 100) / 100);
@@ -208,19 +196,35 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     }
   };
 
-  // Convert time string (HH:MM) to minutes
   const convertTimeToMinutes = (timeStr: string): number => {
     if (!timeStr || timeStr === '') return 0;
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
   };
 
-  // Handle form submit
   const onSubmit = (values: WorkTaskFormValues) => {
-    // Prepare data for submission
-    const formData = {
-      ...values,
+    const formData: WorkTask | Omit<WorkTask, "id" | "createdAt"> = {
+      ...(initialData ? { id: initialData.id, createdAt: initialData.createdAt } : {}),
+      projectName: values.projectName,
+      address: values.address,
+      contactName: values.contactName,
+      clientPresent: values.clientPresent,
       date: new Date(values.date),
+      personnel: values.personnel,
+      timeTracking: {
+        departure: values.timeTracking.departure,
+        arrival: values.timeTracking.arrival,
+        end: values.timeTracking.end,
+        breakTime: values.timeTracking.breakTime || '00:00',
+        travelHours: values.timeTracking.travelHours,
+        workHours: values.timeTracking.workHours,
+        totalHours: values.timeTracking.totalHours,
+      },
+      tasksPerformed: values.tasksPerformed,
+      wasteManagement: values.wasteManagement,
+      notes: values.notes || '',
+      supplies: values.supplies,
+      hourlyRate: values.hourlyRate,
       signatures: {
         client: clientSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
         teamLead: teamLeadSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
@@ -228,10 +232,7 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     };
 
     if (initialData) {
-      updateWorkTask({
-        ...initialData,
-        ...formData,
-      });
+      updateWorkTask(formData as WorkTask);
     } else {
       addWorkTask(formData);
     }
@@ -241,13 +242,11 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
     }
   };
 
-  // Clear signature pads
   const clearSignatures = () => {
     if (clientSignature) clientSignature.clear();
     if (teamLeadSignature) teamLeadSignature.clear();
   };
 
-  // Watch time fields to recalculate time values
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name?.startsWith('timeTracking.')) {

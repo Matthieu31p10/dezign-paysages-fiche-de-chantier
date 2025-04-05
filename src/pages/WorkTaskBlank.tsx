@@ -8,6 +8,13 @@ import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
+// Add the missing type declaration for jsPDF with autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => any;
+  }
+}
+
 const WorkTaskBlank = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
