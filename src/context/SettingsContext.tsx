@@ -84,6 +84,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
+  // Helper methods to get data
+  const getPersonnel = () => {
+    return settings.personnel || [];
+  };
+
+  const getCustomTasks = () => {
+    return settings.customTasks || [];
+  };
+
   // User methods
   const addUser = (userData: Omit<User, 'id' | 'createdAt'>) => {
     const users = settings.users || [];
@@ -181,6 +190,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addCustomTask,
         updateCustomTask,
         deleteCustomTask,
+        getCustomTasks,
+        getPersonnel,
       }}
     >
       {children}
