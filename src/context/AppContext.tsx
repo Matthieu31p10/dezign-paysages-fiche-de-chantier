@@ -5,6 +5,7 @@ import { useWorkLogs } from './WorkLogsContext';
 import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
 import { useAuth } from './AuthContext';
+import { useWorkTasks } from './WorkTasksContext';
 import { 
   ProjectsContextType, 
   WorkLogsContextType, 
@@ -19,7 +20,12 @@ type AppContextType = ProjectsContextType &
   TeamsContextType & 
   SettingsContextType & 
   AuthContextType & {
-    // Add any additional app-wide methods or state here
+    // Add workTasks context
+    workTasks: ReturnType<typeof useWorkTasks>['workTasks'];
+    addWorkTask: ReturnType<typeof useWorkTasks>['addWorkTask'];
+    updateWorkTask: ReturnType<typeof useWorkTasks>['updateWorkTask'];
+    deleteWorkTask: ReturnType<typeof useWorkTasks>['deleteWorkTask'];
+    getWorkTaskById: ReturnType<typeof useWorkTasks>['getWorkTaskById'];
   };
 
 // Create the context
@@ -32,6 +38,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const teams = useTeams();
   const settings = useSettings();
   const auth = useAuth();
+  const workTasksContext = useWorkTasks();
 
   // Combine all contexts
   const value: AppContextType = {
@@ -49,6 +56,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // Auth context
     ...auth,
+
+    // WorkTasks context
+    workTasks: workTasksContext.workTasks,
+    addWorkTask: workTasksContext.addWorkTask,
+    updateWorkTask: workTasksContext.updateWorkTask,
+    deleteWorkTask: workTasksContext.deleteWorkTask,
+    getWorkTaskById: workTasksContext.getWorkTaskById,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

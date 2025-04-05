@@ -5,19 +5,24 @@ import { WorkLogsProvider } from './WorkLogsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
 import { AuthProvider } from './AuthContext';
+import { WorkTasksProvider } from './WorkTasksContext';
 
-export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ 
+  children 
+}) => {
   return (
-    <SettingsProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ProjectsProvider>
         <WorkLogsProvider>
           <TeamsProvider>
-            <ProjectsProvider>
-              {children}
-            </ProjectsProvider>
+            <SettingsProvider>
+              <WorkTasksProvider>
+                {children}
+              </WorkTasksProvider>
+            </SettingsProvider>
           </TeamsProvider>
         </WorkLogsProvider>
-      </AuthProvider>
-    </SettingsProvider>
+      </ProjectsProvider>
+    </AuthProvider>
   );
 };

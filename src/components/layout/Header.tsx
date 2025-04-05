@@ -1,123 +1,132 @@
 
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { FileText, BarChart2, Files, Settings, LogOut, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { 
+  Home, 
+  ClipboardList, 
+  Settings, 
+  File, 
+  LogOut,
+  ChevronDown,
+  PieChart,
+  ClipboardCheck
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { isMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
-  const location = useLocation();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const { auth, logout } = useApp();
-  
-  // Check active route
+  const location = useLocation();
+  const mobile = isMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Helper to check if a path is active
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
   };
 
+  // Handle logout
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-  
-  return (
-    <header className="flex items-center h-16 px-4 md:px-6 border-b bg-background">
-      <Link to="/" className="flex items-center gap-2 font-semibold text-lg sm:text-xl">
-        <span className="hidden sm:inline-block text-primary">Suivi Chantier</span>
-      </Link>
-      
-      <nav className="ml-auto flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/projects") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/projects">
-            <Files className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Chantiers</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/worklogs") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/worklogs">
-            <FileText className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Suivis</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/reports") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/reports">
-            <BarChart2 className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Bilans</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/settings") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/settings">
-            <Settings className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Paramètres</span>
-          </Link>
-        </Button>
 
-        {auth.isAuthenticated && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="ml-2 px-2">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                {auth.currentUser?.name || auth.currentUser?.username}
-                <p className="font-normal text-xs text-muted-foreground">
-                  {auth.currentUser?.role === 'admin' ? 'Administrateur' : 
-                   auth.currentUser?.role === 'manager' ? 'Gestionnaire' : 'Utilisateur'}
-                </p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/settings" className="cursor-pointer w-full">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Paramètres
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-                <LogOut className="h-4 w-4 mr-2" />
-                Déconnexion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+  // Toggle menu
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Navigation links
+  const navLinks = [
+    { path: '/projects', label: 'Chantiers', icon: <Home className="h-4 w-4" /> },
+    { path: '/worklogs', label: 'Fiches de suivi', icon: <ClipboardList className="h-4 w-4" /> },
+    { path: '/worktasks', label: 'Fiches de Travaux', icon: <ClipboardCheck className="h-4 w-4" /> },
+    { path: '/reports', label: 'Bilans', icon: <PieChart className="h-4 w-4" /> },
+    { path: '/settings', label: 'Paramètres', icon: <Settings className="h-4 w-4" /> },
+  ];
+
+  return (
+    <header className="border-b bg-white dark:bg-gray-950">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 flex">
+          <Link to="/" className="flex items-center">
+            <File className="h-6 w-6 text-primary" />
+            <span className="ml-2 text-lg font-medium hidden sm:inline-block">SuiviVert</span>
+          </Link>
+        </div>
+        
+        {mobile ? (
+          <div className="flex items-center justify-between flex-1">
+            <div />
+            
+            <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" onClick={toggleMenu}>
+                  Menu
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {navLinks.map((link) => (
+                  <DropdownMenuItem key={link.path} asChild>
+                    <Link 
+                      to={link.path} 
+                      className="flex items-center"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {link.icon}
+                      <span className="ml-2">{link.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center">
+                  <LogOut className="h-4 w-4" />
+                  <span className="ml-2">Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between flex-1">
+            <nav className="flex items-center space-x-4 lg:space-x-6">
+              {navLinks.map((link) => (
+                <Button 
+                  key={link.path}
+                  asChild
+                  variant={isActive(link.path) ? "default" : "ghost"}
+                  size="sm"
+                  className={isActive(link.path) ? "" : "text-muted-foreground"}
+                >
+                  <Link to={link.path} className="flex items-center">
+                    {link.icon}
+                    <span className="ml-2">{link.label}</span>
+                  </Link>
+                </Button>
+              ))}
+            </nav>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-muted-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Déconnexion
+            </Button>
+          </div>
         )}
-      </nav>
+      </div>
     </header>
   );
 };
