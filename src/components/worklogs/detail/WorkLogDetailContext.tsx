@@ -1,4 +1,6 @@
 
+// Fix the WorkLogDetailContext by adding the export declaration
+
 import React, { createContext, useContext, useState } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 

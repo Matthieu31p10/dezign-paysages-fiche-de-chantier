@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { WorkLogDetailProvider } from './WorkLogDetailContext';
+import { WorkLogDetailContext, WorkLogDetailProvider } from './WorkLogDetailContext';
 import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
 import DetailHeader from './DetailHeader';
 import WorkLogDetails from './WorkLogDetails';
@@ -11,15 +11,18 @@ import CustomTasksCard from './CustomTasksCard';
 import NotesSection from './NotesSection';
 import DeleteWorkLogDialog from './DeleteWorkLogDialog';
 import HeaderActions from './HeaderActions';
+import PDFOptionsDialog from './PDFOptionsDialog';
 
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Get work log data - move this outside of conditional rendering
-  const workLog = id ? workLogs.find(log => log.id === id) : undefined;
+  // Get work log data
+  const workLog = workLogs.find(log => log.id === id);
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
+
+  const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -27,7 +30,6 @@ const WorkLogDetail = () => {
     }
   }, [id]);
   
-  // Handle loading and not found cases with early returns
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -36,7 +38,6 @@ const WorkLogDetail = () => {
     return <Navigate to="/worklogs" />;
   }
   
-  // Now that we've handled all early returns, we can safely use the provider
   const contextValues = useWorkLogDetailProvider(
     workLog, 
     project, 
@@ -47,11 +48,7 @@ const WorkLogDetail = () => {
   );
   
   return (
-    <WorkLogDetailProvider value={{
-      ...contextValues,
-      workLog,
-      project
-    }}>
+    <WorkLogDetailProvider value={contextValues}>
       <div className="animate-fade-in space-y-6">
         <div className="flex justify-between items-start">
           <DetailHeader />
