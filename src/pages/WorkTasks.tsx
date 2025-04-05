@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ import {
 import { useApp } from '@/context/AppContext';
 import { WorkTask } from '@/types/workTask';
 import { Plus, Pencil, Eye, Trash2 } from 'lucide-react';
-import { formatDate } from '@/utils/helpers';
+import { formatDate } from '@/utils/date';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -195,7 +196,7 @@ const WorkTasks = () => {
             
             {/* Display page numbers */}
             {Array.from({ length: Math.ceil(totalItems / perPage) }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page} active={currentPage === page}>
+              <PaginationItem key={page}>
                 <PaginationLink
                   href={`/worktasks?page=${page}&perPage=${perPage}`}
                   isActive={currentPage === page}

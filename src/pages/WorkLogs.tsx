@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,8 +24,9 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationPrevious,
+  PaginationLink,
   PaginationNext,
+  PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
@@ -67,8 +69,8 @@ const WorkLogs = () => {
     
     // Apply sorting
     const sortedWorkLogs = [...searchedWorkLogs].sort((a, b) => {
-      const aValue = (a[sortColumn] || '').toString().toLowerCase();
-      const bValue = (b[sortColumn] || '').toString().toLowerCase();
+      const aValue = (a[sortColumn as keyof WorkLog] || '').toString().toLowerCase();
+      const bValue = (b[sortColumn as keyof WorkLog] || '').toString().toLowerCase();
       
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
@@ -238,19 +240,31 @@ const WorkLogs = () => {
           <Pagination>
             <PaginationContent>
               <PaginationPrevious
-                href={currentPage > 1 ? `?page=${currentPage - 1}` : undefined}
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </PaginationPrevious>
+                href={currentPage > 1 ? `?page=${currentPage - 1}` : "#"}
+                onClick={(e) => {
+                  if (currentPage > 1) {
+                    e.preventDefault();
+                    handlePageChange(currentPage - 1);
+                  } else {
+                    e.preventDefault();
+                  }
+                }}
+                aria-disabled={currentPage === 1}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
               <PaginationNext
-                href={currentPage < totalPages ? `?page=${currentPage + 1}` : undefined}
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </PaginationNext>
+                href={currentPage < totalPages ? `?page=${currentPage + 1}` : "#"}
+                onClick={(e) => {
+                  if (currentPage < totalPages) {
+                    e.preventDefault();
+                    handlePageChange(currentPage + 1);
+                  } else {
+                    e.preventDefault();
+                  }
+                }}
+                aria-disabled={currentPage === totalPages}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
             </PaginationContent>
           </Pagination>
         </div>
