@@ -15,14 +15,14 @@ export const useWorkLogDetailProvider = (
   settings: any
 ) => {
   const navigate = useNavigate();
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(workLog?.notes || '');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   useEffect(() => {
     if (workLog && workLog.notes) {
       setNotes(workLog.notes);
     }
-  }, [workLog.notes]);
+  }, [workLog?.notes]);
   
   const handleDeleteWorkLog = () => {
     setIsDeleteDialogOpen(false);
@@ -41,20 +41,18 @@ export const useWorkLogDetailProvider = (
   };
   
   const handleSaveNotes = () => {
-    if (workLog) {
-      try {
-        // Sécurité: validation des données
-        const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
-        
-        updateWorkLog({
-          ...workLog,
-          notes: sanitizedNotes
-        });
-        toast.success("Notes enregistrées avec succès");
-      } catch (error) {
-        console.error("Error saving notes:", error);
-        toast.error("Erreur lors de l'enregistrement des notes");
-      }
+    try {
+      // Sécurité: validation des données
+      const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
+      
+      updateWorkLog({
+        ...workLog,
+        notes: sanitizedNotes
+      });
+      toast.success("Notes enregistrées avec succès");
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      toast.error("Erreur lors de l'enregistrement des notes");
     }
   };
   
