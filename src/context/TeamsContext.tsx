@@ -65,6 +65,10 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     toast.success('Équipe supprimée');
   };
 
+  const getTeamById = (id: string) => {
+    return teams.find((team) => team.id === id);
+  };
+
   return (
     <TeamsContext.Provider
       value={{
@@ -72,6 +76,7 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addTeam,
         updateTeam,
         deleteTeam,
+        getTeamById
       }}
     >
       {children}

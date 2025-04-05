@@ -1,12 +1,16 @@
 
-import { ProjectInfo, WorkLog, WorkTask, Team, AppSettings, User } from '@/types/models';
+import { ProjectInfo, WorkLog, WorkTask, Team, AppSettings, User, UserRole } from '@/types/models';
 
 export interface ProjectsContextType {
   projectInfos: ProjectInfo[];
-  addProject: (project: Omit<ProjectInfo, 'id' | 'createdAt'>) => ProjectInfo;
-  updateProject: (project: ProjectInfo) => void;
-  deleteProject: (id: string) => void;
+  selectedProjectId?: string | null;
+  addProjectInfo: (project: Omit<ProjectInfo, 'id' | 'createdAt'>) => ProjectInfo;
+  updateProjectInfo: (project: ProjectInfo) => void;
+  deleteProjectInfo: (id: string) => void;
+  selectProject: (id: string | null) => void;
   getProjectById: (id: string) => ProjectInfo | undefined;
+  getActiveProjects: () => ProjectInfo[];
+  getArchivedProjects: () => ProjectInfo[];
 }
 
 export interface WorkLogsContextType {
@@ -15,6 +19,7 @@ export interface WorkLogsContextType {
   updateWorkLog: (workLog: WorkLog) => void;
   deleteWorkLog: (id: string) => void;
   getWorkLogsByProjectId: (projectId: string) => WorkLog[];
+  deleteWorkLogsByProjectId: (projectId: string) => void;
 }
 
 export interface WorkTasksContextType {
@@ -54,4 +59,9 @@ export interface AuthContextType {
   };
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  addUser: (userData: Omit<User, 'id' | 'createdAt'>) => User | null;
+  updateUser: (updatedUser: User) => void;
+  deleteUser: (id: string) => void;
+  getCurrentUser: () => User | null;
+  canUserAccess: (requiredRole: UserRole) => boolean;
 }

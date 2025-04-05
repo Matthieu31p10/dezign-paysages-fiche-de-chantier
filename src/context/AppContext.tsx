@@ -14,6 +14,7 @@ import {
   SettingsContextType, 
   AuthContextType 
 } from './types';
+import { UserRole } from '@/types/models';
 
 // Create a type that combines all the context types
 type AppContextType = ProjectsContextType & 
@@ -56,6 +57,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // Auth context
     ...auth,
+    
+    // Make sure canUserAccess is properly exposed
+    canUserAccess: (requiredRole: UserRole) => {
+      return auth.canUserAccess(requiredRole);
+    }
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

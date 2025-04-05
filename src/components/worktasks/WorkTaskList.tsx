@@ -9,8 +9,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Clock, MapPin, FileText, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { WorkTaskMonthGroup } from './list/WorkTaskMonthGroup';
-import { EmptyState } from '../worklogs/list/EmptyState';
-import { NoResultsState } from '../worklogs/list/NoResultsState';
+import EmptyState from '@/components/shared/EmptyState';
+import NoResultsState from '@/components/shared/NoResultsState';
 
 interface WorkTaskListProps {
   workTasks: WorkTask[];

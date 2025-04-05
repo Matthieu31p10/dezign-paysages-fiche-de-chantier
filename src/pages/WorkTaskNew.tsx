@@ -1,13 +1,11 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '@/context/AppContext';
 import { toast } from 'sonner';
 import WorkTaskForm from '@/components/worktasks/WorkTaskForm';
 
 const WorkTaskNew = () => {
   const navigate = useNavigate();
-  const { addWorkTask } = useApp();
   
   const handleSuccess = () => {
     toast.success('Fiche de travaux créée avec succès');
