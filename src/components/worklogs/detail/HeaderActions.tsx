@@ -67,4 +67,3 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
 };
 
 export default HeaderActions;
-

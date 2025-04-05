@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 const WorkLogEdit = () => {
   const navigate = useNavigate();
@@ -21,10 +22,13 @@ const WorkLogEdit = () => {
     // Small delay to ensure data is available
     const timer = setTimeout(() => {
       setIsLoading(false);
+      if (!workLog && !isLoading) {
+        toast.error("Fiche de suivi introuvable");
+      }
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [workLog]);
+  }, [workLog, isLoading]);
   
   if (isLoading) {
     return (
@@ -69,7 +73,10 @@ const WorkLogEdit = () => {
       <Card className="p-6">
         <WorkLogForm 
           initialData={workLog} 
-          onSuccess={() => navigate(`/worklogs/${id}`)} 
+          onSuccess={() => {
+            toast.success("Fiche de suivi modifiée avec succès");
+            navigate(`/worklogs/${id}`);
+          }} 
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
         />

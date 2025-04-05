@@ -11,7 +11,7 @@ import ProjectEdit from './pages/ProjectEdit';
 import ProjectDetail from './components/projects/ProjectDetail';
 import WorkLogNew from './pages/WorkLogNew';
 import WorkLogEdit from './pages/WorkLogEdit';
-import WorkLogDetail from './components/worklogs/WorkLogDetail';
+import WorkLogDetail from './components/worklogs/detail/WorkLogDetail';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import Login from './components/auth/Login';
