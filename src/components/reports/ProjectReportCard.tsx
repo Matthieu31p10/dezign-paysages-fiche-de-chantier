@@ -2,7 +2,7 @@
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Building2, Clock, Home, Landmark, Users, Calendar, Timer } from 'lucide-react';
+import { Building2, Clock, Home, Landmark, Users, Calendar, Timer, AlertCircle } from 'lucide-react';
 import { calculateAverageHoursPerVisit, getDaysSinceLastEntry } from '@/utils/helpers';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +35,23 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
   const averageHoursPerRemainingVisit = remainingVisits > 0 
     ? remainingHours / remainingVisits 
     : 0;
+  
+  // Calculate time deviation
+  const calculateTimeDeviation = () => {
+    if (workLogs.length === 0) {
+      return { value: 0, display: "N/A", className: "" };
+    }
+    
+    const difference = project.visitDuration - averageHoursPerVisit;
+    const display = `${difference >= 0 ? '+' : ''}${difference.toFixed(2)} h`;
+    const className = difference >= 0 
+      ? 'text-green-600' 
+      : 'text-red-600';
+      
+    return { value: difference, display, className };
+  };
+  
+  const timeDeviation = calculateTimeDeviation();
   
   const getProjectTypeIcon = () => {
     switch (project.projectType) {
@@ -117,13 +134,23 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
               </div>
             </div>
             
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground">Écart du temps:</span>
+              <div className="flex items-center">
+                <AlertCircle className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                <span className={`font-medium text-sm ${timeDeviation.className}`}>
+                  {timeDeviation.display}
+                </span>
+              </div>
+            </div>
+            
             {remainingVisits > 0 && (
-              <div className="space-y-1 col-span-2">
-                <span className="text-xs text-muted-foreground">Heures restantes / passage restant:</span>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">H. restantes / passage:</span>
                 <div className="flex items-center">
                   <Timer className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                   <span className="font-medium text-sm">
-                    {averageHoursPerRemainingVisit.toFixed(1)} h ({remainingHours.toFixed(1)}h / {remainingVisits} passages)
+                    {averageHoursPerRemainingVisit.toFixed(1)} h
                   </span>
                 </div>
               </div>

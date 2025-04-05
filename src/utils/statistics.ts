@@ -9,6 +9,32 @@ export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
   return Math.round((totalHours / workLogs.length) * 100) / 100;
 };
 
+// Calculate time deviation between expected and actual hours
+export interface TimeDeviation {
+  value: number;
+  display: string;
+  className: string;
+}
+
+export const calculateTimeDeviation = (expectedHours: number, workLogs: WorkLog[]): TimeDeviation => {
+  if (workLogs.length === 0 || !expectedHours) {
+    return { 
+      value: 0, 
+      display: "N/A", 
+      className: "" 
+    };
+  }
+  
+  const averageHours = calculateAverageHoursPerVisit(workLogs);
+  const difference = expectedHours - averageHours;
+  
+  return {
+    value: difference,
+    display: `${difference >= 0 ? '+' : ''}${difference.toFixed(2)} h`,
+    className: difference >= 0 ? 'text-green-600' : 'text-red-600'
+  };
+};
+
 // Get years from work logs
 export const getYearsFromWorkLogs = (workLogs: WorkLog[]): number[] => {
   if (!workLogs.length) return [new Date().getFullYear()];

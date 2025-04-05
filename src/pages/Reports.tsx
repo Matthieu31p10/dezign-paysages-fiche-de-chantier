@@ -4,18 +4,21 @@ import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ProjectReportCard from '@/components/reports/ProjectReportCard';
+import ProjectReportList from '@/components/reports/ProjectReportList';
 import GlobalStats from '@/components/reports/GlobalStats';
 import PDFGenerator from '@/components/reports/PDFGenerator';
 import CalendarView from '@/components/worklogs/CalendarView';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2, BarChart2, Calendar, FileText, Clock, Users } from 'lucide-react';
+import { Building2, BarChart2, Calendar, FileText, Clock, Users, LayoutGrid, List } from 'lucide-react';
 import { getDaysSinceLastEntry, getCurrentYear, getYearsFromWorkLogs } from '@/utils/helpers';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const Reports = () => {
   const { projectInfos, workLogs, teams } = useApp();
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [sortOption, setSortOption] = useState<string>('name');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
+  const [viewMode, setViewMode] = useState<string>('grid');
   
   // Safety checks for data
   const validProjectInfos = Array.isArray(projectInfos) ? projectInfos : [];
@@ -98,6 +101,20 @@ const Reports = () => {
               </Select>
             </div>
             
+            <ToggleGroup 
+              type="single" 
+              value={viewMode} 
+              onValueChange={(value) => value && setViewMode(value)}
+              className="border rounded-md hidden sm:flex"
+            >
+              <ToggleGroupItem value="grid" aria-label="Vue en grille">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="Vue en liste">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+            
             <div className="w-full sm:w-auto ml-0 sm:ml-auto">
               <Select
                 value={sortOption}
@@ -123,21 +140,29 @@ const Reports = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedProjects.map(project => {
-                const projectWorkLogs = validWorkLogs.filter(log => log.projectId === project.id);
-                const teamName = validTeams.find(t => t.id === project.team)?.name;
-                
-                return (
-                  <ProjectReportCard
-                    key={project.id}
-                    project={project}
-                    workLogs={projectWorkLogs}
-                    teamName={teamName}
-                  />
-                );
-              })}
-            </div>
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sortedProjects.map(project => {
+                  const projectWorkLogs = validWorkLogs.filter(log => log.projectId === project.id);
+                  const teamName = validTeams.find(t => t.id === project.team)?.name;
+                  
+                  return (
+                    <ProjectReportCard
+                      key={project.id}
+                      project={project}
+                      workLogs={projectWorkLogs}
+                      teamName={teamName}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <ProjectReportList
+                projects={sortedProjects}
+                workLogs={validWorkLogs}
+                teams={validTeams}
+              />
+            )
           )}
         </TabsContent>
         
