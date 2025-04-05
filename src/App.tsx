@@ -5,6 +5,7 @@ import { AppProviders } from './context/AppProviders';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
 import WorkLogs from './pages/WorkLogs';
+import WorkTasks from './pages/WorkTasks';
 import Reports from './pages/Reports';
 import ProjectNew from './pages/ProjectNew';
 import ProjectEdit from './pages/ProjectEdit';
@@ -12,6 +13,9 @@ import ProjectDetail from './components/projects/ProjectDetail';
 import WorkLogNew from './pages/WorkLogNew';
 import WorkLogEdit from './pages/WorkLogEdit';
 import WorkLogDetail from './components/worklogs/detail/WorkLogDetail';
+import WorkTaskNew from './pages/WorkTaskNew';
+import WorkTaskEdit from './pages/WorkTaskEdit';
+import WorkTaskDetail from './components/worktasks/detail/WorkTaskDetail';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import Login from './components/auth/Login';
@@ -43,6 +47,10 @@ function App() {
                 <Route path="worklogs/new" element={<WorkLogNew />} />
                 <Route path="worklogs/:id" element={<WorkLogDetail />} />
                 <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
+                <Route path="worktasks" element={<WorkTasks />} />
+                <Route path="worktasks/new" element={<WorkTaskNew />} />
+                <Route path="worktasks/:id" element={<WorkTaskDetail />} />
+                <Route path="worktasks/edit/:id" element={<WorkTaskEdit />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />

@@ -2,12 +2,14 @@
 import React, { createContext, useContext } from 'react';
 import { useProjects } from './ProjectsContext';
 import { useWorkLogs } from './WorkLogsContext';
+import { useWorkTasks } from './WorkTasksContext';
 import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
 import { useAuth } from './AuthContext';
 import { 
   ProjectsContextType, 
   WorkLogsContextType, 
+  WorkTasksContextType,
   TeamsContextType, 
   SettingsContextType, 
   AuthContextType 
@@ -16,6 +18,7 @@ import {
 // Create a type that combines all the context types
 type AppContextType = ProjectsContextType & 
   WorkLogsContextType & 
+  WorkTasksContextType &
   TeamsContextType & 
   SettingsContextType & 
   AuthContextType & {
@@ -29,6 +32,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const projects = useProjects();
   const workLogs = useWorkLogs();
+  const workTasks = useWorkTasks();
   const teams = useTeams();
   const settings = useSettings();
   const auth = useAuth();
@@ -40,6 +44,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // WorkLogs context
     ...workLogs,
+    
+    // WorkTasks context
+    ...workTasks,
     
     // Teams context
     ...teams,

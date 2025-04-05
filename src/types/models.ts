@@ -84,6 +84,46 @@ export interface WorkLog {
   createdAt: Date;
 }
 
+export interface WorkTask {
+  id: string;
+  title: string;
+  location: string;
+  client: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+  date: Date;
+  duration: number;
+  personnel: string[];
+  timeTracking: {
+    departure: string;
+    arrival: string;
+    end: string;
+    breakTime: string;
+    totalHours: number;
+  };
+  tasksPerformed: {
+    mowing: boolean;
+    brushcutting: boolean;
+    blower: boolean;
+    manualWeeding: boolean;
+    whiteVinegar: boolean;
+    pruning: {
+      done: boolean;
+      progress: number;
+    };
+    watering: 'none' | 'on' | 'off';
+    customTasks?: { [id: string]: boolean };
+    tasksProgress?: { [id: string]: number };
+  };
+  materials: string;
+  notes?: string;
+  waterConsumption?: number;
+  wasteManagement?: 'none' | 'one_big_bag' | 'two_big_bags' | 'half_dumpster' | 'one_dumpster';
+  createdAt: Date;
+}
+
 export interface Team {
   id: string;
   name: string;

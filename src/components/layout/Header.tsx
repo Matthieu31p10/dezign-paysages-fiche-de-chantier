@@ -2,7 +2,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { FileText, BarChart2, Files, Settings, LogOut, User } from 'lucide-react';
+import { FileText, BarChart2, Files, Settings, LogOut, User, Hammer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
 
@@ -55,6 +55,21 @@ const Header = () => {
           <Link to="/worklogs">
             <FileText className="h-5 w-5 sm:mr-1.5" />
             <span className="hidden sm:inline-block">Suivis</span>
+          </Link>
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
+            isActive("/worktasks") && "bg-accent text-accent-foreground"
+          )}
+          asChild
+        >
+          <Link to="/worktasks">
+            <Hammer className="h-5 w-5 sm:mr-1.5" />
+            <span className="hidden sm:inline-block">Travaux</span>
           </Link>
         </Button>
         
