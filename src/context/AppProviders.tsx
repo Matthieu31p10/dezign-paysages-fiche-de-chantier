@@ -5,6 +5,7 @@ import { WorkLogsProvider } from './WorkLogsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
 import { AuthProvider } from './AuthContext';
+import { AppProvider } from './AppContext';
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -13,7 +14,9 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
         <WorkLogsProvider>
           <TeamsProvider>
             <ProjectsProvider>
-              {children}
+              <AppProvider>
+                {children}
+              </AppProvider>
             </ProjectsProvider>
           </TeamsProvider>
         </WorkLogsProvider>

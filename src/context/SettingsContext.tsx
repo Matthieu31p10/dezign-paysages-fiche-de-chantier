@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppSettings, CustomTask } from '@/types/models';
+import { AppSettings, CustomTask, Personnel } from '@/types/models';
 import { SettingsContextType } from './types';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -59,6 +59,73 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
     });
   };
+  
+  // Get all custom tasks
+  const getCustomTasks = (): CustomTask[] => {
+    return settings.customTasks || [];
+  };
+  
+  // Add personnel
+  const addPersonnel = (name: string, position?: string): Personnel => {
+    const newPersonnel: Personnel = {
+      id: crypto.randomUUID(),
+      name,
+      position: position || '',
+      isActive: true,
+    };
+
+    setSettings((prev) => {
+      const personnel = prev.personnel || [];
+      return {
+        ...prev,
+        personnel: [...personnel, newPersonnel],
+      };
+    });
+
+    return newPersonnel;
+  };
+
+  // Update personnel
+  const updatePersonnel = (updatedPersonnel: Personnel) => {
+    setSettings((prev) => {
+      const personnel = prev.personnel || [];
+      return {
+        ...prev,
+        personnel: personnel.map((p) => 
+          p.id === updatedPersonnel.id ? updatedPersonnel : p
+        ),
+      };
+    });
+  };
+
+  // Delete personnel
+  const deletePersonnel = (id: string) => {
+    setSettings((prev) => {
+      const personnel = prev.personnel || [];
+      return {
+        ...prev,
+        personnel: personnel.filter((p) => p.id !== id),
+      };
+    });
+  };
+  
+  // Get all personnel
+  const getPersonnel = (): Personnel[] => {
+    return settings.personnel || [];
+  };
+  
+  // Toggle personnel active status
+  const togglePersonnelActive = (id: string, isActive: boolean) => {
+    setSettings((prev) => {
+      const personnel = prev.personnel || [];
+      return {
+        ...prev,
+        personnel: personnel.map((p) => 
+          p.id === id ? { ...p, isActive } : p
+        ),
+      };
+    });
+  };
 
   return (
     <SettingsContext.Provider
@@ -67,6 +134,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateSettings,
         addCustomTask,
         deleteCustomTask,
+        getCustomTasks,
+        addPersonnel,
+        updatePersonnel,
+        deletePersonnel,
+        getPersonnel,
+        togglePersonnelActive,
       }}
     >
       {children}

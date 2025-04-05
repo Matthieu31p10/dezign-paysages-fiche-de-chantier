@@ -1,6 +1,5 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
 import { AppProviders } from './context/AppProviders';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
@@ -24,35 +23,33 @@ import './App.css';
 function App() {
   return (
     <AppProviders>
-      <AppProvider>
-        <Router>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Navigate to="/projects" replace />} />
-                <Route path="projects" element={<Projects />} />
-                <Route path="projects/new" element={<ProjectNew />} />
-                <Route path="projects/:id" element={<ProjectDetail />} />
-                <Route path="projects/:id/edit" element={<ProjectEdit />} />
-                <Route path="worklogs" element={<WorkLogs />} />
-                <Route path="worklogs/new" element={<WorkLogNew />} />
-                <Route path="worklogs/:id" element={<WorkLogDetail />} />
-                <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="/projects" replace />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/new" element={<ProjectNew />} />
+              <Route path="projects/:id" element={<ProjectDetail />} />
+              <Route path="projects/:id/edit" element={<ProjectEdit />} />
+              <Route path="worklogs" element={<WorkLogs />} />
+              <Route path="worklogs/new" element={<WorkLogNew />} />
+              <Route path="worklogs/:id" element={<WorkLogDetail />} />
+              <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
-          </Routes>
-        </Router>
-        <Toaster />
-        <SonnerToaster position="top-right" richColors />
-      </AppProvider>
+          </Route>
+        </Routes>
+      </Router>
+      <Toaster />
+      <SonnerToaster position="top-right" richColors />
     </AppProviders>
   );
 }

@@ -33,6 +33,12 @@ export interface SettingsContextType {
   updateSettings: (newSettings: Partial<AppSettings>) => void;
   addCustomTask: (taskName: string) => CustomTask;
   deleteCustomTask: (id: string) => void;
+  addPersonnel: (name: string, position?: string) => Personnel;
+  updatePersonnel: (personnel: Personnel) => void;
+  deletePersonnel: (id: string) => void;
+  getPersonnel: () => Personnel[];
+  togglePersonnelActive: (id: string, isActive: boolean) => void;
+  getCustomTasks: () => CustomTask[];
 }
 
 export interface AuthContextType {
