@@ -21,9 +21,10 @@ type AppContextType = ProjectsContextType &
   WorkLogsContextType & 
   WorkTasksContextType &
   TeamsContextType & 
-  SettingsContextType & 
-  AuthContextType & {
+  Omit<SettingsContextType, 'updateUser'> & 
+  Omit<AuthContextType, 'updateUser'> & {
     // Add any additional app-wide methods or state here
+    updateUser: AuthContextType['updateUser']; // We'll use the auth version
   };
 
 // Create the context
@@ -52,11 +53,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Teams context
     ...teams,
     
-    // Settings context
-    ...settings,
+    // Settings context (omit updateUser to avoid conflict)
+    ...Object.fromEntries(
+      Object.entries(settings).filter(([key]) => key !== 'updateUser')
+    ),
     
-    // Auth context
-    ...auth,
+    // Auth context (omit updateUser to avoid duplicate)
+    ...Object.fromEntries(
+      Object.entries(auth).filter(([key]) => key !== 'updateUser')
+    ),
+    
+    // Explicitly add the auth version of updateUser
+    updateUser: auth.updateUser,
     
     // Make sure canUserAccess is properly exposed
     canUserAccess: (requiredRole: UserRole) => {

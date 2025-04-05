@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -34,20 +33,18 @@ const AddUserDialog = ({ isOpen, onOpenChange }: AddUserDialogProps) => {
       return;
     }
 
-    const result = addUser(newUser);
-    if (result) {
-      onOpenChange(false);
-      setNewUser({
-        username: '',
-        password: '',
-        role: 'user',
-        name: '',
-        email: '',
-        phone: '',
-        position: '',
-        drivingLicense: '',
-      });
-    }
+    addUser(newUser);
+    onOpenChange(false);
+    setNewUser({
+      username: '',
+      password: '',
+      role: 'user',
+      name: '',
+      email: '',
+      phone: '',
+      position: '',
+      drivingLicense: '',
+    });
   };
 
   return (
