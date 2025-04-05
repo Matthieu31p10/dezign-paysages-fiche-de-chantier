@@ -6,33 +6,69 @@ import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
 import { useAuth } from './AuthContext';
 import { useWorkTasks } from './WorkTasksContext';
+import { 
+  ProjectsContextType, 
+  WorkLogsContextType, 
+  TeamsContextType, 
+  SettingsContextType, 
+  AuthContextType 
+} from './types';
 
-const AppContext = createContext<any>(undefined);
+// Create a type that combines all the context types
+type AppContextType = ProjectsContextType & 
+  WorkLogsContextType & 
+  TeamsContextType & 
+  SettingsContextType & 
+  AuthContextType & {
+    // Add workTasks context
+    workTasks: ReturnType<typeof useWorkTasks>['workTasks'];
+    addWorkTask: ReturnType<typeof useWorkTasks>['addWorkTask'];
+    updateWorkTask: ReturnType<typeof useWorkTasks>['updateWorkTask'];
+    deleteWorkTask: ReturnType<typeof useWorkTasks>['deleteWorkTask'];
+    getWorkTaskById: ReturnType<typeof useWorkTasks>['getWorkTaskById'];
+  };
 
+// Create the context
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+// Create a provider component
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const projectsContext = useProjects();
-  const workLogsContext = useWorkLogs();
-  const teamsContext = useTeams();
-  const settingsContext = useSettings();
-  const authContext = useAuth();
+  const projects = useProjects();
+  const workLogs = useWorkLogs();
+  const teams = useTeams();
+  const settings = useSettings();
+  const auth = useAuth();
   const workTasksContext = useWorkTasks();
 
-  return (
-    <AppContext.Provider
-      value={{
-        ...projectsContext,
-        ...workLogsContext,
-        ...teamsContext,
-        ...settingsContext,
-        ...authContext,
-        ...workTasksContext
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+  // Combine all contexts
+  const value: AppContextType = {
+    // Projects context
+    ...projects,
+    
+    // WorkLogs context
+    ...workLogs,
+    
+    // Teams context
+    ...teams,
+    
+    // Settings context
+    ...settings,
+    
+    // Auth context
+    ...auth,
+
+    // WorkTasks context
+    workTasks: workTasksContext.workTasks,
+    addWorkTask: workTasksContext.addWorkTask,
+    updateWorkTask: workTasksContext.updateWorkTask,
+    deleteWorkTask: workTasksContext.deleteWorkTask,
+    getWorkTaskById: workTasksContext.getWorkTaskById,
+  };
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
+// Create a custom hook for using the context
 export const useApp = () => {
   const context = useContext(AppContext);
   if (context === undefined) {
@@ -40,3 +76,6 @@ export const useApp = () => {
   }
   return context;
 };
+
+// Export for backward compatibility
+export { AppContext };

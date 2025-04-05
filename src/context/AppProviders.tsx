@@ -11,18 +11,18 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({
   children 
 }) => {
   return (
-    <SettingsProvider>
-      <AuthProvider>
-        <ProjectsProvider>
-          <WorkLogsProvider>
-            <TeamsProvider>
+    <AuthProvider>
+      <ProjectsProvider>
+        <WorkLogsProvider>
+          <TeamsProvider>
+            <SettingsProvider>
               <WorkTasksProvider>
                 {children}
               </WorkTasksProvider>
-            </TeamsProvider>
-          </WorkLogsProvider>
-        </ProjectsProvider>
-      </AuthProvider>
-    </SettingsProvider>
+            </SettingsProvider>
+          </TeamsProvider>
+        </WorkLogsProvider>
+      </ProjectsProvider>
+    </AuthProvider>
   );
 };

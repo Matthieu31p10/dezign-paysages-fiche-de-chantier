@@ -20,13 +20,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { isMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const mobile = useIsMobile();
+  const mobile = isMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Helper to check if a path is active
