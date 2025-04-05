@@ -71,7 +71,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id: crypto.randomUUID(),
       name,
       position: position || '',
-      isActive: true,
+      active: true,
     };
 
     setSettings((prev) => {
@@ -121,7 +121,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return {
         ...prev,
         personnel: personnel.map((p) => 
-          p.id === id ? { ...p, isActive } : p
+          p.id === id ? { ...p, active: isActive } : p
         ),
       };
     });

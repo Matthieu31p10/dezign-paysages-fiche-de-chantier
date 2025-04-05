@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
@@ -15,30 +15,12 @@ import HeaderActions from './HeaderActions';
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
-  const [isLoading, setIsLoading] = useState(true);
   
-  // Find workLog and project outside of any conditions to maintain consistent hook order
+  // Get the right workLog and project data
   const workLog = id ? workLogs.find(log => log.id === id) : undefined;
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
   
-  useEffect(() => {
-    // Set loading to false once we have an ID
-    if (id) {
-      setIsLoading(false);
-    }
-  }, [id]);
-  
-  // Early return for loading state
-  if (isLoading) {
-    return <div>Chargement...</div>;
-  }
-  
-  // Early return if no workLog is found
-  if (!workLog || !id) {
-    return <Navigate to="/worklogs" />;
-  }
-  
-  // Now we can safely use the useWorkLogDetailProvider hook
+  // Always call hooks at top-level, regardless of conditions
   const contextValues = useWorkLogDetailProvider(
     workLog, 
     project, 
@@ -48,11 +30,16 @@ const WorkLogDetail = () => {
     settings
   );
   
+  // Early return if no workLog is found - AFTER all hooks are called
+  if (!workLog || !id) {
+    return <Navigate to="/worklogs" />;
+  }
+  
   return (
     <WorkLogDetailProvider value={{
       ...contextValues,
-      workLog,  // Make sure to pass workLog to the context
-      project   // Make sure to pass project to the context
+      workLog,
+      project
     }}>
       <div className="animate-fade-in space-y-6">
         <div className="flex justify-between items-start">

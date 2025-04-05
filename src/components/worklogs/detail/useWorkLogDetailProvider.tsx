@@ -7,18 +7,19 @@ import { generatePDF } from '@/utils/pdf';
 import { PDFOptions } from './WorkLogDetailContext';
 
 export const useWorkLogDetailProvider = (
-  workLog: WorkLog,
-  project: ProjectInfo | undefined,
-  workLogs: WorkLog[],
-  updateWorkLog: (workLog: WorkLog) => void,
-  deleteWorkLog: (id: string) => void,
-  settings: any
+  workLog?: WorkLog,
+  project?: ProjectInfo,
+  workLogs: WorkLog[] = [],
+  updateWorkLog?: (workLog: WorkLog) => void,
+  deleteWorkLog?: (id: string) => void,
+  settings?: any
 ) => {
   const navigate = useNavigate();
-  // Initialize with workLog.notes to avoid unnecessary state updates
+  // Initialize notes state safely
   const [notes, setNotes] = useState(workLog?.notes || '');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
+  // Update notes when workLog changes
   useEffect(() => {
     if (workLog && workLog.notes) {
       setNotes(workLog.notes);
@@ -26,6 +27,8 @@ export const useWorkLogDetailProvider = (
   }, [workLog?.notes]);
   
   const handleDeleteWorkLog = () => {
+    if (!workLog || !deleteWorkLog) return;
+    
     setIsDeleteDialogOpen(false);
     try {
       deleteWorkLog(workLog.id);
@@ -42,6 +45,8 @@ export const useWorkLogDetailProvider = (
   };
   
   const handleSaveNotes = () => {
+    if (!workLog || !updateWorkLog) return;
+    
     try {
       // Sécurité: validation des données
       const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
@@ -97,13 +102,13 @@ export const useWorkLogDetailProvider = (
   };
   
   const handleExportToPDF = async (options: PDFOptions) => {
+    if (!workLog || !project) {
+      toast.error("Données manquantes pour générer le PDF");
+      return;
+    }
+    
     try {
       // Vérification de la présence des données nécessaires
-      if (!workLog) {
-        toast.error("Données de fiche de suivi manquantes");
-        return;
-      }
-      
       if (!workLog.personnel || workLog.personnel.length === 0) {
         toast.error("Cette fiche de suivi n'a pas de personnel assigné");
         return;
@@ -113,8 +118,8 @@ export const useWorkLogDetailProvider = (
         workLog,
         project: options.includeContactInfo ? project : undefined,
         endTime: calculateEndTime(),
-        companyInfo: options.includeCompanyInfo ? settings.companyInfo : undefined,
-        companyLogo: options.includeCompanyInfo ? settings.companyLogo : undefined,
+        companyInfo: options.includeCompanyInfo ? settings?.companyInfo : undefined,
+        companyLogo: options.includeCompanyInfo ? settings?.companyLogo : undefined,
         pdfOptions: options
       };
       
