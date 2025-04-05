@@ -8,7 +8,7 @@ export * from './date';
 export * from './time';
 
 // Number formatting
-export { formatNumber, formatDateMonthYear } from './format';
+export * from './format';
 
 // Project-related utilities
 export * from './projects';

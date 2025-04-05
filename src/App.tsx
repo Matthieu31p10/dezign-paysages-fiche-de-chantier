@@ -15,7 +15,8 @@ import WorkLogEdit from './pages/WorkLogEdit';
 import WorkLogDetail from './components/worklogs/detail/WorkLogDetail';
 import WorkTaskNew from './pages/WorkTaskNew';
 import WorkTaskEdit from './pages/WorkTaskEdit';
-import WorkTaskDetail from './components/worktasks/detail/WorkTaskDetail';
+import WorkTaskDetail from './pages/WorkTaskDetail';
+import WorkTaskBlank from './pages/WorkTaskBlank';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import Login from './components/auth/Login';
@@ -51,6 +52,7 @@ function App() {
                 <Route path="worktasks/new" element={<WorkTaskNew />} />
                 <Route path="worktasks/:id" element={<WorkTaskDetail />} />
                 <Route path="worktasks/edit/:id" element={<WorkTaskEdit />} />
+                <Route path="worktasks/blank" element={<WorkTaskBlank />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />

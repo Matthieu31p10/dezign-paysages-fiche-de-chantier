@@ -1,148 +1,85 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, CalendarX, Plus } from 'lucide-react';
-import { getCurrentYear, getCurrentMonth } from '@/utils/helpers';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import WorkTaskList from '@/components/worktasks/WorkTaskList';
+import { WorkTask } from '@/types/workTask';
+import { toast } from 'sonner';
+import Header from '@/components/worktasks/list/Header';
+import SearchBar from '@/components/worktasks/list/SearchBar';
+import WorkTasksTable from '@/components/worktasks/list/WorkTasksTable';
+import PaginationControls from '@/components/worktasks/list/PaginationControls';
 
 const WorkTasks = () => {
-  const navigate = useNavigate();
-  const { workTasks } = useApp();
-  const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all');
-  const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
+  const [searchParams] = useSearchParams();
+  const { workTasks, deleteWorkTask } = useApp();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredWorkTasks, setFilteredWorkTasks] = useState<WorkTask[]>([]);
   
-  // Filter logs based on selected criteria
-  const filteredTasks = workTasks.filter(task => {
-    // Filter by year
-    const taskDate = new Date(task.date);
-    const matchesYear = taskDate.getFullYear() === selectedYear;
-    
-    // Filter by month (if selected)
-    const matchesMonth = selectedMonth === 'all' || taskDate.getMonth() === (typeof selectedMonth === 'number' ? selectedMonth - 1 : 0);
-    
-    return matchesYear && matchesMonth;
-  });
+  // Pagination
+  const [totalItems, setTotalItems] = useState(0);
   
-  // Get unique years for the filter
-  const getAvailableYears = () => {
-    const years = workTasks.map(task => new Date(task.date).getFullYear());
-    return [...new Set(years)].sort((a, b) => b - a); // Sort in descending order
+  // Fix the arithmetic operation error
+  const currentPage = Number(searchParams.get('page') || '1');
+  const perPage = Number(searchParams.get('perPage') || '10');
+  
+  useEffect(() => {
+    // Apply search filter
+    const filtered = workTasks.filter(task =>
+      task.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.address.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredWorkTasks(filtered);
+    setTotalItems(filtered.length);
+  }, [workTasks, searchTerm]);
+  
+  // Paginated items
+  const paginatedWorkTasks = () => {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    return filteredWorkTasks.slice(startIndex, endIndex);
   };
   
-  const availableYears = getAvailableYears();
+  const handleDelete = (id: string) => {
+    deleteWorkTask(id);
+    toast.success("Fiche de travaux supprimée avec succès");
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Fiches de Travaux</h1>
-          <p className="text-muted-foreground">
-            Gérez vos fiches de travaux hors contrat
-          </p>
-        </div>
-        
-        <Button 
-          onClick={() => navigate('/worktasks/new')}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle fiche
-        </Button>
-      </div>
-      
-      <div className="flex flex-col md:flex-row gap-4 items-end">
-        <div className="w-full md:w-64">
-          <label className="text-sm font-medium block mb-2">Année</label>
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={(value) => setSelectedYear(Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner une année" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.length > 0 ? (
-                availableYears.map((year) => (
-                  <SelectItem key={year.toString()} value={year.toString()}>
-                    {year.toString()}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value={getCurrentYear().toString()}>
-                  {getCurrentYear().toString()}
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="w-full md:w-64">
-          <label className="text-sm font-medium block mb-2">Mois</label>
-          <Select
-            value={selectedMonth.toString()}
-            onValueChange={(value) => setSelectedMonth(value === 'all' ? 'all' : Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tous les mois" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les mois</SelectItem>
-              <SelectItem value="1">Janvier</SelectItem>
-              <SelectItem value="2">Février</SelectItem>
-              <SelectItem value="3">Mars</SelectItem>
-              <SelectItem value="4">Avril</SelectItem>
-              <SelectItem value="5">Mai</SelectItem>
-              <SelectItem value="6">Juin</SelectItem>
-              <SelectItem value="7">Juillet</SelectItem>
-              <SelectItem value="8">Août</SelectItem>
-              <SelectItem value="9">Septembre</SelectItem>
-              <SelectItem value="10">Octobre</SelectItem>
-              <SelectItem value="11">Novembre</SelectItem>
-              <SelectItem value="12">Décembre</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <Header />
       
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Fiches de Travaux</CardTitle>
+        <CardHeader>
+          <CardTitle>Liste des fiches de travaux</CardTitle>
           <CardDescription>
-            {`Fiches de travaux ponctuels hors contrat`}
-            {selectedMonth !== 'all' && ` - ${new Date(0, Number(selectedMonth) - 1).toLocaleString('fr-FR', { month: 'long' })}`}
-            {` - ${selectedYear}`}
+            Visualisez, modifiez et gérez les fiches de travaux existantes.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {workTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <CalendarX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">Aucune fiche de travaux</h2>
-              <p className="text-muted-foreground mb-6">
-                Vous n'avez pas encore créé de fiche de travaux. Commencez par créer votre première fiche.
-              </p>
-              
-              <Button onClick={() => navigate('/worktasks/new')}>
-                <Plus className="w-4 h-4 mr-2" />
-                Nouvelle fiche
-              </Button>
-            </div>
-          ) : filteredTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">Aucune fiche trouvée</h2>
-              <p className="text-muted-foreground">
-                Aucune fiche de travaux ne correspond aux critères sélectionnés.
-              </p>
-            </div>
-          ) : (
-            <WorkTaskList workTasks={filteredTasks} />
-          )}
+          <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+          <WorkTasksTable workTasks={paginatedWorkTasks()} onDelete={handleDelete} />
         </CardContent>
       </Card>
+      
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <PaginationControls 
+          currentPage={currentPage} 
+          totalPages={Math.ceil(totalItems / perPage)} 
+          perPage={perPage}
+        />
+      )}
     </div>
   );
 };

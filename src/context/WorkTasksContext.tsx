@@ -1,13 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { WorkTask } from '@/types/models';
+import { WorkTask } from '@/types/workTask';
 import { toast } from 'sonner';
 
-export interface WorkTasksContextType {
+interface WorkTasksContextType {
   workTasks: WorkTask[];
   addWorkTask: (workTask: Omit<WorkTask, 'id' | 'createdAt'>) => WorkTask;
   updateWorkTask: (workTask: WorkTask) => void;
   deleteWorkTask: (id: string) => void;
+  getWorkTaskById: (id: string) => WorkTask | undefined;
 }
 
 const WorkTasksContext = createContext<WorkTasksContextType | undefined>(undefined);
@@ -19,7 +20,7 @@ export const WorkTasksProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [workTasks, setWorkTasks] = useState<WorkTask[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load data from localStorage on initial mount
+  // Charger les données depuis localStorage au montage initial
   useEffect(() => {
     try {
       setIsLoading(true);
@@ -37,7 +38,7 @@ export const WorkTasksProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
-  // Save data to localStorage whenever it changes
+  // Sauvegarder les données dans localStorage chaque fois qu'elles changent
   useEffect(() => {
     if (!isLoading) {
       try {
@@ -51,9 +52,9 @@ export const WorkTasksProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [workTasks, isLoading]);
 
   const addWorkTask = (workTask: Omit<WorkTask, 'id' | 'createdAt'>) => {
-    // Data validation
-    if (!workTask.title || !workTask.date || !workTask.personnel || workTask.personnel.length === 0) {
-      console.error("Invalid worktask data:", workTask);
+    // Validation des données
+    if (!workTask.projectName || !workTask.date || !workTask.personnel || workTask.personnel.length === 0) {
+      console.error("Invalid workTask data:", workTask);
       throw new Error('Données invalides pour la fiche de travaux');
     }
     
@@ -63,16 +64,15 @@ export const WorkTasksProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       createdAt: new Date(),
     };
     
-    // Use functional update method for state
     setWorkTasks((prev) => [...prev, newWorkTask]);
     console.log("WorkTask added successfully:", newWorkTask);
     return newWorkTask;
   };
 
   const updateWorkTask = (workTask: WorkTask) => {
-    // Data validation
-    if (!workTask.id || !workTask.title || !workTask.date) {
-      console.error("Invalid worktask data for update:", workTask);
+    // Validation des données
+    if (!workTask.id || !workTask.projectName || !workTask.date) {
+      console.error("Invalid workTask data for update:", workTask);
       throw new Error('Données invalides pour la mise à jour de la fiche de travaux');
     }
     
@@ -98,6 +98,10 @@ export const WorkTasksProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     console.log("WorkTask deleted successfully:", id);
   };
 
+  const getWorkTaskById = (id: string): WorkTask | undefined => {
+    return workTasks.find(task => task.id === id);
+  };
+
   return (
     <WorkTasksContext.Provider
       value={{
@@ -105,6 +109,7 @@ export const WorkTasksProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         addWorkTask,
         updateWorkTask,
         deleteWorkTask,
+        getWorkTaskById,
       }}
     >
       {children}

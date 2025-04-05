@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
   }, [auth]);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = (username: string, password: string): boolean => {
     const users = settings.users || [];
     const user = users.find(
       (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password

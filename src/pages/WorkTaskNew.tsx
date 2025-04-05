@@ -1,27 +1,40 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import WorkTaskForm from '@/components/worktasks/WorkTaskForm';
+import { toast } from 'sonner';
 
 const WorkTaskNew = () => {
   const navigate = useNavigate();
   
-  const handleSuccess = () => {
-    toast.success('Fiche de travaux créée avec succès');
-    navigate('/worktasks');
-  };
-  
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-semibold">Nouvelle fiche de travaux</h1>
-        <p className="text-muted-foreground">
-          Créez une nouvelle fiche pour des travaux ponctuels hors contrat
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-2 mr-2"
+            onClick={() => navigate('/worktasks')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Retour
+          </Button>
+          <h1 className="text-2xl font-semibold">Nouvelle fiche de travaux</h1>
+        </div>
       </div>
       
-      <WorkTaskForm onSuccess={handleSuccess} />
+      <Card className="p-6">
+        <WorkTaskForm 
+          onSuccess={() => {
+            toast.success("Fiche de travaux créée avec succès");
+            navigate('/worktasks');
+          }} 
+        />
+      </Card>
     </div>
   );
 };
