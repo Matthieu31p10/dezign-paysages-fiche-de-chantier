@@ -1,8 +1,6 @@
-
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { WorkTask } from '@/types/workTask';
-import { formatDate } from '../helpers';
 
 // Add the missing type declaration for jsPDF with autoTable
 declare module 'jspdf' {

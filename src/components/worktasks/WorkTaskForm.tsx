@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/context/AppContext';
-import { WorkTask } from '@/types/workTask';
+import { WorkTask, WorkTaskSupplier } from '@/types/workTask';
 import { Separator } from '@/components/ui/separator';
 
 // Import schema
@@ -89,46 +89,87 @@ const WorkTaskForm: React.FC<WorkTaskFormProps> = ({ initialData, onSuccess }) =
   };
 
   const onSubmit = (values: WorkTaskFormValues) => {
-    // Create the form data object with the correct structure
-    const formData: WorkTask | Omit<WorkTask, "id" | "createdAt"> = {
-      ...(initialData ? { id: initialData.id, createdAt: initialData.createdAt } : {}),
-      projectName: values.projectName,
-      address: values.address,
-      contactName: values.contactName,
-      clientPresent: values.clientPresent,
-      date: new Date(values.date),
-      personnel: values.personnel,
-      timeTracking: {
-        departure: values.timeTracking.departure,
-        arrival: values.timeTracking.arrival,
-        end: values.timeTracking.end,
-        breakTime: values.timeTracking.breakTime || '00:00',
-        travelHours: values.timeTracking.travelHours,
-        workHours: values.timeTracking.workHours,
-        totalHours: values.timeTracking.totalHours,
-      },
-      tasksPerformed: {
-        customTasks: values.tasksPerformed.customTasks || {},
-        tasksProgress: values.tasksPerformed.tasksProgress || {},
-      },
-      wasteManagement: {
-        wasteTaken: values.wasteManagement.wasteTaken || false,
-        wasteLeft: values.wasteManagement.wasteLeft || false,
-        wasteDetails: values.wasteManagement.wasteDetails || '',
-      },
-      notes: values.notes || '',
-      supplies: values.supplies || [],
-      hourlyRate: values.hourlyRate,
-      signatures: {
-        client: clientSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
-        teamLead: teamLeadSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
-      }
+    // Ensure all required fields have values to satisfy TypeScript
+    const timeTracking = {
+      departure: values.timeTracking.departure || '',
+      arrival: values.timeTracking.arrival || '',
+      end: values.timeTracking.end || '',
+      breakTime: values.timeTracking.breakTime || '00:00',
+      travelHours: values.timeTracking.travelHours || 0,
+      workHours: values.timeTracking.workHours || 0,
+      totalHours: values.timeTracking.totalHours || 0,
     };
-
+    
+    // Ensure supplies meet the required structure
+    const supplies: WorkTaskSupplier[] = values.supplies.map(supply => ({
+      supplier: supply.supplier || '',
+      material: supply.material || '',
+      unit: supply.unit || '',
+      quantity: supply.quantity || 0,
+      unitPrice: supply.unitPrice || 0
+    }));
+    
+    // Create the form data object with the correct structure
     if (initialData) {
-      updateWorkTask(formData as WorkTask);
+      // Update existing work task
+      const updatedWorkTask: WorkTask = {
+        id: initialData.id,
+        createdAt: initialData.createdAt,
+        projectName: values.projectName,
+        address: values.address,
+        contactName: values.contactName,
+        clientPresent: values.clientPresent,
+        date: new Date(values.date),
+        personnel: values.personnel,
+        timeTracking,
+        tasksPerformed: {
+          customTasks: values.tasksPerformed.customTasks || {},
+          tasksProgress: values.tasksPerformed.tasksProgress || {},
+        },
+        wasteManagement: {
+          wasteTaken: values.wasteManagement.wasteTaken || false,
+          wasteLeft: values.wasteManagement.wasteLeft || false,
+          wasteDetails: values.wasteManagement.wasteDetails || '',
+        },
+        notes: values.notes || '',
+        supplies,
+        hourlyRate: values.hourlyRate,
+        signatures: {
+          client: clientSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
+          teamLead: teamLeadSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
+        }
+      };
+      
+      updateWorkTask(updatedWorkTask);
     } else {
-      addWorkTask(formData);
+      // Create new work task
+      const newWorkTask: Omit<WorkTask, "id" | "createdAt"> = {
+        projectName: values.projectName,
+        address: values.address,
+        contactName: values.contactName,
+        clientPresent: values.clientPresent,
+        date: new Date(values.date),
+        personnel: values.personnel,
+        timeTracking,
+        tasksPerformed: {
+          customTasks: values.tasksPerformed.customTasks || {},
+          tasksProgress: values.tasksPerformed.tasksProgress || {},
+        },
+        wasteManagement: {
+          wasteTaken: values.wasteManagement.wasteTaken || false,
+          wasteLeft: values.wasteManagement.wasteLeft || false,
+          wasteDetails: values.wasteManagement.wasteDetails || '',
+        },
+        notes: values.notes || '',
+        supplies,
+        hourlyRate: values.hourlyRate,
+        signatures: {
+          client: clientSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
+          teamLead: teamLeadSignature?.getTrimmedCanvas().toDataURL('image/png') || null,
+        }
+      };
+      
+      addWorkTask(newWorkTask);
     }
 
     if (onSuccess) {

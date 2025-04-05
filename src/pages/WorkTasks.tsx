@@ -1,8 +1,7 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useApp } from '@/context/AppContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { 
   Card, 
   CardContent, 
@@ -11,147 +10,209 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Plus, CalendarX, Calendar } from 'lucide-react';
-import { formatDate, getCurrentYear, getCurrentMonth } from '@/utils/helpers';
-import WorkTaskList from '@/components/worktasks/WorkTaskList';
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table"
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { useApp } from '@/context/AppContext';
+import { WorkTask } from '@/types/workTask';
+import { Plus, Pencil, Eye, Trash2 } from 'lucide-react';
+import { formatDate } from '@/utils/helpers';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const WorkTasks = () => {
   const navigate = useNavigate();
-  const { workTasks, settings } = useApp();
-  const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all');
-  const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
-
-  // Filtrer les fiches par année et mois
-  const filteredTasks = workTasks.filter(task => {
-    const taskDate = new Date(task.date);
-    const matchesYear = taskDate.getFullYear() === selectedYear;
-    const matchesMonth = selectedMonth === 'all' || taskDate.getMonth() === (typeof selectedMonth === 'number' ? selectedMonth - 1 : 0);
-    
-    return matchesYear && matchesMonth;
-  });
-
-  // Obtenir les années uniques pour le filtre
-  const getAvailableYears = () => {
-    const years = workTasks.map(task => new Date(task.date).getFullYear());
-    return [...new Set(years)].sort((a, b) => b - a); // Trier par ordre décroissant
+  const [searchParams] = useSearchParams();
+  const { workTasks, deleteWorkTask } = useApp();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredWorkTasks, setFilteredWorkTasks] = useState<WorkTask[]>([]);
+  
+  // Pagination
+  const [totalItems, setTotalItems] = useState(0);
+  
+  // Fix the arithmetic operation error
+  const currentPage = Number(searchParams.get('page') || '1');
+  const perPage = Number(searchParams.get('perPage') || '10');
+  
+  useEffect(() => {
+    // Apply search filter
+    const filtered = workTasks.filter(task =>
+      task.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.address.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredWorkTasks(filtered);
+    setTotalItems(filtered.length);
+  }, [workTasks, searchTerm]);
+  
+  // Paginated items
+  const paginatedWorkTasks = () => {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    return filteredWorkTasks.slice(startIndex, endIndex);
   };
   
-  const availableYears = getAvailableYears();
+  const handleDelete = (id: string) => {
+    deleteWorkTask(id);
+    toast.success("Fiche de travaux supprimée avec succès");
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Fiches de Travaux</h1>
+          <h1 className="text-2xl font-semibold">Fiches de travaux</h1>
           <p className="text-muted-foreground">
-            Gérez vos fiches de travaux ponctuels hors contrat
+            Suivez et gérez efficacement les fiches de travaux.
           </p>
         </div>
-        
-        <Button 
-          onClick={() => navigate('/worktasks/new')}
-        >
+        <Button onClick={() => navigate('/worktasks/new')}>
           <Plus className="w-4 h-4 mr-2" />
-          Nouvelle fiche de travaux
+          Ajouter une fiche
         </Button>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-4 items-end">
-        <div className="w-full md:w-64">
-          <label className="text-sm font-medium block mb-2">Année</label>
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={(value) => setSelectedYear(Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner une année" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.length > 0 ? (
-                availableYears.map((year) => (
-                  <SelectItem key={year.toString()} value={year.toString()}>
-                    {year.toString()}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value={getCurrentYear().toString()}>
-                  {getCurrentYear().toString()}
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="w-full md:w-64">
-          <label className="text-sm font-medium block mb-2">Mois</label>
-          <Select
-            value={selectedMonth.toString()}
-            onValueChange={(value) => setSelectedMonth(value === 'all' ? 'all' : Number(value))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tous les mois" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les mois</SelectItem>
-              <SelectItem value="1">Janvier</SelectItem>
-              <SelectItem value="2">Février</SelectItem>
-              <SelectItem value="3">Mars</SelectItem>
-              <SelectItem value="4">Avril</SelectItem>
-              <SelectItem value="5">Mai</SelectItem>
-              <SelectItem value="6">Juin</SelectItem>
-              <SelectItem value="7">Juillet</SelectItem>
-              <SelectItem value="8">Août</SelectItem>
-              <SelectItem value="9">Septembre</SelectItem>
-              <SelectItem value="10">Octobre</SelectItem>
-              <SelectItem value="11">Novembre</SelectItem>
-              <SelectItem value="12">Décembre</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Fiches de travaux</CardTitle>
+        <CardHeader>
+          <CardTitle>Liste des fiches de travaux</CardTitle>
           <CardDescription>
-            Liste des fiches de travaux ponctuels hors contrat
-            {selectedMonth !== 'all' && ` - ${new Date(0, Number(selectedMonth) - 1).toLocaleString('fr-FR', { month: 'long' })}`}
-            {` - ${selectedYear}`}
+            Visualisez, modifiez et gérez les fiches de travaux existantes.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {workTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <CalendarX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">Aucune fiche de travaux</h2>
-              <p className="text-muted-foreground mb-6">
-                Vous n'avez pas encore créé de fiche de travaux. Commencez par créer votre première fiche.
-              </p>
-              
-              <Button onClick={() => navigate('/worktasks/new')}>
-                <Plus className="w-4 h-4 mr-2" />
-                Nouvelle fiche de travaux
-              </Button>
-            </div>
-          ) : filteredTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">Aucune fiche trouvée</h2>
-              <p className="text-muted-foreground">
-                Aucune fiche de travaux ne correspond aux critères sélectionnés.
-              </p>
-            </div>
-          ) : (
-            <WorkTaskList workTasks={filteredTasks} />
-          )}
+          <div className="mb-4">
+            <Input
+              type="text"
+              placeholder="Rechercher un chantier..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <div className="relative overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px]">Chantier</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Adresse</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedWorkTasks().map((workTask) => (
+                  <TableRow key={workTask.id}>
+                    <TableCell className="font-medium">{workTask.projectName}</TableCell>
+                    <TableCell>{formatDate(workTask.date)}</TableCell>
+                    <TableCell>{workTask.address}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/worktasks/${workTask.id}`)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Voir
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/worktasks/edit/${workTask.id}`)}
+                        >
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Modifier
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-red-500">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Supprimer
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Cette action ne peut pas être annulée. La fiche de travaux sera définitivement supprimée.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(workTask.id)}>
+                                Supprimer
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {paginatedWorkTasks().length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center">
+                      Aucune fiche de travaux trouvée.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+      
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href={`/worktasks?page=${Math.max(1, currentPage - 1)}&perPage=${perPage}`}
+              />
+            </PaginationItem>
+            
+            {/* Display page numbers */}
+            {Array.from({ length: Math.ceil(totalItems / perPage) }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page} active={currentPage === page}>
+                <PaginationLink
+                  href={`/worktasks?page=${page}&perPage=${perPage}`}
+                  isActive={currentPage === page}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            
+            <PaginationItem>
+              <PaginationNext
+                href={`/worktasks?page=${Math.min(Math.ceil(totalItems / perPage), currentPage + 1)}&perPage=${perPage}`}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };
