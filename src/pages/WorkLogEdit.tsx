@@ -18,17 +18,17 @@ const WorkLogEdit = () => {
   const workLog = id ? workLogs.find(log => log.id === id) : undefined;
   
   useEffect(() => {
-    console.log("WorkLogEdit - Loaded workLog:", workLog);
+    console.log("WorkLogEdit - Loading workLog:", id);
+    console.log("Available workLogs:", workLogs);
+    console.log("Found workLog:", workLog);
+    
     // Small delay to ensure data is available
     const timer = setTimeout(() => {
       setIsLoading(false);
-      if (!workLog && !isLoading) {
-        toast.error("Fiche de suivi introuvable");
-      }
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [workLog, isLoading]);
+  }, [id, workLog, workLogs]);
   
   if (isLoading) {
     return (

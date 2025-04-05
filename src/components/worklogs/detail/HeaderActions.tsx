@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash, Mail, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ interface HeaderActionsProps {
 const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
   const navigate = useNavigate();
   const { confirmDelete, handleSendEmail } = useWorkLogDetail();
-  const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
+  const [isPDFDialogOpen, setIsPDFDialogOpen] = React.useState(false);
   
   const handleEditClick = () => {
     console.log("Navigating to edit page for worklog:", workLogId);
