@@ -2,43 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Table, 
-  TableHeader, 
-  TableRow, 
-  TableHead, 
-  TableBody, 
-  TableCell 
-} from '@/components/ui/table';
-import { 
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Plus } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
-import { formatDate } from '@/utils/helpers';
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  Plus, 
-  Search, 
-  Eye,
-  Calendar,
-} from 'lucide-react';
+import SearchBar from '@/components/worklogs/list/SearchBar';
+import WorkLogsTable from '@/components/worklogs/list/WorkLogsTable';
+import PaginationControls from '@/components/worklogs/list/PaginationControls';
 
 const WorkLogs = () => {
   const navigate = useNavigate();
@@ -48,7 +17,6 @@ const WorkLogs = () => {
   const [filteredWorkLogs, setFilteredWorkLogs] = useState<WorkLog[]>([]);
   
   // Pagination
-  // Fix the arithmetic operation error
   const currentPage = Number(searchParams.get('page') || '1');
   const perPage = Number(searchParams.get('perPage') || '10');
   const totalPages = Math.ceil(filteredWorkLogs.length / perPage);
@@ -111,6 +79,12 @@ const WorkLogs = () => {
     setSearchParams(searchParams);
   };
   
+  const handlePerPageChange = (value: string) => {
+    searchParams.set('perPage', value);
+    searchParams.set('page', '1'); // Reset to first page
+    setSearchParams(searchParams);
+  };
+  
   const startIndex = (currentPage - 1) * perPage;
   const endIndex = startIndex + perPage;
   const currentWorkLogs = filteredWorkLogs.slice(startIndex, endIndex);
@@ -130,144 +104,26 @@ const WorkLogs = () => {
         </Button>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Rechercher des fiches de suivi</CardTitle>
-          <CardDescription>
-            Filtrer les fiches de suivi par nom de chantier ou notes.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Search className="w-4 h-4" />
-            <Input
-              type="search"
-              placeholder="Rechercher..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <SearchBar 
+        searchQuery={searchQuery} 
+        handleSearchChange={handleSearchChange} 
+      />
       
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">
-                <Button variant="ghost" onClick={() => handleSort('date')}>
-                  Date
-                  {sortColumn === 'date' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('projectId')}>
-                  Chantier
-                  {sortColumn === 'projectId' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('duration')}>
-                  Durée
-                  {sortColumn === 'duration' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('personnel')}>
-                  Personnel
-                  {sortColumn === 'personnel' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
-                </Button>
-              </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentWorkLogs.map(workLog => (
-              <TableRow key={workLog.id}>
-                <TableCell className="font-medium">{formatDate(workLog.date)}</TableCell>
-                <TableCell>{workLog.projectId}</TableCell>
-                <TableCell>{workLog.duration} heures</TableCell>
-                <TableCell>
-                  {workLog.personnel.map((person, index) => (
-                    <div key={index}>{person}</div>
-                  ))}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button 
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/worklogs/${workLog.id}`)}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Voir
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {currentWorkLogs.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  Aucune fiche de suivi trouvée.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <WorkLogsTable 
+        currentWorkLogs={currentWorkLogs}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        handleSort={handleSort}
+      />
       
       {filteredWorkLogs.length > 0 && (
-        <div className="flex items-center justify-between px-4">
-          <div className="space-x-2">
-            <Label htmlFor="perPage">Fiches par page</Label>
-            <Select
-              value={String(perPage)}
-              onValueChange={(value) => {
-                searchParams.set('perPage', value);
-                searchParams.set('page', '1'); // Reset to first page
-                setSearchParams(searchParams);
-              }}
-            >
-              <SelectTrigger id="perPage">
-                <SelectValue placeholder="Fiches par page" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationPrevious
-                href={currentPage > 1 ? `?page=${currentPage - 1}` : "#"}
-                onClick={(e) => {
-                  if (currentPage > 1) {
-                    e.preventDefault();
-                    handlePageChange(currentPage - 1);
-                  } else {
-                    e.preventDefault();
-                  }
-                }}
-                aria-disabled={currentPage === 1}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-              <PaginationNext
-                href={currentPage < totalPages ? `?page=${currentPage + 1}` : "#"}
-                onClick={(e) => {
-                  if (currentPage < totalPages) {
-                    e.preventDefault();
-                    handlePageChange(currentPage + 1);
-                  } else {
-                    e.preventDefault();
-                  }
-                }}
-                aria-disabled={currentPage === totalPages}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationContent>
-          </Pagination>
-        </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          perPage={perPage}
+          handlePageChange={handlePageChange}
+          handlePerPageChange={handlePerPageChange}
+        />
       )}
     </div>
   );
