@@ -2,7 +2,7 @@
 import React from 'react';
 import { WorkTask } from '@/types/models';
 import { WorkTaskItem } from './WorkTaskItem';
-import { formatMonthYear } from '@/utils/format';
+import { formatDateMonthYear } from '@/utils/format';
 import { Badge } from '@/components/ui/badge';
 
 interface WorkTaskMonthGroupProps {
@@ -20,7 +20,7 @@ export const WorkTaskMonthGroup: React.FC<WorkTaskMonthGroupProps> = ({
   });
   
   const [month, year] = monthKey.split('-');
-  const displayDate = formatMonthYear(new Date(parseInt(year), parseInt(month) - 1));
+  const displayDate = formatDateMonthYear(new Date(parseInt(year), parseInt(month) - 1));
   
   return (
     <div>

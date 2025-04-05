@@ -1,6 +1,6 @@
 
 import { WorkLog } from '@/types/models';
-import { formatMonthYear } from '@/utils/helpers';
+import { formatDateMonthYear } from '@/utils/format';
 import WorkLogItem from './WorkLogItem';
 
 interface WorkLogMonthGroupProps {
@@ -13,7 +13,7 @@ const WorkLogMonthGroup = ({ month, workLogs, projectId }: WorkLogMonthGroupProp
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">
-        {formatMonthYear(month)}
+        {formatDateMonthYear(new Date(month))}
       </h3>
       
       <div className="space-y-2">

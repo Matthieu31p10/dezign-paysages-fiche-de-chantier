@@ -53,15 +53,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Teams context
     ...teams,
     
-    // Settings context (omit updateUser to avoid conflict)
-    ...Object.fromEntries(
-      Object.entries(settings).filter(([key]) => key !== 'updateUser')
-    ),
+    // Settings context (except updateUser)
+    settings: settings.settings,
+    updateSettings: settings.updateSettings,
+    addPersonnel: settings.addPersonnel,
+    updatePersonnel: settings.updatePersonnel,
+    deletePersonnel: settings.deletePersonnel,
+    addCustomTask: settings.addCustomTask,
+    updateCustomTask: settings.updateCustomTask,
+    deleteCustomTask: settings.deleteCustomTask,
+    getCustomTasks: settings.getCustomTasks,
+    getPersonnel: settings.getPersonnel,
     
-    // Auth context (omit updateUser to avoid duplicate)
-    ...Object.fromEntries(
-      Object.entries(auth).filter(([key]) => key !== 'updateUser')
-    ),
+    // Auth context (except updateUser)
+    auth: auth.auth,
+    login: auth.login,
+    logout: auth.logout,
+    addUser: auth.addUser,
+    deleteUser: auth.deleteUser,
+    getCurrentUser: auth.getCurrentUser,
     
     // Explicitly add the auth version of updateUser
     updateUser: auth.updateUser,
