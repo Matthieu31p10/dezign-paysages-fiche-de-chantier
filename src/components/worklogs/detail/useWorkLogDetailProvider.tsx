@@ -15,6 +15,7 @@ export const useWorkLogDetailProvider = (
   settings: any
 ) => {
   const navigate = useNavigate();
+  // Initialize with workLog.notes to avoid unnecessary state updates
   const [notes, setNotes] = useState(workLog?.notes || '');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   

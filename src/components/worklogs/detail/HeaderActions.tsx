@@ -15,6 +15,11 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
   const { confirmDelete, handleSendEmail } = useWorkLogDetail();
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
+  const handleEditClick = () => {
+    console.log("Navigating to edit page for worklog:", workLogId);
+    navigate(`/worklogs/edit/${workLogId}`);
+  };
+  
   return (
     <div className="flex flex-wrap gap-2">
       <Button 
@@ -38,7 +43,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
       <Button 
         variant="outline" 
         size="sm"
-        onClick={() => navigate(`/worklogs/edit/${workLogId}`)}
+        onClick={handleEditClick}
       >
         <Edit className="w-4 h-4 mr-2" />
         Modifier
@@ -62,3 +67,4 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
 };
 
 export default HeaderActions;
+

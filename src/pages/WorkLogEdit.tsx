@@ -1,30 +1,30 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useApp } from '@/context/AppContext';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 
 const WorkLogEdit = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { workLogs } = useWorkLogs();
-  const { projectInfos } = useApp();
+  const { workLogs, projectInfos } = useApp();
   const [isLoading, setIsLoading] = useState(true);
   
-  const workLog = workLogs.find(log => log.id === id);
+  // Find the workLog by ID
+  const workLog = id ? workLogs.find(log => log.id === id) : undefined;
   
   useEffect(() => {
-    // Simuler un petit délai de chargement pour s'assurer que les données sont disponibles
+    console.log("WorkLogEdit - Loaded workLog:", workLog);
+    // Small delay to ensure data is available
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 300);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [workLog]);
   
   if (isLoading) {
     return (

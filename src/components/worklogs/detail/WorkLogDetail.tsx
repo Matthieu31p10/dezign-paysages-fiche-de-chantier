@@ -17,26 +17,28 @@ const WorkLogDetail = () => {
   const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Initialize these variables outside of any conditions to maintain hook order
+  // Find workLog and project outside of any conditions to maintain consistent hook order
   const workLog = id ? workLogs.find(log => log.id === id) : undefined;
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
   
   useEffect(() => {
+    // Set loading to false once we have an ID
     if (id) {
       setIsLoading(false);
     }
   }, [id]);
   
-  // Early return for loading state - before any hooks that depend on loaded data
+  // Early return for loading state
   if (isLoading) {
     return <div>Chargement...</div>;
   }
   
-  // Early return for invalid data - before any hooks that depend on valid data
+  // Early return if no workLog is found
   if (!workLog || !id) {
     return <Navigate to="/worklogs" />;
   }
   
+  // Now we can safely use the useWorkLogDetailProvider hook
   const contextValues = useWorkLogDetailProvider(
     workLog, 
     project, 
