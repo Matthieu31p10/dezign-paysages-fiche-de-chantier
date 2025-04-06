@@ -256,7 +256,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
                   <SelectValue placeholder="Sélectionner une équipe (optionnel)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les équipes</SelectItem>
+                  <SelectItem value="all">Toutes les équipes</SelectItem>
                   {teams.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}
