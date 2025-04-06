@@ -23,13 +23,24 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   const consumables = data.consumables || [];
   const consumablesCost = consumables.reduce((sum, item) => sum + item.totalPrice, 0);
   
-  const totalCost = laborCost + consumablesCost;
+  const totalHT = laborCost + consumablesCost;
+  
+  // Utiliser le taux de TVA fourni ou par défaut 20%
+  const vatRate = data.vatRate || 20;
+  const vatAmount = totalHT * (vatRate / 100);
+  const totalTTC = totalHT + vatAmount;
+  
+  // Information sur devis signé
+  const signedQuote = data.signedQuote ? "Oui" : "Non";
   
   // Créer un tableau pour le bilan
   const tableData = [
     ["Main d'œuvre", `${totalHours.toFixed(2)} h x ${hourlyRate.toFixed(2)} € = ${laborCost.toFixed(2)} €`],
     ["Consommables", `${consumablesCost.toFixed(2)} €`],
-    ["TOTAL", `${totalCost.toFixed(2)} €`]
+    ["Total HT", `${totalHT.toFixed(2)} €`],
+    [`TVA (${vatRate}%)`, `${vatAmount.toFixed(2)} €`],
+    ["TOTAL TTC", `${totalTTC.toFixed(2)} €`],
+    ["Devis signé", signedQuote]
   ];
   
   // Dessiner le tableau
@@ -43,7 +54,8 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
       1: { halign: 'right' }
     },
     rowStyles: {
-      2: { fontStyle: 'bold' }
+      2: { fontStyle: 'bold' },
+      4: { fontStyle: 'bold' }
     },
     theme: 'plain',
   });

@@ -34,6 +34,8 @@ export const blankWorkSheetSchema = z.object({
     unitPrice: z.number().nonnegative(),
     totalPrice: z.number().nonnegative()
   })).optional(),
+  vatRate: z.enum(["10", "20"]).default("20"),
+  signedQuote: z.boolean().default(false),
 });
 
 export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;

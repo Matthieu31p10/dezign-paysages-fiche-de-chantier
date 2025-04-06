@@ -31,4 +31,6 @@ export interface PDFData {
     unitPrice: number;
     totalPrice: number;
   }>;
+  vatRate?: number;
+  signedQuote?: boolean;
 }

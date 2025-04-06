@@ -60,6 +60,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       linkedProjectId: '',
       customTasks: {},
       consumables: [],
+      vatRate: "20",
+      signedQuote: false,
     }
   });
   
@@ -140,6 +142,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       
       // Ajouter les informations de taux horaire et coût total
       notesWithProjectInfo += `\nTAUX HORAIRE: ${data.hourlyRate?.toFixed(2) || '0.00'} €\n`;
+      notesWithProjectInfo += `TAUX TVA: ${data.vatRate}%\n`;
+      notesWithProjectInfo += `DEVIS SIGNÉ: ${data.signedQuote ? 'OUI' : 'NON'}\n`;
       
       // Ajouter les informations des consommables si présents
       if (data.consumables && data.consumables.length > 0) {
@@ -156,9 +160,17 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         const laborCost = data.totalHours * (data.hourlyRate || 0);
         notesWithProjectInfo += `Coût main d'œuvre: ${laborCost.toFixed(2)} €\n`;
         
-        // Calculer et ajouter le total général
-        const totalCost = laborCost + totalConsumables;
-        notesWithProjectInfo += `TOTAL GÉNÉRAL: ${totalCost.toFixed(2)} €\n`;
+        // Calculer et ajouter le total HT
+        const totalHT = laborCost + totalConsumables;
+        notesWithProjectInfo += `TOTAL HT: ${totalHT.toFixed(2)} €\n`;
+        
+        // Calculer et ajouter la TVA
+        const vatAmount = totalHT * (parseInt(data.vatRate) / 100);
+        notesWithProjectInfo += `TVA (${data.vatRate}%): ${vatAmount.toFixed(2)} €\n`;
+        
+        // Calculer et ajouter le total TTC
+        const totalTTC = totalHT + vatAmount;
+        notesWithProjectInfo += `TOTAL TTC: ${totalTTC.toFixed(2)} €\n`;
       }
       
       notesWithProjectInfo += `\nDESCRIPTION DES TRAVAUX:\n${data.workDescription}\n\n${data.notes || ''}`;
@@ -219,6 +231,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         linkedProjectId: '',
         customTasks: {},
         consumables: [],
+        vatRate: "20",
+        signedQuote: false,
       });
       
       setSelectedProject(null);
