@@ -18,6 +18,7 @@ import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
+import BlankWorkSheets from './pages/BlankWorkSheets';
 import './App.css';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
               <Route path="worklogs/new" element={<WorkLogNew />} />
               <Route path="worklogs/:id" element={<WorkLogDetail />} />
               <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
+              <Route path="blank-worksheets" element={<BlankWorkSheets />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
