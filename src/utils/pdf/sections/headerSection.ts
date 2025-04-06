@@ -7,15 +7,16 @@ export const drawHeaderSection = (pdf: any, data: PDFData, margin: number, yPos:
   if (data.pdfOptions?.includeCompanyInfo && data.companyInfo) {
     if (data.companyLogo) {
       try {
-        pdf.addImage(data.companyLogo, 'PNG', margin, yPos, 25, 25);
+        // Increased logo size from 25 to 40
+        pdf.addImage(data.companyLogo, 'PNG', margin, yPos, 40, 40);
         
-        // Informations entreprise sur la droite du logo
+        // Adjust text position to align with larger logo
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(sanitizeText(data.companyInfo.name), margin + 30, yPos + 5);
-        pdf.text(sanitizeText(data.companyInfo.address || ''), margin + 30, yPos + 10);
-        pdf.text(`Tél: ${sanitizeText(data.companyInfo.phone || '')}`, margin + 30, yPos + 15);
-        pdf.text(`Email: ${sanitizeText(data.companyInfo.email || '')}`, margin + 30, yPos + 20);
+        pdf.text(sanitizeText(data.companyInfo.name), margin + 45, yPos + 5);
+        pdf.text(sanitizeText(data.companyInfo.address || ''), margin + 45, yPos + 10);
+        pdf.text(`Tél: ${sanitizeText(data.companyInfo.phone || '')}`, margin + 45, yPos + 15);
+        pdf.text(`Email: ${sanitizeText(data.companyInfo.email || '')}`, margin + 45, yPos + 20);
       } catch (error) {
         console.error('Erreur lors de l\'ajout du logo:', error);
       }
@@ -33,5 +34,5 @@ export const drawHeaderSection = (pdf: any, data: PDFData, margin: number, yPos:
     }
   }
   
-  return yPos + 30;
+  return yPos + 45; // Increased return height to accommodate larger logo
 }
