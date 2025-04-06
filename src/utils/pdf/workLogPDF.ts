@@ -35,28 +35,55 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     // Marge et dimensions
     const margin = 15;
     const pageWidth = 210;
+    const pageHeight = 297;
     const contentWidth = pageWidth - (margin * 2);
     
     // Réglage des couleurs de texte
     pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
     
-    // En-tête du document
+    // Position verticale courante
     let yPos = margin;
     
-    // Dessiner l'en-tête avec le logo et les informations de l'entreprise (version compacte)
+    // Hauteur disponible pour le contenu (en tenant compte de l'espace pour le pied de page)
+    const availableHeight = pageHeight - (margin * 2) - 10; // 10mm reserved for footer
+    
+    // Fonction pour vérifier s'il reste assez d'espace et ajouter une page si nécessaire
+    const checkAndAddPage = (requiredHeight: number): void => {
+      if (yPos + requiredHeight > availableHeight) {
+        // Add a new page
+        pdf.addPage();
+        
+        // Reset vertical position to top margin
+        yPos = margin;
+        
+        // Add a small header to indicate continuation
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(`Suite - ${data.project?.name || 'Fiche de suivi'} - ${formatDate(data.workLog?.date)}`, margin, yPos);
+        yPos += 8;
+      }
+    };
+    
+    // Dessiner l'en-tête avec le logo et les informations de l'entreprise
     if (data.pdfOptions?.includeCompanyInfo) {
       yPos = drawHeaderSection(pdf, data, margin, yPos);
     } else {
       yPos += 5; // Donner un peu d'espace en haut si pas d'en-tête d'entreprise
     }
     
-    // Dessiner la section des détails du passage (optimisée)
+    // Dessiner la section des détails du passage
     yPos = drawDetailsSection(pdf, data, margin, yPos, pageWidth, contentWidth);
     
-    // Dessiner les boîtes d'information (optimisées)
+    // Vérifier l'espace avant de dessiner les boîtes d'information
+    checkAndAddPage(30); // Hauteur estimée pour les boîtes d'info
+    
+    // Dessiner les boîtes d'information
     yPos = drawInfoBoxesSection(pdf, data, margin, yPos, contentWidth);
     
-    // Section personnel présent (optimisée, sur deux colonnes)
+    // Vérifier l'espace avant de dessiner la section personnel
+    checkAndAddPage(30); // Hauteur estimée pour la section personnel
+    
+    // Section personnel présent
     yPos = drawPersonnelSection(pdf, data, margin, yPos);
     
     // Ligne de séparation fine
@@ -64,7 +91,10 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Section suivi du temps (optimisée)
+    // Vérifier l'espace avant de dessiner la section suivi du temps
+    checkAndAddPage(30); // Hauteur estimée pour le suivi du temps
+    
+    // Section suivi du temps
     yPos = drawTimeTrackingSection(pdf, data, margin, yPos, contentWidth);
     
     // Ligne de séparation fine
@@ -72,7 +102,10 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Section arrosage et consommation d'eau (combinées)
+    // Vérifier l'espace avant de dessiner la section arrosage
+    checkAndAddPage(30); // Hauteur estimée pour la section arrosage
+    
+    // Section arrosage et consommation d'eau
     yPos = drawWateringSection(pdf, data, margin, yPos, contentWidth);
     
     // Ligne de séparation fine
@@ -80,7 +113,11 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Section tâches personnalisées (optimisée)
+    // Vérifier l'espace avant de dessiner la section tâches
+    // La section tâches peut être volumineuse, on fait une estimation plus large
+    checkAndAddPage(50); // Hauteur estimée pour les tâches
+    
+    // Section tâches personnalisées
     yPos = drawTasksSection(pdf, data, margin, yPos, pageWidth, contentWidth);
     
     // Ligne de séparation fine
@@ -88,13 +125,21 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
+    // Vérifier l'espace avant de dessiner la section notes
+    // La section notes peut être volumineuse, on fait une estimation plus large
+    checkAndAddPage(60); // Hauteur estimée pour les notes
+    
     // Section notes et observations (hauteur adaptative)
     yPos = drawNotesSection(pdf, data, margin, yPos, contentWidth);
     
-    // Pied de page minimaliste
-    pdf.setFontSize(7);
-    pdf.setTextColor(150, 150, 150);
-    pdf.text(`Document généré le ${formatDate(new Date())}`, pageWidth / 2, 285, { align: 'center' });
+    // Pied de page sur chaque page
+    const totalPages = pdf.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(7);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text(`Document généré le ${formatDate(new Date())} - Page ${i}/${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    }
     
     // Génération du nom de fichier
     const projectName = data.project?.name 

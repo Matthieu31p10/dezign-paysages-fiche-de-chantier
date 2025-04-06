@@ -22,58 +22,55 @@ export const drawTasksSection = (pdf: any, data: PDFData, margin: number, yPos: 
     
     yPos += 8;
     
-    // Déterminer combien de tâches par colonne
-    const tasksPerColumn = Math.ceil(taskIds.length / 3);
-    
-    for (let i = 0; i < tasksPerColumn; i++) {
-      // Pour chaque ligne, traiter les 3 colonnes
-      for (let col = 0; col < 3; col++) {
-        const taskIndex = i + (col * tasksPerColumn);
-        if (taskIndex < taskIds.length) {
-          const taskId = taskIds[taskIndex];
-          const done = customTasks[taskId];
-          const progress = data.workLog?.tasksPerformed?.tasksProgress?.[taskId] || 0;
-          
-          const colX = margin + (col * colWidth);
-          
-          // Nom de la tâche (plus court)
-          pdf.setFontSize(9);
-          pdf.setFont('helvetica', 'bold');
-          
-          // Utiliser le nom de la tâche au lieu de l'ID
-          const taskName = data.customTasks?.find(task => task.id === taskId)?.name || taskId;
-          const shortenedName = taskName.length > 15 ? 
-            taskName.substring(0, 15) + "..." : 
-            taskName;
-            
-          pdf.text(sanitizeText(shortenedName), colX, yPos);
-          
-          // Icône de statut
-          if (done) {
-            pdf.setTextColor(61, 174, 43);
-            pdf.text("✓", colX + colWidth - 15, yPos);
-            pdf.setTextColor(60, 60, 60);
-          }
-          
-          // Barre de progression (plus petite)
-          const progressWidth = colWidth - 20;
-          yPos += 4;
-          
-          // Fond de la barre de progression
-          pdf.setFillColor(220, 220, 220);
-          pdf.rect(colX, yPos, progressWidth, 2, 'F');
-          
-          // Remplissage de la barre de progression
-          pdf.setFillColor(61, 174, 43);
-          pdf.rect(colX, yPos, progressWidth * progress / 100, 2, 'F');
-          
-          // Pourcentage
-          pdf.setFontSize(7);
-          pdf.text(`${progress}%`, colX + progressWidth + 2, yPos + 2);
-        }
+    // Traiter toutes les tâches en colonnes sans limite
+    for (let i = 0; i < taskIds.length; i++) {
+      const taskId = taskIds[i];
+      const done = customTasks[taskId];
+      const progress = data.workLog?.tasksPerformed?.tasksProgress?.[taskId] || 0;
+      
+      // Définir la colonne (0, 1, ou 2)
+      const colIndex = i % 3;
+      const colX = margin + (colIndex * colWidth);
+      
+      // Nom de la tâche (plus descriptif)
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      
+      // Utiliser le nom de la tâche au lieu de l'ID
+      const taskName = data.customTasks?.find(task => task.id === taskId)?.name || taskId;
+      const shortenedName = taskName.length > 20 ? 
+        taskName.substring(0, 20) + "..." : 
+        taskName;
+        
+      pdf.text(sanitizeText(shortenedName), colX, yPos);
+      
+      // Icône de statut
+      if (done) {
+        pdf.setTextColor(61, 174, 43);
+        pdf.text("✓", colX + colWidth - 15, yPos);
+        pdf.setTextColor(60, 60, 60);
       }
       
-      yPos += 7; // Espacement réduit entre les lignes de tâches
+      // Barre de progression (plus petite)
+      const progressWidth = colWidth - 20;
+      yPos += 4;
+      
+      // Fond de la barre de progression
+      pdf.setFillColor(220, 220, 220);
+      pdf.rect(colX, yPos, progressWidth, 2, 'F');
+      
+      // Remplissage de la barre de progression
+      pdf.setFillColor(61, 174, 43);
+      pdf.rect(colX, yPos, progressWidth * progress / 100, 2, 'F');
+      
+      // Pourcentage
+      pdf.setFontSize(7);
+      pdf.text(`${progress}%`, colX + progressWidth + 2, yPos + 2);
+      
+      // Passer à la ligne suivante si on a traité 3 tâches ou si c'est la dernière tâche
+      if (colIndex === 2 || i === taskIds.length - 1) {
+        yPos += 7; // Espacement entre les lignes de tâches
+      }
     }
   } else {
     // Pas de tâches personnalisées

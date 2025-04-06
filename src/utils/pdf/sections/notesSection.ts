@@ -19,11 +19,9 @@ export const drawNotesSection = (pdf: any, data: PDFData, margin: number, yPos: 
   const maxWidth = contentWidth - 10;
   const splitNotes = pdf.splitTextToSize(sanitizedNotes, maxWidth);
   
-  // Calculer la hauteur nécessaire (mais limiter pour éviter de déborder de la page)
+  // Calculer la hauteur nécessaire sans limite de lignes
   const lineHeight = 4; // Hauteur de ligne réduite
-  const maxLines = 8; // Maximum de lignes pour ne pas déborder
-  const lines = splitNotes.slice(0, maxLines);
-  const boxHeight = Math.min(lines.length * lineHeight + 10, 40);
+  const boxHeight = Math.max(splitNotes.length * lineHeight + 10, 20); // Minimum height of 20mm
   
   pdf.setDrawColor(200, 200, 200);
   pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'S');
@@ -31,16 +29,9 @@ export const drawNotesSection = (pdf: any, data: PDFData, margin: number, yPos: 
   pdf.setFontSize(9); // Taille de police réduite
   pdf.setFont('helvetica', 'normal');
   
-  // Afficher les notes avec un interligne réduit
-  for (let i = 0; i < lines.length; i++) {
-    pdf.text(lines[i], margin + 5, yPos + 8 + (i * lineHeight));
-  }
-  
-  // Si le texte est tronqué, indiquer qu'il y a plus
-  if (splitNotes.length > maxLines) {
-    pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'italic');
-    pdf.text("(...)", margin + 5, yPos + boxHeight - 3);
+  // Afficher toutes les notes sans limite de lignes
+  for (let i = 0; i < splitNotes.length; i++) {
+    pdf.text(splitNotes[i], margin + 5, yPos + 8 + (i * lineHeight));
   }
   
   return yPos + boxHeight + 3; // Espace adapté à la hauteur de la boîte
