@@ -1,31 +1,36 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, FileBarChart } from 'lucide-react';
+import { FilePlus } from 'lucide-react';
 
-const EmptyBlankWorkSheetState = () => {
-  const navigate = useNavigate();
+interface EmptyBlankWorkSheetStateProps {
+  onCreateNew: () => void;
+}
 
+const EmptyBlankWorkSheetState: React.FC<EmptyBlankWorkSheetStateProps> = ({ onCreateNew }) => {
   return (
-    <Card className="border-dashed">
-      <CardContent className="py-12 text-center flex flex-col items-center">
-        <div className="rounded-full bg-muted w-16 h-16 flex items-center justify-center mb-4">
-          <FileBarChart className="h-8 w-8 text-muted-foreground" />
+    <Card className="border-dashed bg-muted/50">
+      <CardHeader className="pb-0">
+        <h3 className="text-lg font-medium text-center">Aucune fiche vierge</h3>
+      </CardHeader>
+      <CardContent className="pb-2 pt-6 flex justify-center">
+        <div className="max-w-md text-center">
+          <div className="flex justify-center mb-4">
+            <FilePlus className="h-16 w-16 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground">
+            Les fiches vierges vous permettent de documenter des interventions ponctuelles
+            sans lien avec un projet existant. Créez votre première fiche vierge pour commencer.
+          </p>
         </div>
-        
-        <CardTitle className="text-xl mb-2">Aucune fiche vierge</CardTitle>
-        
-        <p className="text-muted-foreground max-w-md mx-auto mb-6">
-          Les fiches vierges vous permettent de suivre des travaux ponctuels sans les associer à un chantier spécifique.
-        </p>
-        
-        <Button onClick={() => navigate('/blank-worksheets?tab=new')}>
-          <Plus className="mr-2 h-4 w-4" />
+      </CardContent>
+      <CardFooter className="flex justify-center pt-4">
+        <Button onClick={onCreateNew} className="min-w-32">
+          <FilePlus className="h-4 w-4 mr-2" />
           Créer une fiche vierge
         </Button>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 };

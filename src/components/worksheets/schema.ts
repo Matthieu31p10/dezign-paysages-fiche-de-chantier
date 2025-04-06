@@ -4,8 +4,8 @@ import * as z from 'zod';
 export const blankWorkSheetSchema = z.object({
   clientName: z.string().min(1, { message: "Le nom du client est requis." }),
   address: z.string().min(1, { message: "L'adresse est requise." }),
-  contactPhone: z.string().optional(),
-  contactEmail: z.string().email({ message: "Format d'email invalide" }).optional(),
+  contactPhone: z.string().optional().nullable(),
+  contactEmail: z.string().email({ message: "Format d'email invalide" }).optional().nullable().or(z.literal('')),
   date: z.date({
     required_error: "Une date est requise.",
   }),
@@ -19,9 +19,9 @@ export const blankWorkSheetSchema = z.object({
     invalid_type_error: "Le total d'heures doit être un nombre."
   }).min(0, { message: "Le total d'heures doit être positive." }),
   notes: z.string().optional(),
-  waterConsumption: z.number().optional(),
+  waterConsumption: z.number().optional().nullable(),
   workDescription: z.string().min(1, { message: "La description des travaux est requise." }),
-  teamFilter: z.string().optional().default(""),
+  teamFilter: z.string().optional().default("all"),
   customTasks: z.record(z.string(), z.boolean().optional()).optional().default({}),
   tasksProgress: z.record(z.string(), z.number().optional()).optional().default({}),
   watering: z.enum(['none', 'on', 'off']).default('none'),

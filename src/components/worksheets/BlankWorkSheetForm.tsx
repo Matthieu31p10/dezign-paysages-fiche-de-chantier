@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { blankWorkSheetSchema, BlankWorkSheetValues } from './schema';
@@ -11,18 +11,16 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { Loader2, Trash2, Droplets } from 'lucide-react';
+import { Loader2, Trash2, Droplets, Clock, InfoIcon, CalendarIcon, ClipboardList } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import TimeTrackingSection from './TimeTrackingSection';
-import TasksSection from './TasksSection';
 import WasteManagementSection from './WasteManagementSection';
 import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
-import { useEffect } from 'react';
 import { calculateTotalHours } from '@/utils/time';
+import { toast } from 'sonner';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -80,6 +78,25 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
     try {
       setIsSubmitting(true);
       
+      // Vérification des données obligatoires
+      if (!data.clientName.trim()) {
+        toast.error("Le nom du client est obligatoire");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!data.address.trim()) {
+        toast.error("L'adresse est obligatoire");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!data.workDescription?.trim()) {
+        toast.error("La description des travaux est obligatoire");
+        setIsSubmitting(false);
+        return;
+      }
+      
       // Convertir en format WorkLog pour stockage
       const workLogData = {
         projectId: 'blank-' + Date.now().toString(),
@@ -115,11 +132,31 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       // Ajouter au système
       addWorkLog(workLogData);
       
+      toast.success("Fiche vierge créée avec succès");
+      
       if (onSuccess) {
         onSuccess();
       }
+      
+      // Réinitialiser le formulaire
+      form.reset({
+        clientName: '',
+        address: '',
+        date: new Date(),
+        personnel: [],
+        departure: '08:00',
+        arrival: '08:30',
+        end: '16:30',
+        breakTime: '00:30',
+        totalHours: 7.5,
+        watering: 'none',
+        wasteManagement: 'none',
+        teamFilter: 'all',
+      });
+      
     } catch (error) {
       console.error('Erreur lors de la création de la fiche:', error);
+      toast.error("Erreur lors de la création de la fiche");
     } finally {
       setIsSubmitting(false);
     }
@@ -142,7 +179,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
-          <h2 className="text-lg font-medium">Informations Client</h2>
+          <h2 className="text-lg font-medium flex items-center">
+            <InfoIcon className="mr-2 h-5 w-5 text-muted-foreground" />
+            Informations Client
+          </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -194,7 +234,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
                 <FormItem>
                   <FormLabel>Email (optionnel)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Adresse email" {...field} />
+                    <Input placeholder="Adresse email" type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -206,7 +246,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         <Separator />
         
         <div className="space-y-4">
-          <h2 className="text-lg font-medium">Détails de l'intervention</h2>
+          <h2 className="text-lg font-medium flex items-center">
+            <CalendarIcon className="mr-2 h-5 w-5 text-muted-foreground" />
+            Détails de l'intervention
+          </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -219,7 +262,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
+                          variant="outline"
                           className={cn(
                             "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
@@ -310,11 +353,137 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         
         <Separator />
         
-        <TimeTrackingSection />
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium flex items-center">
+            <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
+            Suivi du temps
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <FormField
+              control={form.control}
+              name="departure"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Départ</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="time" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="arrival"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Arrivée</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="time" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="end"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fin de chantier</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="time" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="breakTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Temps de pause</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="time" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="totalHours"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Total des heures (calculé automatiquement)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    readOnly
+                    value={field.value.toFixed(2)}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    className="bg-muted"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <Separator />
         
-        <TasksSection />
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium flex items-center">
+            <ClipboardList className="mr-2 h-5 w-5 text-muted-foreground" />
+            Tâches
+          </h2>
+          
+          <FormField
+            control={form.control}
+            name="watering"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Arrosage</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  value={field.value}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Sélectionner une option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Pas d'arrosage</SelectItem>
+                    <SelectItem value="on">Allumé</SelectItem>
+                    <SelectItem value="off">Coupé</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <Separator />
         
