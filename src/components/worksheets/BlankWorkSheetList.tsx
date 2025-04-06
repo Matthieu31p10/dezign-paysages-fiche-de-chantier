@@ -21,6 +21,8 @@ import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { generatePDF, PDFData } from '@/utils/pdf';
 import { toast } from 'sonner';
+import BlankSheetPDFOptionsDialog from './BlankSheetPDFOptionsDialog';
+import { WorkLog } from '@/types/models';
 
 interface BlankWorkSheetListProps {
   onCreateNew: () => void;
@@ -32,6 +34,8 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
+  const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
 
   // Identifie les fiches vierges (celles dont l'ID commence par "blank-")
   const blankWorkSheets = workLogs.filter(log => log.projectId.startsWith('blank-'));
@@ -74,30 +78,13 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
     return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
   });
 
-  const handleExportPDF = async (sheetId: string) => {
-    try {
-      const sheet = workLogs.find(log => log.id === sheetId);
-      if (sheet) {
-        // Create proper PDFData object with the workLog
-        const pdfData: PDFData = {
-          workLog: sheet,
-          pdfOptions: {
-            includeContactInfo: true,
-            includeCompanyInfo: true,
-            includePersonnel: true,
-            includeTasks: true,
-            includeWatering: true,
-            includeNotes: true,
-            includeTimeTracking: true
-          }
-        };
-        
-        await generatePDF(pdfData);
-        toast.success("Fiche exportée en PDF avec succès");
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'exportation PDF:", error);
-      toast.error("Erreur lors de l'exportation PDF");
+  const handleExportPDF = (sheetId: string) => {
+    const sheet = workLogs.find(log => log.id === sheetId);
+    if (sheet) {
+      setSelectedWorkLog(sheet);
+      setIsPDFDialogOpen(true);
+    } else {
+      toast.error("Fiche non trouvée");
     }
   };
 
@@ -276,6 +263,12 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
           })}
         </div>
       )}
+
+      <BlankSheetPDFOptionsDialog
+        open={isPDFDialogOpen}
+        onOpenChange={setIsPDFDialogOpen}
+        workLog={selectedWorkLog}
+      />
     </div>
   );
 };
