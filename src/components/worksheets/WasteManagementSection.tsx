@@ -9,21 +9,6 @@ import { BlankWorkSheetValues } from './schema';
 const WasteManagementSection: React.FC = () => {
   const { control } = useFormContext<BlankWorkSheetValues>();
   
-  const wasteOptions = {
-    "none": "Aucun",
-    "big_bag_1": "Big-Bag (1)",
-    "big_bag_2": "Big-Bag (2)",
-    "big_bag_3": "Big-Bag (3)",
-    "big_bag_4": "Big-Bag (4)",
-    "big_bag_5": "Big-Bag (5)",
-    "half_dumpster_1": "1/2 Benne (1)",
-    "half_dumpster_2": "1/2 Benne (2)",
-    "half_dumpster_3": "1/2 Benne (3)",
-    "dumpster_1": "Benne (1)",
-    "dumpster_2": "Benne (2)",
-    "dumpster_3": "Benne (3)",
-  };
-  
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium flex items-center">
@@ -47,9 +32,21 @@ const WasteManagementSection: React.FC = () => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {Object.entries(wasteOptions).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
+                <SelectItem value="none">Aucun</SelectItem>
+                
+                <SelectItem value="big_bag_1">1 Big-bag</SelectItem>
+                <SelectItem value="big_bag_2">2 Big-bags</SelectItem>
+                <SelectItem value="big_bag_3">3 Big-bags</SelectItem>
+                <SelectItem value="big_bag_4">4 Big-bags</SelectItem>
+                <SelectItem value="big_bag_5">5 Big-bags</SelectItem>
+                
+                <SelectItem value="half_dumpster_1">1 × 1/2 Benne</SelectItem>
+                <SelectItem value="half_dumpster_2">2 × 1/2 Bennes</SelectItem>
+                <SelectItem value="half_dumpster_3">3 × 1/2 Bennes</SelectItem>
+                
+                <SelectItem value="dumpster_1">1 Benne</SelectItem>
+                <SelectItem value="dumpster_2">2 Bennes</SelectItem>
+                <SelectItem value="dumpster_3">3 Bennes</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
