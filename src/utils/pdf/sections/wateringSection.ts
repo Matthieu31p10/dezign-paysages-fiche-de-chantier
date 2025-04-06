@@ -1,40 +1,52 @@
 
 import { PDFData } from '../types';
+import { drawInfoBox } from '../pdfHelpers';
 
-export const drawWateringSection = (pdf: any, data: PDFData, margin: number, yPos: number): number => {
+export const drawWateringSection = (pdf: any, data: PDFData, margin: number, yPos: number, contentWidth: number): number => {
   if (!data.pdfOptions?.includeWatering) {
     return yPos;
   }
   
-  yPos += 10;
+  yPos += 8; // Réduire l'espace avant cette section
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.text("Arrosage", margin, yPos);
   
-  pdf.setFontSize(10);
-  pdf.setFont('helvetica', 'normal');
+  yPos += 8;
   
-  const wateringStatus = 
-    data.workLog?.tasksPerformed.watering === 'on' ? "Allumé" : 
-    data.workLog?.tasksPerformed.watering === 'off' ? "Coupé" : 
-    "Pas d'arrosage";
-  
-  pdf.text(wateringStatus, margin, yPos + 8);
-  
-  // Badge pour statut d'arrosage
-  if (data.workLog?.tasksPerformed.watering !== 'none') {
-    const textWidth = pdf.getTextWidth(wateringStatus);
-    const badgeX = margin + textWidth + 5;
-    const isOn = data.workLog?.tasksPerformed.watering === 'on';
+  // Afficher l'arrosage et la consommation d'eau sur la même ligne
+  // Mettre à jour la première colonne pour arrosage
+  drawInfoBox(pdf, margin, yPos, contentWidth/2 - 5, 20, "État de l'arrosage", () => {
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
     
-    pdf.setFillColor(isOn ? 220 : 245, isOn ? 242 : 220, isOn ? 220 : 220);
-    pdf.roundedRect(badgeX, yPos + 3, 30, 8, 2, 2, 'F');
+    const wateringState = data.workLog?.tasksPerformed?.watering || 'none';
+    let wateringText = "Non effectué";
     
-    pdf.setFontSize(8);
-    pdf.setTextColor(isOn ? 200 : 100, isOn ? 0 : 150, isOn ? 0 : 70);
-    pdf.text(isOn ? "ACTIF" : "INACTIF", badgeX + 15, yPos + 8, { align: 'center' });
-    pdf.setTextColor(60, 60, 60);
-  }
+    if (wateringState === 'manual') {
+      wateringText = "Manuel";
+    } else if (wateringState === 'automatic') {
+      wateringText = "Automatique";
+    } else if (wateringState === 'both') {
+      wateringText = "Manuel et automatique";
+    }
+    
+    pdf.text(wateringText, margin + 5, yPos + 12);
+  });
   
-  return yPos + 15;
+  // Consommation d'eau sur la même ligne
+  const waterConsumptionX = margin + contentWidth/2 + 5;
+  drawInfoBox(pdf, waterConsumptionX, yPos, contentWidth/2 - 5, 20, "Consommation d'eau", () => {
+    if (data.workLog?.waterConsumption) {
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`${data.workLog.waterConsumption} m³`, waterConsumptionX + 5, yPos + 12);
+    } else {
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'italic');
+      pdf.text("Non renseigné", waterConsumptionX + 5, yPos + 12);
+    }
+  });
+  
+  return yPos + 25; // Réduire l'espace après la section
 }

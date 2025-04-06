@@ -7,24 +7,34 @@ export const drawPersonnelSection = (pdf: any, data: PDFData, margin: number, yP
     return yPos;
   }
   
-  yPos += 10;
+  yPos += 8; // Réduire l'espace vertical avant cette section
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.text("Personnel présent", margin, yPos);
   
-  // Liste du personnel
+  // Afficher le personnel sur deux colonnes pour gagner de l'espace
+  const colWidth = 85; // Largeur de chaque colonne
   yPos += 8;
-  pdf.setFontSize(10);
+  pdf.setFontSize(9); // Réduire la taille de police
   pdf.setFont('helvetica', 'normal');
   
-  data.workLog.personnel.forEach((person, index) => {
-    // Draw a small icon for each person
-    pdf.setDrawColor(150, 150, 150);
-    pdf.circle(margin + 3, yPos + 2, 1.5, 'S');
-    
-    pdf.text(sanitizeText(person), margin + 8, yPos + 3);
-    yPos += 6;
-  });
+  const halfLength = Math.ceil(data.workLog.personnel.length / 2);
   
-  return yPos + 6;
+  for (let i = 0; i < halfLength; i++) {
+    // Première colonne
+    if (data.workLog.personnel[i]) {
+      pdf.circle(margin + 2, yPos + 1.5, 1, 'S');
+      pdf.text(sanitizeText(data.workLog.personnel[i]), margin + 6, yPos + 2);
+    }
+    
+    // Deuxième colonne
+    if (data.workLog.personnel[i + halfLength]) {
+      pdf.circle(margin + colWidth + 2, yPos + 1.5, 1, 'S');
+      pdf.text(sanitizeText(data.workLog.personnel[i + halfLength]), margin + colWidth + 6, yPos + 2);
+    }
+    
+    yPos += 5; // Réduire l'espacement entre les lignes
+  }
+  
+  return yPos + 4; // Réduire l'espace après la section
 }

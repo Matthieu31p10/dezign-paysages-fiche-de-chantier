@@ -13,20 +13,13 @@ export const drawTimeTrackingSection = (pdf: any, data: PDFData, margin: number,
   pdf.text("Suivi du temps", margin, yPos);
   
   yPos += 10;
-  const timeBoxWidth = contentWidth / 3;
+  const timeBoxWidth = contentWidth / 4; // Réduire la largeur pour tenir 4 éléments par ligne
   
-  // Départ
+  // Première ligne: Départ, Arrivée, Fin, Pause (tous sur une seule ligne)
   drawTimeBox(pdf, margin, yPos, timeBoxWidth - 3, "Départ", data.workLog?.timeTracking?.departure || "--:--");
-  
-  // Arrivée
   drawTimeBox(pdf, margin + timeBoxWidth, yPos, timeBoxWidth - 3, "Arrivée", data.workLog?.timeTracking?.arrival || "--:--");
+  drawTimeBox(pdf, margin + timeBoxWidth * 2, yPos, timeBoxWidth - 3, "Fin", data.workLog?.timeTracking?.end || data.endTime || "--:--");
+  drawTimeBox(pdf, margin + timeBoxWidth * 3, yPos, timeBoxWidth - 3, "Pause", data.workLog?.timeTracking?.breakTime || "00:00");
   
-  // Heure de fin
-  drawTimeBox(pdf, margin + timeBoxWidth * 2, yPos, timeBoxWidth - 3, "Heure de fin", data.workLog?.timeTracking?.end || data.endTime || "--:--");
-  
-  // Pause
-  yPos += 25;
-  drawTimeBox(pdf, margin, yPos, timeBoxWidth - 3, "Pause", data.workLog?.timeTracking?.breakTime || "00:00");
-  
-  return yPos + 30;
+  return yPos + 20; // Réduire l'espace vertical après cette section
 }

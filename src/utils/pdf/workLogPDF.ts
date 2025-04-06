@@ -43,48 +43,56 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     // En-tête du document
     let yPos = margin;
     
-    // Dessiner l'en-tête avec le logo et les informations de l'entreprise
-    yPos = drawHeaderSection(pdf, data, margin, yPos);
+    // Dessiner l'en-tête avec le logo et les informations de l'entreprise (version compacte)
+    if (data.pdfOptions?.includeCompanyInfo) {
+      yPos = drawHeaderSection(pdf, data, margin, yPos);
+    } else {
+      yPos += 5; // Donner un peu d'espace en haut si pas d'en-tête d'entreprise
+    }
     
-    // Dessiner la section des détails du passage
+    // Dessiner la section des détails du passage (optimisée)
     yPos = drawDetailsSection(pdf, data, margin, yPos, pageWidth, contentWidth);
     
-    // Dessiner les boîtes d'information
+    // Dessiner les boîtes d'information (optimisées)
     yPos = drawInfoBoxesSection(pdf, data, margin, yPos, contentWidth);
     
-    // Ligne de séparation
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
-    // Section personnel présent
+    // Section personnel présent (optimisée, sur deux colonnes)
     yPos = drawPersonnelSection(pdf, data, margin, yPos);
     
-    // Ligne de séparation
-    pdf.setDrawColor(200, 200, 200);
+    // Ligne de séparation fine
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Section suivi du temps
+    // Section suivi du temps (optimisée)
     yPos = drawTimeTrackingSection(pdf, data, margin, yPos, contentWidth);
     
-    // Ligne de séparation
-    pdf.setDrawColor(200, 200, 200);
+    // Ligne de séparation fine
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Section tâches personnalisées
+    // Section arrosage et consommation d'eau (combinées)
+    yPos = drawWateringSection(pdf, data, margin, yPos, contentWidth);
+    
+    // Ligne de séparation fine
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.2);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    
+    // Section tâches personnalisées (optimisée)
     yPos = drawTasksSection(pdf, data, margin, yPos, pageWidth, contentWidth);
     
-    // Ligne de séparation
-    pdf.setDrawColor(200, 200, 200);
+    // Ligne de séparation fine
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Section arrosage
-    yPos = drawWateringSection(pdf, data, margin, yPos);
-    
-    // Section notes et observations
+    // Section notes et observations (hauteur adaptative)
     yPos = drawNotesSection(pdf, data, margin, yPos, contentWidth);
     
-    // Pied de page
-    pdf.setFontSize(8);
+    // Pied de page minimaliste
+    pdf.setFontSize(7);
     pdf.setTextColor(150, 150, 150);
     pdf.text(`Document généré le ${formatDate(new Date())}`, pageWidth / 2, 285, { align: 'center' });
     
