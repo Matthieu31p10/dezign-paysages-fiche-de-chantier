@@ -35,12 +35,12 @@ const TasksSection: React.FC = () => {
               <FormField
                 key={task.id}
                 control={control}
-                name={`customTasks.${task.id}`}
+                name={`customTasks.${task.id}` as any}
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2 hover:bg-accent">
                     <FormControl>
                       <Checkbox
-                        checked={field.value || false}
+                        checked={field.value as boolean | undefined}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>

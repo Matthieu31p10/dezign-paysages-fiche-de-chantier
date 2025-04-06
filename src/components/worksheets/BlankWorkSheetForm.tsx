@@ -22,6 +22,7 @@ import { calculateTotalHours } from '@/utils/time';
 import { toast } from 'sonner';
 import { useProjects } from '@/context/ProjectsContext';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { WorkLog } from '@/types/models';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -53,6 +54,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
+      customTasks: {},
     }
   });
   
@@ -84,10 +86,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
     if (selectedProject) {
       const project = activeProjects.find(p => p.id === selectedProject);
       if (project) {
-        form.setValue('clientName', project.clientName || '');
+        form.setValue('clientName', project.clientName || project.contact?.name || '');
         form.setValue('address', project.address || '');
-        form.setValue('contactPhone', project.contactPhone || '');
-        form.setValue('contactEmail', project.contactEmail || '');
+        form.setValue('contactPhone', project.contactPhone || project.contact?.phone || '');
+        form.setValue('contactEmail', project.contactEmail || project.contact?.email || '');
         form.setValue('linkedProjectId', project.id);
       }
     }
@@ -133,7 +135,9 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       
       notesWithProjectInfo += `\nDESCRIPTION DES TRAVAUX:\n${data.workDescription}\n\n${data.notes || ''}`;
       
-      const workLogData = {
+      const customTasks = data.customTasks || {};
+      
+      const workLogData: Omit<WorkLog, 'id' | 'createdAt'> = {
         projectId: 'blank-' + Date.now().toString(),
         date: data.date,
         duration: data.totalHours,
@@ -156,7 +160,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
             progress: 0
           },
           watering: data.watering,
-          customTasks: data.customTasks,
+          customTasks: customTasks,
           tasksProgress: data.tasksProgress
         },
         notes: notesWithProjectInfo,
@@ -186,6 +190,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         wasteManagement: 'none',
         teamFilter: 'all',
         linkedProjectId: '',
+        customTasks: {},
       });
       
       setSelectedProject(null);

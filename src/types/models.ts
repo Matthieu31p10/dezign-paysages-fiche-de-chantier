@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -21,7 +22,10 @@ export interface AuthState {
 export interface ProjectInfo {
   id: string;
   name: string;
+  clientName?: string;  // Added this property
   address: string;
+  contactPhone?: string; // Added this property
+  contactEmail?: string; // Added this property
   contact: {
     name?: string;
     phone: string;
