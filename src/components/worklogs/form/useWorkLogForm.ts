@@ -76,7 +76,8 @@ export const useWorkLogFormState = ({
       setSelectedProject(project || null);
       
       if (project && project.visitDuration) {
-        setValue('duration', project.visitDuration);
+        // Assurez-vous que duration est un nombre
+        setValue('duration', Number(project.visitDuration));
       }
       
       calculateTimeDeviation(project);
@@ -106,7 +107,7 @@ export const useWorkLogFormState = ({
           selectedPersonnel.length
         );
         
-        setValue('totalHours', calculatedTotalHours);
+        setValue('totalHours', Number(calculatedTotalHours));
       } catch (error) {
         console.error("Error calculating total hours:", error);
       }
@@ -135,7 +136,7 @@ export const useWorkLogFormState = ({
     
     const averageHoursPerVisit = totalHoursCompleted / completedVisits;
     
-    const difference = (project.visitDuration || 0) - averageHoursPerVisit;
+    const difference = (Number(project.visitDuration) || 0) - averageHoursPerVisit;
     
     const sign = difference >= 0 ? '+' : '';
     const formattedDifference = `${sign}${difference.toFixed(2)} h`;

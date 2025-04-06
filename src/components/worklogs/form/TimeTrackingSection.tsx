@@ -94,7 +94,7 @@ const TimeTrackingSection: React.FC = () => {
                 step="0.01"
                 readOnly
                 value={field.value.toFixed(2)}
-                onChange={field.onChange}
+                onChange={(e) => field.onChange(parseFloat(e.target.value))}
               />
             </FormControl>
             <FormMessage />

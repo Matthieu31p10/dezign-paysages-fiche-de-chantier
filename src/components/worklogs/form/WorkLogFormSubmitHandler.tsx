@@ -59,17 +59,18 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         ? data.tasksProgress 
         : {};
 
+      // S'assurer que toutes les valeurs numériques sont traitées comme des nombres
       const payload = {
         projectId: data.projectId,
         date: data.date,
-        duration: typeof data.duration === 'number' ? data.duration : 0,
+        duration: Number(data.duration) || 0,
         personnel: safePersonnel,
         timeTracking: {
           departure: data.departure || "08:00",
           arrival: data.arrival || "09:00",
           end: data.end || "17:00",
           breakTime: data.breakTime || "00:00",
-          totalHours: typeof data.totalHours === 'number' ? data.totalHours : 0,
+          totalHours: Number(data.totalHours) || 0,
         },
         tasksPerformed: {
           watering: data.watering || 'none',
@@ -86,7 +87,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
           whiteVinegar: false
         },
         notes: data.notes ? data.notes.substring(0, 2000) : "",
-        waterConsumption: data.waterConsumption || undefined,
+        waterConsumption: Number(data.waterConsumption) || undefined,
         wasteManagement: data.wasteManagement || 'none',
       };
       
@@ -127,6 +128,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         toast.error("Veuillez sélectionner un projet.");
       } else if (errors.personnel) {
         toast.error("Veuillez sélectionner au moins un membre du personnel.");
+      } else if (errors.duration) {
+        toast.error(errors.duration.message || "Problème avec la durée. Veuillez vérifier.");
       } else if (errors.customTasks) {
         toast.error("Problème avec les tâches personnalisées. Veuillez réessayer.");
       } else {
