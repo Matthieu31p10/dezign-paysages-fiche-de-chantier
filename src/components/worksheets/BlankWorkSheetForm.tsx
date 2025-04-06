@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +10,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { Loader2, Trash2, Droplets, Clock, InfoIcon, CalendarIcon, ClipboardList } from 'lucide-react';
+import { Loader2, Trash2, Droplets, Clock, InfoIcon, CalendarIcon, ClipboardList, LinkIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -21,6 +20,8 @@ import WasteManagementSection from './WasteManagementSection';
 import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 import { calculateTotalHours } from '@/utils/time';
 import { toast } from 'sonner';
+import { useProjects } from '@/context/ProjectsContext';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -30,6 +31,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
   const { teams, settings, addWorkLog } = useApp();
   const [teamFilter, setTeamFilter] = useState("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
+  const { getActiveProjects } = useProjects();
+  
+  const activeProjects = getActiveProjects();
   
   const form = useForm<BlankWorkSheetValues>({
     resolver: zodResolver(blankWorkSheetSchema),
@@ -46,10 +52,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       watering: 'none',
       wasteManagement: 'none',
       teamFilter: 'all',
+      linkedProjectId: '',
     }
   });
   
-  // Effect to calculate total hours based on time inputs
   useEffect(() => {
     const departureTime = form.watch("departure");
     const arrivalTime = form.watch("arrival");
@@ -74,11 +80,33 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
     }
   }, [form.watch("departure"), form.watch("arrival"), form.watch("end"), form.watch("breakTime"), form.watch("personnel").length, form]);
   
+  useEffect(() => {
+    if (selectedProject) {
+      const project = activeProjects.find(p => p.id === selectedProject);
+      if (project) {
+        form.setValue('clientName', project.clientName || '');
+        form.setValue('address', project.address || '');
+        form.setValue('contactPhone', project.contactPhone || '');
+        form.setValue('contactEmail', project.contactEmail || '');
+        form.setValue('linkedProjectId', project.id);
+      }
+    }
+  }, [selectedProject, activeProjects, form]);
+  
+  const handleProjectSelect = (projectId: string) => {
+    setSelectedProject(projectId);
+    setOpenProjectsCombobox(false);
+  };
+  
+  const handleClearProject = () => {
+    setSelectedProject(null);
+    form.setValue('linkedProjectId', '');
+  };
+  
   const handleSubmit = async (data: BlankWorkSheetValues) => {
     try {
       setIsSubmitting(true);
       
-      // Vérification des données obligatoires
       if (!data.clientName.trim()) {
         toast.error("Le nom du client est obligatoire");
         setIsSubmitting(false);
@@ -97,7 +125,14 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         return;
       }
       
-      // Convertir en format WorkLog pour stockage
+      let notesWithProjectInfo = `CLIENT: ${data.clientName}\nADRESSE: ${data.address}\n${data.contactPhone ? 'TÉL: ' + data.contactPhone + '\n' : ''}${data.contactEmail ? 'EMAIL: ' + data.contactEmail + '\n' : ''}`;
+      
+      if (data.linkedProjectId) {
+        notesWithProjectInfo += `PROJET_LIE: ${data.linkedProjectId}\n`;
+      }
+      
+      notesWithProjectInfo += `\nDESCRIPTION DES TRAVAUX:\n${data.workDescription}\n\n${data.notes || ''}`;
+      
       const workLogData = {
         projectId: 'blank-' + Date.now().toString(),
         date: data.date,
@@ -124,12 +159,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
           customTasks: data.customTasks,
           tasksProgress: data.tasksProgress
         },
-        notes: `CLIENT: ${data.clientName}\nADRESSE: ${data.address}\n${data.contactPhone ? 'TÉL: ' + data.contactPhone + '\n' : ''}${data.contactEmail ? 'EMAIL: ' + data.contactEmail + '\n' : ''}\n\nDESCRIPTION DES TRAVAUX:\n${data.workDescription}\n\n${data.notes || ''}`,
+        notes: notesWithProjectInfo,
         waterConsumption: data.waterConsumption,
         wasteManagement: data.wasteManagement
       };
       
-      // Ajouter au système
       addWorkLog(workLogData);
       
       toast.success("Fiche vierge créée avec succès");
@@ -138,7 +172,6 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         onSuccess();
       }
       
-      // Réinitialiser le formulaire
       form.reset({
         clientName: '',
         address: '',
@@ -152,7 +185,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         watering: 'none',
         wasteManagement: 'none',
         teamFilter: 'all',
+        linkedProjectId: '',
       });
+      
+      setSelectedProject(null);
       
     } catch (error) {
       console.error('Erreur lors de la création de la fiche:', error);
@@ -178,6 +214,74 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium flex items-center">
+            <LinkIcon className="mr-2 h-5 w-5 text-muted-foreground" />
+            Associer à un projet existant (optionnel)
+          </h2>
+          
+          <Popover open={openProjectsCombobox} onOpenChange={setOpenProjectsCombobox}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openProjectsCombobox}
+                  className={cn(
+                    "w-full justify-between",
+                    !selectedProject && "text-muted-foreground"
+                  )}
+                >
+                  {selectedProject ? 
+                    activeProjects.find(project => project.id === selectedProject)?.name :
+                    "Sélectionner un projet existant..."
+                  }
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Rechercher un projet..." />
+                <CommandList>
+                  <CommandEmpty>Aucun projet trouvé.</CommandEmpty>
+                  <CommandGroup>
+                    {activeProjects.map(project => (
+                      <CommandItem
+                        key={project.id}
+                        value={project.id}
+                        onSelect={() => handleProjectSelect(project.id)}
+                      >
+                        {project.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+              {selectedProject && (
+                <div className="p-2 border-t">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start text-destructive"
+                    onClick={handleClearProject}
+                  >
+                    Effacer la sélection
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+          
+          {selectedProject && (
+            <div className="rounded-md bg-muted p-3 text-sm">
+              <p className="font-medium">Projet sélectionné: {activeProjects.find(p => p.id === selectedProject)?.name}</p>
+              <p className="text-muted-foreground">Les informations du client ont été préremplies.</p>
+            </div>
+          )}
+        </div>
+        
+        <Separator />
+        
         <div className="space-y-4">
           <h2 className="text-lg font-medium flex items-center">
             <InfoIcon className="mr-2 h-5 w-5 text-muted-foreground" />

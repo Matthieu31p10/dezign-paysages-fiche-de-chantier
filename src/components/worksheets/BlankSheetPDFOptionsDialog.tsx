@@ -1,18 +1,17 @@
 
 import React, { useState } from 'react';
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Dialog } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PDFOptions } from '@/utils/pdf/types';
-import CompanyLogo from '@/components/ui/company-logo';
-import { FileText, Building, Users, ClipboardList, Droplets, FileText as Notes, Clock, LinkIcon } from 'lucide-react';
-import { WorkLog, ProjectInfo } from '@/types/models';
-import { generatePDF, PDFData } from '@/utils/pdf';
-import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Check, FileText, Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { WorkLog } from '@/types/models';
+import { PDFData, PDFOptions } from '@/utils/pdf/types';
+import { generatePDF } from '@/utils/pdf';
 import { useApp } from '@/context/AppContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { extractLinkedProjectId } from '@/utils/helpers';
+import { useProjects } from '@/context/ProjectsContext';
 
 interface BlankSheetPDFOptionsDialogProps {
   open: boolean;
@@ -20,280 +19,205 @@ interface BlankSheetPDFOptionsDialogProps {
   workLog: WorkLog | null;
 }
 
-const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({ 
-  open, 
+const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
+  open,
   onOpenChange,
-  workLog 
+  workLog
 }) => {
-  const { getProjectById, projectInfos } = useApp();
-  const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
-    includeContactInfo: true,
-    includeCompanyInfo: true,
-    includePersonnel: true,
-    includeTasks: true, 
-    includeWatering: true,
-    includeNotes: true,
-    includeTimeTracking: true
-  });
+  const { settings } = useApp();
+  const { getActiveProjects, getProjectById } = useProjects();
+  const [isGenerating, setIsGenerating] = useState(false);
   
-  const [linkedProjectId, setLinkedProjectId] = useState<string>('');
+  // Options d'export PDF
+  const [includeCompanyInfo, setIncludeCompanyInfo] = useState(true);
+  const [includeContactInfo, setIncludeContactInfo] = useState(true);
+  const [includePersonnel, setIncludePersonnel] = useState(true);
+  const [includeTimeTracking, setIncludeTimeTracking] = useState(true);
+  const [includeTasks, setIncludeTasks] = useState(true);
+  const [includeWatering, setIncludeWatering] = useState(true);
+  const [includeNotes, setIncludeNotes] = useState(true);
   
-  // Filtrer uniquement les projets actifs
-  const activeProjects = projectInfos.filter(project => !project.isArchived);
+  // Option pour le projet lié
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   
-  const handleOptionChange = (option: keyof PDFOptions) => {
-    setPdfOptions(prev => ({
-      ...prev,
-      [option]: !prev[option]
-    }));
-  };
+  // Récupérer les projets actifs
+  const activeProjects = getActiveProjects();
   
-  const handleGenerate = async () => {
-    if (!workLog) {
-      toast.error("Aucune fiche sélectionnée");
-      return;
+  // Vérifier si la fiche est déjà liée à un projet
+  React.useEffect(() => {
+    if (workLog?.notes) {
+      const linkedProjectId = extractLinkedProjectId(workLog.notes);
+      if (linkedProjectId) {
+        setSelectedProjectId(linkedProjectId);
+      } else {
+        setSelectedProjectId(null);
+      }
     }
-
+  }, [workLog]);
+  
+  const handleGeneratePDF = async () => {
+    if (!workLog) return;
+    
+    setIsGenerating(true);
+    
     try {
-      // Récupérer le projet associé si un identifiant est défini
-      const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : undefined;
-      
-      // Create proper PDFData object with the workLog and options
-      const pdfData: PDFData = {
-        workLog,
-        pdfOptions,
-        project: linkedProject,
-        linkedProjectId: linkedProjectId || undefined
+      // Création des options d'export
+      const pdfOptions: PDFOptions = {
+        includeCompanyInfo,
+        includeContactInfo,
+        includePersonnel,
+        includeTimeTracking,
+        includeTasks,
+        includeWatering,
+        includeNotes,
       };
       
+      // Récupération du projet lié (si sélectionné)
+      const project = selectedProjectId ? getProjectById(selectedProjectId) : undefined;
+      
+      // Création des données pour le PDF
+      const pdfData: PDFData = {
+        workLog,
+        project,
+        companyInfo: settings.companyInfo,
+        companyLogo: settings.companyLogo,
+        pdfOptions,
+        linkedProjectId: selectedProjectId || undefined
+      };
+      
+      // Génération du PDF
       await generatePDF(pdfData);
-      toast.success("Fiche vierge exportée en PDF avec succès");
+      
+      // Fermer la boîte de dialogue
       onOpenChange(false);
+      
     } catch (error) {
-      console.error("Erreur lors de l'exportation PDF:", error);
-      toast.error("Erreur lors de l'exportation PDF");
+      console.error("Erreur lors de la génération du PDF:", error);
+    } finally {
+      setIsGenerating(false);
     }
   };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Exporter la fiche vierge en PDF
+          <DialogTitle className="flex items-center">
+            <FileText className="mr-2 h-5 w-5" />
+            Options d'exportation PDF
           </DialogTitle>
-          <DialogDescription>
-            Personnalisez les informations à inclure dans votre document
-          </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="content">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="content">Contenu</TabsTrigger>
-            <TabsTrigger value="preview">Aperçu</TabsTrigger>
-          </TabsList>
+        <div className="space-y-5">
+          {/* Projet associé */}
+          <div className="space-y-3">
+            <Label>Associer à un projet</Label>
+            <Select
+              value={selectedProjectId || ""}
+              onValueChange={(value) => setSelectedProjectId(value || null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un projet (optionnel)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Aucun projet</SelectItem>
+                {activeProjects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           
-          <TabsContent value="content" className="space-y-4 py-4">
-            <div className="border rounded-md p-3 mb-4">
-              <div className="flex items-center mb-3">
-                <LinkIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                <h3 className="font-medium">Associer à un projet existant</h3>
-              </div>
-              
-              <Select
-                value={linkedProjectId}
-                onValueChange={setLinkedProjectId}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Choisir un projet (optionnel)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Aucun projet associé</SelectItem>
-                  {activeProjects.map(project => (
-                    <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <p className="text-xs text-muted-foreground mt-2">
-                Associer cette fiche vierge à un projet permettra d'inclure les informations du chantier dans le PDF
-              </p>
-            </div>
+          {/* Options d'affichage */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Options d'affichage</Label>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-2">
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="includeCompanyInfo" 
-                  checked={pdfOptions.includeCompanyInfo}
-                  onCheckedChange={() => handleOptionChange('includeCompanyInfo')}
+                  id="company-info" 
+                  checked={includeCompanyInfo} 
+                  onCheckedChange={(checked) => setIncludeCompanyInfo(!!checked)} 
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <div className="flex items-center">
-                    <Building className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                    <Label htmlFor="includeCompanyInfo" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Informations entreprise
-                    </Label>
-                  </div>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Logo, nom, adresse, téléphone
-                  </p>
-                </div>
+                <Label htmlFor="company-info" className="font-normal">Informations de l'entreprise</Label>
               </div>
               
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="includePersonnel" 
-                  checked={pdfOptions.includePersonnel}
-                  onCheckedChange={() => handleOptionChange('includePersonnel')}
+                  id="contact-info" 
+                  checked={includeContactInfo} 
+                  onCheckedChange={(checked) => setIncludeContactInfo(!!checked)} 
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <div className="flex items-center">
-                    <Users className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                    <Label htmlFor="includePersonnel" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Personnel
-                    </Label>
-                  </div>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Liste du personnel présent
-                  </p>
-                </div>
+                <Label htmlFor="contact-info" className="font-normal">Informations du client</Label>
               </div>
               
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="includeTasks" 
-                  checked={pdfOptions.includeTasks}
-                  onCheckedChange={() => handleOptionChange('includeTasks')}
+                  id="personnel" 
+                  checked={includePersonnel} 
+                  onCheckedChange={(checked) => setIncludePersonnel(!!checked)} 
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <div className="flex items-center">
-                    <ClipboardList className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                    <Label htmlFor="includeTasks" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Tâches personnalisées
-                    </Label>
-                  </div>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Travaux effectués et avancement
-                  </p>
-                </div>
+                <Label htmlFor="personnel" className="font-normal">Personnel</Label>
               </div>
               
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="includeWatering" 
-                  checked={pdfOptions.includeWatering}
-                  onCheckedChange={() => handleOptionChange('includeWatering')}
+                  id="time-tracking" 
+                  checked={includeTimeTracking} 
+                  onCheckedChange={(checked) => setIncludeTimeTracking(!!checked)} 
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <div className="flex items-center">
-                    <Droplets className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                    <Label htmlFor="includeWatering" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Arrosages
-                    </Label>
-                  </div>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    État et consommation d'eau
-                  </p>
-                </div>
+                <Label htmlFor="time-tracking" className="font-normal">Suivi du temps</Label>
               </div>
               
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="includeNotes" 
-                  checked={pdfOptions.includeNotes}
-                  onCheckedChange={() => handleOptionChange('includeNotes')}
+                  id="tasks" 
+                  checked={includeTasks} 
+                  onCheckedChange={(checked) => setIncludeTasks(!!checked)} 
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <div className="flex items-center">
-                    <Notes className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                    <Label htmlFor="includeNotes" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Notes et observations
-                    </Label>
-                  </div>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Commentaires et remarques
-                  </p>
-                </div>
+                <Label htmlFor="tasks" className="font-normal">Tâches effectuées</Label>
               </div>
               
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="includeTimeTracking" 
-                  checked={pdfOptions.includeTimeTracking}
-                  onCheckedChange={() => handleOptionChange('includeTimeTracking')}
+                  id="watering" 
+                  checked={includeWatering} 
+                  onCheckedChange={(checked) => setIncludeWatering(!!checked)} 
                 />
-                <div className="grid gap-1.5 leading-none">
-                  <div className="flex items-center">
-                    <Clock className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                    <Label htmlFor="includeTimeTracking" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Suivi de temps
-                    </Label>
-                  </div>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Heures de début, fin et pause
-                  </p>
-                </div>
+                <Label htmlFor="watering" className="font-normal">Information d'arrosage</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="notes" 
+                  checked={includeNotes} 
+                  onCheckedChange={(checked) => setIncludeNotes(!!checked)} 
+                />
+                <Label htmlFor="notes" className="font-normal">Notes</Label>
               </div>
             </div>
-          </TabsContent>
+          </div>
           
-          <TabsContent value="preview" className="py-4">
-            <div className="border rounded-md p-4 flex flex-col items-center">
-              <div className="w-full max-w-md bg-white shadow-sm rounded-md border p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center">
-                    <CompanyLogo className="w-14 h-14 p-1" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold">Fiche vierge</h3>
-                    <p className="text-sm text-gray-600">
-                      {workLog ? new Date(workLog.date).toLocaleDateString('fr-FR') : 'Date non spécifiée'}
-                    </p>
-                    {linkedProjectId && (
-                      <p className="text-xs text-primary mt-1">
-                        Associée au projet: {getProjectById(linkedProjectId)?.name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="text-center my-3">
-                  <h4 className="font-medium">Détails du passage</h4>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                  <div>
-                    <span className="text-gray-500 text-xs">Date</span>
-                    <p>{workLog ? new Date(workLog.date).toLocaleDateString('fr-FR') : '--/--/----'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs">Durée prévue</span>
-                    <p>{workLog?.duration || '--'} heures</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs">Temps total</span>
-                    <p>{workLog?.timeTracking?.totalHours.toFixed(2) || '--'} heures</p>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-gray-400 mt-3">
-                  Aperçu simplifié du document PDF
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-        
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
+          <Button 
+            onClick={handleGeneratePDF} 
+            className="w-full" 
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Génération en cours...
+              </>
+            ) : (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Générer le PDF
+              </>
+            )}
           </Button>
-          <Button type="button" onClick={handleGenerate}>
-            <FileText className="h-4 w-4 mr-2" />
-            Générer PDF
-          </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
