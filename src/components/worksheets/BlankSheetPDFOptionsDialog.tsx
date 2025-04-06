@@ -113,14 +113,14 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
           <div className="space-y-3">
             <Label>Associer à un projet</Label>
             <Select
-              value={selectedProjectId || ""}
-              onValueChange={(value) => setSelectedProjectId(value || null)}
+              value={selectedProjectId || "none"}
+              onValueChange={(value) => setSelectedProjectId(value === "none" ? null : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un projet (optionnel)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Aucun projet</SelectItem>
+                <SelectItem value="none">Aucun projet</SelectItem>
                 {activeProjects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
