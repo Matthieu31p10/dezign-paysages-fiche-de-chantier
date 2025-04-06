@@ -4,20 +4,20 @@ import { formatDate } from '../../date';
 import { drawInfoBox } from '../pdfHelpers';
 
 export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos: number, pageWidth: number, contentWidth: number): number => {
-  // Titre du document et date - plus compact
-  pdf.setFontSize(14); // Réduire la taille du titre
+  // Titre du document et date - aligné à droite
+  pdf.setFontSize(14);
   pdf.setFont('helvetica', 'bold');
   
   // Si on a les informations du projet, on affiche le nom
   if (data.pdfOptions?.includeContactInfo && data.project) {
-    pdf.text(data.project.name, margin, yPos);
+    pdf.text(data.project.name, pageWidth - margin, yPos, { align: 'right' });
   } else {
-    pdf.text("Fiche de suivi", margin, yPos);
+    pdf.text("Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
   }
   
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(`Fiche de suivi du ${formatDate(data.workLog?.date)}`, margin, yPos + 6);
+  pdf.text(`Fiche de suivi du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
   
   // Ligne de séparation
   yPos += 10; // Réduire l'espace
