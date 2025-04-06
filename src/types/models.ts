@@ -54,6 +54,15 @@ export interface CustomTask {
   name: string;
 }
 
+export interface Consumable {
+  supplier?: string;
+  product: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 export interface WorkLog {
   id: string;
   projectId: string;
@@ -64,7 +73,7 @@ export interface WorkLog {
     departure: string;
     arrival: string;
     end: string;
-    breakTime: string; // Keeping this as string to match the form
+    breakTime: string; 
     totalHours: number;
   };
   tasksPerformed: {
@@ -78,16 +87,18 @@ export interface WorkLog {
       progress: number;
     };
     watering: 'none' | 'on' | 'off';
-    customTasks?: { [id: string]: boolean }; // Add custom tasks
-    tasksProgress?: { [id: string]: number }; // Progression de chaque tâche en pourcentage
+    customTasks?: { [id: string]: boolean }; 
+    tasksProgress?: { [id: string]: number }; 
   };
-  notes?: string; // Field for adding notes
-  waterConsumption?: number; // Field for water consumption in m3
+  notes?: string; 
+  waterConsumption?: number; 
   wasteManagement?: 
     | 'none'
     | 'big_bag_1' | 'big_bag_2' | 'big_bag_3' | 'big_bag_4' | 'big_bag_5'
     | 'half_dumpster_1' | 'half_dumpster_2' | 'half_dumpster_3'
-    | 'dumpster_1' | 'dumpster_2' | 'dumpster_3'; // Updated waste management options
+    | 'dumpster_1' | 'dumpster_2' | 'dumpster_3';
+  hourlyRate?: number;
+  consumables?: Consumable[];
   createdAt: Date;
 }
 
@@ -117,5 +128,5 @@ export interface AppSettings {
   companyInfo?: CompanyInfo;
   users?: User[];
   personnel?: Personnel[];
-  customTasks?: CustomTask[]; // Add custom tasks to settings
+  customTasks?: CustomTask[];
 }

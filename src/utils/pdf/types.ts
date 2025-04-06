@@ -6,9 +6,11 @@ export interface PDFOptions {
   includeCompanyInfo?: boolean;
   includePersonnel?: boolean;
   includeTasks?: boolean;
-  includeWatering?: boolean;
+  includeWasteManagement?: boolean;
   includeNotes?: boolean;
   includeTimeTracking?: boolean;
+  includeConsumables?: boolean;
+  includeSummary?: boolean;
 }
 
 export interface PDFData {
@@ -19,5 +21,14 @@ export interface PDFData {
   companyLogo?: string;
   pdfOptions?: PDFOptions;
   customTasks?: CustomTask[];
-  linkedProjectId?: string; // Identifiant du projet lié à une fiche vierge
+  linkedProjectId?: string; 
+  hourlyRate?: number;
+  consumables?: Array<{
+    supplier: string;
+    product: string;
+    unit: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
 }

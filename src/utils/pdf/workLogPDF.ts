@@ -10,8 +10,9 @@ import { drawInfoBoxesSection } from './sections/infoBoxesSection';
 import { drawPersonnelSection } from './sections/personnelSection';
 import { drawTimeTrackingSection } from './sections/timeTrackingSection';
 import { drawTasksSection } from './sections/tasksSection';
-import { drawWateringSection } from './sections/wateringSection';
 import { drawNotesSection } from './sections/notesSection';
+import { drawConsumablesSection } from './sections/consumablesSection';
+import { drawSummarySection } from './sections/summarySection';
 
 // Cette fonction gère la génération de PDF pour les fiches de suivi avec le nouveau design
 export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
@@ -102,19 +103,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
-    // Vérifier l'espace avant de dessiner la section arrosage
-    checkAndAddPage(30); // Hauteur estimée pour la section arrosage
-    
-    // Section arrosage et consommation d'eau
-    yPos = drawWateringSection(pdf, data, margin, yPos, contentWidth);
-    
-    // Ligne de séparation fine
-    pdf.setDrawColor(220, 220, 220);
-    pdf.setLineWidth(0.2);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
     // Vérifier l'espace avant de dessiner la section tâches
-    // La section tâches peut être volumineuse, on fait une estimation plus large
     checkAndAddPage(50); // Hauteur estimée pour les tâches
     
     // Section tâches personnalisées
@@ -125,8 +114,29 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     pdf.setLineWidth(0.2);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
     
+    // Vérifier l'espace avant de dessiner la section consommables
+    checkAndAddPage(50); // Hauteur estimée pour les consommables
+    
+    // Section consommables
+    yPos = drawConsumablesSection(pdf, data, margin, yPos, contentWidth);
+    
+    // Ligne de séparation fine
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.2);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    
+    // Vérifier l'espace avant de dessiner le bilan
+    checkAndAddPage(50); // Hauteur estimée pour le bilan
+    
+    // Section bilan
+    yPos = drawSummarySection(pdf, data, margin, yPos, contentWidth);
+    
+    // Ligne de séparation fine
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.2);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    
     // Vérifier l'espace avant de dessiner la section notes
-    // La section notes peut être volumineuse, on fait une estimation plus large
     checkAndAddPage(60); // Hauteur estimée pour les notes
     
     // Section notes et observations (hauteur adaptative)

@@ -14,19 +14,26 @@ export const blankWorkSheetSchema = z.object({
   end: z.string(),
   breakTime: z.string(),
   totalHours: z.number().positive(),
-  watering: z.enum(["none", "on", "off"]),
+  hourlyRate: z.number().nonnegative().optional(),
   wasteManagement: z.enum([
     "none", 
     "big_bag_1", "big_bag_2", "big_bag_3", "big_bag_4", "big_bag_5",
     "half_dumpster_1", "half_dumpster_2", "half_dumpster_3",
     "dumpster_1", "dumpster_2", "dumpster_3"
   ]),
-  waterConsumption: z.number().optional(),
   notes: z.string().optional(),
   customTasks: z.record(z.string(), z.boolean()).optional(),
   tasksProgress: z.record(z.string(), z.number()).optional(),
   teamFilter: z.string(),
   linkedProjectId: z.string().optional(),
+  consumables: z.array(z.object({
+    supplier: z.string().optional(),
+    product: z.string(),
+    unit: z.string(),
+    quantity: z.number().positive(),
+    unitPrice: z.number().nonnegative(),
+    totalPrice: z.number().nonnegative()
+  })).optional(),
 });
 
 export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +11,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
-import { Loader2, Trash2, Droplets, Clock, InfoIcon, CalendarIcon, ClipboardList, LinkIcon } from 'lucide-react';
+import { Loader2, Trash2, Clock, InfoIcon, CalendarIcon, ClipboardList, LinkIcon, Calculator } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -23,6 +24,9 @@ import { toast } from 'sonner';
 import { useProjects } from '@/context/ProjectsContext';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { WorkLog } from '@/types/models';
+import TasksSection from './TasksSection';
+import ConsumablesSection from './ConsumablesSection';
+import WorksheetSummary from './WorksheetSummary';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -50,11 +54,12 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       end: '16:30',
       breakTime: '00:30',
       totalHours: 7.5,
-      watering: 'none',
+      hourlyRate: 0,
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
       customTasks: {},
+      consumables: [],
     }
   });
   
@@ -133,6 +138,29 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         notesWithProjectInfo += `PROJET_LIE: ${data.linkedProjectId}\n`;
       }
       
+      // Ajouter les informations de taux horaire et coût total
+      notesWithProjectInfo += `\nTAUX HORAIRE: ${data.hourlyRate?.toFixed(2) || '0.00'} €\n`;
+      
+      // Ajouter les informations des consommables si présents
+      if (data.consumables && data.consumables.length > 0) {
+        notesWithProjectInfo += `\nCONSOMMATIONS:\n`;
+        data.consumables.forEach((item, index) => {
+          notesWithProjectInfo += `${index + 1}. ${item.product} (${item.supplier || 'N/A'}): ${item.quantity} ${item.unit} x ${item.unitPrice.toFixed(2)} € = ${item.totalPrice.toFixed(2)} €\n`;
+        });
+        
+        // Calculer et ajouter le total des consommables
+        const totalConsumables = data.consumables.reduce((sum, item) => sum + item.totalPrice, 0);
+        notesWithProjectInfo += `Total consommables: ${totalConsumables.toFixed(2)} €\n`;
+        
+        // Calculer et ajouter le coût de la main d'œuvre
+        const laborCost = data.totalHours * (data.hourlyRate || 0);
+        notesWithProjectInfo += `Coût main d'œuvre: ${laborCost.toFixed(2)} €\n`;
+        
+        // Calculer et ajouter le total général
+        const totalCost = laborCost + totalConsumables;
+        notesWithProjectInfo += `TOTAL GÉNÉRAL: ${totalCost.toFixed(2)} €\n`;
+      }
+      
       notesWithProjectInfo += `\nDESCRIPTION DES TRAVAUX:\n${data.workDescription}\n\n${data.notes || ''}`;
       
       const customTasks = data.customTasks || {};
@@ -150,21 +178,20 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
           totalHours: data.totalHours
         },
         tasksPerformed: {
-          mowing: false,
-          brushcutting: false,
-          blower: false,
-          manualWeeding: false,
-          whiteVinegar: false,
+          mowing: customTasks.mowing || false,
+          brushcutting: customTasks.brushcutting || false,
+          blower: customTasks.blower || false,
+          manualWeeding: customTasks.manualWeeding || false,
+          whiteVinegar: customTasks.whiteVinegar || false,
           pruning: {
-            done: false,
+            done: customTasks.pruning || false,
             progress: 0
           },
-          watering: data.watering,
+          watering: 'none',
           customTasks: customTasks,
           tasksProgress: data.tasksProgress
         },
         notes: notesWithProjectInfo,
-        waterConsumption: data.waterConsumption,
         wasteManagement: data.wasteManagement
       };
       
@@ -186,11 +213,12 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         end: '16:30',
         breakTime: '00:30',
         totalHours: 7.5,
-        watering: 'none',
+        hourlyRate: 0,
         wasteManagement: 'none',
         teamFilter: 'all',
         linkedProjectId: '',
         customTasks: {},
+        consumables: [],
       });
       
       setSelectedProject(null);
@@ -538,61 +566,63 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
             />
           </div>
           
-          <FormField
-            control={form.control}
-            name="totalHours"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Total des heures (calculé automatiquement)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    step="0.01"
-                    readOnly
-                    value={field.value.toFixed(2)}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    className="bg-muted"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="totalHours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Total des heures (calculé automatiquement)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      step="0.01"
+                      readOnly
+                      value={field.value.toFixed(2)}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      className="bg-muted"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="hourlyRate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Taux horaire (€/h)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                          field.onChange(value);
+                        }}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-muted-foreground">€/h</span>
+                      </div>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
         
         <Separator />
         
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium flex items-center">
-            <ClipboardList className="mr-2 h-5 w-5 text-muted-foreground" />
-            Tâches
-          </h2>
-          
-          <FormField
-            control={form.control}
-            name="watering"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Arrosage</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  value={field.value}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner une option" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Pas d'arrosage</SelectItem>
-                    <SelectItem value="on">Allumé</SelectItem>
-                    <SelectItem value="off">Coupé</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <TasksSection />
         
         <Separator />
         
@@ -600,37 +630,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         
         <Separator />
         
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium flex items-center">
-            <Droplets className="w-5 h-5 mr-2 text-muted-foreground" />
-            Consommation d'eau
-          </h2>
-          
-          <FormField
-            control={form.control}
-            name="waterConsumption"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Consommation d'eau (m³)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    placeholder="0"
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                      field.onChange(value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <ConsumablesSection />
+        
+        <Separator />
+        
+        <WorksheetSummary />
         
         <Separator />
         
