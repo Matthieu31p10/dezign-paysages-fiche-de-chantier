@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -80,7 +79,11 @@ export interface WorkLog {
   };
   notes?: string; // Field for adding notes
   waterConsumption?: number; // Field for water consumption in m3
-  wasteManagement?: 'none' | 'one_big_bag' | 'two_big_bags' | 'half_dumpster' | 'one_dumpster'; // New field for waste management
+  wasteManagement?: 
+    | 'none'
+    | 'big_bag_1' | 'big_bag_2' | 'big_bag_3' | 'big_bag_4' | 'big_bag_5'
+    | 'half_dumpster_1' | 'half_dumpster_2' | 'half_dumpster_3'
+    | 'dumpster_1' | 'dumpster_2' | 'dumpster_3'; // Updated waste management options
   createdAt: Date;
 }
 

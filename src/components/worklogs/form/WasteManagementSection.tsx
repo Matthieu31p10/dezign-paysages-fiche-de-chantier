@@ -32,10 +32,20 @@ const WasteManagementSection: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Aucun</SelectItem>
-                  <SelectItem value="one_big_bag">1 Big-bag</SelectItem>
-                  <SelectItem value="two_big_bags">2 Big-bags</SelectItem>
-                  <SelectItem value="half_dumpster">1/2 Benne</SelectItem>
-                  <SelectItem value="one_dumpster">1 Benne</SelectItem>
+                  
+                  <SelectItem value="big_bag_1">1 Big-bag</SelectItem>
+                  <SelectItem value="big_bag_2">2 Big-bags</SelectItem>
+                  <SelectItem value="big_bag_3">3 Big-bags</SelectItem>
+                  <SelectItem value="big_bag_4">4 Big-bags</SelectItem>
+                  <SelectItem value="big_bag_5">5 Big-bags</SelectItem>
+                  
+                  <SelectItem value="half_dumpster_1">1 × 1/2 Benne</SelectItem>
+                  <SelectItem value="half_dumpster_2">2 × 1/2 Bennes</SelectItem>
+                  <SelectItem value="half_dumpster_3">3 × 1/2 Bennes</SelectItem>
+                  
+                  <SelectItem value="dumpster_1">1 Benne</SelectItem>
+                  <SelectItem value="dumpster_2">2 Bennes</SelectItem>
+                  <SelectItem value="dumpster_3">3 Bennes</SelectItem>
                 </SelectContent>
               </Select>
             </FormControl>

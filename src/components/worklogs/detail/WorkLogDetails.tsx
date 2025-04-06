@@ -12,10 +12,23 @@ const WorkLogDetails: React.FC = () => {
   // Fonction pour convertir le code de gestion des déchets en texte lisible
   const getWasteManagementText = (wasteCode?: string) => {
     switch (wasteCode) {
-      case 'one_big_bag': return '1 Big-bag';
-      case 'two_big_bags': return '2 Big-bags';
-      case 'half_dumpster': return '1/2 Benne';
-      case 'one_dumpster': return '1 Benne';
+      // Big bags
+      case 'big_bag_1': return '1 Big-bag';
+      case 'big_bag_2': return '2 Big-bags';
+      case 'big_bag_3': return '3 Big-bags';
+      case 'big_bag_4': return '4 Big-bags';
+      case 'big_bag_5': return '5 Big-bags';
+      
+      // Half dumpsters
+      case 'half_dumpster_1': return '1 × 1/2 Benne';
+      case 'half_dumpster_2': return '2 × 1/2 Bennes';
+      case 'half_dumpster_3': return '3 × 1/2 Bennes';
+      
+      // Full dumpsters
+      case 'dumpster_1': return '1 Benne';
+      case 'dumpster_2': return '2 Bennes';
+      case 'dumpster_3': return '3 Bennes';
+      
       case 'none': 
       default: return 'Aucun';
     }
