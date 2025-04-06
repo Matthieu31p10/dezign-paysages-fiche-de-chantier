@@ -19,4 +19,5 @@ export interface PDFData {
   companyLogo?: string;
   pdfOptions?: PDFOptions;
   customTasks?: CustomTask[];
+  linkedProjectId?: string; // Identifiant du projet lié à une fiche vierge
 }

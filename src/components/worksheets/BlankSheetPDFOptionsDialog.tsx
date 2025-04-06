@@ -7,10 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PDFOptions } from '@/utils/pdf/types';
 import CompanyLogo from '@/components/ui/company-logo';
-import { FileText, Building, Users, ClipboardList, Droplets, FileText as Notes, Clock } from 'lucide-react';
-import { WorkLog } from '@/types/models';
+import { FileText, Building, Users, ClipboardList, Droplets, FileText as Notes, Clock, LinkIcon } from 'lucide-react';
+import { WorkLog, ProjectInfo } from '@/types/models';
 import { generatePDF, PDFData } from '@/utils/pdf';
 import { toast } from 'sonner';
+import { useApp } from '@/context/AppContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BlankSheetPDFOptionsDialogProps {
   open: boolean;
@@ -23,6 +25,7 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
   onOpenChange,
   workLog 
 }) => {
+  const { getProjectById, projectInfos } = useApp();
   const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
     includeContactInfo: true,
     includeCompanyInfo: true,
@@ -32,6 +35,11 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
     includeNotes: true,
     includeTimeTracking: true
   });
+  
+  const [linkedProjectId, setLinkedProjectId] = useState<string>('');
+  
+  // Filtrer uniquement les projets actifs
+  const activeProjects = projectInfos.filter(project => !project.isArchived);
   
   const handleOptionChange = (option: keyof PDFOptions) => {
     setPdfOptions(prev => ({
@@ -47,10 +55,15 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
     }
 
     try {
+      // Récupérer le projet associé si un identifiant est défini
+      const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : undefined;
+      
       // Create proper PDFData object with the workLog and options
       const pdfData: PDFData = {
         workLog,
-        pdfOptions
+        pdfOptions,
+        project: linkedProject,
+        linkedProjectId: linkedProjectId || undefined
       };
       
       await generatePDF(pdfData);
@@ -76,12 +89,38 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
         </DialogHeader>
         
         <Tabs defaultValue="content">
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="content">Contenu</TabsTrigger>
             <TabsTrigger value="preview">Aperçu</TabsTrigger>
           </TabsList>
           
           <TabsContent value="content" className="space-y-4 py-4">
+            <div className="border rounded-md p-3 mb-4">
+              <div className="flex items-center mb-3">
+                <LinkIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                <h3 className="font-medium">Associer à un projet existant</h3>
+              </div>
+              
+              <Select
+                value={linkedProjectId}
+                onValueChange={setLinkedProjectId}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choisir un projet (optionnel)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Aucun projet associé</SelectItem>
+                  {activeProjects.map(project => (
+                    <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <p className="text-xs text-muted-foreground mt-2">
+                Associer cette fiche vierge à un projet permettra d'inclure les informations du chantier dans le PDF
+              </p>
+            </div>
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center space-x-2">
                 <Checkbox 
@@ -211,6 +250,11 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
                     <p className="text-sm text-gray-600">
                       {workLog ? new Date(workLog.date).toLocaleDateString('fr-FR') : 'Date non spécifiée'}
                     </p>
+                    {linkedProjectId && (
+                      <p className="text-xs text-primary mt-1">
+                        Associée au projet: {getProjectById(linkedProjectId)?.name}
+                      </p>
+                    )}
                   </div>
                 </div>
                 

@@ -6,7 +6,7 @@ import { useWorkLogs } from '@/context/WorkLogsContext';
 import { formatDate } from '@/utils/helpers';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer } from 'lucide-react';
+import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -23,6 +23,8 @@ import { generatePDF, PDFData } from '@/utils/pdf';
 import { toast } from 'sonner';
 import BlankSheetPDFOptionsDialog from './BlankSheetPDFOptionsDialog';
 import { WorkLog } from '@/types/models';
+import { useApp } from '@/context/AppContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BlankWorkSheetListProps {
   onCreateNew: () => void;
@@ -31,6 +33,7 @@ interface BlankWorkSheetListProps {
 const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) => {
   const navigate = useNavigate();
   const { workLogs } = useWorkLogs();
+  const { getProjectById, projectInfos } = useApp();
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -62,11 +65,17 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
     const address = sheet.notes ? extractAddress(sheet.notes) : '';
     const notes = sheet.notes || '';
     
+    // Vérifier si la fiche est liée à un projet
+    const linkedProjectId = extractLinkedProjectId(sheet.notes || '');
+    const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : null;
+    const projectName = linkedProject ? linkedProject.name.toLowerCase() : '';
+    
     return (
       clientName.toLowerCase().includes(searchLower) ||
       address.toLowerCase().includes(searchLower) ||
       formatDate(sheet.date).includes(searchLower) ||
       notes.toLowerCase().includes(searchLower) ||
+      projectName.includes(searchLower) ||
       sheet.personnel.some(p => p.toLowerCase().includes(searchLower))
     );
   });
@@ -108,7 +117,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
         <div className="relative lg:col-span-2">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher par client, adresse, personnel, notes..."
+            placeholder="Rechercher par client, projet associé, adresse, personnel, notes..."
             className="pl-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -182,6 +191,10 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
             const address = extractAddress(sheet.notes || '');
             const description = extractDescription(sheet.notes || '');
             
+            // Vérifier si la fiche est liée à un projet
+            const linkedProjectId = extractLinkedProjectId(sheet.notes || '');
+            const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : null;
+            
             return (
               <Card key={sheet.id} className="hover:border-primary/40 transition-all border-l-4 border-l-transparent hover:border-l-primary">
                 <CardContent className="p-4">
@@ -194,6 +207,13 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
                           {formatDate(sheet.date)}
                         </Badge>
                       </div>
+                      
+                      {linkedProject && (
+                        <div className="flex items-center text-sm text-primary mb-1">
+                          <LinkIcon className="h-3 w-3 mr-1" />
+                          <span>Associée au projet: {linkedProject.name}</span>
+                        </div>
+                      )}
                       
                       <p className="text-sm text-muted-foreground mb-2">
                         {address || "Adresse non spécifiée"}
@@ -287,6 +307,12 @@ const extractAddress = (notes: string): string => {
 const extractDescription = (notes: string): string => {
   const descMatch = notes.match(/DESCRIPTION DES TRAVAUX:([^]*?)(?=\n\n|\n$|$)/i);
   return descMatch ? descMatch[1].trim() : '';
+};
+
+// Nouvelle fonction pour extraire l'ID du projet lié
+const extractLinkedProjectId = (notes: string): string | null => {
+  const projectMatch = notes.match(/PROJET_LIE\s*:\s*([^\n]+)/i);
+  return projectMatch ? projectMatch[1].trim() : null;
 };
 
 export default BlankWorkSheetList;

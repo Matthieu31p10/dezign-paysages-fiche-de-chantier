@@ -3,18 +3,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, ArrowLeft, Plus, List, FileIcon, Download } from 'lucide-react';
+import { FilePlus, ArrowLeft, Plus, List, FileIcon, Download, FileBarChart } from 'lucide-react';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useProjects } from '@/context/ProjectsContext';
 
 const BlankWorkSheets = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { workLogs } = useWorkLogs();
+  const { getActiveProjects } = useProjects();
   
   // Détecter le paramètre tab dans l'URL
   const queryParams = new URLSearchParams(location.search);
@@ -23,6 +25,9 @@ const BlankWorkSheets = () => {
   
   // Compter les fiches vierges
   const blankWorkSheetsCount = workLogs.filter(log => log.projectId.startsWith('blank-')).length;
+  
+  // Récupérer la liste des projets actifs
+  const activeProjects = getActiveProjects();
   
   // Mettre à jour l'URL lorsque l'onglet change
   useEffect(() => {
@@ -40,7 +45,7 @@ const BlankWorkSheets = () => {
         <div>
           <h1 className="text-2xl font-semibold">Fiches Vierges</h1>
           <p className="text-muted-foreground">
-            Créez et consultez des fiches pour des travaux ponctuels sans lien avec un chantier existant
+            Créez et consultez des fiches pour des travaux ponctuels sans lien avec un chantier existant, ou des travaux complémentaires sur des chantiers existants
           </p>
         </div>
         
@@ -52,6 +57,14 @@ const BlankWorkSheets = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voir les fiches de suivi
           </Button>
+          
+          <Button
+            onClick={() => navigate('/projects')}
+            variant="outline"
+          >
+            <FileBarChart className="w-4 h-4 mr-2" />
+            Voir les projets
+          </Button>
         </div>
       </div>
 
@@ -61,6 +74,11 @@ const BlankWorkSheets = () => {
           <AlertTitle>Information</AlertTitle>
           <AlertDescription>
             Vous avez {blankWorkSheetsCount} fiche{blankWorkSheetsCount > 1 ? 's' : ''} vierge{blankWorkSheetsCount > 1 ? 's' : ''}. Ces fiches sont automatiquement incluses dans vos rapports statistiques mensuels.
+            {activeProjects.length > 0 && (
+              <span className="block mt-1">
+                Vous pouvez désormais associer vos fiches vierges à des projets existants lors de l'export en PDF.
+              </span>
+            )}
           </AlertDescription>
         </Alert>
       )}
@@ -89,7 +107,8 @@ const BlankWorkSheets = () => {
                 Nouvelle fiche vierge
               </CardTitle>
               <CardDescription>
-                Créez une nouvelle fiche pour un travail ponctuel sans lien avec un projet existant
+                Créez une nouvelle fiche pour un travail ponctuel sans lien avec un projet existant,
+                ou pour des travaux complémentaires sur un chantier existant
               </CardDescription>
             </CardHeader>
             <CardContent>
