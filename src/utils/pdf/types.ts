@@ -18,5 +18,5 @@ export interface PDFData {
   companyInfo?: CompanyInfo;
   companyLogo?: string;
   pdfOptions?: PDFOptions;
-  customTasks?: CustomTask[]; // Added this field
+  customTasks?: CustomTask[];
 }

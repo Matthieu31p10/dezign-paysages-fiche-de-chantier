@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { getCurrentYear, filterWorkLogsByYear, getYearsFromWorkLogs } from '@/utils/helpers';
 import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { generatePDF } from '@/utils/pdf';
+import { generatePDF, PDFData } from '@/utils/pdf';
 import { toast } from 'sonner';
 
 interface BlankWorkSheetListProps {
@@ -78,7 +78,21 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
     try {
       const sheet = workLogs.find(log => log.id === sheetId);
       if (sheet) {
-        await generatePDF(sheet);
+        // Create proper PDFData object with the workLog
+        const pdfData: PDFData = {
+          workLog: sheet,
+          pdfOptions: {
+            includeContactInfo: true,
+            includeCompanyInfo: true,
+            includePersonnel: true,
+            includeTasks: true,
+            includeWatering: true,
+            includeNotes: true,
+            includeTimeTracking: true
+          }
+        };
+        
+        await generatePDF(pdfData);
         toast.success("Fiche exportée en PDF avec succès");
       }
     } catch (error) {
