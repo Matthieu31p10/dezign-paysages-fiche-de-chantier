@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import TimeTrackingSection from './TimeTrackingSection';
 import TasksSection from './TasksSection';
 import WasteManagementSection from './WasteManagementSection';
+import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 import { useEffect } from 'react';
 import { calculateTotalHours } from '@/utils/time';
 
@@ -29,7 +30,7 @@ interface BlankWorkSheetFormProps {
 
 const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) => {
   const { teams, settings, addWorkLog } = useApp();
-  const [teamFilter, setTeamFilter] = useState("");
+  const [teamFilter, setTeamFilter] = useState("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<BlankWorkSheetValues>({
@@ -46,7 +47,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       totalHours: 7.5,
       watering: 'none',
       wasteManagement: 'none',
-      teamFilter: '',
+      teamFilter: 'all',
     }
   });
   
@@ -290,33 +291,15 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
               <FormField
                 control={form.control}
                 name="personnel"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Personnel</FormLabel>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {settings.personnel
-                        ?.filter(p => p.active && (!teamFilter || teams.find(t => t.id === teamFilter)?.name === p.position))
-                        .map((person) => (
-                          <div
-                            key={person.id}
-                            className={cn(
-                              "border rounded-full px-3 py-1 cursor-pointer text-sm transition-colors",
-                              form.watch('personnel')?.includes(person.id)
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-background hover:bg-muted"
-                            )}
-                            onClick={() => {
-                              const current = form.watch('personnel') || [];
-                              const updated = current.includes(person.id)
-                                ? current.filter((id) => id !== person.id)
-                                : [...current, person.id];
-                              handlePersonnelChange(updated);
-                            }}
-                          >
-                            {person.name}
-                          </div>
-                        ))}
-                    </div>
+                    <FormControl>
+                      <PersonnelDialog 
+                        selectedPersonnel={field.value} 
+                        onChange={handlePersonnelChange}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
