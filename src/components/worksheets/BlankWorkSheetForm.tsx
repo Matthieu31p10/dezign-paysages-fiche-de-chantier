@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -149,7 +148,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       if (data.consumables && data.consumables.length > 0) {
         notesWithProjectInfo += `\nCONSOMMATIONS:\n`;
         data.consumables.forEach((item, index) => {
-          notesWithProjectInfo += `${index + 1}. ${item.product} (${item.supplier || 'N/A'}): ${item.quantity} ${item.unit} x ${item.unitPrice.toFixed(2)} € = ${item.totalPrice.toFixed(2)} €\n`;
+          // Vérifier que les champs obligatoires sont remplis avant d'ajouter
+          if (item.product && item.unit) {
+            notesWithProjectInfo += `${index + 1}. ${item.product} (${item.supplier || 'N/A'}): ${item.quantity} ${item.unit} x ${item.unitPrice.toFixed(2)} € = ${item.totalPrice.toFixed(2)} €\n`;
+          }
         });
         
         // Calculer et ajouter le total des consommables
@@ -204,7 +206,9 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
           tasksProgress: data.tasksProgress
         },
         notes: notesWithProjectInfo,
-        wasteManagement: data.wasteManagement
+        wasteManagement: data.wasteManagement,
+        // Make sure consumables are included in the worklog data
+        consumables: data.consumables?.filter(c => c.product && c.unit) || []
       };
       
       addWorkLog(workLogData);

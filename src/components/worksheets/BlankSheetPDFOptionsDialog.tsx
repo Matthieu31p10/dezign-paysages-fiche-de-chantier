@@ -36,6 +36,7 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
   const [includeTasks, setIncludeTasks] = useState(true);
   const [includeWasteManagement, setIncludeWasteManagement] = useState(true);
   const [includeNotes, setIncludeNotes] = useState(true);
+  const [includeConsumables, setIncludeConsumables] = useState(true);
   
   // Option pour le projet lié
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -70,6 +71,7 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
         includeTasks,
         includeWasteManagement,
         includeNotes,
+        includeConsumables,
       };
       
       // Récupération du projet lié (si sélectionné)
@@ -182,11 +184,20 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
               
               <div className="flex items-center space-x-2">
                 <Checkbox 
+                  id="consumables" 
+                  checked={includeConsumables} 
+                  onCheckedChange={(checked) => setIncludeConsumables(!!checked)} 
+                />
+                <Label htmlFor="consumables" className="font-normal">Consommables</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
                   id="waste-management" 
                   checked={includeWasteManagement} 
                   onCheckedChange={(checked) => setIncludeWasteManagement(!!checked)} 
                 />
-                <Label htmlFor="waste-management" className="font-normal">Information de gestion des déchets</Label>
+                <Label htmlFor="waste-management" className="font-normal">Gestion des déchets</Label>
               </div>
               
               <div className="flex items-center space-x-2">
