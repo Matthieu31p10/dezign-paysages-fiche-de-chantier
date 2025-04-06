@@ -40,13 +40,13 @@ export const drawTasksSection = (pdf: any, data: PDFData, margin: number, yPos: 
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'bold');
           
-          // Limiter la longueur du texte pour éviter les débordements
-          const taskName = sanitizeText(taskId);
+          // Utiliser le nom de la tâche au lieu de l'ID
+          const taskName = data.customTasks?.find(task => task.id === taskId)?.name || taskId;
           const shortenedName = taskName.length > 15 ? 
             taskName.substring(0, 15) + "..." : 
             taskName;
             
-          pdf.text(shortenedName, colX, yPos);
+          pdf.text(sanitizeText(shortenedName), colX, yPos);
           
           // Icône de statut
           if (done) {

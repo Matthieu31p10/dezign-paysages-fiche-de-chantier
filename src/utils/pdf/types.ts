@@ -1,5 +1,5 @@
 
-import { ProjectInfo, WorkLog, CompanyInfo } from '@/types/models';
+import { ProjectInfo, WorkLog, CompanyInfo, CustomTask } from '@/types/models';
 
 export interface PDFOptions {
   includeContactInfo?: boolean;
@@ -18,4 +18,5 @@ export interface PDFData {
   companyInfo?: CompanyInfo;
   companyLogo?: string;
   pdfOptions?: PDFOptions;
+  customTasks?: CustomTask[]; // Added this field
 }
