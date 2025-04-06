@@ -17,9 +17,11 @@ import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import TimeTrackingSection from '../worklogs/form/TimeTrackingSection';
-import TasksSection from '../worklogs/form/TasksSection';
-import WasteManagementSection from '../worklogs/form/WasteManagementSection';
+import TimeTrackingSection from './TimeTrackingSection';
+import TasksSection from './TasksSection';
+import WasteManagementSection from './WasteManagementSection';
+import { useEffect } from 'react';
+import { calculateTotalHours } from '@/utils/time';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -47,6 +49,31 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
       teamFilter: '',
     }
   });
+  
+  // Effect to calculate total hours based on time inputs
+  useEffect(() => {
+    const departureTime = form.watch("departure");
+    const arrivalTime = form.watch("arrival");
+    const endTime = form.watch("end");
+    const breakTimeValue = form.watch("breakTime");
+    const selectedPersonnel = form.watch("personnel");
+    
+    if (departureTime && arrivalTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
+      try {
+        const calculatedTotalHours = calculateTotalHours(
+          departureTime,
+          arrivalTime,
+          endTime,
+          breakTimeValue,
+          selectedPersonnel.length
+        );
+        
+        form.setValue('totalHours', Number(calculatedTotalHours));
+      } catch (error) {
+        console.error("Error calculating total hours:", error);
+      }
+    }
+  }, [form.watch("departure"), form.watch("arrival"), form.watch("end"), form.watch("breakTime"), form.watch("personnel").length, form]);
   
   const handleSubmit = async (data: BlankWorkSheetValues) => {
     try {
