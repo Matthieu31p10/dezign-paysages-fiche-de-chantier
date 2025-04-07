@@ -5,8 +5,6 @@ import LogoSettings from '@/components/settings/LogoSettings';
 import UserList from '@/components/settings/UserList';
 import LoginSettings from '@/components/settings/LoginSettings';
 import AccessControl from '@/components/settings/AccessControl';
-import AppearanceSettings from '@/components/settings/AppearanceSettings';
-import { Palette, Users, Lock, Image, LogIn } from 'lucide-react';
 
 const Settings = () => {
   const { canUserAccess } = useApp();
@@ -22,33 +20,13 @@ const Settings = () => {
         </p>
       </div>
       
-      <Tabs defaultValue="appearance" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="appearance" className="flex items-center">
-            <Palette className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Apparence</span>
-          </TabsTrigger>
-          <TabsTrigger value="logo" className="flex items-center">
-            <Image className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Logo</span>
-          </TabsTrigger>
-          <TabsTrigger value="login" className="flex items-center">
-            <LogIn className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Connexion</span>
-          </TabsTrigger>
-          <TabsTrigger value="users" disabled={!isAdmin} className="flex items-center">
-            <Users className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Utilisateurs</span>
-          </TabsTrigger>
-          <TabsTrigger value="access" disabled={!isManager} className="flex items-center">
-            <Lock className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Accès</span>
-          </TabsTrigger>
+      <Tabs defaultValue="logo" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="logo">Logo</TabsTrigger>
+          <TabsTrigger value="login">Connexion</TabsTrigger>
+          <TabsTrigger value="users" disabled={!isAdmin}>Utilisateurs</TabsTrigger>
+          <TabsTrigger value="access" disabled={!isManager}>Accès</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="appearance" className="space-y-4 pt-4">
-          <AppearanceSettings />
-        </TabsContent>
         
         <TabsContent value="logo" className="space-y-4 pt-4">
           <LogoSettings />
