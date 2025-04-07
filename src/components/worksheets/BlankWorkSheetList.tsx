@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkLog } from '@/types/models';
@@ -25,7 +24,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
-  // Use custom hook for filtering
   const {
     blankWorkSheets,
     availableYears,
@@ -41,7 +39,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
     clearFilters
   } = useBlankSheetFilters(workLogs, getProjectById);
   
-  // Show empty state if no worksheets exist
   if (blankWorkSheets.length === 0) {
     return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
   }
@@ -60,7 +57,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
     navigate(`/worklogs/${sheetId}?print=true`);
   };
 
-  // Get linked project for a sheet
   const getLinkedProject = (sheet: WorkLog) => {
     const linkedProjectId = extractLinkedProjectId(sheet.notes || '');
     return linkedProjectId ? getProjectById(linkedProjectId) : null;
@@ -68,7 +64,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   
   return (
     <div className="space-y-6">
-      {/* Search and filter components */}
       <BlankSheetFilters
         search={search}
         setSearch={setSearch}
