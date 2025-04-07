@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, FileText } from 'lucide-react';
 import BlankSheetItem from './list/BlankSheetItem';
 import { useProjects } from '@/context/ProjectsContext';
+import { ProjectInfo } from '@/types/models';
 
 interface BlankWorkSheetListProps {
   sheets?: WorkLog[];
@@ -42,15 +43,12 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
         sheet.personnel.some(person => person.toLowerCase().includes(search.toLowerCase()))
       );
       
-      // Filter by status
-      const matchesStatus = filterStatus === 'all' || sheet.status === filterStatus;
-      
       // Filter by invoiced status
       const matchesInvoiced = filterInvoiced === 'all' || 
         (filterInvoiced === 'invoiced' && sheet.invoiced) ||
         (filterInvoiced === 'not-invoiced' && !sheet.invoiced);
       
-      return matchesSearch && matchesStatus && matchesInvoiced;
+      return matchesSearch && matchesInvoiced;
     });
   };
   
@@ -86,21 +84,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
         </div>
         
         <Select
-          value={filterStatus}
-          onValueChange={setFilterStatus}
-        >
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Statut" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="draft">Brouillon</SelectItem>
-            <SelectItem value="completed">Complété</SelectItem>
-            <SelectItem value="approved">Approuvé</SelectItem>
-          </SelectContent>
-        </Select>
-        
-        <Select
           value={filterInvoiced}
           onValueChange={setFilterInvoiced}
         >
@@ -133,7 +116,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
             <BlankSheetItem
               key={sheet.id}
               sheet={sheet}
-              onSelect={handleSelectSheet}
               linkedProject={sheet.notes ? getProjectById(sheet.notes) : null}
               onEdit={handleEdit}
               onExportPDF={handleExportPDF}
