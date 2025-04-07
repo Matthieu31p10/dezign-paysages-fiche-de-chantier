@@ -6,14 +6,16 @@ import { Loader2 } from 'lucide-react';
 interface FormActionsProps {
   isSubmitting: boolean;
   handleCancel: () => void;
+  isEditing?: boolean;
 }
 
-const FormActions: React.FC<FormActionsProps> = ({
-  isSubmitting,
-  handleCancel
+const FormActions: React.FC<FormActionsProps> = ({ 
+  isSubmitting, 
+  handleCancel,
+  isEditing = false
 }) => {
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-end space-x-2">
       <Button 
         type="button" 
         variant="outline" 
@@ -22,17 +24,15 @@ const FormActions: React.FC<FormActionsProps> = ({
       >
         Annuler
       </Button>
-      
-      <Button 
-        type="submit"
-        disabled={isSubmitting}
-        className="min-w-32"
-      >
-        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isSubmitting 
-          ? "Création..." 
-          : "Créer la fiche"
-        }
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {isEditing ? 'Mise à jour...' : 'Création...'}
+          </>
+        ) : (
+          isEditing ? 'Mettre à jour' : 'Créer la fiche'
+        )}
       </Button>
     </div>
   );
