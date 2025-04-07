@@ -1,14 +1,15 @@
-
 import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { UserRole } from '@/types/models';
+import { ReactElement } from 'react';
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole;
   requiredModule?: string;
+  element?: ReactElement;
 }
 
-const ProtectedRoute = ({ requiredRole = 'user', requiredModule }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: ProtectedRouteProps) => {
   const { auth, canUserAccess } = useApp();
   const location = useLocation();
 
@@ -36,7 +37,12 @@ const ProtectedRoute = ({ requiredRole = 'user', requiredModule }: ProtectedRout
     }
   }
 
-  // If the user is authenticated and has the required role and module access, render the child routes
+  // If an element is provided, return it
+  if (element) {
+    return element;
+  }
+
+  // Otherwise, render the child routes
   return <Outlet />;
 };
 
