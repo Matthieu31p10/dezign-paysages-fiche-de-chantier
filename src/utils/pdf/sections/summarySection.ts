@@ -21,7 +21,7 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   const laborCost = totalHours * hourlyRate;
   
   const consumables = data.consumables || [];
-  const consumablesCost = consumables.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  const consumablesCost = consumables.reduce((sum, item) => sum + item.totalPrice, 0);
   
   const totalHT = laborCost + consumablesCost;
   

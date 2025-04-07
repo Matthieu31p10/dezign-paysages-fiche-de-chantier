@@ -7,45 +7,37 @@ import { calculateTotalHours } from '@/utils/time';
 import { useApp } from '@/context/AppContext';
 import { useProjectLink } from './useProjectLinkHook';
 import { submitWorksheetForm } from './submitWorksheetForm';
-import { toast } from 'sonner';
 
-export const useBlankWorksheetForm = (
-  onSuccess?: () => void, 
-  initialValues?: Partial<BlankWorkSheetValues>,
-  workLogId?: string
-) => {
-  const { addWorkLog, updateWorkLog } = useApp();
+export const useBlankWorksheetForm = (onSuccess?: () => void) => {
+  const { addWorkLog } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Initialize the form with default values or initialValues if provided
+  // Initialize the form
   const form = useForm<BlankWorkSheetValues>({
     resolver: zodResolver(blankWorkSheetSchema),
     defaultValues: {
-      clientName: initialValues?.clientName || '',
-      address: initialValues?.address || '',
-      contactPhone: initialValues?.contactPhone || '',
-      contactEmail: initialValues?.contactEmail || '',
-      date: initialValues?.date || new Date(),
-      workDescription: initialValues?.workDescription || '',
-      personnel: initialValues?.personnel || [],
-      departure: initialValues?.departure || '08:00',
-      arrival: initialValues?.arrival || '08:30',
-      end: initialValues?.end || '16:30',
-      breakTime: initialValues?.breakTime || '00:30',
-      totalHours: initialValues?.totalHours || 7.5,
-      hourlyRate: initialValues?.hourlyRate || 0,
-      wasteManagement: initialValues?.wasteManagement || 'none',
-      teamFilter: initialValues?.teamFilter || 'all',
-      linkedProjectId: initialValues?.linkedProjectId || '',
-      notes: initialValues?.notes || '',
-      consumables: initialValues?.consumables || [],
-      vatRate: initialValues?.vatRate || "20",
-      signedQuote: initialValues?.signedQuote || false,
+      clientName: '',
+      address: '',
+      date: new Date(),
+      personnel: [],
+      departure: '08:00',
+      arrival: '08:30',
+      end: '16:30',
+      breakTime: '00:30',
+      totalHours: 7.5,
+      hourlyRate: 0,
+      wasteManagement: 'none',
+      teamFilter: 'all',
+      linkedProjectId: '',
+      workDescription: '',
+      consumables: [],
+      vatRate: "20",
+      signedQuote: false,
     }
   });
   
-  // Project link functionality with initial value if editing
-  const projectLinkHook = useProjectLink(form, initialValues?.linkedProjectId);
+  // Project link functionality
+  const projectLinkHook = useProjectLink(form);
   
   // Update total hours when time values change
   useEffect(() => {
@@ -81,21 +73,12 @@ export const useBlankWorksheetForm = (
   
   // Handle form submission
   const handleSubmit = async (data: BlankWorkSheetValues) => {
-    try {
-      setIsSubmitting(true);
-      await submitWorksheetForm({
-        data,
-        addWorkLog,
-        updateWorkLog,
-        workLogId,
-        onSuccess,
-        setIsSubmitting
-      });
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error('Une erreur est survenue lors de la soumission du formulaire');
-      setIsSubmitting(false);
-    }
+    await submitWorksheetForm({
+      data,
+      addWorkLog,
+      onSuccess,
+      setIsSubmitting
+    });
   };
   
   // Reset form to initial state
@@ -103,10 +86,7 @@ export const useBlankWorksheetForm = (
     form.reset({
       clientName: '',
       address: '',
-      contactPhone: '',
-      contactEmail: '',
       date: new Date(),
-      workDescription: '',
       personnel: [],
       departure: '08:00',
       arrival: '08:30',
@@ -117,7 +97,7 @@ export const useBlankWorksheetForm = (
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
-      notes: '',
+      workDescription: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,

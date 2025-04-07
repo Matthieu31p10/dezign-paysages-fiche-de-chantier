@@ -1,72 +1,60 @@
 
 import React, { createContext, useContext } from 'react';
-import { useTeams } from './TeamsContext';
 import { useProjects } from './ProjectsContext';
 import { useWorkLogs } from './WorkLogsContext';
+import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
+import { useAuth } from './AuthContext';
+import { 
+  ProjectsContextType, 
+  WorkLogsContextType, 
+  TeamsContextType, 
+  SettingsContextType, 
+  AuthContextType 
+} from './types';
 
-// Combinaison des contextes pour faciliter l'accès
-const AppContext = createContext<any>(undefined);
+// Create a type that combines all the context types
+type AppContextType = ProjectsContextType & 
+  WorkLogsContextType & 
+  TeamsContextType & 
+  SettingsContextType & 
+  AuthContextType & {
+    // Add any additional app-wide methods or state here
+  };
 
+// Create the context
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+// Create a provider component
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const teamsContext = useTeams();
-  const projectsContext = useProjects();
-  const workLogsContext = useWorkLogs();
-  const settingsContext = useSettings();
+  const projects = useProjects();
+  const workLogs = useWorkLogs();
+  const teams = useTeams();
+  const settings = useSettings();
+  const auth = useAuth();
 
-  // Fonction pour obtenir les infos d'un projet par son ID
-  const getProjectById = (projectId: string) => {
-    const project = projectsContext.projectInfos.find(
-      (project) => project.id === projectId
-    );
-    return project || null;
+  // Combine all contexts
+  const value: AppContextType = {
+    // Projects context
+    ...projects,
+    
+    // WorkLogs context
+    ...workLogs,
+    
+    // Teams context
+    ...teams,
+    
+    // Settings context
+    ...settings,
+    
+    // Auth context
+    ...auth,
   };
 
-  // Fonction pour obtenir le nom d'un projet par son ID
-  const getProjectNameById = (projectId: string): string => {
-    const project = getProjectById(projectId);
-    return project ? project.name : 'Projet inconnu';
-  };
-
-  return (
-    <AppContext.Provider
-      value={{
-        // Teams context
-        teams: teamsContext.teams,
-        addTeam: teamsContext.addTeam,
-        updateTeam: teamsContext.updateTeam,
-        deleteTeam: teamsContext.deleteTeam,
-        
-        // Projects context
-        projects: projectsContext.projectInfos,
-        addProject: projectsContext.addProjectInfo,
-        updateProject: projectsContext.updateProjectInfo,
-        deleteProject: projectsContext.deleteProjectInfo,
-        getActiveProjects: projectsContext.getActiveProjects,
-        getArchivedProjects: projectsContext.getArchivedProjects,
-        
-        // WorkLogs context
-        workLogs: workLogsContext.workLogs,
-        addWorkLog: workLogsContext.addWorkLog,
-        updateWorkLog: workLogsContext.updateWorkLog,
-        deleteWorkLog: workLogsContext.deleteWorkLog,
-        getWorkLogsByProjectId: workLogsContext.getWorkLogsByProjectId,
-        
-        // Settings context
-        settings: settingsContext.settings,
-        updateSettings: settingsContext.updateSettings,
-        
-        // Helper functions
-        getProjectById,
-        getProjectNameById,
-        projectInfos: projectsContext.projectInfos,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
+// Create a custom hook for using the context
 export const useApp = () => {
   const context = useContext(AppContext);
   if (context === undefined) {
@@ -74,3 +62,6 @@ export const useApp = () => {
   }
   return context;
 };
+
+// Export for backward compatibility
+export { AppContext };
