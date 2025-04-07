@@ -5,6 +5,7 @@ import { useWorkLogs } from './WorkLogsContext';
 import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
 import { useAuth } from './AuthContext';
+import { usePreferences } from './PreferencesContext';
 import { 
   ProjectsContextType, 
   WorkLogsContextType, 
@@ -34,6 +35,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const teams = useTeams();
   const settings = useSettings();
   const auth = useAuth();
+  
+  // We don't include preferences here as it would create a circular dependency
+  // Use usePreferences() directly in components that need it
 
   // Combine all contexts
   const value: AppContextType = {
