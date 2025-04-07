@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,13 +27,13 @@ const ConsumablesSection: React.FC = () => {
       try {
         const parsedItems = JSON.parse(savedItems);
         // Ensure all items conform to Consumable type
-        const typedItems = parsedItems.map((item: any) => ({
+        const typedItems = parsedItems.map((item: any): Consumable => ({
           supplier: item.supplier || '',
-          product: item.product,
-          unit: item.unit,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice
+          product: item.product || '',
+          unit: item.unit || '',
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          totalPrice: Number(item.totalPrice) || 0
         }));
         setSavedConsumables(typedItems);
       } catch (e) {
@@ -57,6 +58,12 @@ const ConsumablesSection: React.FC = () => {
   };
 
   const handleAddConsumable = () => {
+    // Only add if product and unit are provided
+    if (!newConsumable.product.trim() || !newConsumable.unit.trim()) {
+      toast.error("Le produit et l'unité sont requis");
+      return;
+    }
+
     // Calculate total price
     const totalPrice = newConsumable.quantity * newConsumable.unitPrice;
     const consumableToAdd: Consumable = {
@@ -89,11 +96,27 @@ const ConsumablesSection: React.FC = () => {
       return;
     }
     
-    // Ensure all consumables have required fields before saving
+    // Only save consumables that have required fields
     const validConsumables = consumables.filter(c => c.product && c.unit);
     
+    if (validConsumables.length === 0) {
+      toast.error("Aucun consommable valide à sauvegarder");
+      return;
+    }
+    
     // Add current consumables to saved consumables
-    const updatedSavedConsumables = [...savedConsumables, ...validConsumables];
+    const updatedSavedConsumables: Consumable[] = [
+      ...savedConsumables, 
+      ...validConsumables.map(c => ({
+        supplier: c.supplier || '',
+        product: c.product || '',
+        unit: c.unit || '',
+        quantity: c.quantity,
+        unitPrice: c.unitPrice,
+        totalPrice: c.totalPrice
+      }))
+    ];
+    
     setSavedConsumables(updatedSavedConsumables);
     
     // Save to localStorage
@@ -106,8 +129,8 @@ const ConsumablesSection: React.FC = () => {
   const handleLoadSavedConsumable = (consumable: Consumable) => {
     setNewConsumable({ 
       supplier: consumable.supplier || '',
-      product: consumable.product,
-      unit: consumable.unit,
+      product: consumable.product || '',
+      unit: consumable.unit || '',
       quantity: consumable.quantity,
       unitPrice: consumable.unitPrice,
       totalPrice: consumable.totalPrice

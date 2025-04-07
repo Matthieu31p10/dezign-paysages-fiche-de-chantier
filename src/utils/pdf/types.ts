@@ -24,9 +24,9 @@ export interface PDFData {
   linkedProjectId?: string; 
   hourlyRate?: number;
   consumables?: Array<{
-    supplier: string;
-    product: string;
-    unit: string;
+    supplier?: string;
+    product?: string;
+    unit?: string;
     quantity: number;
     unitPrice: number;
     totalPrice: number;

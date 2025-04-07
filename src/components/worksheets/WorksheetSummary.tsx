@@ -83,7 +83,7 @@ const WorksheetSummary: React.FC = () => {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel className="flex items-center">
+                <FormLabel className="flex items-center cursor-pointer">
                   <FileCheck className="w-4 h-4 mr-2" />
                   Devis signé
                 </FormLabel>
@@ -117,9 +117,13 @@ const WorksheetSummary: React.FC = () => {
                   <td className="py-2">TVA ({vatRate}%)</td>
                   <td className="py-2 text-right font-medium">{vatAmount.toFixed(2)} €</td>
                 </tr>
-                <tr>
+                <tr className="border-b">
                   <td className="py-2 font-semibold">TOTAL TTC</td>
                   <td className="py-2 text-right font-bold">{totalTTC.toFixed(2)} €</td>
+                </tr>
+                <tr>
+                  <td className="py-2">Devis signé</td>
+                  <td className="py-2 text-right font-medium">{signedQuote ? 'Oui' : 'Non'}</td>
                 </tr>
               </tbody>
             </table>

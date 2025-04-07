@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -54,9 +55,9 @@ export interface CustomTask {
 }
 
 export interface Consumable {
-  supplier?: string;  // Making supplier optional to match actual usage
-  product: string;
-  unit: string;
+  supplier?: string;
+  product?: string;  // Made product optional to fix type errors
+  unit?: string;     // Made unit optional for consistency
   quantity: number;
   unitPrice: number;
   totalPrice: number;
