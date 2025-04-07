@@ -1,117 +1,67 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserPreferences, defaultPreferences } from '@/types/preferences';
-import { useAuth } from './AuthContext';
 
+// Define the shape of our context
 interface PreferencesContextType {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: Partial<UserPreferences>) => void;
-  updateThemeColors: (colors: Partial<UserPreferences['colors']>) => void;
-  updateLayoutPreferences: (layout: Partial<UserPreferences['layout']>) => void;
   resetPreferences: () => void;
 }
 
+// Create the context
 const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined);
 
-// Local storage key with user ID to have per-user preferences
-const getPreferencesKey = (userId: string) => `landscaping-preferences-${userId}`;
+// Local storage key
+const PREFERENCES_STORAGE_KEY = 'landscaping-preferences';
 
-export const PreferencesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { auth } = useAuth();
+// Context provider component
+export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize state with default preferences
   const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
 
-  // Load preferences from localStorage on initial render and when user changes
+  // Load preferences from localStorage on initial render
   useEffect(() => {
-    if (auth.currentUser) {
-      try {
-        const storageKey = getPreferencesKey(auth.currentUser.id);
-        const storedPreferences = localStorage.getItem(storageKey);
-        
-        if (storedPreferences) {
-          setPreferences(JSON.parse(storedPreferences));
-        } else {
-          // If no preferences found for this user, set defaults
-          setPreferences(defaultPreferences);
-        }
-      } catch (error) {
-        console.error('Error loading preferences from localStorage:', error);
-        setPreferences(defaultPreferences);
+    try {
+      const storedPreferences = localStorage.getItem(PREFERENCES_STORAGE_KEY);
+      if (storedPreferences) {
+        const parsedPrefs = JSON.parse(storedPreferences);
+        setPreferences(parsedPrefs);
       }
-    } else {
-      // Reset to default if no user
-      setPreferences(defaultPreferences);
+    } catch (error) {
+      console.error('Error loading preferences from localStorage:', error);
     }
-  }, [auth.currentUser]);
+  }, []);
 
   // Save preferences to localStorage whenever they change
   useEffect(() => {
-    if (auth.currentUser) {
-      const storageKey = getPreferencesKey(auth.currentUser.id);
-      localStorage.setItem(storageKey, JSON.stringify(preferences));
-      
-      // Apply theme to document
-      document.documentElement.classList.toggle('dark', preferences.theme === 'dark');
-      
-      // Apply custom colors as CSS variables
-      document.documentElement.style.setProperty('--primary', preferences.colors.primary);
-      document.documentElement.style.setProperty('--secondary', preferences.colors.secondary);
-      document.documentElement.style.setProperty('--accent', preferences.colors.accent);
-      document.documentElement.style.setProperty('--background', preferences.colors.background);
-      
-      // Apply font size based on preference
-      const bodyClasses = document.body.classList;
-      bodyClasses.remove('text-sm', 'text-base', 'text-lg');
-      switch (preferences.layout.fontSize) {
-        case 'small':
-          bodyClasses.add('text-sm');
-          break;
-        case 'medium':
-          bodyClasses.add('text-base');
-          break;
-        case 'large':
-          bodyClasses.add('text-lg');
-          break;
-      }
-    }
-  }, [preferences, auth.currentUser]);
+    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
+  }, [preferences]);
 
+  // Update preferences
   const updatePreferences = (newPreferences: Partial<UserPreferences>) => {
-    setPreferences(prev => ({ ...prev, ...newPreferences }));
-  };
-
-  const updateThemeColors = (colors: Partial<UserPreferences['colors']>) => {
     setPreferences(prev => ({
       ...prev,
-      colors: { ...prev.colors, ...colors }
+      ...newPreferences,
+      // Handle nested updates for colors and layout
+      ...(newPreferences.colors && { colors: { ...prev.colors, ...newPreferences.colors } }),
+      ...(newPreferences.layout && { layout: { ...prev.layout, ...newPreferences.layout } }),
     }));
   };
 
-  const updateLayoutPreferences = (layout: Partial<UserPreferences['layout']>) => {
-    setPreferences(prev => ({
-      ...prev,
-      layout: { ...prev.layout, ...layout }
-    }));
-  };
-
+  // Reset preferences to default
   const resetPreferences = () => {
     setPreferences(defaultPreferences);
   };
 
   return (
-    <PreferencesContext.Provider
-      value={{
-        preferences,
-        updatePreferences,
-        updateThemeColors,
-        updateLayoutPreferences,
-        resetPreferences
-      }}
-    >
+    <PreferencesContext.Provider value={{ preferences, updatePreferences, resetPreferences }}>
       {children}
     </PreferencesContext.Provider>
   );
 };
 
+// Custom hook for using the preferences context
 export const usePreferences = () => {
   const context = useContext(PreferencesContext);
   if (context === undefined) {
