@@ -166,8 +166,7 @@ const WorkLogs = () => {
               ? 'Toutes les fiches de suivi'
               : `Fiches de suivi pour ${projectInfos.find(p => p.id === selectedProjectId)?.name || 'ce chantier'}`
             }
-            {selectedMonth !== 'all' && typeof selectedMonth === 'number' && 
-              ` - ${new Date(0, selectedMonth - 1).toLocaleString('fr-FR', { month: 'long' })}`}
+            {selectedMonth !== 'all' && ` - ${new Date(0, Number(selectedMonth) - 1).toLocaleString('fr-FR', { month: 'long' })}`}
             {` - ${selectedYear}`}
           </CardDescription>
         </CardHeader>
@@ -214,4 +213,3 @@ const WorkLogs = () => {
 };
 
 export default WorkLogs;
-
