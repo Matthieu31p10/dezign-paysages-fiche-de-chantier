@@ -8,6 +8,7 @@ export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: s
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [invoiceFilter, setInvoiceFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
   
   // Filter blank worksheets
   const blankWorkSheets = useMemo(() => {
@@ -27,13 +28,22 @@ export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: s
       ? filterWorkLogsByYear(blankWorkSheets, selectedYear) 
       : blankWorkSheets;
   }, [blankWorkSheets, selectedYear]);
+
+  // Apply invoice filter
+  const invoiceFilteredSheets = useMemo(() => {
+    if (invoiceFilter === 'all') return yearFilteredSheets;
+    return yearFilteredSheets.filter(sheet => {
+      if (invoiceFilter === 'invoiced') return sheet.invoiced === true;
+      return sheet.invoiced !== true;
+    });
+  }, [yearFilteredSheets, invoiceFilter]);
   
   // Apply search filter
   const filteredSheets = useMemo(() => {
-    if (!search.trim()) return yearFilteredSheets;
+    if (!search.trim()) return invoiceFilteredSheets;
     
     const searchLower = search.toLowerCase();
-    return yearFilteredSheets.filter(sheet => {
+    return invoiceFilteredSheets.filter(sheet => {
       const clientName = extractClientName(sheet.notes || '');
       const address = extractAddress(sheet.notes || '');
       const notes = sheet.notes || '';
@@ -52,7 +62,7 @@ export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: s
         sheet.personnel.some(p => p.toLowerCase().includes(searchLower))
       );
     });
-  }, [yearFilteredSheets, search, getProjectById]);
+  }, [invoiceFilteredSheets, search, getProjectById]);
   
   // Sort the filtered sheets
   const sortedSheets = useMemo(() => {
@@ -64,7 +74,7 @@ export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: s
   }, [filteredSheets, sortOrder]);
   
   // Check if any filters are active
-  const hasActiveFilters = search || selectedYear !== getCurrentYear() || sortOrder !== 'newest';
+  const hasActiveFilters = search || selectedYear !== getCurrentYear() || sortOrder !== 'newest' || invoiceFilter !== 'all';
   
   // Toggle sort order
   const toggleSortOrder = () => {
@@ -76,6 +86,7 @@ export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: s
     setSearch('');
     setSelectedYear(getCurrentYear());
     setSortOrder('newest');
+    setInvoiceFilter('all');
   };
   
   return {
@@ -86,6 +97,8 @@ export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: s
     selectedYear, 
     setSelectedYear,
     sortOrder,
+    invoiceFilter,
+    setInvoiceFilter,
     filteredSheets,
     sortedSheets,
     hasActiveFilters,

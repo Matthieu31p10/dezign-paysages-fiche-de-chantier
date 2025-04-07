@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { 
   FileBarChart, LinkIcon, Euro, FileCheck, 
-  Calendar, Tag, FileText, Printer, Download 
+  Calendar, Tag, FileText, Printer, Download,
+  CheckSquare
 } from 'lucide-react';
 import { formatDate } from '@/utils/helpers';
 import { WorkLog } from '@/types/models';
@@ -26,6 +29,8 @@ import {
   extractRegistrationTime 
 } from '@/utils/helpers';
 import { ProjectInfo } from '@/types/models';
+import { toast } from 'sonner';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 
 interface BlankSheetItemProps {
   sheet: WorkLog;
@@ -43,6 +48,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   onPrint
 }) => {
   const navigate = useNavigate();
+  const { updateWorkLog } = useWorkLogs();
   
   const clientName = extractClientName(sheet.notes || '');
   const address = extractAddress(sheet.notes || '');
@@ -51,6 +57,13 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const hourlyRate = extractHourlyRate(sheet.notes || '');
   const hasHourlyRate = hourlyRate > 0;
   const signedQuote = extractSignedQuote(sheet.notes || '');
+
+  // Toggle invoiced status
+  const handleInvoiceToggle = (checked: boolean) => {
+    const updatedWorkLog = { ...sheet, invoiced: checked };
+    updateWorkLog(updatedWorkLog);
+    toast.success(`Fiche ${checked ? 'marquée comme facturée' : 'marquée comme non facturée'}`);
+  };
 
   return (
     <Card className="hover:border-primary/40 transition-all border-l-4 border-l-transparent hover:border-l-primary">
@@ -134,6 +147,23 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
           </div>
           
           <div className="flex items-center gap-2 mt-2 md:mt-0">
+            <div className="flex items-center gap-2 mr-2">
+              <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                <Checkbox 
+                  id={`invoiced-${sheet.id}`}
+                  checked={sheet.invoiced || false}
+                  onCheckedChange={handleInvoiceToggle}
+                  className="h-4 w-4 data-[state=checked]:bg-green-600"
+                />
+                <Label 
+                  htmlFor={`invoiced-${sheet.id}`}
+                  className="text-xs cursor-pointer select-none"
+                >
+                  Facturée
+                </Label>
+              </div>
+            </div>
+
             <div className="text-right mr-2">
               <div className="text-sm font-medium">
                 {sheet.timeTracking?.totalHours.toFixed(1)} h

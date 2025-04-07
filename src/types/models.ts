@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -99,6 +98,7 @@ export interface WorkLog {
     | 'dumpster_1' | 'dumpster_2' | 'dumpster_3';
   hourlyRate?: number;
   consumables?: Consumable[];
+  invoiced?: boolean; // Added new field for invoice status
   createdAt: Date;
 }
 
