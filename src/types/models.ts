@@ -56,8 +56,8 @@ export interface CustomTask {
 
 export interface Consumable {
   supplier?: string;
-  product?: string;  // Made product optional to fix type errors
-  unit?: string;     // Made unit optional for consistency
+  product?: string;  // Optional product
+  unit?: string;     // Optional unit
   quantity: number;
   unitPrice: number;
   totalPrice: number;

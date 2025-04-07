@@ -28,8 +28,8 @@ export const blankWorkSheetSchema = z.object({
   linkedProjectId: z.string().optional(),
   consumables: z.array(z.object({
     supplier: z.string().optional(),
-    product: z.string().optional(),  // Made optional here
-    unit: z.string().optional(),     // Made optional here
+    product: z.string().optional(),
+    unit: z.string().optional(),
     quantity: z.number().positive(),
     unitPrice: z.number().nonnegative(),
     totalPrice: z.number().nonnegative()
