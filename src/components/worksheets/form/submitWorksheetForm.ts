@@ -2,8 +2,14 @@
 import { toast } from 'sonner';
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
-import { v4 as uuidv4 } from 'uuid';
 import { formatConsumableNotes } from '@/utils/helpers';
+
+// Use native crypto.randomUUID if available, otherwise provide a simple fallback
+const generateUUID = () => {
+  return typeof crypto !== 'undefined' && crypto.randomUUID 
+    ? crypto.randomUUID() 
+    : Math.random().toString(36).substring(2, 15);
+};
 
 interface SubmitWorksheetFormParams {
   data: BlankWorkSheetValues;
@@ -39,7 +45,7 @@ ${formatConsumableNotes(data.consumables)}`;
 
     // Créer l'objet workLog
     const workLogData: Partial<WorkLog> = {
-      projectId: `blank-${!existingWorkLogId ? uuidv4() : existingWorkLogId}`,
+      projectId: `blank-${!existingWorkLogId ? generateUUID() : existingWorkLogId}`,
       date: data.date,
       personnel: data.personnel,
       duration: data.totalHours,
