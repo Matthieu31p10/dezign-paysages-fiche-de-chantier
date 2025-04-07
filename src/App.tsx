@@ -42,7 +42,10 @@ function App() {
               <Route path="worklogs/new" element={<WorkLogNew />} />
               <Route path="worklogs/:id" element={<WorkLogDetail />} />
               <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
-              <Route path="blank-worksheets" element={<BlankWorkSheets />} requiredModule="blanksheets" />
+              
+              {/* Use an element wrapper for the BlankWorkSheets component to pass the requiredModule prop */}
+              <Route path="blank-worksheets" element={<ProtectedRoute requiredModule="blanksheets"><BlankWorkSheets /></ProtectedRoute>} />
+              
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
