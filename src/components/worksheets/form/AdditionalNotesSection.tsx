@@ -11,7 +11,7 @@ const AdditionalNotesSection: React.FC = () => {
   return (
     <FormField
       control={control}
-      name="notes"
+      name="workDescription"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Notes supplémentaires</FormLabel>

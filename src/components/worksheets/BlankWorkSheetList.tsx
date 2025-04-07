@@ -50,7 +50,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
 
   const blankWorkSheets = workLogs.filter(log => 
-    log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV')
+    log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'))
   );
   
   if (blankWorkSheets.length === 0) {
@@ -81,7 +81,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
       formatDate(sheet.date).includes(searchLower) ||
       notes.toLowerCase().includes(searchLower) ||
       projectName.includes(searchLower) ||
-      sheet.projectId.toLowerCase().includes(searchLower) ||
+      (sheet.projectId && sheet.projectId.toLowerCase().includes(searchLower)) ||
       sheet.personnel.some(p => p.toLowerCase().includes(searchLower))
     );
   });
@@ -217,7 +217,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
                         <FileBarChart className="h-4 w-4 text-primary" />
                         <h3 className="font-medium">{clientName || "Client non spécifié"}</h3>
                         
-                        {sheet.projectId.startsWith('DZFV') && (
+                        {sheet.projectId && sheet.projectId.startsWith('DZFV') && (
                           <Badge variant="secondary" className="ml-2 flex items-center gap-1">
                             <Tag className="h-3 w-3" />
                             {sheet.projectId}

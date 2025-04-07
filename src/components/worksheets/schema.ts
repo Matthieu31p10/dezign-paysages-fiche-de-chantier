@@ -1,6 +1,5 @@
 
 import * as z from 'zod';
-import { Consumable } from './consumables/types';
 
 // Schema pour les valeurs de la fiche vierge
 export const blankWorkSheetSchema = z.object({
@@ -39,7 +38,7 @@ export const blankWorkSheetSchema = z.object({
   ).optional(),
   vatRate: z.enum(["10", "20"]).default("20"),
   signedQuote: z.boolean().default(false),
-  quoteValue: z.number().optional(), // Nouveau champ pour la valeur du devis HT
+  quoteValue: z.number().optional(), // Champ pour la valeur du devis HT
 });
 
 export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;

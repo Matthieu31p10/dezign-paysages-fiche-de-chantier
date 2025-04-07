@@ -33,7 +33,7 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   // Information sur devis signé
   const signedQuote = data.signedQuote ? "Oui" : "Non";
   
-  // Valeur du devis et différence
+  // Valeur du devis et différence - from notes or directly from the property
   const quoteValue = data.quoteValue || 0;
   const difference = quoteValue > 0 ? (quoteValue - totalHT).toFixed(2) : null;
   

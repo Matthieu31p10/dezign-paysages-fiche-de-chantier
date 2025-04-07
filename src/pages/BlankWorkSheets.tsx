@@ -27,7 +27,9 @@ const BlankWorkSheets = () => {
   const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
   
   // Compter les fiches vierges
-  const blankWorkSheetsCount = workLogs.filter(log => log.projectId.startsWith('blank-')).length;
+  const blankWorkSheetsCount = workLogs.filter(log => 
+    log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'))
+  ).length;
   
   // Récupérer la liste des projets actifs
   const activeProjects = getActiveProjects();
