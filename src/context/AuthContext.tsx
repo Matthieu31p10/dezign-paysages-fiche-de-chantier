@@ -40,18 +40,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     try {
       const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) setAuth(JSON.parse(storedAuth));
+      if (storedAuth) {
+        const parsedAuth = JSON.parse(storedAuth);
+        // Vérifier si l'utilisateur existe toujours dans les paramètres
+        const users = settings.users || [];
+        if (parsedAuth.currentUser && users.some(u => u.id === parsedAuth.currentUser.id)) {
+          setAuth(parsedAuth);
+        } else {
+          // Si l'utilisateur n'existe plus, déconnexion
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+        }
+      }
     } catch (error) {
       console.error('Error loading auth from localStorage:', error);
+      // En cas d'erreur, supprimer les données potentiellement corrompues
+      localStorage.removeItem(AUTH_STORAGE_KEY);
     }
-  }, []);
+  }, [settings.users]);
 
   // Save auth data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+    if (auth.isAuthenticated && auth.currentUser) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+    } else if (!auth.isAuthenticated) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
   }, [auth]);
 
   const login = (username: string, password: string): boolean => {
+    if (!username || !password) {
+      toast.error('Veuillez remplir tous les champs');
+      return false;
+    }
+    
     const users = settings.users || [];
     const user = users.find(
       (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
@@ -79,6 +100,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addUser = (userData: Omit<User, 'id' | 'createdAt'>): User | null => {
+    if (!userData.username || !userData.password) {
+      toast.error('Le nom d\'utilisateur et le mot de passe sont obligatoires');
+      return null;
+    }
+    
     const users = settings.users || [];
     if (users.some((u) => u.username.toLowerCase() === userData.username.toLowerCase())) {
       toast.error('Ce nom d\'utilisateur existe déjà');
@@ -101,7 +127,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = (updatedUser: User) => {
+    if (!updatedUser.username) {
+      toast.error('Le nom d\'utilisateur est obligatoire');
+      return;
+    }
+    
     const users = settings.users || [];
+    // Vérifier si le nom d'utilisateur existe déjà pour un autre utilisateur
+    const usernameTaken = users.some(
+      (u) => u.id !== updatedUser.id && u.username.toLowerCase() === updatedUser.username.toLowerCase()
+    );
+    
+    if (usernameTaken) {
+      toast.error('Ce nom d\'utilisateur existe déjà');
+      return;
+    }
+
     const updatedUsers = users.map((user) =>
       user.id === updatedUser.id ? updatedUser : user
     );

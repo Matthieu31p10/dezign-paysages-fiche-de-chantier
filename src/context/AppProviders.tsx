@@ -9,18 +9,18 @@ import { AppProvider } from './AppContext';
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <SettingsProvider>
-      <AuthProvider>
-        <WorkLogsProvider>
-          <TeamsProvider>
-            <ProjectsProvider>
+    <AuthProvider>
+      <SettingsProvider>
+        <TeamsProvider>
+          <ProjectsProvider>
+            <WorkLogsProvider>
               <AppProvider>
                 {children}
               </AppProvider>
-            </ProjectsProvider>
-          </TeamsProvider>
-        </WorkLogsProvider>
-      </AuthProvider>
-    </SettingsProvider>
+            </WorkLogsProvider>
+          </ProjectsProvider>
+        </TeamsProvider>
+      </SettingsProvider>
+    </AuthProvider>
   );
 };

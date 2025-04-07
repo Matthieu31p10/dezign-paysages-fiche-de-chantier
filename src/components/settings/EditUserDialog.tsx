@@ -6,26 +6,47 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, UserRole } from '@/types/models';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface EditUserDialogProps {
   user: User;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onUserChange: (user: User) => void;
+  onUserChange: (user: User | null) => void;
 }
 
 const EditUserDialog = ({ user, isOpen, onOpenChange, onUserChange }: EditUserDialogProps) => {
   const { updateUser } = useApp();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState('');
+  
   const handleEditUser = () => {
-    updateUser(user);
-    onOpenChange(false);
-    onUserChange(null as any);
+    setValidationError('');
+    
+    if (!user.username.trim()) {
+      setValidationError('L\'identifiant est requis');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      updateUser(user);
+      onOpenChange(false);
+      onUserChange(null);
+      toast.success('Utilisateur mis à jour avec succès');
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Erreur lors de la mise à jour de l\'utilisateur');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Modifier un utilisateur</DialogTitle>
           <DialogDescription>
@@ -33,6 +54,10 @@ const EditUserDialog = ({ user, isOpen, onOpenChange, onUserChange }: EditUserDi
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {validationError && (
+            <div className="text-red-500 text-sm">{validationError}</div>
+          )}
+          
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="edit-username" className="text-right">
               Identifiant
@@ -136,10 +161,19 @@ const EditUserDialog = ({ user, isOpen, onOpenChange, onUserChange }: EditUserDi
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
             Annuler
           </Button>
-          <Button onClick={handleEditUser}>Enregistrer</Button>
+          <Button 
+            onClick={handleEditUser} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, User } from 'lucide-react';
+import { Lock, User, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login, settings } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,9 +22,21 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(username, password);
-    if (success) {
-      navigate(from, { replace: true });
+    setError('');
+    setIsLoading(true);
+    
+    try {
+      const success = login(username, password);
+      if (success) {
+        navigate(from, { replace: true });
+      } else {
+        setError('Identifiant ou mot de passe incorrect');
+      }
+    } catch (err) {
+      setError('Une erreur est survenue. Veuillez réessayer.');
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,7 +56,7 @@ const Login = () => {
       style={backgroundStyle}
     >
       <div className="w-full max-w-md p-4">
-        <Card className="w-full backdrop-blur-sm bg-background/90">
+        <Card className="w-full backdrop-blur-sm bg-background/90 shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center font-bold">Connexion</CardTitle>
             <CardDescription className="text-center">
@@ -49,6 +64,13 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">Identifiant</Label>
@@ -84,7 +106,13 @@ const Login = () => {
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full">Se connecter</Button>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+              >
+                {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+              </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col">
