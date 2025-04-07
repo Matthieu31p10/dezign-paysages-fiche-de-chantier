@@ -12,6 +12,7 @@ import BlankSheetFilters from './list/BlankSheetFilters';
 import BlankSheetItem from './list/BlankSheetItem';
 import NoResults from './list/NoResults';
 import { useBlankSheetFilters } from './list/useBlankSheetFilters';
+import { useTransition } from 'react';
 
 interface BlankWorkSheetListProps {
   onCreateNew: () => void;
@@ -22,6 +23,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   const navigate = useNavigate();
   const { workLogs } = useWorkLogs();
   const { getProjectById } = useApp();
+  const [isPending, startTransition] = useTransition();
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
@@ -51,8 +53,10 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   const handleExportPDF = (sheetId: string) => {
     const sheet = workLogs.find(log => log.id === sheetId);
     if (sheet) {
-      setSelectedWorkLog(sheet);
-      setIsPDFDialogOpen(true);
+      startTransition(() => {
+        setSelectedWorkLog(sheet);
+        setIsPDFDialogOpen(true);
+      });
     } else {
       toast.error("Fiche non trouvée");
     }
@@ -60,6 +64,40 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
 
   const handlePrint = (sheetId: string) => {
     navigate(`/worklogs/${sheetId}?print=true`);
+  };
+
+  const handleSearchChange = (value: string) => {
+    startTransition(() => {
+      setSearch(value);
+    });
+  };
+
+  const handleYearChange = (year: number) => {
+    startTransition(() => {
+      setSelectedYear(year);
+    });
+  };
+
+  const handleInvoiceFilterChange = (value: 'all' | 'invoiced' | 'not-invoiced') => {
+    startTransition(() => {
+      setInvoiceFilter(value);
+    });
+  };
+
+  const handleToggleSortOrder = () => {
+    startTransition(() => {
+      toggleSortOrder();
+    });
+  };
+
+  const handleClearFilters = () => {
+    startTransition(() => {
+      clearFilters();
+    });
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsPDFDialogOpen(open);
   };
 
   // Get linked project for a sheet
@@ -73,22 +111,22 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
       {/* Search and filter components */}
       <BlankSheetFilters
         search={search}
-        setSearch={setSearch}
+        setSearch={handleSearchChange}
         selectedYear={selectedYear}
-        setSelectedYear={setSelectedYear}
+        setSelectedYear={handleYearChange}
         availableYears={availableYears}
         sortOrder={sortOrder}
-        toggleSortOrder={toggleSortOrder}
+        toggleSortOrder={handleToggleSortOrder}
         onCreateNew={onCreateNew}
         filteredSheetsCount={filteredSheets.length}
-        clearFilters={clearFilters}
+        clearFilters={handleClearFilters}
         hasActiveFilters={hasActiveFilters}
         invoiceFilter={invoiceFilter}
-        setInvoiceFilter={setInvoiceFilter}
+        setInvoiceFilter={handleInvoiceFilterChange}
       />
 
       {filteredSheets.length === 0 ? (
-        <NoResults onClearFilters={clearFilters} />
+        <NoResults onClearFilters={handleClearFilters} />
       ) : (
         <div className="space-y-4">
           {sortedSheets.map(sheet => (
@@ -106,7 +144,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
 
       <BlankSheetPDFOptionsDialog
         open={isPDFDialogOpen}
-        onOpenChange={setIsPDFDialogOpen}
+        onOpenChange={handleDialogOpenChange}
         workLog={selectedWorkLog}
       />
     </div>

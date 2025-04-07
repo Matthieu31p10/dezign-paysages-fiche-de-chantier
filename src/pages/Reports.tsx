@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const Reports = () => {
   const { projectInfos, workLogs, teams } = useApp();
+  const [isPending, startTransition] = useTransition();
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [sortOption, setSortOption] = useState<string>('name');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
@@ -51,6 +52,33 @@ const Reports = () => {
   
   // Get available years for filtering
   const availableYears = getYearsFromWorkLogs(validWorkLogs);
+
+  // Handlers with startTransition
+  const handleTeamChange = (value: string) => {
+    startTransition(() => {
+      setSelectedTeam(value);
+    });
+  };
+
+  const handleSortChange = (value: string) => {
+    startTransition(() => {
+      setSortOption(value);
+    });
+  };
+
+  const handleYearChange = (value: string) => {
+    startTransition(() => {
+      setSelectedYear(parseInt(value));
+    });
+  };
+
+  const handleViewModeChange = (value: string) => {
+    if (value) {
+      startTransition(() => {
+        setViewMode(value);
+      });
+    }
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -82,7 +110,7 @@ const Reports = () => {
             <div className="w-full sm:w-auto">
               <Select
                 value={selectedTeam}
-                onValueChange={setSelectedTeam}
+                onValueChange={handleTeamChange}
               >
                 <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="Filtrer par équipe" />
@@ -104,7 +132,7 @@ const Reports = () => {
             <ToggleGroup 
               type="single" 
               value={viewMode} 
-              onValueChange={(value) => value && setViewMode(value)}
+              onValueChange={handleViewModeChange}
               className="border rounded-md hidden sm:flex"
             >
               <ToggleGroupItem value="grid" aria-label="Vue en grille">
@@ -118,7 +146,7 @@ const Reports = () => {
             <div className="w-full sm:w-auto ml-0 sm:ml-auto">
               <Select
                 value={sortOption}
-                onValueChange={setSortOption}
+                onValueChange={handleSortChange}
               >
                 <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="Trier par" />
@@ -170,7 +198,7 @@ const Reports = () => {
           <div className="flex justify-end mb-4">
             <Select
               value={selectedYear.toString()}
-              onValueChange={(value) => setSelectedYear(parseInt(value))}
+              onValueChange={handleYearChange}
             >
               <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Année" />
