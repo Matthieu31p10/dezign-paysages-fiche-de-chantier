@@ -17,7 +17,7 @@ import { drawSummarySection } from './sections/summarySection';
 // Cette fonction gère la génération de PDF pour les fiches de suivi avec le nouveau design
 export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
   try {
-    // Vérification des données
+    // Vérification minimale des données
     if (!data.workLog) {
       throw new Error('Données de fiche de suivi manquantes');
     }
@@ -61,7 +61,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'italic');
         // Vérifier si c'est une fiche vierge
-        const isBlankSheet = data.workLog?.projectId.startsWith('blank-');
+        const isBlankSheet = data.workLog?.projectId && 
+          (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
         const docTitle = isBlankSheet ? 'Fiche Vierge' : 'Fiche de suivi';
         pdf.text(`Suite - ${data.project?.name || docTitle} - ${formatDate(data.workLog?.date)}`, margin, yPos);
         yPos += 8;
@@ -155,7 +156,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     }
     
     // Génération du nom de fichier
-    const isBlankSheet = data.workLog.projectId.startsWith('blank-');
+    const isBlankSheet = data.workLog.projectId && 
+      (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
     const filePrefix = isBlankSheet ? 'Fiche_Vierge' : 'Fiche_Suivi';
     const projectName = data.project?.name 
       ? sanitizeText(data.project.name).replace(/[^a-z0-9]/gi, '_')

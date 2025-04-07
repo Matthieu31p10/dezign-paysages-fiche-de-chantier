@@ -33,4 +33,5 @@ export interface PDFData {
   }>;
   vatRate?: number;
   signedQuote?: boolean;
+  quoteValue?: number;
 }

@@ -15,7 +15,7 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   
   yPos += 10;
   
-  // Récupérer les données
+  // Récupérer les données avec valeurs par défaut pour gérer les données manquantes
   const totalHours = data.workLog?.timeTracking?.totalHours || 0;
   const hourlyRate = data.hourlyRate || 0;
   const laborCost = totalHours * hourlyRate;
@@ -33,7 +33,7 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   // Information sur devis signé
   const signedQuote = data.signedQuote ? "Oui" : "Non";
   
-  // Valeur du devis et différence - from notes or directly from the property
+  // Valeur du devis et différence
   const quoteValue = data.quoteValue || 0;
   const difference = quoteValue > 0 ? (quoteValue - totalHT).toFixed(2) : null;
   

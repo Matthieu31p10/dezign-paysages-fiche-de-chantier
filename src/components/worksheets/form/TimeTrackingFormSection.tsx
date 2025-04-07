@@ -10,12 +10,6 @@ const TimeTrackingFormSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const totalHours = watch('totalHours');
   
-  // Handle hourly rate change
-  const handleHourlyRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-    setValue('hourlyRate', value);
-  };
-  
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium flex items-center">
@@ -129,7 +123,10 @@ const TimeTrackingFormSection: React.FC = () => {
                     min="0"
                     placeholder="0.00"
                     value={field.value || ''}
-                    onChange={handleHourlyRateChange}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                      field.onChange(value);
+                    }}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <span className="text-muted-foreground">€/h</span>
