@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, FileText, Loader2 } from "lucide-react";
@@ -10,8 +10,14 @@ import { PDFData, PDFOptions } from '@/utils/pdf/types';
 import { generatePDF } from '@/utils/pdf';
 import { useApp } from '@/context/AppContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { extractLinkedProjectId } from '@/utils/helpers';
+import { 
+  extractLinkedProjectId, 
+  extractVatRate, 
+  extractHourlyRate, 
+  extractSignedQuote
+} from '@/utils/helpers';
 import { useProjects } from '@/context/ProjectsContext';
+import { Input } from '@/components/ui/input';
 
 interface BlankSheetPDFOptionsDialogProps {
   open: boolean;
@@ -37,15 +43,19 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
   const [includeWasteManagement, setIncludeWasteManagement] = useState(true);
   const [includeNotes, setIncludeNotes] = useState(true);
   const [includeConsumables, setIncludeConsumables] = useState(true);
+  const [includeSummary, setIncludeSummary] = useState(true);
   
-  // Option pour le projet lié
+  // Option pour le projet lié et le taux horaire
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [vatRate, setVatRate] = useState<string>("20");
+  const [signedQuote, setSignedQuote] = useState<boolean>(false);
   
   // Récupérer les projets actifs
   const activeProjects = getActiveProjects();
   
-  // Vérifier si la fiche est déjà liée à un projet
-  React.useEffect(() => {
+  // Vérifier si la fiche est déjà liée à un projet et autres infos
+  useEffect(() => {
     if (workLog?.notes) {
       const linkedProjectId = extractLinkedProjectId(workLog.notes);
       if (linkedProjectId) {
@@ -53,6 +63,16 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
       } else {
         setSelectedProjectId(null);
       }
+      
+      // Récupérer d'autres informations depuis les notes
+      const extractedVatRate = extractVatRate(workLog.notes);
+      setVatRate(extractedVatRate);
+      
+      const extractedHourlyRate = extractHourlyRate(workLog.notes);
+      setHourlyRate(extractedHourlyRate);
+      
+      const extractedSignedQuote = extractSignedQuote(workLog.notes);
+      setSignedQuote(extractedSignedQuote);
     }
   }, [workLog]);
   
@@ -72,6 +92,7 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
         includeWasteManagement,
         includeNotes,
         includeConsumables,
+        includeSummary
       };
       
       // Récupération du projet lié (si sélectionné)
@@ -84,7 +105,11 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
         companyInfo: settings.companyInfo,
         companyLogo: settings.companyLogo,
         pdfOptions,
-        linkedProjectId: selectedProjectId || undefined
+        linkedProjectId: selectedProjectId || undefined,
+        hourlyRate,
+        vatRate: vatRate === "10" ? 10 : 20,
+        signedQuote,
+        consumables: workLog.consumables
       };
       
       // Génération du PDF
@@ -130,6 +155,44 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          
+          {/* Tarification */}
+          <div className="space-y-3">
+            <Label>Options de facturation</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="hourly-rate">Taux horaire (€)</Label>
+                <Input
+                  id="hourly-rate"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={hourlyRate}
+                  onChange={(e) => setHourlyRate(Number(e.target.value))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="vat-rate">Taux de TVA</Label>
+                <Select value={vatRate} onValueChange={(value) => setVatRate(value)}>
+                  <SelectTrigger id="vat-rate">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10%</SelectItem>
+                    <SelectItem value="20">20%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox 
+                id="signed-quote" 
+                checked={signedQuote} 
+                onCheckedChange={(checked) => setSignedQuote(!!checked)} 
+              />
+              <Label htmlFor="signed-quote" className="font-normal">Devis signé</Label>
+            </div>
           </div>
           
           {/* Options d'affichage */}
@@ -179,7 +242,7 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
                   checked={includeTasks} 
                   onCheckedChange={(checked) => setIncludeTasks(!!checked)} 
                 />
-                <Label htmlFor="tasks" className="font-normal">Tâches effectuées</Label>
+                <Label htmlFor="tasks" className="font-normal">Description des travaux</Label>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -206,7 +269,16 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
                   checked={includeNotes} 
                   onCheckedChange={(checked) => setIncludeNotes(!!checked)} 
                 />
-                <Label htmlFor="notes" className="font-normal">Notes</Label>
+                <Label htmlFor="notes" className="font-normal">Notes additionnelles</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="summary" 
+                  checked={includeSummary} 
+                  onCheckedChange={(checked) => setIncludeSummary(!!checked)} 
+                />
+                <Label htmlFor="summary" className="font-normal">Bilan financier</Label>
               </div>
             </div>
           </div>

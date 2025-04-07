@@ -6,7 +6,7 @@ import { useWorkLogs } from '@/context/WorkLogsContext';
 import { formatDate } from '@/utils/helpers';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon } from 'lucide-react';
+import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon, Euro, FileCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -19,12 +19,20 @@ import { Badge } from '@/components/ui/badge';
 import { getCurrentYear, filterWorkLogsByYear, getYearsFromWorkLogs } from '@/utils/helpers';
 import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { generatePDF, PDFData } from '@/utils/pdf';
+import { PDFData } from '@/utils/pdf/types';
 import { toast } from 'sonner';
 import BlankSheetPDFOptionsDialog from './BlankSheetPDFOptionsDialog';
 import { WorkLog } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { 
+  extractClientName, 
+  extractAddress, 
+  extractDescription, 
+  extractLinkedProjectId,
+  extractHourlyRate,
+  extractSignedQuote 
+} from '@/utils/helpers';
 
 interface BlankWorkSheetListProps {
   onCreateNew: () => void;
@@ -61,8 +69,8 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
     if (!search.trim()) return true;
     
     const searchLower = search.toLowerCase();
-    const clientName = sheet.notes ? extractClientName(sheet.notes) : '';
-    const address = sheet.notes ? extractAddress(sheet.notes) : '';
+    const clientName = extractClientName(sheet.notes || '');
+    const address = extractAddress(sheet.notes || '');
     const notes = sheet.notes || '';
     
     // Vérifier si la fiche est liée à un projet
@@ -99,6 +107,10 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
 
   const handlePrint = (sheetId: string) => {
     navigate(`/worklogs/${sheetId}?print=true`);
+  };
+
+  const handleEdit = (sheetId: string) => {
+    navigate(`/worklogs/${sheetId}`);
   };
   
   const toggleSortOrder = () => {
@@ -195,6 +207,11 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
             const linkedProjectId = extractLinkedProjectId(sheet.notes || '');
             const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : null;
             
+            // Informations financières
+            const hourlyRate = extractHourlyRate(sheet.notes || '');
+            const hasHourlyRate = hourlyRate > 0;
+            const signedQuote = extractSignedQuote(sheet.notes || '');
+            
             return (
               <Card key={sheet.id} className="hover:border-primary/40 transition-all border-l-4 border-l-transparent hover:border-l-primary">
                 <CardContent className="p-4">
@@ -215,7 +232,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
                         </div>
                       )}
                       
-                      <p className="text-sm text-muted-foreground mb-2">
+                      <p className="text-sm text-muted-foreground mb-1">
                         {address || "Adresse non spécifiée"}
                       </p>
                       
@@ -225,15 +242,31 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
                         </p>
                       )}
                       
-                      <div className="flex flex-wrap gap-1 text-xs">
-                        {sheet.personnel.slice(0, 3).map((person, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">
-                            {person}
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <div className="flex flex-wrap gap-1">
+                          {sheet.personnel.slice(0, 3).map((person, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {person}
+                            </Badge>
+                          ))}
+                          {sheet.personnel.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{sheet.personnel.length - 3} autres
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {hasHourlyRate && (
+                          <Badge variant="outline" className="flex items-center gap-1 text-xs">
+                            <Euro className="h-3 w-3" />
+                            {hourlyRate.toFixed(2)}€/h
                           </Badge>
-                        ))}
-                        {sheet.personnel.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{sheet.personnel.length - 3} autres
+                        )}
+                        
+                        {signedQuote && (
+                          <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
+                            <FileCheck className="h-3 w-3 text-green-600" />
+                            Devis signé
                           </Badge>
                         )}
                       </div>
@@ -271,9 +304,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
                         variant="ghost"
                         size="sm"
                         className="h-8"
-                        onClick={() => navigate(`/worklogs/${sheet.id}`)}
+                        onClick={() => handleEdit(sheet.id)}
                       >
-                        Voir
+                        Modifier
                       </Button>
                     </div>
                   </div>
@@ -291,28 +324,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
       />
     </div>
   );
-};
-
-// Helper functions to extract information from notes
-const extractClientName = (notes: string): string => {
-  const clientMatch = notes.match(/CLIENT\s*:\s*([^\n]+)/i);
-  return clientMatch ? clientMatch[1].trim() : '';
-};
-
-const extractAddress = (notes: string): string => {
-  const addressMatch = notes.match(/ADRESSE\s*:\s*([^\n]+)/i);
-  return addressMatch ? addressMatch[1].trim() : '';
-};
-
-const extractDescription = (notes: string): string => {
-  const descMatch = notes.match(/DESCRIPTION DES TRAVAUX:([^]*?)(?=\n\n|\n$|$)/i);
-  return descMatch ? descMatch[1].trim() : '';
-};
-
-// Nouvelle fonction pour extraire l'ID du projet lié
-const extractLinkedProjectId = (notes: string): string | null => {
-  const projectMatch = notes.match(/PROJET_LIE\s*:\s*([^\n]+)/i);
-  return projectMatch ? projectMatch[1].trim() : null;
 };
 
 export default BlankWorkSheetList;
