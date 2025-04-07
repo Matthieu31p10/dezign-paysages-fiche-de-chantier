@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, Calendar, Filter, Plus } from 'lucide-react';
+import { Search, Calendar, Filter, Plus, Check, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getCurrentYear } from '@/utils/helpers';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface BlankSheetFiltersProps {
   search: string;
@@ -24,6 +25,8 @@ interface BlankSheetFiltersProps {
   filteredSheetsCount: number;
   clearFilters: () => void;
   hasActiveFilters: boolean;
+  invoiceFilter: 'all' | 'invoiced' | 'not-invoiced';
+  setInvoiceFilter: (value: 'all' | 'invoiced' | 'not-invoiced') => void;
 }
 
 const BlankSheetFilters: React.FC<BlankSheetFiltersProps> = ({
@@ -37,7 +40,9 @@ const BlankSheetFilters: React.FC<BlankSheetFiltersProps> = ({
   onCreateNew,
   filteredSheetsCount,
   clearFilters,
-  hasActiveFilters
+  hasActiveFilters,
+  invoiceFilter,
+  setInvoiceFilter
 }) => {
   return (
     <>
@@ -72,6 +77,27 @@ const BlankSheetFilters: React.FC<BlankSheetFiltersProps> = ({
           </Select>
         </div>
       </div>
+
+      <Tabs
+        value={invoiceFilter}
+        onValueChange={(value) => setInvoiceFilter(value as 'all' | 'invoiced' | 'not-invoiced')}
+        className="mb-2"
+      >
+        <TabsList>
+          <TabsTrigger value="all" className="text-xs">
+            <FileText className="h-3.5 w-3.5 mr-1" />
+            Toutes les fiches
+          </TabsTrigger>
+          <TabsTrigger value="invoiced" className="text-xs">
+            <Check className="h-3.5 w-3.5 mr-1" />
+            Facturées
+          </TabsTrigger>
+          <TabsTrigger value="not-invoiced" className="text-xs">
+            <Filter className="h-3.5 w-3.5 mr-1" />
+            Non facturées
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

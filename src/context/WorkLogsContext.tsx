@@ -5,7 +5,8 @@ import { WorkLogsContextType } from './types';
 import { toast } from 'sonner';
 
 const WorkLogsContext = createContext<WorkLogsContextType & { 
-  deleteWorkLogsByProjectId: (projectId: string) => void 
+  deleteWorkLogsByProjectId: (projectId: string) => void;
+  updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => void;
 } | undefined>(undefined);
 
 // Local storage key
@@ -65,24 +66,50 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return newWorkLog;
   };
 
-  // Mise à jour d'une fiche existante avec un support pour les mises à jour partielles
-  const updateWorkLog = (id: string, partialWorkLog: Partial<WorkLog>) => {
+  // Support both old and new function signatures for updateWorkLog
+  const updateWorkLog = (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => {
     setWorkLogs((prev) => {
-      const exists = prev.some(w => w.id === id);
-      if (!exists) {
-        console.error(`WorkLog with ID ${id} not found for update`);
-        throw new Error(`Fiche de suivi avec ID ${id} introuvable`);
+      // Handle case where first argument is an ID string and second is a partial worklog
+      if (typeof idOrWorkLog === 'string' && partialWorkLog) {
+        const id = idOrWorkLog;
+        const exists = prev.some(w => w.id === id);
+        
+        if (!exists) {
+          console.error(`WorkLog with ID ${id} not found for update`);
+          throw new Error(`Fiche de suivi avec ID ${id} introuvable`);
+        }
+        
+        return prev.map((w) => {
+          if (w.id === id) {
+            // Fusionner les objets pour une mise à jour partielle
+            return { ...w, ...partialWorkLog };
+          }
+          return w;
+        });
       }
       
-      return prev.map((w) => {
-        if (w.id === id) {
-          // Fusionner les objets pour une mise à jour partielle
-          return { ...w, ...partialWorkLog };
+      // Handle case where first argument is a complete WorkLog object
+      if (typeof idOrWorkLog !== 'string') {
+        const workLog = idOrWorkLog;
+        const exists = prev.some(w => w.id === workLog.id);
+        
+        if (!exists) {
+          console.error(`WorkLog with ID ${workLog.id} not found for update`);
+          throw new Error(`Fiche de suivi avec ID ${workLog.id} introuvable`);
         }
-        return w;
-      });
+        
+        return prev.map((w) => {
+          if (w.id === workLog.id) {
+            return workLog;
+          }
+          return w;
+        });
+      }
+      
+      return prev;
     });
-    console.log(`WorkLog ${id} updated successfully with:`, partialWorkLog);
+    
+    console.log(`WorkLog updated successfully:`, idOrWorkLog);
   };
 
   const deleteWorkLog = (id: string) => {

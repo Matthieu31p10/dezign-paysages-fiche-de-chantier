@@ -60,8 +60,8 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
 
   // Toggle invoiced status
   const handleInvoiceToggle = (checked: boolean) => {
-    const updatedWorkLog = { ...sheet, invoiced: checked };
-    updateWorkLog(updatedWorkLog);
+    // Using the ID and partial update approach
+    updateWorkLog(sheet.id, { invoiced: checked });
     toast.success(`Fiche ${checked ? 'marquée comme facturée' : 'marquée comme non facturée'}`);
   };
 

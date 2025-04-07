@@ -34,6 +34,8 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
     selectedYear,
     setSelectedYear,
     sortOrder,
+    invoiceFilter,
+    setInvoiceFilter,
     filteredSheets,
     sortedSheets,
     hasActiveFilters,
@@ -81,6 +83,8 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
         filteredSheetsCount={filteredSheets.length}
         clearFilters={clearFilters}
         hasActiveFilters={hasActiveFilters}
+        invoiceFilter={invoiceFilter}
+        setInvoiceFilter={setInvoiceFilter}
       />
 
       {filteredSheets.length === 0 ? (
@@ -102,7 +106,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
 
       <BlankSheetPDFOptionsDialog
         open={isPDFDialogOpen}
-        onOpenChange={(open) => setIsPDFDialogOpen(!!open)}
+        onOpenChange={setIsPDFDialogOpen}
         workLog={selectedWorkLog}
       />
     </div>
