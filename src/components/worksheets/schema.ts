@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const blankWorkSheetSchema = z.object({
@@ -22,8 +21,6 @@ export const blankWorkSheetSchema = z.object({
     "dumpster_1", "dumpster_2", "dumpster_3"
   ]),
   notes: z.string().optional(),
-  customTasks: z.record(z.string(), z.boolean()).optional(),
-  tasksProgress: z.record(z.string(), z.number()).optional(),
   teamFilter: z.string(),
   linkedProjectId: z.string().optional(),
   consumables: z.array(z.object({
