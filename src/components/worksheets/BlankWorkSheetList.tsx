@@ -102,7 +102,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
 
       <BlankSheetPDFOptionsDialog
         open={isPDFDialogOpen}
-        onOpenChange={(open: boolean) => setIsPDFDialogOpen(open)}
+        onOpenChange={(open) => setIsPDFDialogOpen(!!open)}
         workLog={selectedWorkLog}
       />
     </div>
