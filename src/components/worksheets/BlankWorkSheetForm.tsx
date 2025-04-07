@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/context/AppContext';
@@ -14,19 +14,12 @@ import ConsumablesSection from './ConsumablesSection';
 import WorksheetSummary from './WorksheetSummary';
 import AdditionalNotesSection from './form/AdditionalNotesSection';
 import FormActions from './form/FormActions';
-import { BlankWorkSheetValues } from './schema';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
-  initialValues?: Partial<BlankWorkSheetValues>;
-  workLogId?: string;
 }
 
-const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ 
-  onSuccess, 
-  initialValues, 
-  workLogId 
-}) => {
+const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) => {
   const { teams } = useApp();
   const {
     form,
@@ -40,9 +33,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
     handleSubmit,
     handleTeamFilterChange,
     handlePersonnelChange,
-    handleCancel,
-    resetForm
-  } = useBlankWorksheetForm(onSuccess, initialValues, workLogId);
+    handleCancel
+  } = useBlankWorksheetForm(onSuccess);
   
   return (
     <Form {...form}>
@@ -95,7 +87,6 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
         <FormActions 
           isSubmitting={isSubmitting}
           handleCancel={handleCancel}
-          isEditing={!!workLogId}
         />
       </form>
     </Form>

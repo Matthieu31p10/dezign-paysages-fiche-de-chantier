@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { formatDate } from '@/utils/helpers';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon, Euro, FileCheck, Trash2 } from 'lucide-react';
+import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon, Euro, FileCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -33,33 +33,20 @@ import {
   extractHourlyRate,
   extractSignedQuote 
 } from '@/utils/helpers';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface BlankWorkSheetListProps {
   onCreateNew: () => void;
-  onEdit?: (workLogId: string) => void;
 }
 
-const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, onEdit }) => {
+const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { workLogs, deleteWorkLog } = useWorkLogs();
+  const { workLogs } = useWorkLogs();
   const { getProjectById, projectInfos } = useApp();
   const [search, setSearch] = useState('');
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
-  const [workLogToDelete, setWorkLogToDelete] = useState<string | null>(null);
 
   // Identifie les fiches vierges (celles dont l'ID commence par "blank-")
   const blankWorkSheets = workLogs.filter(log => log.projectId.startsWith('blank-'));
@@ -123,21 +110,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   };
 
   const handleEdit = (sheetId: string) => {
-    if (onEdit) {
-      onEdit(sheetId);
-    } else {
-      navigate(`/worklogs/${sheetId}`);
-    }
+    navigate(`/worklogs/${sheetId}`);
   };
   
-  const handleDeleteConfirm = () => {
-    if (workLogToDelete) {
-      deleteWorkLog(workLogToDelete);
-      setWorkLogToDelete(null);
-      toast.success("Fiche supprimée avec succès");
-    }
-  };
-
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest');
   };
@@ -333,15 +308,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
                       >
                         Modifier
                       </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-destructive hover:text-destructive"
-                        onClick={() => setWorkLogToDelete(sheet.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -356,26 +322,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
         onOpenChange={setIsPDFDialogOpen}
         workLog={selectedWorkLog}
       />
-
-      <AlertDialog open={!!workLogToDelete} onOpenChange={(open) => !open && setWorkLogToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette fiche vierge ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. La fiche sera définitivement supprimée.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

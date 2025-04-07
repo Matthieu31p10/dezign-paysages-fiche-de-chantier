@@ -6,8 +6,6 @@ import { toast } from 'sonner';
 type SubmitHandlerParams = {
   data: BlankWorkSheetValues;
   addWorkLog: (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => void;
-  updateWorkLog?: (workLog: WorkLog) => void;
-  workLogId?: string;
   onSuccess?: () => void;
   setIsSubmitting: (value: boolean) => void;
 };
@@ -15,8 +13,6 @@ type SubmitHandlerParams = {
 export const submitWorksheetForm = async ({
   data,
   addWorkLog,
-  updateWorkLog,
-  workLogId,
   onSuccess,
   setIsSubmitting
 }: SubmitHandlerParams) => {
@@ -59,7 +55,7 @@ DEVIS_SIGNE: ${data.signedQuote ? 'Oui' : 'Non'}
 `;
     
     const workLogData: Omit<WorkLog, 'id' | 'createdAt'> = {
-      projectId: workLogId ? 'blank-' + Date.now().toString() : 'blank-' + Date.now().toString(),
+      projectId: 'blank-' + Date.now().toString(),
       date: data.date,
       duration: data.totalHours,
       personnel: data.personnel,
@@ -89,27 +85,17 @@ DEVIS_SIGNE: ${data.signedQuote ? 'Oui' : 'Non'}
       consumables: validatedConsumables
     };
     
-    if (workLogId && updateWorkLog) {
-      // Si c'est une mise à jour
-      updateWorkLog({
-        ...workLogData,
-        id: workLogId,
-        createdAt: new Date() // On garde la date de création originale
-      });
-      toast.success("Fiche vierge mise à jour avec succès");
-    } else {
-      // Si c'est une nouvelle création
-      addWorkLog(workLogData);
-      toast.success("Fiche vierge créée avec succès");
-    }
+    addWorkLog(workLogData);
+    
+    toast.success("Fiche vierge créée avec succès");
     
     if (onSuccess) {
       onSuccess();
     }
     
   } catch (error) {
-    console.error('Erreur lors de la création/mise à jour de la fiche:', error);
-    toast.error("Erreur lors de la création/mise à jour de la fiche");
+    console.error('Erreur lors de la création de la fiche:', error);
+    toast.error("Erreur lors de la création de la fiche");
   } finally {
     setIsSubmitting(false);
   }

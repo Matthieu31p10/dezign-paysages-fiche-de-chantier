@@ -1,242 +1,218 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Input } from '@/components/ui/input';
-import { Calculator, Plus, Trash } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Package, Database, Save } from 'lucide-react';
 import { BlankWorkSheetValues } from './schema';
+import { toast } from 'sonner';
 import { Consumable } from '@/types/models';
-import { Separator } from '@/components/ui/separator';
+import { ConsumableFormState, EmptyConsumable, SAVED_CONSUMABLES_KEY } from './consumables/types';
+import ConsumableForm from './consumables/ConsumableForm';
+import ConsumablesList from './consumables/ConsumablesList';
+import SavedConsumablesDialog from './consumables/SavedConsumablesDialog';
 
-const ConsumablesSection = () => {
-  const { register, watch, setValue, formState: { errors } } = useFormContext<BlankWorkSheetValues>();
+const ConsumablesSection: React.FC = () => {
+  const { watch, setValue } = useFormContext<BlankWorkSheetValues>();
+  const [newConsumable, setNewConsumable] = useState<ConsumableFormState>({...EmptyConsumable});
+  const [savedConsumablesDialogOpen, setSavedConsumablesDialogOpen] = useState(false);
+  const [savedConsumables, setSavedConsumables] = useState<Consumable[]>([]);
+  
   const consumables = watch('consumables') || [];
   
-  const [newConsumable, setNewConsumable] = useState<{
-    supplier: string;
-    product: string;
-    unit: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-  }>({
-    supplier: '',
-    product: '',
-    unit: '',
-    quantity: 1,
-    unitPrice: 0,
-    totalPrice: 0
-  });
+  // Load saved consumables from localStorage on component mount
+  useEffect(() => {
+    const savedItems = localStorage.getItem(SAVED_CONSUMABLES_KEY);
+    if (savedItems) {
+      try {
+        const parsedItems = JSON.parse(savedItems);
+        // Ensure all items conform to Consumable type
+        const typedItems = parsedItems.map((item: any): Consumable => ({
+          supplier: item.supplier || '',
+          product: item.product || '',
+          unit: item.unit || '',
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          totalPrice: Number(item.totalPrice) || 0
+        }));
+        setSavedConsumables(typedItems);
+      } catch (e) {
+        console.error('Error loading saved consumables', e);
+        // Reset saved consumables if there's an error
+        localStorage.removeItem(SAVED_CONSUMABLES_KEY);
+      }
+    }
+  }, []);
+  
+  const updateNewConsumable = (field: keyof ConsumableFormState, value: string | number) => {
+    setNewConsumable(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Recalculer le prix total lors de la mise à jour de la quantité ou du prix unitaire
+      if (field === 'quantity' || field === 'unitPrice') {
+        updated.totalPrice = updated.quantity * updated.unitPrice;
+      }
+      
+      return updated;
+    });
+  };
 
-  const addConsumable = () => {
-    // Validate required fields
-    if (newConsumable.product.trim() === '') {
-      return; // Don't add if product is empty
+  const handleAddConsumable = () => {
+    // Only add if quantity and price are valid
+    if (newConsumable.quantity <= 0) {
+      toast.error("La quantité doit être supérieure à 0");
+      return;
     }
 
-    const newList = [...consumables, {
-      ...newConsumable,
-      // Ensure numeric fields are numbers, not strings
-      quantity: Number(newConsumable.quantity) || 1,
-      unitPrice: Number(newConsumable.unitPrice) || 0,
-      totalPrice: Number(newConsumable.totalPrice) || 0
-    }];
+    // Calculate total price
+    const totalPrice = newConsumable.quantity * newConsumable.unitPrice;
+    const consumableToAdd: Consumable = {
+      supplier: newConsumable.supplier,
+      product: newConsumable.product,
+      unit: newConsumable.unit,
+      quantity: newConsumable.quantity,
+      unitPrice: newConsumable.unitPrice,
+      totalPrice
+    };
     
-    setValue('consumables', newList as Consumable[]);
+    const updatedConsumables = [...consumables, consumableToAdd];
+    setValue('consumables', updatedConsumables);
     
-    // Reset form
-    setNewConsumable({
-      supplier: '',
-      product: '',
-      unit: '',
-      quantity: 1,
-      unitPrice: 0,
-      totalPrice: 0
-    });
+    // Reset the form
+    setNewConsumable({...EmptyConsumable});
   };
-
-  const calculateTotal = () => {
-    const quantity = Number(newConsumable.quantity) || 0;
-    const unitPrice = Number(newConsumable.unitPrice) || 0;
-    setNewConsumable({
-      ...newConsumable,
-      totalPrice: Number((quantity * unitPrice).toFixed(2))
-    });
-  };
-
-  const removeConsumable = (index: number) => {
+  
+  const handleRemoveConsumable = (index: number) => {
     const updatedConsumables = [...consumables];
     updatedConsumables.splice(index, 1);
     setValue('consumables', updatedConsumables);
   };
-
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const quantity = value === '' ? 0 : Number(value);
-    setNewConsumable({
-      ...newConsumable,
-      quantity
+  
+  // Save consumables
+  const handleSaveConsumables = () => {
+    // Check if there are consumables to save
+    if (consumables.length === 0) {
+      toast.error("Aucun consommable à sauvegarder");
+      return;
+    }
+    
+    // Only save consumables that have valid quantities
+    const validConsumables = consumables.filter(c => c.quantity > 0);
+    
+    if (validConsumables.length === 0) {
+      toast.error("Aucun consommable valide à sauvegarder");
+      return;
+    }
+    
+    // Add current consumables to saved consumables
+    const updatedSavedConsumables: Consumable[] = [
+      ...savedConsumables, 
+      ...validConsumables
+    ];
+    
+    setSavedConsumables(updatedSavedConsumables);
+    
+    // Save to localStorage
+    localStorage.setItem(SAVED_CONSUMABLES_KEY, JSON.stringify(updatedSavedConsumables));
+    
+    toast.success("Consommables sauvegardés avec succès");
+  };
+  
+  // Load a saved consumable into the form
+  const handleLoadSavedConsumable = (consumable: Consumable) => {
+    setNewConsumable({ 
+      supplier: consumable.supplier || '',
+      product: consumable.product || '',
+      unit: consumable.unit || '',
+      quantity: consumable.quantity,
+      unitPrice: consumable.unitPrice,
+      totalPrice: consumable.totalPrice
     });
+    setSavedConsumablesDialogOpen(false);
   };
-
-  const handleUnitPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const unitPrice = value === '' ? 0 : Number(value);
-    setNewConsumable({
-      ...newConsumable,
-      unitPrice
-    });
+  
+  // Remove a saved consumable
+  const handleRemoveSavedConsumable = (index: number) => {
+    const updatedSavedConsumables = [...savedConsumables];
+    updatedSavedConsumables.splice(index, 1);
+    setSavedConsumables(updatedSavedConsumables);
+    
+    // Update localStorage
+    localStorage.setItem(SAVED_CONSUMABLES_KEY, JSON.stringify(updatedSavedConsumables));
+    
+    toast.success("Consommable supprimé");
   };
-
-  const getTotalAmount = () => {
-    return consumables.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
+  
+  // Update a saved consumable
+  const handleUpdateSavedConsumable = (index: number, updatedConsumable: Consumable) => {
+    const updatedSavedConsumables = [...savedConsumables];
+    updatedSavedConsumables[index] = updatedConsumable;
+    
+    setSavedConsumables(updatedSavedConsumables);
+    localStorage.setItem(SAVED_CONSUMABLES_KEY, JSON.stringify(updatedSavedConsumables));
+    
+    toast.success("Consommable mis à jour");
   };
-
+  
   return (
     <div className="space-y-4">
+      <h2 className="text-lg font-medium flex items-center">
+        <Package className="w-5 h-5 mr-2 text-muted-foreground" />
+        Consommables
+      </h2>
+      
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-md font-medium">Consommables et produits utilisés</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <div className="space-y-4">
-            <div className="grid grid-cols-12 gap-2">
-              <div className="col-span-12 sm:col-span-2">
-                <label className="text-sm font-medium">Fournisseur</label>
-                <Input
-                  placeholder="Fournisseur"
-                  value={newConsumable.supplier}
-                  onChange={(e) => setNewConsumable({...newConsumable, supplier: e.target.value})}
-                  className="mt-1"
-                />
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium">Ajouter un consommable</h3>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSavedConsumablesDialogOpen(true)}
+                >
+                  <Database className="w-4 h-4 mr-2" />
+                  Consommables sauvegardés
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSaveConsumables}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Sauvegarder
+                </Button>
               </div>
-              <div className="col-span-12 sm:col-span-3">
-                <label className="text-sm font-medium">Produit</label>
-                <Input
-                  placeholder="Produit"
-                  value={newConsumable.product}
-                  onChange={(e) => setNewConsumable({...newConsumable, product: e.target.value})}
-                  className="mt-1"
-                />
-              </div>
-              <div className="col-span-12 sm:col-span-1">
-                <label className="text-sm font-medium">Unité</label>
-                <Input
-                  placeholder="Unité"
-                  value={newConsumable.unit}
-                  onChange={(e) => setNewConsumable({...newConsumable, unit: e.target.value})}
-                  className="mt-1"
-                />
-              </div>
-              <div className="col-span-4 sm:col-span-2">
-                <label className="text-sm font-medium">Quantité</label>
-                <Input
-                  type="number"
-                  min="0.01" 
-                  step="0.01"
-                  placeholder="Quantité"
-                  value={newConsumable.quantity}
-                  onChange={handleQuantityChange}
-                  className="mt-1"
-                />
-              </div>
-              <div className="col-span-4 sm:col-span-2">
-                <label className="text-sm font-medium">Prix Unitaire (€)</label>
-                <Input
-                  type="number"
-                  min="0.01" 
-                  step="0.01"
-                  placeholder="Prix unitaire"
-                  value={newConsumable.unitPrice}
-                  onChange={handleUnitPriceChange}
-                  className="mt-1"
-                />
-              </div>
-              <div className="col-span-4 sm:col-span-2">
-                <label className="flex items-center justify-between text-sm font-medium">
-                  <span>Prix Total (€)</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 p-0"
-                    onClick={calculateTotal}
-                  >
-                    <Calculator className="h-3 w-3" />
-                  </Button>
-                </label>
-                <Input
-                  type="number"
-                  readOnly
-                  placeholder="Prix total"
-                  value={newConsumable.totalPrice}
-                  className="mt-1 bg-muted"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button 
-                type="button" 
-                onClick={addConsumable}
-                className="mt-2"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Ajouter
-              </Button>
             </div>
             
+            <ConsumableForm 
+              consumable={newConsumable} 
+              updateConsumable={updateNewConsumable}
+              onAdd={handleAddConsumable}
+            />
+            
             {consumables.length > 0 && (
-              <>
-                <Separator className="my-4" />
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium">Consommables ajoutés</h4>
-                  
-                  <div className="rounded-md border">
-                    <div className="grid grid-cols-12 gap-2 p-2 bg-muted text-xs font-medium">
-                      <div className="col-span-2">Fournisseur</div>
-                      <div className="col-span-3">Produit</div>
-                      <div className="col-span-1">Unité</div>
-                      <div className="col-span-2 text-center">Quantité</div>
-                      <div className="col-span-2 text-center">Prix Unitaire (€)</div>
-                      <div className="col-span-2 text-right">Total (€)</div>
-                    </div>
-                    
-                    {consumables.map((item, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2 p-2 border-t text-sm items-center">
-                        <div className="col-span-2 truncate">{item.supplier || '-'}</div>
-                        <div className="col-span-3 truncate">{item.product}</div>
-                        <div className="col-span-1 truncate">{item.unit || '-'}</div>
-                        <div className="col-span-2 text-center">{Number(item.quantity).toFixed(2)}</div>
-                        <div className="col-span-2 text-center">{Number(item.unitPrice).toFixed(2)} €</div>
-                        <div className="col-span-1 text-right">{Number(item.totalPrice).toFixed(2)} €</div>
-                        <div className="col-span-1 flex justify-end">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 text-destructive"
-                            onClick={() => removeConsumable(index)}
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <div className="grid grid-cols-12 gap-2 p-2 border-t bg-muted font-medium">
-                      <div className="col-span-10 text-right">Total</div>
-                      <div className="col-span-2 text-right">{getTotalAmount().toFixed(2)} €</div>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <ConsumablesList 
+                consumables={consumables}
+                onRemove={handleRemoveConsumable}
+              />
             )}
           </div>
         </CardContent>
       </Card>
+      
+      {/* Saved consumables dialog */}
+      <SavedConsumablesDialog
+        open={savedConsumablesDialogOpen}
+        onOpenChange={setSavedConsumablesDialogOpen}
+        savedConsumables={savedConsumables}
+        onLoad={handleLoadSavedConsumable}
+        onRemove={handleRemoveSavedConsumable}
+        onUpdate={handleUpdateSavedConsumable}
+      />
     </div>
   );
 };
