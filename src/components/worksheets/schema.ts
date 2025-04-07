@@ -25,13 +25,13 @@ export const blankWorkSheetSchema = z.object({
   teamFilter: z.string(),
   linkedProjectId: z.string().optional(),
   consumables: z.array(z.object({
-    supplier: z.string().optional(),
-    product: z.string().optional(),
-    unit: z.string().optional(),
+    supplier: z.string().default(""),
+    product: z.string().default(""),
+    unit: z.string().default(""),
     quantity: z.number().positive(),
     unitPrice: z.number().nonnegative(),
     totalPrice: z.number().nonnegative()
-  })).optional(),
+  })).default([]),
   vatRate: z.enum(["10", "20"]).default("20"),
   signedQuote: z.boolean().default(false),
 });

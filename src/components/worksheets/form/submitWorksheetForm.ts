@@ -35,6 +35,25 @@ export const submitWorksheetForm = async ({
       totalPrice: Number(c.totalPrice) || 0
     })) || [];
     
+    // Format des données à enregistrer dans les notes pour faciliter l'extraction ultérieure
+    const formattedNotes = `
+CLIENT: ${data.clientName || ''}
+ADRESSE: ${data.address || ''}
+TELEPHONE: ${data.contactPhone || ''}
+EMAIL: ${data.contactEmail || ''}
+${data.linkedProjectId ? `PROJET_LIE: ${data.linkedProjectId}` : ''}
+
+DESCRIPTION DES TRAVAUX:
+${data.workDescription}
+
+${data.notes ? `NOTES ADDITIONNELLES:
+${data.notes}` : ''}
+
+TAUX_TVA: ${data.vatRate}
+TAUX_HORAIRE: ${data.hourlyRate || 0}
+DEVIS_SIGNE: ${data.signedQuote ? 'Oui' : 'Non'}
+`;
+    
     const workLogData: Omit<WorkLog, 'id' | 'createdAt'> = {
       projectId: 'blank-' + Date.now().toString(),
       date: data.date,
@@ -61,7 +80,7 @@ export const submitWorksheetForm = async ({
         customTasks: {},
         tasksProgress: {}
       },
-      notes: data.workDescription,
+      notes: formattedNotes,
       wasteManagement: data.wasteManagement,
       consumables: validatedConsumables
     };
