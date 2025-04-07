@@ -1,13 +1,11 @@
 
 import { useState, useTransition } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Card, CardContent } from '@/components/ui/card';
-import ProjectReportCard from '@/components/reports/ProjectReportCard';
-import ProjectReportList from '@/components/reports/ProjectReportList';
-import { Building2, LayoutGrid, List, Users } from 'lucide-react';
 import { getDaysSinceLastEntry } from '@/utils/helpers';
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ProjectGridView from '@/components/reports/ProjectGridView';
+import ProjectReportList from '@/components/reports/ProjectReportList';
+import ProjectFilters from '@/components/reports/ProjectFilters';
+import EmptyProjectsState from '@/components/reports/EmptyProjectsState';
 
 const ProjectsTab = () => {
   const { projectInfos, workLogs, teams } = useApp();
@@ -65,84 +63,25 @@ const ProjectsTab = () => {
   
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-start">
-        <div className="w-full sm:w-auto">
-          <Select
-            value={selectedTeam}
-            onValueChange={handleTeamChange}
-          >
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Filtrer par équipe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les équipes</SelectItem>
-              {validTeams.map(team => (
-                <SelectItem key={team.id} value={team.id}>
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-2" />
-                    {team.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <ToggleGroup 
-          type="single" 
-          value={viewMode} 
-          onValueChange={handleViewModeChange}
-          className="border rounded-md hidden sm:flex"
-        >
-          <ToggleGroupItem value="grid" aria-label="Vue en grille">
-            <LayoutGrid className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="list" aria-label="Vue en liste">
-            <List className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
-        
-        <div className="w-full sm:w-auto ml-0 sm:ml-auto">
-          <Select
-            value={sortOption}
-            onValueChange={handleSortChange}
-          >
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Trier par" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Nom (A-Z)</SelectItem>
-              <SelectItem value="lastVisit">Dernier passage (récent-ancien)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <ProjectFilters
+        teams={validTeams}
+        selectedTeam={selectedTeam}
+        onTeamChange={handleTeamChange}
+        sortOption={sortOption}
+        onSortChange={handleSortChange}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+      />
       
       {filteredProjects.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              Aucun chantier trouvé pour cette équipe
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyProjectsState />
       ) : (
         viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedProjects.map(project => {
-              const projectWorkLogs = validWorkLogs.filter(log => log.projectId === project.id);
-              const teamName = validTeams.find(t => t.id === project.team)?.name;
-              
-              return (
-                <ProjectReportCard
-                  key={project.id}
-                  project={project}
-                  workLogs={projectWorkLogs}
-                  teamName={teamName}
-                />
-              );
-            })}
-          </div>
+          <ProjectGridView
+            projects={sortedProjects}
+            workLogs={validWorkLogs}
+            teams={validTeams}
+          />
         ) : (
           <ProjectReportList
             projects={sortedProjects}
