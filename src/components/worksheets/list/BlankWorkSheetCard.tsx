@@ -1,36 +1,31 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  FileBarChart, 
-  LinkIcon, 
-  Euro, 
-  FileCheck, 
-  Printer, 
-  FileText, 
-  Download,
-  Trash2
-} from 'lucide-react';
-import { formatDate } from '@/utils/helpers';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { WorkLog } from '@/types/models';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Clock, User, MapPin, Link as LinkIcon, FileText, Edit, Trash2, Printer, FileDown } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface BlankWorkSheetCardProps {
   sheet: WorkLog;
   clientName: string;
   address: string;
-  description?: string;
-  linkedProject?: { id: string; name: string } | null;
+  description: string;
+  linkedProject: { id: string; name: string } | null;
   hourlyRate: number;
   signedQuote: boolean;
-  onEdit: (sheetId: string) => void;
-  onDelete: (sheetId: string) => void;
-  onExportPDF: (sheetId: string) => void;
-  onPrint: (sheetId: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onExportPDF: (id: string) => void;
+  onPrint: (id: string) => void;
 }
 
 const BlankWorkSheetCard: React.FC<BlankWorkSheetCardProps> = ({
@@ -44,119 +39,148 @@ const BlankWorkSheetCard: React.FC<BlankWorkSheetCardProps> = ({
   onEdit,
   onDelete,
   onExportPDF,
-  onPrint
+  onPrint,
 }) => {
-  const navigate = useNavigate();
-  const hasHourlyRate = hourlyRate > 0;
-
+  const formattedDate = format(new Date(sheet.date), 'EEEE d MMMM yyyy', { locale: fr });
+  
   return (
-    <Card className="hover:border-primary/40 transition-all border-l-4 border-l-transparent hover:border-l-primary">
-      <CardContent className="p-4">
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 justify-between">
-          <div className="flex-1 cursor-pointer" onClick={() => navigate(`/worklogs/${sheet.id}`)}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <FileBarChart className="h-4 w-4 text-primary" />
-              <h3 className="font-medium">{clientName || "Client non spécifié"}</h3>
-              <Badge variant="outline" className="ml-auto md:ml-0">
-                {formatDate(sheet.date)}
+    <Card className="hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="pb-2">
+        <div className="flex flex-col sm:flex-row justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium capitalize">{formattedDate}</span>
+          </div>
+          <div className="flex items-center gap-1 flex-wrap">
+            {hourlyRate > 0 && (
+              <Badge variant="outline" className="font-semibold text-xs">
+                {hourlyRate} €/h
               </Badge>
-            </div>
-            
-            {linkedProject && (
-              <div className="flex items-center text-sm text-primary mb-1">
-                <LinkIcon className="h-3 w-3 mr-1" />
-                <span>Associée au projet: {linkedProject.name}</span>
-              </div>
             )}
-            
-            <p className="text-sm text-muted-foreground mb-1">
-              {address || "Adresse non spécifiée"}
-            </p>
-            
-            {description && (
-              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                {description}
-              </p>
+            {signedQuote && (
+              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-green-200 text-xs">
+                Devis signé
+              </Badge>
             )}
-            
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <div className="flex flex-wrap gap-1">
-                {sheet.personnel.slice(0, 3).map((person, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs">
-                    {person}
-                  </Badge>
-                ))}
-                {sheet.personnel.length > 3 && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{sheet.personnel.length - 3} autres
-                  </Badge>
-                )}
-              </div>
-              
-              {hasHourlyRate && (
-                <Badge variant="outline" className="flex items-center gap-1 text-xs">
-                  <Euro className="h-3 w-3" />
-                  {hourlyRate.toFixed(2)}€/h
-                </Badge>
-              )}
-              
-              {signedQuote && (
-                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
-                  <FileCheck className="h-3 w-3 text-green-600" />
-                  Devis signé
-                </Badge>
-              )}
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="pb-2">
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="font-semibold text-lg truncate">{clientName || "Client non spécifié"}</div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <User className="h-3.5 w-3.5" />
+              <span>{sheet.personnel.length} {sheet.personnel.length > 1 ? 'personnes' : 'personne'}</span>
+              <Clock className="h-3.5 w-3.5 ml-2" />
+              <span>{sheet.timeTracking.totalHours}h</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 mt-2 md:mt-0">
-            <div className="text-right mr-2">
-              <div className="text-sm font-medium">
-                {sheet.timeTracking?.totalHours.toFixed(1)} h
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Durée
-              </div>
+          {address && (
+            <div className="flex items-start gap-1 text-sm text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+              <span className="truncate">{address}</span>
             </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onExportPDF(sheet.id)}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Exporter en PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onPrint(sheet.id)}>
-                  <Printer className="mr-2 h-4 w-4" />
-                  Imprimer
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => onEdit(sheet.id)}
-            >
-              Modifier
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 text-destructive hover:text-destructive"
-              onClick={() => onDelete(sheet.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+          )}
+          
+          {linkedProject && (
+            <div className="flex items-center gap-1 text-sm">
+              <LinkIcon className="h-3.5 w-3.5 text-blue-500" />
+              <span className="text-blue-600">Chantier lié: {linkedProject.name}</span>
+            </div>
+          )}
+          
+          {description && (
+            <div className="mt-3">
+              <div className="flex items-center gap-1 text-sm font-medium mb-1">
+                <FileText className="h-3.5 w-3.5" />
+                <span>Description</span>
+              </div>
+              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+            </div>
+          )}
         </div>
       </CardContent>
+      
+      <CardFooter className="pt-3 flex flex-wrap justify-end gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => onExportPDF(sheet.id)}
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="sr-only">Exporter en PDF</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Exporter en PDF</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => onPrint(sheet.id)}
+              >
+                <Printer className="h-4 w-4" />
+                <span className="sr-only">Imprimer</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Imprimer</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0" 
+                onClick={() => onEdit(sheet.id)}
+              >
+                <Edit className="h-4 w-4" />
+                <span className="sr-only">Modifier</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Modifier</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                onClick={() => onDelete(sheet.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">Supprimer</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Supprimer</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </CardFooter>
     </Card>
   );
 };

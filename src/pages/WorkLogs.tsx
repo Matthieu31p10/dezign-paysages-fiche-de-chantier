@@ -31,7 +31,8 @@ const WorkLogs = () => {
     const matchesYear = logDate.getFullYear() === selectedYear;
     
     // Filtre par mois (si sélectionné)
-    const matchesMonth = selectedMonth === 'all' || logDate.getMonth() === (typeof selectedMonth === 'number' ? selectedMonth - 1 : 0);
+    const matchesMonth = selectedMonth === 'all' || 
+      (typeof selectedMonth === 'number' && logDate.getMonth() === selectedMonth - 1);
     
     return matchesProject && matchesTeam && matchesYear && matchesMonth;
   });

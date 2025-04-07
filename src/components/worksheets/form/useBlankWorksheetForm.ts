@@ -45,7 +45,7 @@ export const useBlankWorksheetForm = (
   });
   
   // Project link functionality with initial value if editing
-  const projectLinkHook = useProjectLink(form);
+  const projectLinkHook = useProjectLink(form, initialValues?.linkedProjectId);
   
   // Update total hours when time values change
   useEffect(() => {
