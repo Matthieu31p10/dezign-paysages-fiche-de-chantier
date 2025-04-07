@@ -21,8 +21,6 @@ export const submitWorksheetForm = async ({
   setIsSubmitting
 }: SubmitHandlerParams) => {
   try {
-    setIsSubmitting(true);
-    
     if (!data.workDescription?.trim()) {
       toast.error("La description des travaux est obligatoire");
       setIsSubmitting(false);
@@ -107,9 +105,6 @@ DEVIS_SIGNE: ${data.signedQuote ? 'Oui' : 'Non'}
       onSuccess();
     }
     
-  } catch (error) {
-    console.error('Erreur lors de la création/mise à jour de la fiche:', error);
-    toast.error("Erreur lors de la création/mise à jour de la fiche");
   } finally {
     setIsSubmitting(false);
   }

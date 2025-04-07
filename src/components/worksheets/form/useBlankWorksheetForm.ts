@@ -45,7 +45,7 @@ export const useBlankWorksheetForm = (
   });
   
   // Project link functionality with initial value if editing
-  const projectLinkHook = useProjectLink(form, initialValues?.linkedProjectId);
+  const projectLinkHook = useProjectLink(form);
   
   // Update total hours when time values change
   useEffect(() => {
@@ -89,11 +89,11 @@ export const useBlankWorksheetForm = (
         updateWorkLog,
         workLogId,
         onSuccess,
+        setIsSubmitting
       });
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Une erreur est survenue lors de la soumission du formulaire');
-    } finally {
       setIsSubmitting(false);
     }
   };

@@ -5,8 +5,8 @@ import { BlankWorkSheetValues } from '../schema';
 import { useProjects } from '@/context/ProjectsContext';
 import { ProjectInfo } from '@/types/models';
 
-export const useProjectLink = (form: UseFormReturn<BlankWorkSheetValues>) => {
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+export const useProjectLink = (form: UseFormReturn<BlankWorkSheetValues>, initialProjectId?: string) => {
+  const [selectedProject, setSelectedProject] = useState<string | null>(initialProjectId || null);
   const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
   const { getActiveProjects } = useProjects();
   
