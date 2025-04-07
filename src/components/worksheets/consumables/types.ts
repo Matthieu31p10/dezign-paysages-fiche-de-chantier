@@ -3,7 +3,7 @@ import { Consumable as BaseConsumable } from '@/types/models';
 
 // Local type for form state
 export interface ConsumableFormState {
-  supplier: string;
+  supplier: string;  // Keep this required for the form state
   product: string;
   unit: string;
   quantity: number;

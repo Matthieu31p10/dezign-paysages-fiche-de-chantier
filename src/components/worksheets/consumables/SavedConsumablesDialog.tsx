@@ -45,7 +45,15 @@ const SavedConsumablesDialog: React.FC<SavedConsumablesDialogProps> = ({
 
   const handleStartEditSavedConsumable = (index: number) => {
     setSelectedConsumableIndex(index);
-    setEditingConsumable({...savedConsumables[index]});
+    const consumable = savedConsumables[index];
+    setEditingConsumable({
+      supplier: consumable.supplier || '', // Add default empty string for optional supplier
+      product: consumable.product,
+      unit: consumable.unit,
+      quantity: consumable.quantity,
+      unitPrice: consumable.unitPrice,
+      totalPrice: consumable.totalPrice
+    });
     setEditMode(true);
   };
   

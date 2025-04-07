@@ -54,7 +54,7 @@ export interface CustomTask {
 }
 
 export interface Consumable {
-  supplier?: string;
+  supplier?: string;  // Making supplier optional to match actual usage
   product: string;
   unit: string;
   quantity: number;

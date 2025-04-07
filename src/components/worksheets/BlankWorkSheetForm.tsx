@@ -139,41 +139,41 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         notesWithProjectInfo += `PROJET_LIE: ${data.linkedProjectId}\n`;
       }
       
-      // Ajouter les informations de taux horaire et coût total
       notesWithProjectInfo += `\nTAUX HORAIRE: ${data.hourlyRate?.toFixed(2) || '0.00'} €\n`;
       notesWithProjectInfo += `TAUX TVA: ${data.vatRate}%\n`;
       notesWithProjectInfo += `DEVIS SIGNÉ: ${data.signedQuote ? 'OUI' : 'NON'}\n`;
       
-      // Ajouter les informations des consommables si présents
-      if (data.consumables && data.consumables.length > 0) {
-        notesWithProjectInfo += `\nCONSOMMATIONS:\n`;
-        data.consumables.forEach((item, index) => {
-          // Vérifier que les champs obligatoires sont remplis avant d'ajouter
-          if (item.product && item.unit) {
-            notesWithProjectInfo += `${index + 1}. ${item.product} (${item.supplier || 'N/A'}): ${item.quantity} ${item.unit} x ${item.unitPrice.toFixed(2)} € = ${item.totalPrice.toFixed(2)} €\n`;
-          }
-        });
-        
-        // Calculer et ajouter le total des consommables
-        const totalConsumables = data.consumables.reduce((sum, item) => sum + item.totalPrice, 0);
-        notesWithProjectInfo += `Total consommables: ${totalConsumables.toFixed(2)} €\n`;
-        
-        // Calculer et ajouter le coût de la main d'œuvre
-        const laborCost = data.totalHours * (data.hourlyRate || 0);
-        notesWithProjectInfo += `Coût main d'œuvre: ${laborCost.toFixed(2)} €\n`;
-        
-        // Calculer et ajouter le total HT
-        const totalHT = laborCost + totalConsumables;
-        notesWithProjectInfo += `TOTAL HT: ${totalHT.toFixed(2)} €\n`;
-        
-        // Calculer et ajouter la TVA
-        const vatAmount = totalHT * (parseInt(data.vatRate) / 100);
-        notesWithProjectInfo += `TVA (${data.vatRate}%): ${vatAmount.toFixed(2)} €\n`;
-        
-        // Calculer et ajouter le total TTC
-        const totalTTC = totalHT + vatAmount;
-        notesWithProjectInfo += `TOTAL TTC: ${totalTTC.toFixed(2)} €\n`;
-      }
+      const validConsumables = data.consumables?.filter(c => c.product && c.unit)
+        .map(c => ({
+          supplier: c.supplier || '',
+          product: c.product,
+          unit: c.unit,
+          quantity: c.quantity,
+          unitPrice: c.unitPrice,
+          totalPrice: c.totalPrice
+        })) || [];
+      
+      notesWithProjectInfo += `\nCONSOMMATIONS:\n`;
+      validConsumables.forEach((item, index) => {
+        if (item.product && item.unit) {
+          notesWithProjectInfo += `${index + 1}. ${item.product} (${item.supplier || 'N/A'}): ${item.quantity} ${item.unit} x ${item.unitPrice.toFixed(2)} € = ${item.totalPrice.toFixed(2)} €\n`;
+        }
+      });
+      
+      const totalConsumables = validConsumables.reduce((sum, item) => sum + item.totalPrice, 0);
+      notesWithProjectInfo += `Total consommables: ${totalConsumables.toFixed(2)} €\n`;
+      
+      const laborCost = data.totalHours * (data.hourlyRate || 0);
+      notesWithProjectInfo += `Coût main d'œuvre: ${laborCost.toFixed(2)} €\n`;
+      
+      const totalHT = laborCost + totalConsumables;
+      notesWithProjectInfo += `TOTAL HT: ${totalHT.toFixed(2)} €\n`;
+      
+      const vatAmount = totalHT * (parseInt(data.vatRate) / 100);
+      notesWithProjectInfo += `TVA (${data.vatRate}%): ${vatAmount.toFixed(2)} €\n`;
+      
+      const totalTTC = totalHT + vatAmount;
+      notesWithProjectInfo += `TOTAL TTC: ${totalTTC.toFixed(2)} €\n`;
       
       notesWithProjectInfo += `\nDESCRIPTION DES TRAVAUX:\n${data.workDescription}\n\n${data.notes || ''}`;
       
@@ -207,8 +207,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         },
         notes: notesWithProjectInfo,
         wasteManagement: data.wasteManagement,
-        // Make sure consumables are included in the worklog data
-        consumables: data.consumables?.filter(c => c.product && c.unit) || []
+        consumables: validConsumables
       };
       
       addWorkLog(workLogData);

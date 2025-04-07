@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,7 +24,17 @@ const ConsumablesSection: React.FC = () => {
     const savedItems = localStorage.getItem(SAVED_CONSUMABLES_KEY);
     if (savedItems) {
       try {
-        setSavedConsumables(JSON.parse(savedItems));
+        const parsedItems = JSON.parse(savedItems);
+        // Ensure all items conform to Consumable type
+        const typedItems = parsedItems.map((item: any) => ({
+          supplier: item.supplier || '',
+          product: item.product,
+          unit: item.unit,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice
+        }));
+        setSavedConsumables(typedItems);
       } catch (e) {
         console.error('Error loading saved consumables', e);
         // Reset saved consumables if there's an error
@@ -80,8 +89,11 @@ const ConsumablesSection: React.FC = () => {
       return;
     }
     
+    // Ensure all consumables have required fields before saving
+    const validConsumables = consumables.filter(c => c.product && c.unit);
+    
     // Add current consumables to saved consumables
-    const updatedSavedConsumables = [...savedConsumables, ...consumables];
+    const updatedSavedConsumables = [...savedConsumables, ...validConsumables];
     setSavedConsumables(updatedSavedConsumables);
     
     // Save to localStorage
