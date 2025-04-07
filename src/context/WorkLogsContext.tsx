@@ -46,7 +46,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [workLogs, isLoading]);
 
-  const addWorkLog = (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => {
+  const addWorkLog = (workLog: WorkLog) => {
     // Validation des données
     if (!workLog.projectId || !workLog.date || !workLog.personnel || workLog.personnel.length === 0) {
       console.error("Invalid worklog data:", workLog);
@@ -65,22 +65,24 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return newWorkLog;
   };
 
-  const updateWorkLog = (workLog: WorkLog) => {
-    // Validation des données
-    if (!workLog.id || !workLog.projectId || !workLog.date) {
-      console.error("Invalid worklog data for update:", workLog);
-      throw new Error('Données invalides pour la mise à jour de la fiche de suivi');
-    }
-    
+  // Mise à jour d'une fiche existante avec un support pour les mises à jour partielles
+  const updateWorkLog = (id: string, partialWorkLog: Partial<WorkLog>) => {
     setWorkLogs((prev) => {
-      const exists = prev.some(w => w.id === workLog.id);
+      const exists = prev.some(w => w.id === id);
       if (!exists) {
-        console.error(`WorkLog with ID ${workLog.id} not found for update`);
-        throw new Error(`Fiche de suivi avec ID ${workLog.id} introuvable`);
+        console.error(`WorkLog with ID ${id} not found for update`);
+        throw new Error(`Fiche de suivi avec ID ${id} introuvable`);
       }
-      return prev.map((w) => (w.id === workLog.id ? workLog : w));
+      
+      return prev.map((w) => {
+        if (w.id === id) {
+          // Fusionner les objets pour une mise à jour partielle
+          return { ...w, ...partialWorkLog };
+        }
+        return w;
+      });
     });
-    console.log("WorkLog updated successfully:", workLog);
+    console.log(`WorkLog ${id} updated successfully with:`, partialWorkLog);
   };
 
   const deleteWorkLog = (id: string) => {
@@ -102,8 +104,29 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
-  const getWorkLogsByProjectId = (projectId: string) => {
+  const getWorkLogById = (id: string): WorkLog | undefined => {
+    return workLogs.find((workLog) => workLog.id === id);
+  };
+
+  const getWorkLogsByProjectId = (projectId: string): WorkLog[] => {
     return workLogs.filter((workLog) => workLog.projectId === projectId);
+  };
+  
+  const getTotalDuration = (projectId: string): number => {
+    return getWorkLogsByProjectId(projectId).reduce((total, log) => total + (log.duration || 0), 0);
+  };
+  
+  const getTotalVisits = (projectId: string): number => {
+    return getWorkLogsByProjectId(projectId).length;
+  };
+  
+  const getLastVisitDate = (projectId: string): Date | null => {
+    const logs = getWorkLogsByProjectId(projectId);
+    if (logs.length === 0) return null;
+    
+    return new Date(
+      Math.max(...logs.map(log => new Date(log.date).getTime()))
+    );
   };
 
   return (
@@ -113,7 +136,11 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addWorkLog,
         updateWorkLog,
         deleteWorkLog,
+        getWorkLogById,
         getWorkLogsByProjectId,
+        getTotalDuration,
+        getTotalVisits,
+        getLastVisitDate,
         deleteWorkLogsByProjectId,
       }}
     >

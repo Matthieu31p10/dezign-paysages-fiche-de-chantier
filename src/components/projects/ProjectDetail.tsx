@@ -5,7 +5,6 @@ import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog } from '@/components/ui/dialog';
 import { AlertDialog } from '@/components/ui/alert-dialog';
-import { MapPin } from 'lucide-react';
 
 // Import refactored components
 import ProjectDetailHeader from './detail/ProjectDetailHeader';
@@ -18,11 +17,13 @@ import ProjectNotFound from './detail/ProjectNotFound';
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProjectById, getWorkLogsByProjectId, deleteProjectInfo, teams } = useApp();
+  const { getProjectById, deleteProjectInfo, teams, workLogs } = useApp();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const project = getProjectById(id!);
-  const workLogs = getWorkLogsByProjectId(id!);
+  
+  // Filtrer les fiches de suivi pour ce projet
+  const projectWorkLogs = workLogs.filter(log => log.projectId === id);
   
   if (!project) {
     return <ProjectNotFound />;
@@ -39,17 +40,6 @@ const ProjectDetail = () => {
     setIsEditDialogOpen(false);
   };
   
-  // Fix the icon in DetailHeader
-  const ProjectDetailHeaderWithIcon = () => (
-    <ProjectDetailHeader
-      project={{...project, address: project.address}} // Pass address explicitly
-      teamName={teamName}
-      setIsEditDialogOpen={setIsEditDialogOpen}
-      onDeleteClick={handleDeleteProject}
-      isEditDialogOpen={isEditDialogOpen}
-    />
-  );
-  
   return (
     <div className="space-y-6 animate-fade-in">
       <ProjectDetailHeader
@@ -63,7 +53,7 @@ const ProjectDetail = () => {
       <Tabs defaultValue="details" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="details">Informations</TabsTrigger>
-          <TabsTrigger value="worklogs">Fiches de suivi ({workLogs.length})</TabsTrigger>
+          <TabsTrigger value="worklogs">Fiches de suivi ({projectWorkLogs.length})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="details" className="pt-4">
@@ -71,7 +61,7 @@ const ProjectDetail = () => {
         </TabsContent>
         
         <TabsContent value="worklogs" className="pt-4">
-          <ProjectWorkLogsTab project={project} workLogs={workLogs} />
+          <ProjectWorkLogsTab project={project} workLogs={projectWorkLogs} />
         </TabsContent>
       </Tabs>
       

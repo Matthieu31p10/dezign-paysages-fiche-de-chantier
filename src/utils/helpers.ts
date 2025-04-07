@@ -1,3 +1,4 @@
+
 import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WorkLog } from '@/types/models';
@@ -50,6 +51,10 @@ export const getCurrentYear = (): number => {
   return new Date().getFullYear();
 };
 
+export const getCurrentMonth = (): number => {
+  return new Date().getMonth();
+};
+
 export const filterWorkLogsByYear = (workLogs: WorkLog[], year: number): WorkLog[] => {
   return workLogs.filter(log => new Date(log.date).getFullYear() === year);
 };
@@ -60,6 +65,65 @@ export const getYearsFromWorkLogs = (workLogs: WorkLog[]): number[] => {
     years.add(new Date(log.date).getFullYear());
   });
   return Array.from(years).sort((a, b) => b - a);
+};
+
+// Format un mois et une année
+export const formatMonthYear = (month: string): string => {
+  const [year, monthNum] = month.split('-');
+  const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+  return format(date, 'MMMM yyyy', { locale: fr });
+};
+
+// Groupe les fiches de suivi par mois
+export const groupWorkLogsByMonth = (workLogs: WorkLog[]): Record<string, WorkLog[]> => {
+  const grouped: Record<string, WorkLog[]> = {};
+  
+  workLogs.forEach(log => {
+    const date = new Date(log.date);
+    const month = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    
+    if (!grouped[month]) {
+      grouped[month] = [];
+    }
+    
+    grouped[month].push(log);
+  });
+  
+  return grouped;
+};
+
+// Fonction pour calculer la moyenne d'heures par visite
+export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
+  if (workLogs.length === 0) return 0;
+  
+  const totalHours = workLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
+  return totalHours / workLogs.length;
+};
+
+// Fonction pour calculer le nombre de jours depuis la dernière visite
+export const getDaysSinceLastEntry = (workLogs: WorkLog[]): number => {
+  if (workLogs.length === 0) return 0;
+  
+  const sortedLogs = [...workLogs].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  
+  const lastDate = new Date(sortedLogs[0].date);
+  const today = new Date();
+  
+  // Différence en millisecondes
+  const diffTime = today.getTime() - lastDate.getTime();
+  
+  // Convertir en jours
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+};
+
+// Fonction pour formatter des nombres avec séparateurs de milliers
+export const formatNumber = (num: number): string => {
+  return new Intl.NumberFormat('fr-FR', { 
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0
+  }).format(num);
 };
 
 // Fonction pour extraire le nom du client des notes

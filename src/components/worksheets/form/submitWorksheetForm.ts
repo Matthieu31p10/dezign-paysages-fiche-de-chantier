@@ -43,6 +43,16 @@ SIGNED_QUOTE: ${data.signedQuote ? 'true' : 'false'}
 ${data.linkedProjectId ? `LINKED_PROJECT_ID: ${data.linkedProjectId}` : ''}
 ${formatConsumableNotes(data.consumables)}`;
 
+    // Ensure all consumables are properly typed
+    const typedConsumables = data.consumables?.map(item => ({
+      supplier: item.supplier || '',
+      product: item.product || '',
+      unit: item.unit || '',
+      quantity: Number(item.quantity) || 0,
+      unitPrice: Number(item.unitPrice) || 0,
+      totalPrice: Number(item.totalPrice) || 0
+    })) || [];
+
     // Créer l'objet workLog
     const workLogData: Partial<WorkLog> = {
       projectId: `blank-${!existingWorkLogId ? generateUUID() : existingWorkLogId}`,
@@ -70,7 +80,7 @@ ${formatConsumableNotes(data.consumables)}`;
       },
       wasteManagement: data.wasteManagement,
       notes: formattedNotes,
-      consumables: data.consumables,
+      consumables: typedConsumables,
       hourlyRate: data.hourlyRate,
       createdAt: existingWorkLogId ? undefined : new Date()
     };
@@ -80,7 +90,14 @@ ${formatConsumableNotes(data.consumables)}`;
       await updateWorkLog(existingWorkLogId, workLogData);
       toast.success('Fiche vierge modifiée avec succès');
     } else {
-      await addWorkLog(workLogData as WorkLog);
+      // Pour une nouvelle fiche, on doit avoir un objet WorkLog complet
+      const newWorkLog: WorkLog = {
+        ...workLogData,
+        id: generateUUID(),
+        createdAt: new Date()
+      } as WorkLog;
+      
+      await addWorkLog(newWorkLog);
       toast.success('Fiche vierge créée avec succès');
     }
     

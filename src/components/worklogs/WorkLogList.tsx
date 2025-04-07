@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { WorkLog } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
-import { groupWorkLogsByMonth, getCurrentYear, getYearsFromWorkLogs, filterWorkLogsByYear } from '@/utils/helpers';
+import { groupWorkLogsByMonth, getCurrentYear, getYearsFromWorkLogs, filterWorkLogsByYear, formatDate } from '@/utils/helpers';
 import { useApp } from '@/context/AppContext';
 import EmptyState from './list/EmptyState';
 import NoResultsState from './list/NoResultsState';
@@ -48,8 +48,8 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     const searchLower = search.toLowerCase();
     
     return (
-      project?.name.toLowerCase().includes(searchLower) ||
-      formatDate(log.date).includes(searchLower) ||
+      project?.name?.toLowerCase().includes(searchLower) ||
+      formatDate(new Date(log.date)).includes(searchLower) ||
       log.personnel.some(p => p.toLowerCase().includes(searchLower))
     );
   });
@@ -101,8 +101,5 @@ const WorkLogList = ({ workLogs, projectId }: WorkLogListProps) => {
     </div>
   );
 };
-
-// We need this import because it was removed from the component
-import { formatDate } from '@/utils/helpers';
 
 export default WorkLogList;

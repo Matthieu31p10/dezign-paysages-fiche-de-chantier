@@ -1,3 +1,4 @@
+
 import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask } from '@/types/models';
 
 export interface ProjectsContextType {
@@ -14,11 +15,11 @@ export interface ProjectsContextType {
 
 export type WorkLogsContextType = {
   workLogs: WorkLog[];
-  addWorkLog: (workLog: WorkLog) => void;
+  addWorkLog: (workLog: WorkLog) => WorkLog;
   updateWorkLog: (id: string, workLog: Partial<WorkLog>) => void;
   deleteWorkLog: (id: string) => void;
   getWorkLogById: (id: string) => WorkLog | undefined;
-  getProjectWorkLogs: (projectId: string) => WorkLog[];
+  getWorkLogsByProjectId: (projectId: string) => WorkLog[];
   getTotalDuration: (projectId: string) => number;
   getTotalVisits: (projectId: string) => number;
   getLastVisitDate: (projectId: string) => Date | null;

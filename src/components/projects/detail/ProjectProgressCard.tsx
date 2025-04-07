@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from 'lucide-react';
 import { formatNumber } from '@/utils/helpers';
-import { ProjectInfo } from '@/types/models';
+import { ProjectInfo, WorkLog } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 
 interface ProjectProgressCardProps {
@@ -15,11 +15,16 @@ interface ProjectProgressCardProps {
 
 const ProjectProgressCard: React.FC<ProjectProgressCardProps> = ({ project }) => {
   const navigate = useNavigate();
-  const { getWorkLogsByProjectId } = useApp();
-  const workLogs = getWorkLogsByProjectId(project.id);
+  const { workLogs } = useApp();
   
-  const totalCompletedHours = workLogs.reduce((total, log) => total + log.timeTracking.totalHours, 0);
-  const completedVisits = workLogs.length;
+  // Filtrer les fiches de suivi pour ce projet
+  const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
+  
+  const totalCompletedHours = projectWorkLogs.reduce((total, log) => {
+    return total + (log.timeTracking?.totalHours || 0);
+  }, 0);
+  
+  const completedVisits = projectWorkLogs.length;
   
   return (
     <Card>

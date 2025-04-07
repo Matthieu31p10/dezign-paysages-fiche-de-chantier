@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { useWorkLogForm } from './WorkLogFormContext';
 import { FormValues } from './schema';
+import { WorkLog } from '@/types/models';
 
 interface WorkLogFormSubmitHandlerProps {
   onSuccess?: () => void;
@@ -95,15 +96,18 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       let result;
       if (initialData) {
-        result = await updateWorkLog({ 
-          ...payload, 
-          id: initialData.id, 
-          createdAt: initialData.createdAt 
-        });
-        console.log("Worklog updated successfully:", result);
+        // Pour une mise à jour, on passe l'id et les données partielles
+        updateWorkLog(initialData.id, payload);
+        console.log("Worklog updated successfully");
         toast.success("Fiche de suivi mise à jour avec succès!");
       } else {
-        result = await addWorkLog(payload);
+        // Pour une nouvelle fiche, on crée un nouvel objet complet
+        const newWorkLog: WorkLog = {
+          ...payload,
+          id: crypto.randomUUID(),
+          createdAt: new Date()
+        };
+        result = await addWorkLog(newWorkLog);
         console.log("Worklog created successfully:", result);
         toast.success("Fiche de suivi créée avec succès!");
       }

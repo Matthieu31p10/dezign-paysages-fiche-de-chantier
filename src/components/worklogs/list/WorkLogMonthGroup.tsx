@@ -10,18 +10,17 @@ interface WorkLogMonthGroupProps {
 }
 
 const WorkLogMonthGroup = ({ month, workLogs, projectId }: WorkLogMonthGroupProps) => {
+  // Format le mois et l'année pour l'affichage (ex: "Janvier 2023")
+  const formattedMonth = formatMonthYear(month);
+  
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-medium text-muted-foreground">
-        {formatMonthYear(month)}
-      </h3>
-      
-      <div className="space-y-2">
-        {workLogs.map((log, index) => (
+      <h3 className="text-lg font-medium">{formattedMonth}</h3>
+      <div className="space-y-3">
+        {workLogs.map((workLog) => (
           <WorkLogItem 
-            key={log.id} 
-            workLog={log} 
-            index={index} 
+            key={workLog.id} 
+            workLog={workLog} 
             projectId={projectId} 
           />
         ))}

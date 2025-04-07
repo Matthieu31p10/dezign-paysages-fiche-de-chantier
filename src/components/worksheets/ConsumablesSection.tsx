@@ -27,7 +27,7 @@ const ConsumablesSection: React.FC = () => {
       try {
         const parsedItems = JSON.parse(savedItems);
         // Ensure all items conform to Consumable type
-        const typedItems = parsedItems.map((item: any): Consumable => ({
+        const typedItems: Consumable[] = parsedItems.map((item: any): Consumable => ({
           supplier: item.supplier || '',
           product: item.product || '',
           unit: item.unit || '',
@@ -66,16 +66,29 @@ const ConsumablesSection: React.FC = () => {
 
     // Calculate total price
     const totalPrice = newConsumable.quantity * newConsumable.unitPrice;
+    
+    // Ensure all properties are defined to match Consumable type
     const consumableToAdd: Consumable = {
-      supplier: newConsumable.supplier,
-      product: newConsumable.product,
-      unit: newConsumable.unit,
-      quantity: newConsumable.quantity,
-      unitPrice: newConsumable.unitPrice,
-      totalPrice
+      supplier: newConsumable.supplier || '',
+      product: newConsumable.product || '',
+      unit: newConsumable.unit || '',
+      quantity: Number(newConsumable.quantity) || 0,
+      unitPrice: Number(newConsumable.unitPrice) || 0,
+      totalPrice: Number(totalPrice) || 0
     };
     
-    const updatedConsumables = [...consumables, consumableToAdd];
+    // Cast consumables to be compatible with Consumable type
+    const typedConsumables: Consumable[] = Array.isArray(consumables) ? 
+      consumables.map(item => ({
+        supplier: item.supplier || '',
+        product: item.product || '',
+        unit: item.unit || '',
+        quantity: Number(item.quantity) || 0,
+        unitPrice: Number(item.unitPrice) || 0,
+        totalPrice: Number(item.totalPrice) || 0
+      })) : [];
+    
+    const updatedConsumables: Consumable[] = [...typedConsumables, consumableToAdd];
     setValue('consumables', updatedConsumables);
     
     // Reset the form
@@ -83,7 +96,18 @@ const ConsumablesSection: React.FC = () => {
   };
   
   const handleRemoveConsumable = (index: number) => {
-    const updatedConsumables = [...consumables];
+    // Cast consumables to be compatible with Consumable type
+    const typedConsumables: Consumable[] = Array.isArray(consumables) ? 
+      consumables.map(item => ({
+        supplier: item.supplier || '',
+        product: item.product || '',
+        unit: item.unit || '',
+        quantity: Number(item.quantity) || 0,
+        unitPrice: Number(item.unitPrice) || 0,
+        totalPrice: Number(item.totalPrice) || 0
+      })) : [];
+      
+    const updatedConsumables = [...typedConsumables];
     updatedConsumables.splice(index, 1);
     setValue('consumables', updatedConsumables);
   };
@@ -96,8 +120,19 @@ const ConsumablesSection: React.FC = () => {
       return;
     }
     
+    // Cast consumables to be compatible with Consumable type
+    const typedConsumables: Consumable[] = Array.isArray(consumables) ? 
+      consumables.map(item => ({
+        supplier: item.supplier || '',
+        product: item.product || '',
+        unit: item.unit || '',
+        quantity: Number(item.quantity) || 0,
+        unitPrice: Number(item.unitPrice) || 0,
+        totalPrice: Number(item.totalPrice) || 0
+      })) : [];
+    
     // Only save consumables that have valid quantities
-    const validConsumables = consumables.filter(c => c.quantity > 0);
+    const validConsumables = typedConsumables.filter(c => c.quantity > 0);
     
     if (validConsumables.length === 0) {
       toast.error("Aucun consommable valide à sauvegarder");
@@ -196,7 +231,7 @@ const ConsumablesSection: React.FC = () => {
             
             {consumables.length > 0 && (
               <ConsumablesList 
-                consumables={consumables}
+                consumables={consumables as Consumable[]}
                 onRemove={handleRemoveConsumable}
               />
             )}

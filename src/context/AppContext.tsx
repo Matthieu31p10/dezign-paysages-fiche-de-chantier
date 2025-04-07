@@ -12,6 +12,7 @@ import {
   SettingsContextType, 
   AuthContextType 
 } from './types';
+import { WorkLog } from '@/types/models';
 
 // Create a type that combines all the context types
 type AppContextType = ProjectsContextType & 
@@ -20,6 +21,7 @@ type AppContextType = ProjectsContextType &
   SettingsContextType & 
   AuthContextType & {
     // Add any additional app-wide methods or state here
+    workLogs: WorkLog[];
   };
 
 // Create the context
@@ -28,7 +30,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // Create a provider component
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const projects = useProjects();
-  const workLogs = useWorkLogs();
+  const workLogsContext = useWorkLogs();
   const teams = useTeams();
   const settings = useSettings();
   const auth = useAuth();
@@ -39,7 +41,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ...projects,
     
     // WorkLogs context
-    ...workLogs,
+    ...workLogsContext,
+    workLogs: workLogsContext.workLogs,
     
     // Teams context
     ...teams,
