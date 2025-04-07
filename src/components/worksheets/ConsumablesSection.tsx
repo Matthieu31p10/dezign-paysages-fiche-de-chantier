@@ -58,9 +58,9 @@ const ConsumablesSection: React.FC = () => {
   };
 
   const handleAddConsumable = () => {
-    // Only add if product and unit are provided
-    if (!newConsumable.product.trim() || !newConsumable.unit.trim()) {
-      toast.error("Le produit et l'unité sont requis");
+    // Only add if quantity and price are valid
+    if (newConsumable.quantity <= 0) {
+      toast.error("La quantité doit être supérieure à 0");
       return;
     }
 
@@ -96,8 +96,8 @@ const ConsumablesSection: React.FC = () => {
       return;
     }
     
-    // Only save consumables that have required fields
-    const validConsumables = consumables.filter(c => c.product && c.unit);
+    // Only save consumables that have valid quantities
+    const validConsumables = consumables.filter(c => c.quantity > 0);
     
     if (validConsumables.length === 0) {
       toast.error("Aucun consommable valide à sauvegarder");
@@ -107,14 +107,7 @@ const ConsumablesSection: React.FC = () => {
     // Add current consumables to saved consumables
     const updatedSavedConsumables: Consumable[] = [
       ...savedConsumables, 
-      ...validConsumables.map(c => ({
-        supplier: c.supplier || '',
-        product: c.product || '',
-        unit: c.unit || '',
-        quantity: c.quantity,
-        unitPrice: c.unitPrice,
-        totalPrice: c.totalPrice
-      }))
+      ...validConsumables
     ];
     
     setSavedConsumables(updatedSavedConsumables);
