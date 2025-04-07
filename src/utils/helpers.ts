@@ -1,4 +1,3 @@
-
 import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WorkLog } from '@/types/models';
@@ -178,6 +177,12 @@ export function extractSignedQuote(notes: string): boolean {
 export function extractLinkedProjectId(notes: string): string {
   const match = notes.match(/LINKED_PROJECT_ID: (.*?)(?:\n|$)/);
   return match ? match[1] : '';
+}
+
+// Fonction pour extraire le temps d'enregistrement des notes
+export const extractRegistrationTime = (notes: string): string | null => {
+  const match = notes.match(/REGISTRATION_TIME: ([^\n]+)/);
+  return match ? match[1] : null;
 }
 
 // Formatter les notes des consommables pour le stockage

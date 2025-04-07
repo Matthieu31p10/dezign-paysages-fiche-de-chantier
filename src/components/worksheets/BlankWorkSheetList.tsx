@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { useWorkLogs } from '@/context/WorkLogsContext';
 import { formatDate } from '@/utils/helpers';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon, Euro, FileCheck } from 'lucide-react';
+import { FileText, Search, Plus, Filter, Calendar, FileBarChart, Download, Printer, LinkIcon, Euro, FileCheck, Tag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -31,7 +30,8 @@ import {
   extractDescription, 
   extractLinkedProjectId,
   extractHourlyRate,
-  extractSignedQuote 
+  extractSignedQuote,
+  extractRegistrationTime 
 } from '@/utils/helpers';
 
 interface BlankWorkSheetListProps {
@@ -49,23 +49,20 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
 
-  // Identifie les fiches vierges (celles dont l'ID commence par "blank-")
-  const blankWorkSheets = workLogs.filter(log => log.projectId.startsWith('blank-'));
+  const blankWorkSheets = workLogs.filter(log => 
+    log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV')
+  );
   
-  // Si aucune fiche vierge n'existe
   if (blankWorkSheets.length === 0) {
     return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
   }
 
-  // Années disponibles pour le filtre
   const availableYears = getYearsFromWorkLogs(blankWorkSheets);
   
-  // Filtrer par année
   const yearFilteredSheets = selectedYear 
     ? filterWorkLogsByYear(blankWorkSheets, selectedYear) 
     : blankWorkSheets;
 
-  // Filtrer par recherche
   const filteredSheets = yearFilteredSheets.filter(sheet => {
     if (!search.trim()) return true;
     
@@ -74,7 +71,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
     const address = extractAddress(sheet.notes || '');
     const notes = sheet.notes || '';
     
-    // Vérifier si la fiche est liée à un projet
     const linkedProjectId = extractLinkedProjectId(sheet.notes || '');
     const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : null;
     const projectName = linkedProject ? linkedProject.name.toLowerCase() : '';
@@ -85,11 +81,11 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
       formatDate(sheet.date).includes(searchLower) ||
       notes.toLowerCase().includes(searchLower) ||
       projectName.includes(searchLower) ||
+      sheet.projectId.toLowerCase().includes(searchLower) ||
       sheet.personnel.some(p => p.toLowerCase().includes(searchLower))
     );
   });
 
-  // Trier par date
   const sortedSheets = [...filteredSheets].sort((a, b) => {
     const dateA = new Date(a.date).getTime();
     const dateB = new Date(b.date).getTime();
@@ -203,12 +199,11 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
             const clientName = extractClientName(sheet.notes || '');
             const address = extractAddress(sheet.notes || '');
             const description = extractDescription(sheet.notes || '');
+            const registrationTime = extractRegistrationTime(sheet.notes || '');
             
-            // Vérifier si la fiche est liée à un projet
             const linkedProjectId = extractLinkedProjectId(sheet.notes || '');
             const linkedProject = linkedProjectId ? getProjectById(linkedProjectId) : null;
             
-            // Informations financières
             const hourlyRate = extractHourlyRate(sheet.notes || '');
             const hasHourlyRate = hourlyRate > 0;
             const signedQuote = extractSignedQuote(sheet.notes || '');
@@ -221,6 +216,14 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
                       <div className="flex items-center gap-2 mb-1.5">
                         <FileBarChart className="h-4 w-4 text-primary" />
                         <h3 className="font-medium">{clientName || "Client non spécifié"}</h3>
+                        
+                        {sheet.projectId.startsWith('DZFV') && (
+                          <Badge variant="secondary" className="ml-2 flex items-center gap-1">
+                            <Tag className="h-3 w-3" />
+                            {sheet.projectId}
+                          </Badge>
+                        )}
+                        
                         <Badge variant="outline" className="ml-auto md:ml-0">
                           {formatDate(sheet.date)}
                         </Badge>
@@ -268,6 +271,19 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, on
                           <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
                             <FileCheck className="h-3 w-3 text-green-600" />
                             Devis signé
+                          </Badge>
+                        )}
+                        
+                        {registrationTime && (
+                          <Badge variant="outline" className="flex items-center gap-1 text-xs ml-auto">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(registrationTime).toLocaleString('fr-FR', { 
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </Badge>
                         )}
                       </div>
