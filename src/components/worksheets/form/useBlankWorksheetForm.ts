@@ -16,7 +16,8 @@ import {
   extractHourlyRate,
   extractVatRate,
   extractSignedQuote,
-  extractLinkedProjectId 
+  extractLinkedProjectId,
+  extractQuoteValue
 } from '@/utils/helpers';
 
 export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string | null) => {
@@ -44,6 +45,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       consumables: [],
       vatRate: "20",
       signedQuote: false,
+      quoteValue: 0,
     }
   });
   
@@ -97,6 +99,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     const vatRate = extractVatRate(workLog.notes || '');
     const signedQuote = extractSignedQuote(workLog.notes || '');
     const linkedProjectId = extractLinkedProjectId(workLog.notes || '');
+    const quoteValue = extractQuoteValue(workLog.notes || '');
     
     // Mettre à jour le formulaire avec les valeurs existantes
     form.reset({
@@ -119,6 +122,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       consumables: workLog.consumables || [],
       vatRate,
       signedQuote,
+      quoteValue,
     });
     
     // Si un projet est lié, mettre à jour la sélection du projet
@@ -159,6 +163,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       consumables: [],
       vatRate: "20",
       signedQuote: false,
+      quoteValue: 0,
     });
     
     projectLinkHook.handleClearProject();

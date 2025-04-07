@@ -1,3 +1,4 @@
+
 import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WorkLog } from '@/types/models';
@@ -171,6 +172,12 @@ export function extractVatRate(notes: string): "10" | "20" {
 export function extractSignedQuote(notes: string): boolean {
   const match = notes.match(/SIGNED_QUOTE: (true|false)(?:\n|$)/);
   return match ? match[1] === 'true' : false;
+}
+
+// Fonction pour extraire la valeur du devis HT
+export function extractQuoteValue(notes: string): number {
+  const match = notes.match(/QUOTE_VALUE: ([\d.]+)(?:\n|$)/);
+  return match ? parseFloat(match[1]) : 0;
 }
 
 // Fonction pour extraire l'ID du projet lié

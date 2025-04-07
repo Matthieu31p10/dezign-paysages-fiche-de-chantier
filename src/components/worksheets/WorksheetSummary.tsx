@@ -2,11 +2,12 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calculator, FileCheck } from 'lucide-react';
+import { Calculator, FileCheck, Wallet } from 'lucide-react';
 import { BlankWorkSheetValues } from './schema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
 const WorksheetSummary: React.FC = () => {
   const { watch, setValue } = useFormContext<BlankWorkSheetValues>();
@@ -16,6 +17,7 @@ const WorksheetSummary: React.FC = () => {
   const consumables = watch('consumables') || [];
   const vatRate = watch('vatRate') || "20";
   const signedQuote = watch('signedQuote') || false;
+  const quoteValue = watch('quoteValue') || 0;
   
   // Calcul du coût total de la main d'œuvre
   const laborCost = totalHours * hourlyRate;
@@ -32,6 +34,9 @@ const WorksheetSummary: React.FC = () => {
   // Calcul du total TTC
   const totalTTC = totalHT + vatAmount;
   
+  // Différence entre devis et réalisation
+  const difference = quoteValue > 0 ? (quoteValue - totalHT).toFixed(2) : '0.00';
+  
   // Gestion du changement de taux de TVA
   const handleVatRateChange = (value: string) => {
     setValue('vatRate', value as "10" | "20");
@@ -40,6 +45,12 @@ const WorksheetSummary: React.FC = () => {
   // Gestion du changement du statut "Devis signé"
   const handleSignedQuoteChange = (checked: boolean) => {
     setValue('signedQuote', checked);
+  };
+  
+  // Gestion du changement de la valeur du devis
+  const handleQuoteValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+    setValue('quoteValue', value);
   };
   
   return (
@@ -72,26 +83,59 @@ const WorksheetSummary: React.FC = () => {
           )}
         />
         
-        <FormField
-          name="signedQuote"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-3 space-y-0 mt-8">
-              <FormControl>
-                <Checkbox 
-                  checked={field.value} 
-                  onCheckedChange={handleSignedQuoteChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel className="flex items-center cursor-pointer">
-                  <FileCheck className="w-4 h-4 mr-2" />
-                  Devis signé
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            name="signedQuote"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-3 space-y-0 mt-8">
+                <FormControl>
+                  <Checkbox 
+                    checked={field.value} 
+                    onCheckedChange={handleSignedQuoteChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="flex items-center cursor-pointer">
+                    <FileCheck className="w-4 h-4 mr-2" />
+                    Devis signé
+                  </FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            name="quoteValue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Valeur devis HT
                 </FormLabel>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={field.value || ''}
+                      onChange={e => {
+                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                        field.onChange(value);
+                      }}
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <span className="text-muted-foreground">€</span>
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
       
       <Card>
@@ -121,10 +165,18 @@ const WorksheetSummary: React.FC = () => {
                   <td className="py-2 font-semibold">TOTAL TTC</td>
                   <td className="py-2 text-right font-bold">{totalTTC.toFixed(2)} €</td>
                 </tr>
-                <tr>
+                <tr className="border-b">
                   <td className="py-2">Devis signé</td>
                   <td className="py-2 text-right font-medium">{signedQuote ? 'Oui' : 'Non'}</td>
                 </tr>
+                {quoteValue > 0 && (
+                  <tr className="border-b">
+                    <td className="py-2">Différence Devis/Réalisation HT</td>
+                    <td className={`py-2 text-right font-medium ${parseFloat(difference) < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      {difference} €
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

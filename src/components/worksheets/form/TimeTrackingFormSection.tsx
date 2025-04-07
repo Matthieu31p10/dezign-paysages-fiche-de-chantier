@@ -7,8 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
 
 const TimeTrackingFormSection: React.FC = () => {
-  const { control, watch } = useFormContext<BlankWorkSheetValues>();
+  const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const totalHours = watch('totalHours');
+  
+  // Handle hourly rate change
+  const handleHourlyRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+    setValue('hourlyRate', value);
+  };
   
   return (
     <div className="space-y-4">
@@ -122,12 +128,8 @@ const TimeTrackingFormSection: React.FC = () => {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    {...field}
                     value={field.value || ''}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                      field.onChange(value);
-                    }}
+                    onChange={handleHourlyRateChange}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <span className="text-muted-foreground">€/h</span>

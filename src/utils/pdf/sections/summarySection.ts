@@ -33,6 +33,10 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   // Information sur devis signé
   const signedQuote = data.signedQuote ? "Oui" : "Non";
   
+  // Valeur du devis et différence
+  const quoteValue = data.quoteValue || 0;
+  const difference = quoteValue > 0 ? (quoteValue - totalHT).toFixed(2) : null;
+  
   // Créer un tableau pour le bilan
   const tableData = [
     ["Main d'œuvre", `${totalHours.toFixed(2)} h x ${hourlyRate.toFixed(2)} € = ${laborCost.toFixed(2)} €`],
@@ -42,6 +46,16 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
     ["TOTAL TTC", `${totalTTC.toFixed(2)} €`],
     ["Devis signé", signedQuote]
   ];
+  
+  // Ajouter la valeur du devis et la différence si disponibles
+  if (quoteValue > 0) {
+    tableData.push(["Valeur devis HT", `${quoteValue.toFixed(2)} €`]);
+    if (difference) {
+      const diffValue = parseFloat(difference);
+      const diffText = `${Math.abs(diffValue).toFixed(2)} € ${diffValue >= 0 ? "(économie)" : "(dépassement)"}`;
+      tableData.push(["Différence Devis/Réalisation", diffText]);
+    }
+  }
   
   // Dessiner le tableau
   (pdf as any).autoTable({

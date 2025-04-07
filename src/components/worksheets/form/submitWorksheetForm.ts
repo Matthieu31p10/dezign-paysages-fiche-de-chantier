@@ -80,6 +80,7 @@ DESCRIPTION: ${data.workDescription}
 ${data.hourlyRate ? `HOURLY_RATE: ${data.hourlyRate}` : ''}
 VAT_RATE: ${data.vatRate}
 SIGNED_QUOTE: ${data.signedQuote ? 'true' : 'false'}
+${data.quoteValue ? `QUOTE_VALUE: ${data.quoteValue}` : ''}
 ${data.linkedProjectId ? `LINKED_PROJECT_ID: ${data.linkedProjectId}` : ''}
 REGISTRATION_TIME: ${registrationTime}
 ${formatConsumableNotes(data.consumables)}`;
@@ -127,7 +128,7 @@ ${formatConsumableNotes(data.consumables)}`;
       wasteManagement: data.wasteManagement,
       notes: formattedNotes,
       consumables: typedConsumables,
-      hourlyRate: data.hourlyRate,
+      hourlyRate: data.hourlyRate || 0,
       createdAt: existingWorkLogId ? undefined : now
     };
     
