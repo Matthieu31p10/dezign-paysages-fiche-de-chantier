@@ -60,7 +60,10 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
         // Add a small header to indicate continuation
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'italic');
-        pdf.text(`Suite - ${data.project?.name || 'Fiche de suivi'} - ${formatDate(data.workLog?.date)}`, margin, yPos);
+        // Vérifier si c'est une fiche vierge
+        const isBlankSheet = data.workLog?.projectId.startsWith('blank-');
+        const docTitle = isBlankSheet ? 'Fiche Vierge' : 'Fiche de suivi';
+        pdf.text(`Suite - ${data.project?.name || docTitle} - ${formatDate(data.workLog?.date)}`, margin, yPos);
         yPos += 8;
       }
     };
@@ -152,11 +155,13 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     }
     
     // Génération du nom de fichier
+    const isBlankSheet = data.workLog.projectId.startsWith('blank-');
+    const filePrefix = isBlankSheet ? 'Fiche_Vierge' : 'Fiche_Suivi';
     const projectName = data.project?.name 
       ? sanitizeText(data.project.name).replace(/[^a-z0-9]/gi, '_')
       : 'chantier';
     const dateStr = formatDate(data.workLog.date).replace(/\//g, '-');
-    const fileName = `Fiche_Suivi_${projectName}_${dateStr}.pdf`;
+    const fileName = `${filePrefix}_${projectName}_${dateStr}.pdf`;
     
     pdf.save(fileName);
     return fileName;

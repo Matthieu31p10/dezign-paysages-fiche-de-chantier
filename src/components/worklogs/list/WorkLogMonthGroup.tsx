@@ -17,11 +17,12 @@ const WorkLogMonthGroup = ({ month, workLogs, projectId }: WorkLogMonthGroupProp
     <div className="space-y-2">
       <h3 className="text-lg font-medium">{formattedMonth}</h3>
       <div className="space-y-3">
-        {workLogs.map((workLog) => (
+        {workLogs.map((workLog, index) => (
           <WorkLogItem 
             key={workLog.id} 
             workLog={workLog} 
-            projectId={projectId} 
+            projectId={projectId}
+            index={index}
           />
         ))}
       </div>

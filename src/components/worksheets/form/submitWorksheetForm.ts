@@ -13,7 +13,7 @@ const generateUUID = () => {
 
 interface SubmitWorksheetFormParams {
   data: BlankWorkSheetValues;
-  addWorkLog: (workLog: WorkLog) => void;
+  addWorkLog: (workLog: WorkLog) => WorkLog;
   updateWorkLog?: (id: string, workLog: Partial<WorkLog>) => void;
   existingWorkLogId?: string | null;
   onSuccess?: () => void;

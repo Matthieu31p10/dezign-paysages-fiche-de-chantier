@@ -12,12 +12,16 @@ export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos
   if (data.pdfOptions?.includeContactInfo && data.project) {
     pdf.text(data.project.name, pageWidth - margin, yPos, { align: 'right' });
   } else {
-    pdf.text("Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
+    // Changer "Fiche de suivi" par "Fiche Vierge" pour les fiches vierges
+    const isBlankSheet = data.workLog?.projectId.startsWith('blank-');
+    pdf.text(isBlankSheet ? "Fiche Vierge" : "Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
   }
   
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(`Fiche de suivi du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
+  // Changer "Fiche de suivi" par "Fiche Vierge" pour les fiches vierges
+  const isBlankSheet = data.workLog?.projectId.startsWith('blank-');
+  pdf.text(`${isBlankSheet ? 'Fiche Vierge' : 'Fiche de suivi'} du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
   
   // Ligne de séparation
   yPos += 10; // Réduire l'espace
