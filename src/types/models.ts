@@ -123,6 +123,7 @@ export interface Personnel {
 }
 
 export interface AppSettings {
+  companyName?: string; // Added the companyName property
   companyLogo?: string;
   loginBackgroundImage?: string;
   companyInfo?: CompanyInfo;

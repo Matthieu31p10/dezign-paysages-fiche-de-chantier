@@ -9,8 +9,8 @@ import { AppProvider } from './AppContext';
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <AuthProvider>
-      <SettingsProvider>
+    <SettingsProvider>
+      <AuthProvider>
         <TeamsProvider>
           <ProjectsProvider>
             <WorkLogsProvider>
@@ -20,7 +20,7 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
             </WorkLogsProvider>
           </ProjectsProvider>
         </TeamsProvider>
-      </SettingsProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </SettingsProvider>
   );
 };
