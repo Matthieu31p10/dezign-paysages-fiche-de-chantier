@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/context/AppContext';
@@ -17,10 +17,11 @@ import FormActions from './form/FormActions';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
+  workLogId?: string | null; // Ajout d'une prop pour l'ID de la fiche à modifier
 }
 
-const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) => {
-  const { teams } = useApp();
+const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess, workLogId }) => {
+  const { teams, getWorkLogById } = useApp();
   const {
     form,
     isSubmitting,
@@ -33,8 +34,18 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
     handleSubmit,
     handleTeamFilterChange,
     handlePersonnelChange,
-    handleCancel
-  } = useBlankWorksheetForm(onSuccess);
+    handleCancel,
+    loadWorkLogData
+  } = useBlankWorksheetForm(onSuccess, workLogId);
+  
+  // Charger les données de la fiche si un ID est fourni
+  useEffect(() => {
+    if (workLogId) {
+      loadWorkLogData(workLogId);
+    }
+  }, [workLogId, loadWorkLogData]);
+  
+  const isEditing = !!workLogId;
   
   return (
     <Form {...form}>
@@ -87,6 +98,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess }) =>
         <FormActions 
           isSubmitting={isSubmitting}
           handleCancel={handleCancel}
+          isEditing={isEditing}
         />
       </form>
     </Form>

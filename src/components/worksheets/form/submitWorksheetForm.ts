@@ -1,64 +1,48 @@
 
+import { toast } from 'sonner';
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
-import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
+import { formatConsumableNotes } from '@/utils/helpers';
 
-type SubmitHandlerParams = {
+interface SubmitWorksheetFormParams {
   data: BlankWorkSheetValues;
-  addWorkLog: (workLog: Omit<WorkLog, 'id' | 'createdAt'>) => void;
+  addWorkLog: (workLog: WorkLog) => void;
+  updateWorkLog?: (id: string, workLog: Partial<WorkLog>) => void;
+  existingWorkLogId?: string | null;
   onSuccess?: () => void;
-  setIsSubmitting: (value: boolean) => void;
-};
+  setIsSubmitting: (isSubmitting: boolean) => void;
+}
 
 export const submitWorksheetForm = async ({
   data,
   addWorkLog,
+  updateWorkLog,
+  existingWorkLogId,
   onSuccess,
   setIsSubmitting
-}: SubmitHandlerParams) => {
+}: SubmitWorksheetFormParams) => {
+  setIsSubmitting(true);
+  
   try {
-    setIsSubmitting(true);
-    
-    if (!data.workDescription?.trim()) {
-      toast.error("La description des travaux est obligatoire");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    // Ensure all consumables have required fields
-    const validatedConsumables = data.consumables?.map(c => ({
-      supplier: c.supplier || '',
-      product: c.product || '',
-      unit: c.unit || '',
-      quantity: Number(c.quantity) || 0,
-      unitPrice: Number(c.unitPrice) || 0,
-      totalPrice: Number(c.totalPrice) || 0
-    })) || [];
-    
-    // Format des données à enregistrer dans les notes pour faciliter l'extraction ultérieure
-    const formattedNotes = `
-CLIENT: ${data.clientName || ''}
-ADRESSE: ${data.address || ''}
-TELEPHONE: ${data.contactPhone || ''}
-EMAIL: ${data.contactEmail || ''}
-${data.linkedProjectId ? `PROJET_LIE: ${data.linkedProjectId}` : ''}
+    // Format des notes pour stocker les informations supplémentaires
+    const formattedNotes = `CLIENT_NAME: ${data.clientName}
+ADDRESS: ${data.address}
+${data.contactPhone ? `CONTACT_PHONE: ${data.contactPhone}` : ''}
+${data.contactEmail ? `CONTACT_EMAIL: ${data.contactEmail}` : ''}
+DESCRIPTION: ${data.workDescription}
+${data.hourlyRate ? `HOURLY_RATE: ${data.hourlyRate}` : ''}
+VAT_RATE: ${data.vatRate}
+SIGNED_QUOTE: ${data.signedQuote ? 'true' : 'false'}
+${data.linkedProjectId ? `LINKED_PROJECT_ID: ${data.linkedProjectId}` : ''}
+${formatConsumableNotes(data.consumables)}`;
 
-DESCRIPTION DES TRAVAUX:
-${data.workDescription}
-
-${data.notes ? `NOTES ADDITIONNELLES:
-${data.notes}` : ''}
-
-TAUX_TVA: ${data.vatRate}
-TAUX_HORAIRE: ${data.hourlyRate || 0}
-DEVIS_SIGNE: ${data.signedQuote ? 'Oui' : 'Non'}
-`;
-    
-    const workLogData: Omit<WorkLog, 'id' | 'createdAt'> = {
-      projectId: 'blank-' + Date.now().toString(),
+    // Créer l'objet workLog
+    const workLogData: Partial<WorkLog> = {
+      projectId: `blank-${!existingWorkLogId ? uuidv4() : existingWorkLogId}`,
       date: data.date,
-      duration: data.totalHours,
       personnel: data.personnel,
+      duration: data.totalHours,
       timeTracking: {
         departure: data.departure,
         arrival: data.arrival,
@@ -76,26 +60,31 @@ DEVIS_SIGNE: ${data.signedQuote ? 'Oui' : 'Non'}
           done: false,
           progress: 0
         },
-        watering: 'none',
-        customTasks: {},
-        tasksProgress: {}
+        watering: 'none'
       },
-      notes: formattedNotes,
       wasteManagement: data.wasteManagement,
-      consumables: validatedConsumables
+      notes: formattedNotes,
+      consumables: data.consumables,
+      hourlyRate: data.hourlyRate,
+      createdAt: existingWorkLogId ? undefined : new Date()
     };
     
-    addWorkLog(workLogData);
+    // Ajouter ou mettre à jour la fiche selon le cas
+    if (existingWorkLogId && updateWorkLog) {
+      await updateWorkLog(existingWorkLogId, workLogData);
+      toast.success('Fiche vierge modifiée avec succès');
+    } else {
+      await addWorkLog(workLogData as WorkLog);
+      toast.success('Fiche vierge créée avec succès');
+    }
     
-    toast.success("Fiche vierge créée avec succès");
-    
+    // Exécuter le callback de succès s'il est fourni
     if (onSuccess) {
       onSuccess();
     }
-    
   } catch (error) {
-    console.error('Erreur lors de la création de la fiche:', error);
-    toast.error("Erreur lors de la création de la fiche");
+    console.error('Erreur lors de la soumission du formulaire:', error);
+    toast.error('Une erreur est survenue lors de la création de la fiche');
   } finally {
     setIsSubmitting(false);
   }

@@ -36,9 +36,10 @@ import {
 
 interface BlankWorkSheetListProps {
   onCreateNew: () => void;
+  onEdit: (workLogId: string) => void;
 }
 
-const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) => {
+const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew, onEdit }) => {
   const navigate = useNavigate();
   const { workLogs } = useWorkLogs();
   const { getProjectById, projectInfos } = useApp();
@@ -110,7 +111,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ onCreateNew }) 
   };
 
   const handleEdit = (sheetId: string) => {
-    navigate(`/worklogs/${sheetId}`);
+    onEdit(sheetId);
   };
   
   const toggleSortOrder = () => {

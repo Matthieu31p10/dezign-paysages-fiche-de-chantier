@@ -2,14 +2,25 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { blankWorkSheetSchema, BlankWorkSheetValues } from '../schema';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { calculateTotalHours } from '@/utils/time';
 import { useApp } from '@/context/AppContext';
 import { useProjectLink } from './useProjectLinkHook';
 import { submitWorksheetForm } from './submitWorksheetForm';
+import { 
+  extractClientName,
+  extractAddress, 
+  extractContactPhone, 
+  extractContactEmail, 
+  extractDescription,
+  extractHourlyRate,
+  extractVatRate,
+  extractSignedQuote,
+  extractLinkedProjectId 
+} from '@/utils/helpers';
 
-export const useBlankWorksheetForm = (onSuccess?: () => void) => {
-  const { addWorkLog } = useApp();
+export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string | null) => {
+  const { addWorkLog, updateWorkLog, getWorkLogById } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Initialize the form
@@ -71,11 +82,58 @@ export const useBlankWorksheetForm = (onSuccess?: () => void) => {
     form
   ]);
   
+  // Fonction pour charger les données d'une fiche vierge existante
+  const loadWorkLogData = useCallback((id: string) => {
+    const workLog = getWorkLogById(id);
+    if (!workLog) return;
+    
+    // Extraire les données du notes field
+    const clientName = extractClientName(workLog.notes || '');
+    const address = extractAddress(workLog.notes || '');
+    const contactPhone = extractContactPhone(workLog.notes || '');
+    const contactEmail = extractContactEmail(workLog.notes || '');
+    const description = extractDescription(workLog.notes || '');
+    const hourlyRate = extractHourlyRate(workLog.notes || '');
+    const vatRate = extractVatRate(workLog.notes || '');
+    const signedQuote = extractSignedQuote(workLog.notes || '');
+    const linkedProjectId = extractLinkedProjectId(workLog.notes || '');
+    
+    // Mettre à jour le formulaire avec les valeurs existantes
+    form.reset({
+      clientName,
+      address,
+      contactPhone,
+      contactEmail,
+      date: new Date(workLog.date),
+      personnel: workLog.personnel,
+      departure: workLog.timeTracking.departure || '08:00',
+      arrival: workLog.timeTracking.arrival || '08:30',
+      end: workLog.timeTracking.end || '16:30',
+      breakTime: workLog.timeTracking.breakTime || '00:30',
+      totalHours: workLog.timeTracking.totalHours || 7.5,
+      hourlyRate,
+      wasteManagement: workLog.wasteManagement || 'none',
+      teamFilter: 'all',
+      linkedProjectId: linkedProjectId || '',
+      workDescription: description,
+      consumables: workLog.consumables || [],
+      vatRate,
+      signedQuote,
+    });
+    
+    // Si un projet est lié, mettre à jour la sélection du projet
+    if (linkedProjectId) {
+      projectLinkHook.handleProjectSelect(linkedProjectId);
+    }
+  }, [form, getWorkLogById, projectLinkHook]);
+  
   // Handle form submission
   const handleSubmit = async (data: BlankWorkSheetValues) => {
     await submitWorksheetForm({
       data,
       addWorkLog,
+      updateWorkLog,
+      existingWorkLogId: workLogId,
       onSuccess,
       setIsSubmitting
     });
@@ -127,6 +185,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void) => {
     handleTeamFilterChange,
     handlePersonnelChange,
     handleCancel,
-    resetForm
+    resetForm,
+    loadWorkLogData
   };
 };

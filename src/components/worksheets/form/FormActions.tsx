@@ -6,11 +6,13 @@ import { Loader2 } from 'lucide-react';
 interface FormActionsProps {
   isSubmitting: boolean;
   handleCancel: () => void;
+  isEditing?: boolean; // Nouvelle prop pour indiquer si on est en mode édition
 }
 
 const FormActions: React.FC<FormActionsProps> = ({
   isSubmitting,
-  handleCancel
+  handleCancel,
+  isEditing = false
 }) => {
   return (
     <div className="flex justify-between">
@@ -30,8 +32,8 @@ const FormActions: React.FC<FormActionsProps> = ({
       >
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {isSubmitting 
-          ? "Création..." 
-          : "Créer la fiche"
+          ? (isEditing ? "Modification..." : "Création...") 
+          : (isEditing ? "Modifier la fiche" : "Créer la fiche")
         }
       </Button>
     </div>

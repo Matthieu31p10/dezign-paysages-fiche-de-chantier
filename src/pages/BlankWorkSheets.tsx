@@ -15,13 +15,16 @@ import { useProjects } from '@/context/ProjectsContext';
 const BlankWorkSheets = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { workLogs } = useWorkLogs();
+  const { workLogs, getWorkLogById } = useWorkLogs();
   const { getActiveProjects } = useProjects();
   
   // Détecter le paramètre tab dans l'URL
   const queryParams = new URLSearchParams(location.search);
   const tabFromUrl = queryParams.get('tab');
   const [activeTab, setActiveTab] = useState(tabFromUrl || 'list');
+  
+  // État pour stocker l'ID de la fiche en cours d'édition
+  const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
   
   // Compter les fiches vierges
   const blankWorkSheetsCount = workLogs.filter(log => log.projectId.startsWith('blank-')).length;
@@ -37,6 +40,23 @@ const BlankWorkSheets = () => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+    // Réinitialiser l'ID de la fiche en cours d'édition si on change d'onglet
+    if (value !== 'new') {
+      setEditingWorkLogId(null);
+    }
+  };
+  
+  // Gérer l'édition d'une fiche vierge
+  const handleEditWorksheet = (workLogId: string) => {
+    setEditingWorkLogId(workLogId);
+    setActiveTab('new');
+  };
+  
+  // Gérer le succès du formulaire
+  const handleFormSuccess = () => {
+    toast.success(editingWorkLogId ? "Fiche modifiée avec succès" : "Fiche créée avec succès");
+    setActiveTab('list');
+    setEditingWorkLogId(null);
   };
 
   return (
@@ -91,12 +111,18 @@ const BlankWorkSheets = () => {
           </TabsTrigger>
           <TabsTrigger value="new" className="flex items-center">
             <Plus className="w-4 h-4 mr-2" />
-            Nouvelle fiche
+            {editingWorkLogId ? "Modifier la fiche" : "Nouvelle fiche"}
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="list" className="p-0 border-0 mt-6">
-          <BlankWorkSheetList onCreateNew={() => setActiveTab('new')} />
+          <BlankWorkSheetList 
+            onCreateNew={() => {
+              setEditingWorkLogId(null);
+              setActiveTab('new');
+            }}
+            onEdit={handleEditWorksheet}
+          />
         </TabsContent>
         
         <TabsContent value="new" className="p-0 border-0 mt-6">
@@ -104,19 +130,18 @@ const BlankWorkSheets = () => {
             <CardHeader>
               <CardTitle className="text-xl flex items-center">
                 <FilePlus className="w-5 h-5 mr-2 text-primary" />
-                Nouvelle fiche vierge
+                {editingWorkLogId ? "Modifier la fiche vierge" : "Nouvelle fiche vierge"}
               </CardTitle>
               <CardDescription>
-                Créez une nouvelle fiche pour un travail ponctuel sans lien avec un projet existant,
-                ou pour des travaux complémentaires sur un chantier existant
+                {editingWorkLogId 
+                  ? "Modifiez les détails de votre fiche"
+                  : "Créez une nouvelle fiche pour un travail ponctuel sans lien avec un projet existant, ou pour des travaux complémentaires sur un chantier existant"}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <BlankWorkSheetForm 
-                onSuccess={() => {
-                  toast.success("Fiche créée avec succès");
-                  setActiveTab('list');
-                }}
+                workLogId={editingWorkLogId}
+                onSuccess={handleFormSuccess}
               />
             </CardContent>
           </Card>
