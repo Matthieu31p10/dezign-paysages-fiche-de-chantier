@@ -7,6 +7,7 @@ import { calculateTotalHours } from '@/utils/time';
 import { useApp } from '@/context/AppContext';
 import { useProjectLink } from './useProjectLinkHook';
 import { submitWorksheetForm } from './submitWorksheetForm';
+import { toast } from 'sonner';
 
 export const useBlankWorksheetForm = (
   onSuccess?: () => void, 
@@ -80,14 +81,21 @@ export const useBlankWorksheetForm = (
   
   // Handle form submission
   const handleSubmit = async (data: BlankWorkSheetValues) => {
-    await submitWorksheetForm({
-      data,
-      addWorkLog,
-      updateWorkLog,
-      workLogId,
-      onSuccess,
-      setIsSubmitting
-    });
+    try {
+      setIsSubmitting(true);
+      await submitWorksheetForm({
+        data,
+        addWorkLog,
+        updateWorkLog,
+        workLogId,
+        onSuccess,
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Une erreur est survenue lors de la soumission du formulaire');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   // Reset form to initial state

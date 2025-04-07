@@ -16,7 +16,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Fonction pour obtenir les infos d'un projet par son ID
   const getProjectById = (projectId: string) => {
-    const project = projectsContext.projects.find(
+    const project = projectsContext.projectInfos.find(
       (project) => project.id === projectId
     );
     return project || null;
@@ -38,10 +38,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteTeam: teamsContext.deleteTeam,
         
         // Projects context
-        projects: projectsContext.projects,
-        addProject: projectsContext.addProject,
-        updateProject: projectsContext.updateProject,
-        deleteProject: projectsContext.deleteProject,
+        projects: projectsContext.projectInfos,
+        addProject: projectsContext.addProjectInfo,
+        updateProject: projectsContext.updateProjectInfo,
+        deleteProject: projectsContext.deleteProjectInfo,
         getActiveProjects: projectsContext.getActiveProjects,
         getArchivedProjects: projectsContext.getArchivedProjects,
         
@@ -55,13 +55,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Settings context
         settings: settingsContext.settings,
         updateSettings: settingsContext.updateSettings,
-        getCompanyLogo: settingsContext.getCompanyLogo,
-        getCompanyInfo: settingsContext.getCompanyInfo,
         
         // Helper functions
         getProjectById,
         getProjectNameById,
-        projectInfos: projectsContext.projects,
+        projectInfos: projectsContext.projectInfos,
       }}
     >
       {children}
