@@ -10,7 +10,7 @@ export const useWorkLogDetailProvider = (
   workLog?: WorkLog,
   project?: ProjectInfo,
   workLogs: WorkLog[] = [],
-  updateWorkLog?: (workLog: WorkLog) => void,
+  updateWorkLog?: (id: string, partialWorkLog: Partial<WorkLog>) => void,
   deleteWorkLog?: (id: string) => void,
   settings?: any
 ) => {
@@ -51,8 +51,7 @@ export const useWorkLogDetailProvider = (
       // Sécurité: validation des données
       const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
       
-      updateWorkLog({
-        ...workLog,
+      updateWorkLog(workLog.id, {
         notes: sanitizedNotes
       });
       toast.success("Notes enregistrées avec succès");
