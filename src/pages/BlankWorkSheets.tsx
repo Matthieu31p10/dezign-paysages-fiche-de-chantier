@@ -26,10 +26,10 @@ const BlankWorkSheets = () => {
   // État pour stocker l'ID de la fiche en cours d'édition
   const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
   
-  // Compter les fiches vierges
-  const blankWorkSheetsCount = workLogs.filter(log => 
+  // Filter only blank worksheets
+  const blankWorkSheets = workLogs.filter(log => 
     log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'))
-  ).length;
+  );
   
   // Récupérer la liste des projets actifs
   const activeProjects = getActiveProjects();
@@ -52,6 +52,18 @@ const BlankWorkSheets = () => {
   const handleEditWorksheet = (workLogId: string) => {
     setEditingWorkLogId(workLogId);
     setActiveTab('new');
+  };
+  
+  // Handle exporting PDF
+  const handleExportPDF = (id: string) => {
+    // Implement PDF export functionality
+    toast.success("Export PDF en cours...");
+  };
+  
+  // Handle printing
+  const handlePrint = (id: string) => {
+    // Implement print functionality
+    toast.success("Impression en cours...");
   };
   
   // Gérer le succès du formulaire
@@ -90,12 +102,12 @@ const BlankWorkSheets = () => {
         </div>
       </div>
 
-      {blankWorkSheetsCount > 0 && (
+      {blankWorkSheets.length > 0 && (
         <Alert className="bg-muted">
           <FileIcon className="h-4 w-4" />
           <AlertTitle>Information</AlertTitle>
           <AlertDescription>
-            Vous avez {blankWorkSheetsCount} fiche{blankWorkSheetsCount > 1 ? 's' : ''} vierge{blankWorkSheetsCount > 1 ? 's' : ''}. Ces fiches sont automatiquement incluses dans vos rapports statistiques mensuels.
+            Vous avez {blankWorkSheets.length} fiche{blankWorkSheets.length > 1 ? 's' : ''} vierge{blankWorkSheets.length > 1 ? 's' : ''}. Ces fiches sont automatiquement incluses dans vos rapports statistiques mensuels.
             {activeProjects.length > 0 && (
               <span className="block mt-1">
                 Vous pouvez désormais associer vos fiches vierges à des projets existants lors de l'export en PDF.
@@ -119,11 +131,14 @@ const BlankWorkSheets = () => {
         
         <TabsContent value="list" className="p-0 border-0 mt-6">
           <BlankWorkSheetList 
+            sheets={blankWorkSheets}
             onCreateNew={() => {
               setEditingWorkLogId(null);
               setActiveTab('new');
             }}
             onEdit={handleEditWorksheet}
+            onExportPDF={handleExportPDF}
+            onPrint={handlePrint}
           />
         </TabsContent>
         

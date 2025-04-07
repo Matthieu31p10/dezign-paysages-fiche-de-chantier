@@ -1,20 +1,34 @@
+
 import React, { useState } from 'react';
-import { BlankWorkSheet } from '@/types/models';
+import { WorkLog } from '@/types/models';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, FileText } from 'lucide-react';
-import BlankSheetItem from './BlankSheetItem';
+import BlankSheetItem from './list/BlankSheetItem';
+import { useProjects } from '@/context/ProjectsContext';
 
 interface BlankWorkSheetListProps {
-  sheets: BlankWorkSheet[];
-  onSelectSheet: (id: string) => void;
+  sheets?: WorkLog[];
+  onSelectSheet?: (id: string) => void;
+  onCreateNew?: () => void;
+  onEdit?: (id: string) => void;
+  onExportPDF?: (id: string) => void;
+  onPrint?: (id: string) => void;
 }
 
-const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ sheets, onSelectSheet }) => {
+const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ 
+  sheets = [], 
+  onSelectSheet,
+  onCreateNew,
+  onEdit,
+  onExportPDF = () => {},
+  onPrint = () => {}
+}) => {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterInvoiced, setFilterInvoiced] = useState<string>('all');
+  const { getProjectById } = useProjects();
   
   // Safety check for data
   const validSheets = Array.isArray(sheets) ? sheets : [];
@@ -23,9 +37,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ sheets, onSelec
     return validSheets.filter(sheet => {
       // Filter by search term
       const matchesSearch = !search ? true : (
-        sheet.projectName.toLowerCase().includes(search.toLowerCase()) ||
-        sheet.clientName.toLowerCase().includes(search.toLowerCase()) ||
-        sheet.notes.toLowerCase().includes(search.toLowerCase())
+        (sheet.projectId?.toLowerCase().includes(search.toLowerCase()) || false) ||
+        (sheet.notes?.toLowerCase().includes(search.toLowerCase()) || false) ||
+        sheet.personnel.some(person => person.toLowerCase().includes(search.toLowerCase()))
       );
       
       // Filter by status
@@ -43,7 +57,19 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ sheets, onSelec
   const filteredSheets = getFilteredSheets();
   
   const handleSelectSheet = (id: string) => {
-    onSelectSheet(id);
+    if (onSelectSheet) onSelectSheet(id);
+  };
+
+  const handleEdit = (id: string) => {
+    if (onEdit) onEdit(id);
+  };
+  
+  const handleExportPDF = (id: string) => {
+    if (onExportPDF) onExportPDF(id);
+  };
+  
+  const handlePrint = (id: string) => {
+    if (onPrint) onPrint(id);
   };
   
   return (
@@ -108,7 +134,10 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ sheets, onSelec
               key={sheet.id}
               sheet={sheet}
               onSelect={handleSelectSheet}
-              invoiced={sheet.invoiced === true || sheet.invoiced === "true"}
+              linkedProject={sheet.notes ? getProjectById(sheet.notes) : null}
+              onEdit={handleEdit}
+              onExportPDF={handleExportPDF}
+              onPrint={handlePrint}
             />
           ))}
         </div>
