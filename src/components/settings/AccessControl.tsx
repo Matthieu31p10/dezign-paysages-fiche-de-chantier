@@ -21,6 +21,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
   const modules = [
     { id: 'projects', name: 'Projets' },
     { id: 'worklogs', name: 'Suivi' },
+    { id: 'blanksheets', name: 'Fiches vierges' },
     { id: 'reports', name: 'Rapports' },
     { id: 'settings', name: 'Paramètres' },
   ];
@@ -31,6 +32,8 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
     { id: 'projects.write', name: 'Modification fiches chantier', group: 'projects' },
     { id: 'worklogs.read', name: 'Lecture fiches suivi', group: 'worklogs' },
     { id: 'worklogs.write', name: 'Modification fiches suivi', group: 'worklogs' },
+    { id: 'blanksheets.read', name: 'Lecture fiches vierges', group: 'blanksheets' },
+    { id: 'blanksheets.write', name: 'Modification fiches vierges', group: 'blanksheets' },
   ];
 
   const handleSavePermissions = (user: UserType) => {
@@ -47,7 +50,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
     
     if (user.role === 'admin') return true;
     if (user.role === 'manager' && moduleId !== 'settings') return true;
-    if (moduleId === 'projects' || moduleId === 'worklogs') return true;
+    if (moduleId === 'projects' || moduleId === 'worklogs' || moduleId === 'blanksheets') return true;
     
     return false;
   };
@@ -67,7 +70,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
     }
     
     // Utilisateur standard a des permissions en lecture par défaut
-    if (permissionId === 'projects.read' || permissionId === 'worklogs.read') return true;
+    if (permissionId === 'projects.read' || permissionId === 'worklogs.read' || permissionId === 'blanksheets.read') return true;
     
     return false;
   };
@@ -88,7 +91,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
           </p>
           
           <div className="border rounded-md">
-            <div className="grid grid-cols-6 p-3 font-medium bg-muted border-b">
+            <div className="grid grid-cols-7 p-3 font-medium bg-muted border-b">
               <div className="col-span-2">Utilisateur</div>
               {modules.map(module => (
                 <div key={module.id} className="col-span-1 text-center">{module.name}</div>
@@ -97,7 +100,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
             
             {settings.users && settings.users.map(user => (
               <div key={user.id} className="border-b last:border-b-0">
-                <div className="grid grid-cols-6 p-3 items-center">
+                <div className="grid grid-cols-7 p-3 items-center">
                   <div className="col-span-2 font-medium">
                     {user.name || user.username}
                     <p className="text-xs text-muted-foreground">{user.role}</p>
@@ -125,7 +128,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
                 
                 {/* Permissions détaillées pour les projets et fiches de suivi */}
                 <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
-                  <div className="grid grid-cols-6 gap-2">
+                  <div className="grid grid-cols-7 gap-2">
                     <div className="col-span-2 text-sm text-muted-foreground">
                       Permissions détaillées
                     </div>

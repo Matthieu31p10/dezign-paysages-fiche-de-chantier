@@ -42,7 +42,7 @@ function App() {
               <Route path="worklogs/new" element={<WorkLogNew />} />
               <Route path="worklogs/:id" element={<WorkLogDetail />} />
               <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
-              <Route path="blank-worksheets" element={<BlankWorkSheets />} />
+              <Route path="blank-worksheets" element={<BlankWorkSheets />} requiredModule="blanksheets" />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
