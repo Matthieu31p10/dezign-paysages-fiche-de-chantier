@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { blankWorkSheetSchema, BlankWorkSheetValues } from '../schema';
@@ -24,7 +23,6 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
   const { addWorkLog, updateWorkLog, getWorkLogById } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Initialize the form
   const form = useForm<BlankWorkSheetValues>({
     resolver: zodResolver(blankWorkSheetSchema),
     defaultValues: {
@@ -42,6 +40,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       teamFilter: 'all',
       linkedProjectId: '',
       notes: '',
+      tasks: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,
@@ -49,10 +48,8 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     }
   });
   
-  // Project link functionality
   const projectLinkHook = useProjectLink(form);
   
-  // Update total hours when time values change
   useEffect(() => {
     const departureTime = form.watch("departure");
     const arrivalTime = form.watch("arrival");
@@ -84,12 +81,10 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     form
   ]);
   
-  // Fonction pour charger les données d'une fiche vierge existante
   const loadWorkLogData = useCallback((id: string) => {
     const workLog = getWorkLogById(id);
     if (!workLog) return;
     
-    // Extraire les données du notes field
     const clientName = extractClientName(workLog.notes || '');
     const address = extractAddress(workLog.notes || '');
     const contactPhone = extractContactPhone(workLog.notes || '');
@@ -108,7 +103,6 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       quoteValue
     });
     
-    // Mettre à jour le formulaire avec les valeurs existantes
     form.reset({
       clientName,
       address,
@@ -126,19 +120,18 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       teamFilter: 'all',
       linkedProjectId: linkedProjectId || '',
       notes: notes || '',
+      tasks: workLog.tasks || '',
       consumables: workLog.consumables || [],
       vatRate: vatRate || "20",
       signedQuote: signedQuote || false,
       quoteValue: Number(quoteValue) || 0,
     });
     
-    // Si un projet est lié, mettre à jour la sélection du projet
     if (linkedProjectId) {
       projectLinkHook.handleProjectSelect(linkedProjectId);
     }
   }, [form, getWorkLogById, projectLinkHook]);
   
-  // Handle form submission
   const handleSubmit = async (data: BlankWorkSheetValues) => {
     await submitWorksheetForm({
       data,
@@ -150,7 +143,6 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     });
   };
   
-  // Reset form to initial state
   const resetForm = () => {
     form.reset({
       clientName: '',
@@ -167,6 +159,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       teamFilter: 'all',
       linkedProjectId: '',
       notes: '',
+      tasks: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,
@@ -176,7 +169,6 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     projectLinkHook.handleClearProject();
   };
   
-  // Helper functions for form interactions
   const handleTeamFilterChange = (value: string) => {
     form.setValue('teamFilter', value);
   };
