@@ -11,26 +11,17 @@ const WorkLogDetails: React.FC = () => {
   
   // Fonction pour convertir le code de gestion des déchets en texte lisible
   const getWasteManagementText = (wasteCode?: string) => {
-    switch (wasteCode) {
-      // Big bags
-      case 'big_bag_1': return '1 Big-bag';
-      case 'big_bag_2': return '2 Big-bags';
-      case 'big_bag_3': return '3 Big-bags';
-      case 'big_bag_4': return '4 Big-bags';
-      case 'big_bag_5': return '5 Big-bags';
-      
-      // Half dumpsters
-      case 'half_dumpster_1': return '1 × 1/2 Benne';
-      case 'half_dumpster_2': return '2 × 1/2 Bennes';
-      case 'half_dumpster_3': return '3 × 1/2 Bennes';
-      
-      // Full dumpsters
-      case 'dumpster_1': return '1 Benne';
-      case 'dumpster_2': return '2 Bennes';
-      case 'dumpster_3': return '3 Bennes';
-      
-      case 'none': 
-      default: return 'Aucun';
+    if (!wasteCode || wasteCode === 'none') return 'Aucun';
+    
+    const parts = wasteCode.split('_');
+    const type = parts[0];
+    const quantity = parts.length > 1 ? parts[1] : '1';
+    
+    switch (type) {
+      case 'big_bag': return `${quantity} Big-bag${quantity !== '1' ? 's' : ''}`;
+      case 'half_dumpster': return `${quantity} × 1/2 Benne${quantity !== '1' ? 's' : ''}`;
+      case 'dumpster': return `${quantity} Benne${quantity !== '1' ? 's' : ''}`;
+      default: return wasteCode; // Fallback pour les anciens formats
     }
   };
   

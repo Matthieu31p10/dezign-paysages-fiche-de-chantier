@@ -159,6 +159,7 @@ const BlankWorkSheets = () => {
               <BlankWorkSheetForm 
                 workLogId={editingWorkLogId}
                 onSuccess={handleFormSuccess}
+                key={editingWorkLogId || 'new'} // Ajout d'une key pour forcer le rechargement complet lors de l'édition
               />
             </CardContent>
           </Card>

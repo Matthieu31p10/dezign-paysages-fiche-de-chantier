@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -8,8 +7,7 @@ import { CheckSquare } from 'lucide-react';
 import { BlankWorkSheetValues } from './schema';
 
 const TasksSection: React.FC = () => {
-  const { control } = useFormContext<BlankWorkSheetValues>();
-  
+  // Le composant est gardé pour la structure mais ne contient plus le champ description
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium flex items-center">
@@ -17,25 +15,12 @@ const TasksSection: React.FC = () => {
         Tâches réalisées
       </h2>
       
+      {/* Section conservée mais sans contenu spécifique */}
       <Card>
         <CardContent className="pt-4 space-y-4">
-          <FormField
-            control={control}
-            name="workDescription"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description des travaux</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Décrivez les travaux effectués..." 
-                    className="min-h-32" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <p className="text-muted-foreground text-sm">
+            Utilisez la section consommables ci-dessous pour détailler les travaux effectués.
+          </p>
         </CardContent>
       </Card>
     </div>

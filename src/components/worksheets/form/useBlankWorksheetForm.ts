@@ -41,7 +41,6 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
-      workDescription: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,
@@ -94,12 +93,18 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     const address = extractAddress(workLog.notes || '');
     const contactPhone = extractContactPhone(workLog.notes || '');
     const contactEmail = extractContactEmail(workLog.notes || '');
-    const description = extractDescription(workLog.notes || '');
     const hourlyRate = extractHourlyRate(workLog.notes || '');
     const vatRate = extractVatRate(workLog.notes || '');
     const signedQuote = extractSignedQuote(workLog.notes || '');
     const linkedProjectId = extractLinkedProjectId(workLog.notes || '');
     const quoteValue = extractQuoteValue(workLog.notes || '');
+    
+    console.log("Chargement des données pour édition:", {
+      hourlyRate,
+      vatRate,
+      signedQuote, 
+      quoteValue
+    });
     
     // Mettre à jour le formulaire avec les valeurs existantes
     form.reset({
@@ -114,15 +119,14 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       end: workLog.timeTracking.end || '16:30',
       breakTime: workLog.timeTracking.breakTime || '00:30',
       totalHours: workLog.timeTracking.totalHours || 7.5,
-      hourlyRate,
+      hourlyRate: Number(hourlyRate) || 0,
       wasteManagement: workLog.wasteManagement || 'none',
       teamFilter: 'all',
       linkedProjectId: linkedProjectId || '',
-      workDescription: description,
       consumables: workLog.consumables || [],
-      vatRate,
-      signedQuote,
-      quoteValue,
+      vatRate: vatRate || "20",
+      signedQuote: signedQuote || false,
+      quoteValue: Number(quoteValue) || 0,
     });
     
     // Si un projet est lié, mettre à jour la sélection du projet
@@ -159,7 +163,6 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
-      workDescription: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,

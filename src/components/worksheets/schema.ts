@@ -17,15 +17,10 @@ export const blankWorkSheetSchema = z.object({
   breakTime: z.string().default("00:30"),
   totalHours: z.number(),
   hourlyRate: z.number().optional(),
-  wasteManagement: z.enum([
-    'none',
-    'big_bag_1', 'big_bag_2', 'big_bag_3', 'big_bag_4', 'big_bag_5',
-    'half_dumpster_1', 'half_dumpster_2', 'half_dumpster_3',
-    'dumpster_1', 'dumpster_2', 'dumpster_3'
-  ]).default('none'),
+  wasteManagement: z.string().default('none'),
   teamFilter: z.string().optional(),
   linkedProjectId: z.string().optional(),
-  workDescription: z.string().min(1, { message: "Description des travaux requise" }),
+  // workDescription n'est plus requis
   consumables: z.array(
     z.object({
       supplier: z.string().optional(),
