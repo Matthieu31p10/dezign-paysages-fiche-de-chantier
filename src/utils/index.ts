@@ -23,10 +23,7 @@ import {
   filterWorkLogsByYear as statsFilterWorkLogsByYear,
   getYearsFromWorkLogs as statsGetYearsFromWorkLogs,
   calculateWaterConsumptionStats,
-  calculateTaskStatistics,
-  TimeDeviation,
-  WaterConsumptionStats,
-  TaskStatistics
+  calculateTaskStatistics
 } from './statistics';
 
 export {
@@ -35,8 +32,8 @@ export {
   statsFilterWorkLogsByYear,
   statsGetYearsFromWorkLogs,
   calculateWaterConsumptionStats,
-  calculateTaskStatistics,
-  TimeDeviation,
-  WaterConsumptionStats,
-  TaskStatistics
+  calculateTaskStatistics
 };
+
+// Re-export types properly with the 'export type' syntax
+export type { TimeDeviation, WaterConsumptionStats, TaskStatistics } from './statistics';
