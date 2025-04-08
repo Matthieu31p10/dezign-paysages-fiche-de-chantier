@@ -20,9 +20,17 @@ const CalendarView = ({ workLogs }: CalendarViewProps) => {
   const { getProjectById } = useApp();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
+  // Helper function to ensure we're working with Date objects
+  const ensureDate = (dateInput: string | Date): Date => {
+    if (typeof dateInput === 'string') {
+      return new Date(dateInput);
+    }
+    return dateInput;
+  };
+  
   // Group work logs by date
   const workLogsByDate = workLogs.reduce<Record<string, WorkLog[]>>((acc, log) => {
-    const dateKey = formatDateKey(log.date);
+    const dateKey = formatDateKey(ensureDate(log.date));
     if (!acc[dateKey]) {
       acc[dateKey] = [];
     }
@@ -32,7 +40,7 @@ const CalendarView = ({ workLogs }: CalendarViewProps) => {
   
   // Get dates with work logs
   const datesWithWorkLogs = new Set(
-    workLogs.map(log => formatDateKey(log.date))
+    workLogs.map(log => formatDateKey(ensureDate(log.date)))
   );
   
   // Function to highlight dates with work logs

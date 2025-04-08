@@ -1,6 +1,7 @@
 
 import { BlankWorkSheetValues } from '../schema';
 import { useApp } from '@/context/AppContext';
+import { WorkLog, Consumable } from '@/types/models';
 
 interface SubmitWorksheetFormProps {
   data: BlankWorkSheetValues;
@@ -36,8 +37,18 @@ QUOTE_VALUE: ${data.quoteValue || 0}
 DESCRIPTION: ${data.notes || ''}
 `;
     
+    // Ensure consumables conform to the Consumable type with required fields
+    const validatedConsumables: Consumable[] = (data.consumables || []).map(item => ({
+      supplier: item.supplier || '',
+      product: item.product || '',
+      unit: item.unit || '',
+      quantity: Number(item.quantity || 0),
+      unitPrice: Number(item.unitPrice || 0),
+      totalPrice: Number(item.totalPrice || 0)
+    }));
+    
     // Création de l'objet workLog
-    const workLog = {
+    const workLog: WorkLog = {
       id: existingWorkLogId || `blank-${Date.now()}`,
       projectId: data.linkedProjectId ? `blank-${data.linkedProjectId}` : 'blank',
       date: data.date.toISOString(),
@@ -52,7 +63,7 @@ DESCRIPTION: ${data.notes || ''}
       notes: structuredNotes,
       tasks: data.tasks || '',
       wasteManagement: data.wasteManagement || 'none',
-      consumables: data.consumables || []
+      consumables: validatedConsumables
     };
     
     if (existingWorkLogId) {

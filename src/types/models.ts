@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -57,9 +58,9 @@ export interface Consumable {
   supplier?: string;
   product?: string;  // Optional product
   unit?: string;     // Optional unit
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
+  quantity: number;  // Required field
+  unitPrice: number;  // Required field
+  totalPrice: number;  // Required field
 }
 
 export interface WorkLog {
