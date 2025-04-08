@@ -65,8 +65,8 @@ export interface Consumable {
 export interface WorkLog {
   id: string;
   projectId: string;
-  date: Date;
-  duration: number;
+  date: string | Date;
+  duration?: number;
   personnel: string[];
   timeTracking: {
     departure: string;
@@ -75,7 +75,7 @@ export interface WorkLog {
     breakTime: string; 
     totalHours: number;
   };
-  tasksPerformed: {
+  tasksPerformed?: {
     mowing: boolean;
     brushcutting: boolean;
     blower: boolean;
@@ -90,6 +90,7 @@ export interface WorkLog {
     tasksProgress?: { [id: string]: number }; 
   };
   notes?: string; 
+  tasks?: string; // Added the tasks field
   waterConsumption?: number; 
   wasteManagement?: 
     | 'none'
@@ -99,7 +100,7 @@ export interface WorkLog {
   hourlyRate?: number;
   consumables?: Consumable[];
   invoiced?: boolean; // Added new field for invoice status
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface Team {

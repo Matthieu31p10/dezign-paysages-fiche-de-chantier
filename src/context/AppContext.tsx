@@ -15,7 +15,7 @@ import {
 import { WorkLog } from '@/types/models';
 
 // Create a type that combines all the context types
-type AppContextType = ProjectsContextType & 
+export type AppContextType = ProjectsContextType & 
   WorkLogsContextType & 
   TeamsContextType & 
   SettingsContextType & 

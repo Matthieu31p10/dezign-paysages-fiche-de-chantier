@@ -1,10 +1,11 @@
+
 import { BlankWorkSheetValues } from '../schema';
-import { AppContextType } from '@/context/AppContext';
+import { useApp } from '@/context/AppContext';
 
 interface SubmitWorksheetFormProps {
   data: BlankWorkSheetValues;
-  addWorkLog: AppContextType['addWorkLog'];
-  updateWorkLog: AppContextType['updateWorkLog'];
+  addWorkLog: ReturnType<typeof useApp>['addWorkLog'];
+  updateWorkLog: ReturnType<typeof useApp>['updateWorkLog'];
   existingWorkLogId?: string | null;
   onSuccess?: () => void;
   setIsSubmitting: (isSubmitting: boolean) => void;
