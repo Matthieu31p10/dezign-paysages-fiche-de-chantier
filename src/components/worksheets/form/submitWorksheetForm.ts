@@ -76,7 +76,7 @@ export const submitWorksheetForm = async ({
 ADDRESS: ${data.address}
 ${data.contactPhone ? `CONTACT_PHONE: ${data.contactPhone}` : ''}
 ${data.contactEmail ? `CONTACT_EMAIL: ${data.contactEmail}` : ''}
-DESCRIPTION: ${data.workDescription}
+${data.notes ? `NOTES: ${data.notes}` : ''}
 ${data.hourlyRate ? `HOURLY_RATE: ${data.hourlyRate}` : ''}
 VAT_RATE: ${data.vatRate}
 SIGNED_QUOTE: ${data.signedQuote ? 'true' : 'false'}
@@ -125,7 +125,7 @@ ${formatConsumableNotes(data.consumables)}`;
         },
         watering: 'none'
       },
-      wasteManagement: data.wasteManagement,
+      wasteManagement: data.wasteManagement as any,
       notes: formattedNotes,
       consumables: typedConsumables,
       hourlyRate: data.hourlyRate || 0,

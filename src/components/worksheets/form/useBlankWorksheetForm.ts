@@ -41,6 +41,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
+      notes: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,
@@ -93,6 +94,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     const address = extractAddress(workLog.notes || '');
     const contactPhone = extractContactPhone(workLog.notes || '');
     const contactEmail = extractContactEmail(workLog.notes || '');
+    const notes = extractDescription(workLog.notes || '');
     const hourlyRate = extractHourlyRate(workLog.notes || '');
     const vatRate = extractVatRate(workLog.notes || '');
     const signedQuote = extractSignedQuote(workLog.notes || '');
@@ -123,6 +125,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       wasteManagement: workLog.wasteManagement || 'none',
       teamFilter: 'all',
       linkedProjectId: linkedProjectId || '',
+      notes: notes || '',
       consumables: workLog.consumables || [],
       vatRate: vatRate || "20",
       signedQuote: signedQuote || false,
@@ -163,6 +166,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       wasteManagement: 'none',
       teamFilter: 'all',
       linkedProjectId: '',
+      notes: '',
       consumables: [],
       vatRate: "20",
       signedQuote: false,

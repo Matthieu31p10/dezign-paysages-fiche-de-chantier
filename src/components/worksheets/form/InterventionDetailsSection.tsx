@@ -10,11 +10,10 @@ import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { CalendarIcon } from 'lucide-react';
 import { Team } from '@/types/models';
+import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 
 interface InterventionDetailsSectionProps {
   teams: Team[];
@@ -96,24 +95,6 @@ const InterventionDetailsSection: React.FC<InterventionDetailsSectionProps> = ({
           </Select>
         </div>
       </div>
-      
-      <FormField
-        control={control}
-        name="workDescription"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Description des travaux</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Décrivez les travaux à effectuer..." 
-                className="min-h-32" 
-                {...field} 
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
       
       <Card>
         <CardContent className="pt-4">

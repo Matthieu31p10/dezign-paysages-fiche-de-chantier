@@ -11,15 +11,19 @@ const AdditionalNotesSection: React.FC = () => {
   return (
     <FormField
       control={control}
-      name="workDescription"
+      name="notes"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Notes supplémentaires</FormLabel>
           <FormControl>
             <Textarea 
               placeholder="Informations complémentaires..." 
-              className="min-h-24" 
-              {...field} 
+              className="min-h-24"
+              value={field.value || ''}
+              onChange={field.onChange} 
+              onBlur={field.onBlur}
+              ref={field.ref}
+              name={field.name}
             />
           </FormControl>
           <FormMessage />

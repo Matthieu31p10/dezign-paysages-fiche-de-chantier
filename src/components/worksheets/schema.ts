@@ -20,7 +20,9 @@ export const blankWorkSheetSchema = z.object({
   wasteManagement: z.string().default('none'),
   teamFilter: z.string().optional(),
   linkedProjectId: z.string().optional(),
-  // workDescription n'est plus requis
+  // Ajoutons à nouveau le workDescription, mais en option
+  workDescription: z.string().optional(),
+  notes: z.string().optional(),
   consumables: z.array(
     z.object({
       supplier: z.string().optional(),
