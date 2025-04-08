@@ -1,8 +1,10 @@
+
 import { useState, useTransition } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlobalStats from '@/components/reports/global-stats';
-import { getCurrentYear, getYearsFromWorkLogs } from '@/utils/helpers';
+import { getCurrentYear } from '@/utils/date-utils';
+import { getYearsFromWorkLogs } from '@/utils/worklog-utils';
 import WaterConsumptionReport from '@/components/reports/WaterConsumptionReport';
 
 const StatsTab = () => {

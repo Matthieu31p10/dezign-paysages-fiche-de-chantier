@@ -16,8 +16,14 @@ const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
   
+  // Sécurité: vérifier si id existe
+  if (!id) {
+    console.warn("WorkLogDetail - ID not provided");
+    return <Navigate to="/worklogs" />;
+  }
+  
   // Get the right workLog and project data
-  const workLog = id ? workLogs.find(log => log.id === id) : undefined;
+  const workLog = workLogs.find(log => log.id === id);
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
   
   // Always call hooks at top-level, regardless of conditions
@@ -31,7 +37,8 @@ const WorkLogDetail = () => {
   );
   
   // Early return if no workLog is found - AFTER all hooks are called
-  if (!workLog || !id) {
+  if (!workLog) {
+    console.warn(`WorkLogDetail - WorkLog with ID ${id} not found`);
     return <Navigate to="/worklogs" />;
   }
   

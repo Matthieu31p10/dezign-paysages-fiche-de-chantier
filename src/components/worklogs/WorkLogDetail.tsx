@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
 import WorkLogDetail from './detail/WorkLogDetail';
 
-// This file simply redirects to the actual component in the detail folder
+// Ce fichier redirige simplement vers le composant réel dans le dossier detail
 const WorkLogDetailWrapper = () => {
   return <WorkLogDetail />;
 };

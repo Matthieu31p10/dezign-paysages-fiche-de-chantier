@@ -1,7 +1,8 @@
 
 import { WorkLog } from '@/types/models';
-import { ensureDate } from './date-utils';
+import { ensureDate, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil, formatTime as formatTimeUtil } from './date-utils';
 
+// Réexportation des fonctions pour assurer la compatibilité avec l'ancien code
 export const getCurrentYear = (): number => {
   return new Date().getFullYear();
 };
@@ -10,47 +11,9 @@ export const getCurrentMonth = (): number => {
   return new Date().getMonth() + 1; // getMonth() retourne 0-11, donc +1 pour avoir 1-12
 };
 
-export const formatDate = (date: string | Date): string => {
-  if (!date) return '';
-  return ensureDate(date).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-};
-
-export const formatDateTime = (date: string | Date): string => {
-  if (!date) return '';
-  return ensureDate(date).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-export const formatTime = (date: Date | string): string => {
-  if (!date) return '';
-  
-  // If date is a string that appears to be just a time (contains : but not / or -), return it directly
-  if (typeof date === 'string' && date.includes(':') && !date.includes('/') && !date.includes('-')) {
-    return date;
-  }
-  
-  // If date is a Date object or date string, format it to HH:MM
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  } catch (error) {
-    console.error('Error formatting time:', error);
-    return '';
-  }
-};
+export const formatDate = formatDateUtil;
+export const formatDateTime = formatDateTimeUtil;
+export const formatTime = formatTimeUtil;
 
 // Group work logs by month
 export const groupWorkLogsByMonth = (workLogs: WorkLog[]): Record<string, WorkLog[]> => {
