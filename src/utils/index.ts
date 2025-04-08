@@ -2,13 +2,16 @@
 // Main entry point that re-exports all the utility functions for backward compatibility
 
 // Date and time formatting
-export * from './date';
+export * from './date-utils';
 
-// Time calculations
-export * from './time';
+// Time calculations and worklog utilities
+export * from './worklog-utils';
 
 // Number formatting
-export * from './format';
+export * from './format-utils';
+
+// Notes parsing utilities
+export * from './notes-utils';
 
 // Project-related utilities
 export * from './projects';

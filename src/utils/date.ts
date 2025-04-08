@@ -1,13 +1,6 @@
 
 import { WorkLog } from '@/types/models';
-
-// Helper function to ensure we're working with actual Date objects
-const ensureDate = (date: string | Date): Date => {
-  if (typeof date === 'string') {
-    return new Date(date);
-  }
-  return date;
-};
+import { ensureDate } from './date-utils';
 
 export const getCurrentYear = (): number => {
   return new Date().getFullYear();
