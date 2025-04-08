@@ -46,6 +46,13 @@ const TasksSection: React.FC = () => {
     setValue('tasksProgress', updatedTasksProgress);
   };
 
+  // Empêcher la propagation de l'événement pour ne pas soumettre le formulaire parent
+  const openTaskDialog = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCustomTaskDialogOpen(true);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
@@ -54,7 +61,7 @@ const TasksSection: React.FC = () => {
           type="button" 
           variant="outline" 
           size="sm" 
-          onClick={() => setCustomTaskDialogOpen(true)}
+          onClick={openTaskDialog}
           className="flex items-center text-xs"
         >
           <PlusCircle className="h-3.5 w-3.5 mr-1" />
@@ -114,7 +121,11 @@ const TasksSection: React.FC = () => {
                     variant="ghost" 
                     size="sm" 
                     className="h-7 w-7 p-0"
-                    onClick={() => handleDeleteTask(task.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteTask(task.id);
+                    }}
                   >
                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
                   </Button>

@@ -22,7 +22,9 @@ const CustomTaskDialog: React.FC<CustomTaskDialogProps> = ({
   const [taskName, setTaskName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
+    // Empêcher la soumission du formulaire parent
     e.preventDefault();
+    e.stopPropagation();
     
     if (!taskName.trim()) {
       toast.error("Veuillez entrer un nom de tâche");
@@ -41,12 +43,12 @@ const CustomTaskDialog: React.FC<CustomTaskDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>Ajouter une nouvelle tâche</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="taskName">Nom de la tâche</Label>
