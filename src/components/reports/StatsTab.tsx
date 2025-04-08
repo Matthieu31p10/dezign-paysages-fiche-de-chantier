@@ -1,8 +1,7 @@
-
 import { useState, useTransition } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GlobalStats from '@/components/reports/GlobalStats';
+import GlobalStats from '@/components/reports/global-stats';
 import { getCurrentYear, getYearsFromWorkLogs } from '@/utils/helpers';
 import WaterConsumptionReport from '@/components/reports/WaterConsumptionReport';
 
@@ -11,15 +10,12 @@ const StatsTab = () => {
   const [isPending, startTransition] = useTransition();
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   
-  // Safety checks for data
   const validProjectInfos = Array.isArray(projectInfos) ? projectInfos : [];
   const validWorkLogs = Array.isArray(workLogs) ? workLogs : [];
   const validTeams = Array.isArray(teams) ? teams : [];
   
-  // Get non-archived projects for stats
   const activeProjects = validProjectInfos.filter(project => !project.isArchived);
   
-  // Get available years for filtering
   const availableYears = getYearsFromWorkLogs(validWorkLogs);
   
   const handleYearChange = (value: string) => {

@@ -16,5 +16,27 @@ export * from './notes-utils';
 // Project-related utilities
 export * from './projects';
 
-// Statistics and analysis
-export * from './statistics';
+// Statistics and analysis (re-export them with explicit names to avoid conflicts)
+import {
+  calculateAverageHoursPerVisit as statsCalculateAverageHoursPerVisit,
+  calculateTimeDeviation,
+  filterWorkLogsByYear as statsFilterWorkLogsByYear,
+  getYearsFromWorkLogs as statsGetYearsFromWorkLogs,
+  calculateWaterConsumptionStats,
+  calculateTaskStatistics,
+  TimeDeviation,
+  WaterConsumptionStats,
+  TaskStatistics
+} from './statistics';
+
+export {
+  statsCalculateAverageHoursPerVisit,
+  calculateTimeDeviation,
+  statsFilterWorkLogsByYear,
+  statsGetYearsFromWorkLogs,
+  calculateWaterConsumptionStats,
+  calculateTaskStatistics,
+  TimeDeviation,
+  WaterConsumptionStats,
+  TaskStatistics
+};
