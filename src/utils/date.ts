@@ -1,6 +1,14 @@
 
 import { WorkLog } from '@/types/models';
 
+// Helper function to ensure we're working with actual Date objects
+const ensureDate = (date: string | Date): Date => {
+  if (typeof date === 'string') {
+    return new Date(date);
+  }
+  return date;
+};
+
 export const getCurrentYear = (): number => {
   return new Date().getFullYear();
 };
@@ -9,18 +17,18 @@ export const getCurrentMonth = (): number => {
   return new Date().getMonth() + 1; // getMonth() retourne 0-11, donc +1 pour avoir 1-12
 };
 
-export const formatDate = (date: Date): string => {
+export const formatDate = (date: string | Date): string => {
   if (!date) return '';
-  return new Date(date).toLocaleDateString('fr-FR', {
+  return ensureDate(date).toLocaleDateString('fr-FR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
 };
 
-export const formatDateTime = (date: Date): string => {
+export const formatDateTime = (date: string | Date): string => {
   if (!date) return '';
-  return new Date(date).toLocaleDateString('fr-FR', {
+  return ensureDate(date).toLocaleDateString('fr-FR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -32,14 +40,15 @@ export const formatDateTime = (date: Date): string => {
 export const formatTime = (date: Date | string): string => {
   if (!date) return '';
   
-  // If date is a string, return it directly
-  if (typeof date === 'string') {
+  // If date is a string that appears to be just a time (contains : but not / or -), return it directly
+  if (typeof date === 'string' && date.includes(':') && !date.includes('/') && !date.includes('-')) {
     return date;
   }
   
-  // If date is a Date object, format it to HH:MM
+  // If date is a Date object or date string, format it to HH:MM
   try {
-    return date.toLocaleTimeString('fr-FR', {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
@@ -55,7 +64,7 @@ export const groupWorkLogsByMonth = (workLogs: WorkLog[]): Record<string, WorkLo
   const grouped: Record<string, WorkLog[]> = {};
   
   workLogs.forEach(log => {
-    const date = new Date(log.date);
+    const date = ensureDate(log.date);
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
     const key = `${month}-${year}`;
@@ -86,7 +95,7 @@ export const getDaysSinceLastEntry = (workLogs: WorkLog[]): number | null => {
   if (!workLogs.length) return null;
   
   // Get dates from all work logs
-  const dates = workLogs.map(log => new Date(log.date));
+  const dates = workLogs.map(log => ensureDate(log.date));
   
   // Find most recent date
   const mostRecent = new Date(Math.max(...dates.map(date => date.getTime())));

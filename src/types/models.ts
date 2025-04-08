@@ -90,16 +90,12 @@ export interface WorkLog {
     tasksProgress?: { [id: string]: number }; 
   };
   notes?: string; 
-  tasks?: string; // Added the tasks field
+  tasks?: string;
   waterConsumption?: number; 
-  wasteManagement?: 
-    | 'none'
-    | 'big_bag_1' | 'big_bag_2' | 'big_bag_3' | 'big_bag_4' | 'big_bag_5'
-    | 'half_dumpster_1' | 'half_dumpster_2' | 'half_dumpster_3'
-    | 'dumpster_1' | 'dumpster_2' | 'dumpster_3';
+  wasteManagement?: string; // Changed from enum to string to support both formats
   hourlyRate?: number;
   consumables?: Consumable[];
-  invoiced?: boolean; // Added new field for invoice status
+  invoiced?: boolean;
   createdAt?: Date;
 }
 

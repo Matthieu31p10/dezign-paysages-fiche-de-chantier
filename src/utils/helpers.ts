@@ -1,22 +1,45 @@
-
 import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WorkLog } from '@/types/models';
 
-export const formatDate = (date: Date): string => {
-  return format(date, 'dd/MM/yyyy', { locale: fr });
+// Helper function to ensure we're working with actual Date objects
+const ensureDate = (date: string | Date): Date => {
+  if (typeof date === 'string') {
+    return new Date(date);
+  }
+  return date;
 };
 
-export const formatDateTime = (date: Date): string => {
-  return format(date, 'dd/MM/yyyy HH:mm', { locale: fr });
+export const formatDate = (date: string | Date): string => {
+  if (!date) return '';
+  return format(ensureDate(date), 'dd/MM/yyyy', { locale: fr });
 };
 
-export const formatTime = (date: Date): string => {
-  return format(date, 'HH:mm', { locale: fr });
+export const formatDateTime = (date: string | Date): string => {
+  if (!date) return '';
+  return format(ensureDate(date), 'dd/MM/yyyy HH:mm', { locale: fr });
 };
 
-export const isToday = (date: Date): boolean => {
-  return isSameDay(date, new Date());
+export const formatTime = (date: Date | string): string => {
+  if (!date) return '';
+  
+  // If date is a string representing a time, return it directly
+  if (typeof date === 'string' && (date.includes(':') && !date.includes('-') && !date.includes('/'))) {
+    return date;
+  }
+  
+  // If date is a Date object or date string, format it to HH:MM
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return format(dateObj, 'HH:mm', { locale: fr });
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return '';
+  }
+};
+
+export const isToday = (date: string | Date): boolean => {
+  return isSameDay(ensureDate(date), new Date());
 };
 
 export const calculateTotalHours = (

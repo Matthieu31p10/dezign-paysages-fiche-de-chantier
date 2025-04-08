@@ -51,7 +51,7 @@ DESCRIPTION: ${data.notes || ''}
       },
       notes: structuredNotes,
       tasks: data.tasks || '',
-      wasteManagement: data.wasteManagement,
+      wasteManagement: data.wasteManagement || 'none',
       consumables: data.consumables || []
     };
     
