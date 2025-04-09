@@ -3,6 +3,7 @@ import { WorkLog } from '@/types/models';
 import { format, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+// Date Formatting Functions
 export const getCurrentYear = (): number => {
   return new Date().getFullYear();
 };
@@ -26,6 +27,14 @@ export const formatTime = (timeString: string | undefined): string => {
   return timeString || '';
 };
 
+export const formatMonthYear = (monthYear: string): string => {
+  const [year, month] = monthYear.split('-').map(Number);
+  
+  const date = new Date(year, month - 1, 1);
+  return format(date, 'MMMM yyyy', { locale: fr });
+};
+
+// WorkLog Analysis Functions
 export const getDaysSinceLastEntry = (logs: WorkLog[]): number | null => {
   if (!logs || logs.length === 0) return null;
 
@@ -95,6 +104,7 @@ export const filterWorkLogsByMonth = (workLogs: WorkLog[], year: number, month: 
   });
 };
 
+// Notes Extraction Functions
 export const extractClientName = (notes: string): string => {
   const clientMatch = notes.match(/Client\s*:\s*([^\n]+)/i);
   return clientMatch ? clientMatch[1].trim() : '';
@@ -105,8 +115,105 @@ export const extractAddress = (notes: string): string => {
   return addressMatch ? addressMatch[1].trim() : '';
 };
 
+export const extractContactPhone = (notes: string): string => {
+  const phoneMatch = notes.match(/Téléphone\s*:\s*([^\n]+)/i);
+  return phoneMatch ? phoneMatch[1].trim() : '';
+};
+
+export const extractContactEmail = (notes: string): string => {
+  const emailMatch = notes.match(/Email\s*:\s*([^\n]+)/i);
+  return emailMatch ? emailMatch[1].trim() : '';
+};
+
+export const extractDescription = (notes: string): string => {
+  // Remove all known fields from notes
+  let description = notes;
+  
+  const fieldsToRemove = [
+    /Client\s*:\s*[^\n]+\n?/i,
+    /Adresse\s*:\s*[^\n]+\n?/i,
+    /Téléphone\s*:\s*[^\n]+\n?/i,
+    /Email\s*:\s*[^\n]+\n?/i,
+    /ID Projet\s*:\s*[^\n]+\n?/i,
+    /Projet Associé\s*:\s*[^\n]+\n?/i,
+    /Taux Horaire\s*:\s*[^\n]+\n?/i,
+    /TVA\s*:\s*[^\n]+\n?/i,
+    /Devis Signé\s*:\s*[^\n]+\n?/i,
+    /Valeur Devis\s*:\s*[^\n]+\n?/i
+  ];
+  
+  fieldsToRemove.forEach(field => {
+    description = description.replace(field, '');
+  });
+  
+  return description.trim();
+};
+
 export const extractLinkedProjectId = (notes: string): string => {
   const projectMatch = notes.match(/ID Projet\s*:\s*([^\n]+)/i) || 
                        notes.match(/Projet Associé\s*:\s*([^\n]+)/i);
   return projectMatch ? projectMatch[1].trim() : '';
+};
+
+export const extractHourlyRate = (notes: string): string => {
+  const rateMatch = notes.match(/Taux Horaire\s*:\s*([^\n]+)/i);
+  return rateMatch ? rateMatch[1].trim() : '';
+};
+
+export const extractVatRate = (notes: string): string => {
+  const vatMatch = notes.match(/TVA\s*:\s*([^\n]+)/i);
+  return vatMatch ? vatMatch[1].trim() : '';
+};
+
+export const extractSignedQuote = (notes: string): boolean => {
+  const quoteMatch = notes.match(/Devis Signé\s*:\s*([^\n]+)/i);
+  if (!quoteMatch) return false;
+  
+  const value = quoteMatch[1].trim().toLowerCase();
+  return value === 'oui' || value === 'true' || value === 'yes';
+};
+
+export const extractQuoteValue = (notes: string): number => {
+  const valueMatch = notes.match(/Valeur Devis\s*:\s*([^\n]+)/i);
+  if (!valueMatch) return 0;
+  
+  // Try to parse as number
+  const valueStr = valueMatch[1].trim().replace(/,/g, '.').replace(/[^\d.]/g, '');
+  const value = parseFloat(valueStr);
+  return isNaN(value) ? 0 : value;
+};
+
+export const extractRegistrationTime = (notes: string): string => {
+  const timeMatch = notes.match(/Heure d'enregistrement\s*:\s*([^\n]+)/i);
+  return timeMatch ? timeMatch[1].trim() : '';
+};
+
+// Number Formatting
+export const formatNumber = (num: number): string => {
+  return new Intl.NumberFormat('fr-FR', { 
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0
+  }).format(num);
+};
+
+// Statistics Calculations
+export const calculateAverageHoursPerVisit = (
+  totalHours: number, 
+  totalVisits: number
+): number => {
+  if (totalVisits === 0) return 0;
+  return totalHours / totalVisits;
+};
+
+// Water Consumption Stats
+export const calculateWaterConsumption = (workLogs: WorkLog[]): number => {
+  let totalConsumption = 0;
+  
+  workLogs.forEach(log => {
+    if (log.waterConsumption && typeof log.waterConsumption === 'number') {
+      totalConsumption += log.waterConsumption;
+    }
+  });
+  
+  return totalConsumption;
 };

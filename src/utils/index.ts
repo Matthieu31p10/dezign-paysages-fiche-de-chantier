@@ -1,5 +1,8 @@
 
-// Main entry point that re-exports all the utility functions for backward compatibility
+// Main entry point that re-exports all the utility functions
+
+// Re-export all helpers
+export * from './helpers';
 
 // Date and time formatting
 export * from './date-utils';
@@ -16,24 +19,5 @@ export * from './notes-utils';
 // Project-related utilities
 export * from './projects';
 
-// Statistics and analysis (re-export them with explicit names to avoid conflicts)
-import {
-  calculateAverageHoursPerVisit as statsCalculateAverageHoursPerVisit,
-  calculateTimeDeviation,
-  filterWorkLogsByYear as statsFilterWorkLogsByYear,
-  getYearsFromWorkLogs as statsGetYearsFromWorkLogs,
-  calculateWaterConsumptionStats,
-  calculateTaskStatistics
-} from './statistics';
-
-export {
-  statsCalculateAverageHoursPerVisit,
-  calculateTimeDeviation,
-  statsFilterWorkLogsByYear,
-  statsGetYearsFromWorkLogs,
-  calculateWaterConsumptionStats,
-  calculateTaskStatistics
-};
-
-// Re-export types properly with the 'export type' syntax
-export type { TimeDeviation, WaterConsumptionStats, TaskStatistics } from './statistics';
+// Statistics and analysis
+export * from './statistics';
