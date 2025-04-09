@@ -6,8 +6,11 @@ export * from './helpers';
 
 // Export specific utilities that don't overlap with helpers
 export * from './projects';
-export * from './statistics';
 export * from './worklog-utils';
+
+// Re-export statistics with explicit naming to avoid ambiguity
+import * as statisticsUtils from './statistics';
+export { statisticsUtils };
 
 // These files are kept for backward compatibility but their contents
 // have been moved to helpers.ts

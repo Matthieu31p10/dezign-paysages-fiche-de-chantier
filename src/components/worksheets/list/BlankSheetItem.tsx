@@ -167,9 +167,9 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
 
             <div className="text-right mr-2">
               <div className="text-sm font-medium">
-                {(typeof workLog.timeTracking.totalHours === 'string' 
-                  ? Number(workLog.timeTracking.totalHours) 
-                  : workLog.timeTracking.totalHours).toFixed(1)} h
+                {(typeof sheet.timeTracking.totalHours === 'string' 
+                  ? Number(sheet.timeTracking.totalHours) 
+                  : sheet.timeTracking.totalHours).toFixed(1)} h
               </div>
               <div className="text-xs text-muted-foreground">
                 Durée
