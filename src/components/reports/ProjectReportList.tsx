@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Table, 
@@ -12,8 +13,7 @@ import {
   Home, 
   Landmark, 
   Users, 
-  Clock, 
-  Calendar
+  Clock
 } from 'lucide-react';
 import { ProjectInfo, WorkLog, Team } from '@/types/models';
 import { 
@@ -21,8 +21,56 @@ import {
   calculateAverageHoursPerVisit,
   formatDate
 } from '@/utils/helpers';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+
+// Create smaller components to improve structure
+const ProjectTypeIcon: React.FC<{ projectType: string }> = ({ projectType }) => {
+  switch (projectType) {
+    case 'residence':
+      return <Building2 className="h-4 w-4 text-green-500" />;
+    case 'particular':
+      return <Home className="h-4 w-4 text-blue-400" />;
+    case 'enterprise':
+      return <Landmark className="h-4 w-4 text-orange-500" />;
+    default:
+      return null;
+  }
+};
+
+const TimeDeviation: React.FC<{ 
+  project: ProjectInfo, 
+  averageHoursPerVisit: number 
+}> = ({ project, averageHoursPerVisit }) => {
+  if (!project.visitDuration) {
+    return <span>N/A</span>;
+  }
+  
+  const difference = project.visitDuration - averageHoursPerVisit;
+  const display = `${difference >= 0 ? '+' : ''}${difference.toFixed(2)} h`;
+  const className = difference >= 0 
+    ? 'text-green-600 font-medium' 
+    : 'text-red-600 font-medium';
+    
+  return <span className={className}>{display}</span>;
+};
+
+const LastVisitCell: React.FC<{
+  lastVisitDate: Date | null,
+  daysSinceLastVisit: number | null
+}> = ({ lastVisitDate, daysSinceLastVisit }) => {
+  if (!lastVisitDate) {
+    return <span className="text-muted-foreground">Aucun passage</span>;
+  }
+  
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-sm">{formatDate(lastVisitDate)}</span>
+      <span className="text-xs text-muted-foreground">
+        (il y a {daysSinceLastVisit} jours)
+      </span>
+    </div>
+  );
+};
 
 interface ProjectReportListProps {
   projects: ProjectInfo[];
@@ -35,46 +83,6 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
   workLogs, 
   teams 
 }) => {
-  // Helper function to calculate time deviation
-  const calculateTimeDeviation = (project: ProjectInfo, projectLogs: WorkLog[]): { 
-    value: number | null;
-    display: string;
-    className: string;
-  } => {
-    if (!project || projectLogs.length === 0) {
-      return { value: null, display: "N/A", className: "" };
-    }
-    
-    const totalHours = projectLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
-    const averageHoursPerVisit = totalHours / projectLogs.length;
-    
-    if (!project.visitDuration) {
-      return { value: null, display: "N/A", className: "" };
-    }
-    
-    const difference = project.visitDuration - averageHoursPerVisit;
-    const display = `${difference >= 0 ? '+' : ''}${difference.toFixed(2)} h`;
-    const className = difference >= 0 
-      ? 'text-green-600 font-medium' 
-      : 'text-red-600 font-medium';
-      
-    return { value: difference, display, className };
-  };
-  
-  // Get project type icon
-  const getProjectTypeIcon = (projectType: string) => {
-    switch (projectType) {
-      case 'residence':
-        return <Building2 className="h-4 w-4 text-green-500" />;
-      case 'particular':
-        return <Home className="h-4 w-4 text-blue-400" />;
-      case 'enterprise':
-        return <Landmark className="h-4 w-4 text-orange-500" />;
-      default:
-        return null;
-    }
-  };
-  
   return (
     <div className="rounded-md border">
       <Table>
@@ -95,12 +103,17 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
             const teamName = teams.find(t => t.id === project.team)?.name;
             const daysSinceLastVisit = getDaysSinceLastEntry(projectLogs);
             
-            const totalHours = projectLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
-            const averageHours = calculateAverageHoursPerVisit(totalHours, projectLogs.length);
+            // Calculate hours with proper types
+            const totalHours = projectLogs.reduce((sum, log) => {
+              return sum + (log.timeTracking?.totalHours || 0);
+            }, 0);
             
-            const timeDeviation = calculateTimeDeviation(project, projectLogs);
+            // Fix the calculateAverageHoursPerVisit call by providing both arguments
+            const averageHours = projectLogs.length > 0
+              ? totalHours / projectLogs.length
+              : 0;
             
-            // Get the date of last visit
+            // Get the date of last visit with proper typing
             const lastVisitDate = projectLogs.length > 0 
               ? new Date(Math.max(...projectLogs.map(log => new Date(log.date).getTime())))
               : null;
@@ -109,7 +122,7 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
               <TableRow key={project.id}>
                 <TableCell>
                   <div className="flex items-center">
-                    {getProjectTypeIcon(project.projectType)}
+                    <ProjectTypeIcon projectType={project.projectType} />
                     <span className="ml-2 font-medium">{project.name}</span>
                   </div>
                 </TableCell>
@@ -138,22 +151,17 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
                 </TableCell>
                 
                 <TableCell className="text-center">
-                  <span className={timeDeviation.className}>
-                    {timeDeviation.display}
-                  </span>
+                  <TimeDeviation 
+                    project={project} 
+                    averageHoursPerVisit={averageHours} 
+                  />
                 </TableCell>
                 
                 <TableCell className="text-center">
-                  {lastVisitDate ? (
-                    <div className="flex flex-col items-center">
-                      <span className="text-sm">{formatDate(lastVisitDate)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        (il y a {daysSinceLastVisit} jours)
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">Aucun passage</span>
-                  )}
+                  <LastVisitCell 
+                    lastVisitDate={lastVisitDate}
+                    daysSinceLastVisit={daysSinceLastVisit}
+                  />
                 </TableCell>
               </TableRow>
             );

@@ -3,7 +3,7 @@ import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Building2, Clock, Home, Landmark, Users, Calendar, Timer, AlertCircle } from 'lucide-react';
-import { calculateAverageHoursPerVisit, getDaysSinceLastEntry } from '@/utils/helpers';
+import { getDaysSinceLastEntry } from '@/utils/helpers';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,18 +20,15 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
     ? Math.min(100, Math.round((visitsCompleted / project.annualVisits) * 100))
     : 0;
   
-  const totalHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+  const totalHours = workLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
   const hoursProgress = project.annualTotalHours > 0
     ? Math.min(100, Math.round((totalHours / project.annualTotalHours) * 100))
     : 0;
   
   const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
-  // Fixed: Calculate average hours per visit with correct arguments
-  const averageHoursPerVisit = calculateAverageHoursPerVisit(
-    totalHours, 
-    workLogs.length
-  );
+  // Calculate average hours per visit directly
+  const averageHoursPerVisit = workLogs.length > 0 ? totalHours / workLogs.length : 0;
   
   // Calculate remaining hours and visits
   const remainingVisits = Math.max(0, project.annualVisits - visitsCompleted);
