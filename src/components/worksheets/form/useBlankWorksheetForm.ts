@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { blankWorkSheetSchema, BlankWorkSheetValues } from '../schema';
@@ -122,7 +123,8 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       notes: notes || '',
       tasks: workLog.tasks || '',
       consumables: workLog.consumables || [],
-      vatRate: vatRate || "20",
+      // Fixed: Ensure vatRate is "10" or "20" (not just any string)
+      vatRate: vatRate === "10" ? "10" : "20",
       signedQuote: signedQuote || false,
       quoteValue: Number(quoteValue) || 0,
     });

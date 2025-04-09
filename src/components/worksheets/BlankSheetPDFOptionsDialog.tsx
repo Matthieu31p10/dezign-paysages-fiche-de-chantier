@@ -66,10 +66,13 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
       
       // Récupérer d'autres informations depuis les notes
       const extractedVatRate = extractVatRate(workLog.notes);
-      setVatRate(extractedVatRate);
+      setVatRate(extractedVatRate || "20"); // Fixed: Ensure string type
       
       const extractedHourlyRate = extractHourlyRate(workLog.notes);
-      setHourlyRate(extractedHourlyRate);
+      // Fixed: Parse to number for hourlyRate state
+      setHourlyRate(typeof extractedHourlyRate === 'string' 
+        ? parseFloat(extractedHourlyRate) || 0 
+        : extractedHourlyRate || 0);
       
       const extractedSignedQuote = extractSignedQuote(workLog.notes);
       setSignedQuote(extractedSignedQuote);

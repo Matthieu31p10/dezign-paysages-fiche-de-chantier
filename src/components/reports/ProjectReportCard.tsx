@@ -27,7 +27,11 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
   
   const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
-  const averageHoursPerVisit = calculateAverageHoursPerVisit(workLogs);
+  // Fixed: Calculate average hours per visit with correct arguments
+  const averageHoursPerVisit = calculateAverageHoursPerVisit(
+    totalHours, 
+    workLogs.length
+  );
   
   // Calculate remaining hours and visits
   const remainingVisits = Math.max(0, project.annualVisits - visitsCompleted);

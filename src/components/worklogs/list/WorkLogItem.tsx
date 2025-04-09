@@ -31,8 +31,10 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
   const project = getProjectById(workLog.projectId);
   const worklogCode = generateWorkLogCode(index);
   
-  // Format the creation time from the createdAt date
-  const registrationTime = workLog.createdAt ? formatTime(new Date(workLog.createdAt)) : '';
+  // Format the creation time from the createdAt date - Fixed: Convert Date to string for formatTime
+  const registrationTime = workLog.createdAt 
+    ? formatTime(workLog.createdAt.toString()) 
+    : '';
   
   return (
     <div

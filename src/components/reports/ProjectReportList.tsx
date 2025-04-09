@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Table, 
@@ -95,8 +94,9 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
             const projectLogs = workLogs.filter(log => log.projectId === project.id);
             const teamName = teams.find(t => t.id === project.team)?.name;
             const daysSinceLastVisit = getDaysSinceLastEntry(projectLogs);
-            const averageHours = calculateAverageHoursPerVisit(projectLogs);
+            
             const totalHours = projectLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+            const averageHours = calculateAverageHoursPerVisit(totalHours, projectLogs.length);
             
             const timeDeviation = calculateTimeDeviation(project, projectLogs);
             

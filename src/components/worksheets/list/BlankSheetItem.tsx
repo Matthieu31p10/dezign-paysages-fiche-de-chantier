@@ -55,7 +55,10 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const description = extractDescription(sheet.notes || '');
   const registrationTime = extractRegistrationTime(sheet.notes || '');
   const hourlyRate = extractHourlyRate(sheet.notes || '');
-  const hasHourlyRate = hourlyRate > 0;
+  // Fixed: Parse hourlyRate to number before comparison
+  const hasHourlyRate = typeof hourlyRate === 'number' 
+    ? hourlyRate > 0
+    : parseFloat(hourlyRate || '0') > 0;
   const signedQuote = extractSignedQuote(sheet.notes || '');
 
   // Toggle invoiced status
@@ -120,7 +123,10 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               {hasHourlyRate && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs">
                   <Euro className="h-3 w-3" />
-                  {hourlyRate.toFixed(2)}€/h
+                  {/* Fixed: Convert hourlyRate to number for toFixed */}
+                  {(typeof hourlyRate === 'number' 
+                    ? hourlyRate 
+                    : parseFloat(hourlyRate || '0')).toFixed(2)}€/h
                 </Badge>
               )}
               
