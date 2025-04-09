@@ -14,7 +14,7 @@ const SELECTED_PROJECT_KEY = 'landscaping-selected-project';
 export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projectInfos, setProjectInfos] = useState<ProjectInfo[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const { deleteWorkLogsByProjectId } = useWorkLogs();
+  const { deleteWorkLogsByProjectId, archiveWorkLogsByProjectId } = useWorkLogs();
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -55,9 +55,14 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateProjectInfo = (projectInfo: ProjectInfo) => {
-    setProjectInfos((prev) =>
-      prev.map((p) => (p.id === projectInfo.id ? projectInfo : p))
-    );
+    const oldProject = projectInfos.find(p => p.id === projectInfo.id);
+    setProjectInfos((prev) => prev.map((p) => (p.id === projectInfo.id ? projectInfo : p)));
+    
+    // Si l'état d'archivage a changé, mettre à jour les fiches de suivi
+    if (oldProject && oldProject.isArchived !== projectInfo.isArchived) {
+      archiveWorkLogsByProjectId(projectInfo.id, !!projectInfo.isArchived);
+    }
+    
     toast.success('Fiche chantier mise à jour');
   };
 

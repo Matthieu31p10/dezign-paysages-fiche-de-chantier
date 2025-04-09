@@ -12,6 +12,7 @@ export interface User {
   position?: string; // Nouveau champ ajouté (poste)
   drivingLicense?: string; // Nouveau champ ajouté (permis)
   createdAt: Date;
+  permissions?: Record<string, boolean>; // Permissions personnalisées
 }
 
 export interface AuthState {
@@ -47,6 +48,15 @@ export interface ProjectInfo {
   endDate?: Date | null;
   isArchived?: boolean;
   createdAt: Date;
+  documents?: ProjectDocument[]; // Documents associés au chantier
+}
+
+export interface ProjectDocument {
+  id: string;
+  name: string;
+  type: string;
+  url: string; // URL encodée en base64 ou chemin vers le fichier
+  uploadDate: Date;
 }
 
 export interface CustomTask {
@@ -93,10 +103,11 @@ export interface WorkLog {
   notes?: string; 
   tasks?: string;
   waterConsumption?: number; 
-  wasteManagement?: string; // Changed from enum to string to support both formats
+  wasteManagement?: string; // Support for multiple waste management types
   hourlyRate?: number;
   consumables?: Consumable[];
   invoiced?: boolean;
+  isArchived?: boolean; // Pour archiver les fiches de suivi
   createdAt?: Date;
 }
 

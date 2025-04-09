@@ -8,6 +8,7 @@ import { User as UserType } from '@/types/models';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface AccessControlProps {
   isAdmin: boolean;
@@ -15,7 +16,45 @@ interface AccessControlProps {
 
 const AccessControl = ({ isAdmin }: AccessControlProps) => {
   const { settings, updateUser } = useApp();
+  const navigate = useNavigate();
   const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>({});
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Initialiser les permissions à partir des rôles existants
+  useState(() => {
+    if (settings.users) {
+      const initialPerms: Record<string, Record<string, boolean>> = {};
+      settings.users.forEach(user => {
+        initialPerms[user.id] = {};
+        
+        // Définir les permissions en fonction du rôle
+        if (user.role === 'admin') {
+          modules.forEach(mod => {
+            initialPerms[user.id][mod.id] = true;
+          });
+          detailedPermissions.forEach(perm => {
+            initialPerms[user.id][perm.id] = true;
+          });
+        } else if (user.role === 'manager') {
+          modules.forEach(mod => {
+            initialPerms[user.id][mod.id] = mod.id !== 'settings';
+          });
+          detailedPermissions.forEach(perm => {
+            initialPerms[user.id][perm.id] = !perm.id.startsWith('settings');
+          });
+        } else {
+          modules.forEach(mod => {
+            initialPerms[user.id][mod.id] = ['projects', 'worklogs', 'blanksheets'].includes(mod.id);
+          });
+          detailedPermissions.forEach(perm => {
+            initialPerms[user.id][perm.id] = perm.id.endsWith('.read');
+          });
+        }
+      });
+      
+      setPermissions(initialPerms);
+    }
+  }, [settings.users]);
 
   // Modules accessibles dans l'application
   const modules = [
@@ -34,45 +73,76 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
     { id: 'worklogs.write', name: 'Modification fiches suivi', group: 'worklogs' },
     { id: 'blanksheets.read', name: 'Lecture fiches vierges', group: 'blanksheets' },
     { id: 'blanksheets.write', name: 'Modification fiches vierges', group: 'blanksheets' },
+    { id: 'reports.access', name: 'Accès aux rapports', group: 'reports' },
+    { id: 'settings.users', name: 'Gestion des utilisateurs', group: 'settings' },
+    { id: 'settings.company', name: 'Paramètres entreprise', group: 'settings' },
   ];
 
-  const handleSavePermissions = (user: UserType) => {
-    // Dans une future version, on pourrait sauvegarder ces permissions
-    // Pour l'instant, c'est juste un prototype visuel
-    toast.success('Permissions mises à jour');
+  const handlePermissionChange = (userId: string, permId: string, value: boolean) => {
+    setPermissions(prev => ({
+      ...prev,
+      [userId]: {
+        ...(prev[userId] || {}),
+        [permId]: value
+      }
+    }));
+    setHasChanges(true);
+  };
+
+  const handleSavePermissions = () => {
+    if (!settings.users) return;
+    
+    // Dans une future version avec backend, on pourrait sauvegarder ces permissions directement
+    // Pour l'instant, nous allons mettre à jour les rôles en fonction des permissions
+    const updatedUsers = settings.users.map(user => {
+      const userPerms = permissions[user.id] || {};
+      
+      // Déterminer le rôle en fonction des permissions
+      let role: 'admin' | 'manager' | 'user' = 'user';
+      
+      // Si l'utilisateur a accès aux paramètres, c'est un admin
+      if (userPerms['settings'] === true) {
+        role = 'admin';
+      }
+      // Si l'utilisateur a accès à tout sauf les paramètres, c'est un manager
+      else if (
+        userPerms['projects'] === true && 
+        userPerms['worklogs'] === true &&
+        userPerms['reports'] === true
+      ) {
+        role = 'manager';
+      }
+      
+      // Ne pas changer le rôle de l'admin par défaut
+      if (user.id === 'admin-default') {
+        role = 'admin';
+      }
+      
+      return {
+        ...user,
+        role
+      };
+    });
+    
+    // Mettre à jour chaque utilisateur
+    updatedUsers.forEach(user => {
+      if (user.id !== 'admin-default') {
+        updateUser(user);
+      }
+    });
+    
+    toast.success('Permissions mises à jour avec succès');
+    setHasChanges(false);
   };
 
   // Vérifier si un utilisateur a accès à un module
   const hasModuleAccess = (userId: string, moduleId: string) => {
-    // Pour l'instant, on utilise les rôles existants pour déterminer l'accès
-    const user = settings.users?.find(u => u.id === userId);
-    if (!user) return false;
-    
-    if (user.role === 'admin') return true;
-    if (user.role === 'manager' && moduleId !== 'settings') return true;
-    if (moduleId === 'projects' || moduleId === 'worklogs' || moduleId === 'blanksheets') return true;
-    
-    return false;
+    return permissions[userId]?.[moduleId] === true;
   };
 
   // Vérifier si un utilisateur a une permission spécifique
   const hasPermission = (userId: string, permissionId: string) => {
-    const user = settings.users?.find(u => u.id === userId);
-    if (!user) return false;
-    
-    // Admin a toutes les permissions
-    if (user.role === 'admin') return true;
-    
-    // Gestionnaire a toutes les permissions sauf paramètres
-    if (user.role === 'manager') {
-      if (permissionId.startsWith('settings')) return false;
-      return true;
-    }
-    
-    // Utilisateur standard a des permissions en lecture par défaut
-    if (permissionId === 'projects.read' || permissionId === 'worklogs.read' || permissionId === 'blanksheets.read') return true;
-    
-    return false;
+    return permissions[userId]?.[permissionId] === true;
   };
 
   return (
@@ -86,8 +156,8 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
       <CardContent>
         <div className="space-y-6">
           <p className="text-sm text-muted-foreground">
-            Cette fonctionnalité permettra de définir précisément quels utilisateurs ont accès à quelles parties de l'application.
-            Actuellement, les accès sont gérés par le système de rôles (Administrateur, Gestionnaire, Utilisateur).
+            Définissez quels utilisateurs ont accès à quelles parties de l'application.
+            Les modifications des permissions sont immédiatement appliquées après sauvegarde.
           </p>
           
           <div className="border rounded-md">
@@ -113,13 +183,15 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
                         checked={hasModuleAccess(user.id, module.id)}
                         disabled={!isAdmin || user.id === 'admin-default'}
                         onCheckedChange={(checked) => {
-                          setPermissions(prev => ({
-                            ...prev,
-                            [user.id]: {
-                              ...(prev[user.id] || {}),
-                              [module.id]: checked
-                            }
-                          }));
+                          handlePermissionChange(user.id, module.id, checked);
+                          
+                          // Si on désactive un module, désactiver aussi ses permissions détaillées
+                          if (!checked) {
+                            const modulePerms = detailedPermissions.filter(p => p.group === module.id);
+                            modulePerms.forEach(perm => {
+                              handlePermissionChange(user.id, perm.id, false);
+                            });
+                          }
                         }}
                       />
                     </div>
@@ -146,13 +218,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
                                 disabled={!isAdmin || user.id === 'admin-default' || !hasModuleAccess(user.id, module.id)}
                                 className="scale-75"
                                 onCheckedChange={(checked) => {
-                                  setPermissions(prev => ({
-                                    ...prev,
-                                    [user.id]: {
-                                      ...(prev[user.id] || {}),
-                                      [permission.id]: checked
-                                    }
-                                  }));
+                                  handlePermissionChange(user.id, permission.id, checked);
                                 }}
                               />
                             </div>
@@ -165,8 +231,14 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
             ))}
           </div>
           
-          <div className="flex justify-end">
-            <Button onClick={() => toast.info('Fonctionnalité à venir dans une prochaine version')}>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => navigate('/settings')}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleSavePermissions}
+              disabled={!isAdmin || !hasChanges}
+            >
               <Save className="h-4 w-4 mr-2" />
               Enregistrer les permissions
             </Button>

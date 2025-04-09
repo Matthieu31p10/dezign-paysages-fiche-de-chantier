@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart2, Building2, FileText } from 'lucide-react';
+import { BarChart2, Building2, FileText, CalendarRange } from 'lucide-react';
 import ProjectsTab from '@/components/reports/ProjectsTab';
 import StatsTab from '@/components/reports/StatsTab';
 import ToolsTab from '@/components/reports/ToolsTab';
+import YearlyAnalysisTab from '@/components/reports/YearlyAnalysisTab';
 
 const Reports = () => {
   return (
@@ -17,7 +18,7 @@ const Reports = () => {
       </div>
       
       <Tabs defaultValue="projects">
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="projects" className="flex items-center gap-1.5">
             <Building2 className="h-4 w-4" />
             <span>Chantiers</span>
@@ -25,6 +26,10 @@ const Reports = () => {
           <TabsTrigger value="stats" className="flex items-center gap-1.5">
             <BarChart2 className="h-4 w-4" />
             <span>Statistiques</span>
+          </TabsTrigger>
+          <TabsTrigger value="yearly" className="flex items-center gap-1.5">
+            <CalendarRange className="h-4 w-4" />
+            <span>Analyse annuelle</span>
           </TabsTrigger>
           <TabsTrigger value="tools" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" />
@@ -38,6 +43,10 @@ const Reports = () => {
         
         <TabsContent value="stats">
           <StatsTab />
+        </TabsContent>
+        
+        <TabsContent value="yearly">
+          <YearlyAnalysisTab />
         </TabsContent>
         
         <TabsContent value="tools">

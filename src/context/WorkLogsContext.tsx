@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 const WorkLogsContext = createContext<WorkLogsContextType & { 
   deleteWorkLogsByProjectId: (projectId: string) => void;
   updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => void;
+  archiveWorkLogsByProjectId: (projectId: string, archive: boolean) => void;
 } | undefined>(undefined);
 
 // Local storage key
@@ -131,6 +132,24 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
+  // Nouvelle fonction pour archiver/désarchiver les fiches de suivi d'un chantier
+  const archiveWorkLogsByProjectId = (projectId: string, archive: boolean) => {
+    setWorkLogs((prev) => {
+      const updated = prev.map(workLog => {
+        if (workLog.projectId === projectId) {
+          return {
+            ...workLog,
+            isArchived: archive
+          };
+        }
+        return workLog;
+      });
+      
+      console.log(`${archive ? 'Archived' : 'Unarchived'} worklogs for project ${projectId}`);
+      return updated;
+    });
+  };
+
   const getWorkLogById = (id: string): WorkLog | undefined => {
     return workLogs.find((workLog) => workLog.id === id);
   };
@@ -169,6 +188,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         getTotalVisits,
         getLastVisitDate,
         deleteWorkLogsByProjectId,
+        archiveWorkLogsByProjectId,
       }}
     >
       {children}
