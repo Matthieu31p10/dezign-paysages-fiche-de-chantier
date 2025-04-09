@@ -92,17 +92,20 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
     const contactEmail = extractContactEmail(workLog.notes || '');
     const notes = extractDescription(workLog.notes || '');
     const hourlyRate = extractHourlyRate(workLog.notes || '');
-    const vatRate = extractVatRate(workLog.notes || '');
+    const vatRateValue = extractVatRate(workLog.notes || '');
     const signedQuote = extractSignedQuote(workLog.notes || '');
     const linkedProjectId = extractLinkedProjectId(workLog.notes || '');
     const quoteValue = extractQuoteValue(workLog.notes || '');
     
     console.log("Chargement des données pour édition:", {
       hourlyRate,
-      vatRate,
+      vatRateValue,
       signedQuote, 
       quoteValue
     });
+    
+    // Ensure vatRate is either "10" or "20"
+    const vatRate = vatRateValue === "10" ? "10" : "20";
     
     form.reset({
       clientName,
@@ -123,8 +126,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       notes: notes || '',
       tasks: workLog.tasks || '',
       consumables: workLog.consumables || [],
-      // Fixed: Ensure vatRate is "10" or "20" (not just any string)
-      vatRate: vatRate === "10" ? "10" : "20",
+      vatRate,  // Use the corrected value
       signedQuote: signedQuote || false,
       quoteValue: Number(quoteValue) || 0,
     });

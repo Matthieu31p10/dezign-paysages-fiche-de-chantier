@@ -1,7 +1,12 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const AccessControl = () => {
+interface AccessControlProps {
+  isAdmin?: boolean;
+}
+
+const AccessControl = ({ isAdmin }: AccessControlProps) => {
   // Fixed: Updated function call to have correct number of arguments  
   const handleUpdatePermission = (userId: string, permission: string) => {
     // Implementation will go here

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -55,15 +54,12 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const description = extractDescription(sheet.notes || '');
   const registrationTime = extractRegistrationTime(sheet.notes || '');
   const hourlyRate = extractHourlyRate(sheet.notes || '');
-  // Fixed: Parse hourlyRate to number before comparison
   const hasHourlyRate = typeof hourlyRate === 'number' 
     ? hourlyRate > 0
     : parseFloat(hourlyRate || '0') > 0;
   const signedQuote = extractSignedQuote(sheet.notes || '');
 
-  // Toggle invoiced status
   const handleInvoiceToggle = (checked: boolean) => {
-    // Using the ID and partial update approach
     updateWorkLog(sheet.id, { invoiced: checked });
     toast.success(`Fiche ${checked ? 'marquée comme facturée' : 'marquée comme non facturée'}`);
   };
@@ -123,7 +119,6 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               {hasHourlyRate && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs">
                   <Euro className="h-3 w-3" />
-                  {/* Fixed: Convert hourlyRate to number for toFixed */}
                   {(typeof hourlyRate === 'number' 
                     ? hourlyRate 
                     : parseFloat(hourlyRate || '0')).toFixed(2)}€/h
@@ -172,7 +167,9 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
 
             <div className="text-right mr-2">
               <div className="text-sm font-medium">
-                {sheet.timeTracking?.totalHours.toFixed(1)} h
+                {(typeof workLog.timeTracking.totalHours === 'string' 
+                  ? Number(workLog.timeTracking.totalHours) 
+                  : workLog.timeTracking.totalHours).toFixed(1)} h
               </div>
               <div className="text-xs text-muted-foreground">
                 Durée

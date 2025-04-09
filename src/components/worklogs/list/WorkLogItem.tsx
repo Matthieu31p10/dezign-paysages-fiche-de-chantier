@@ -33,7 +33,9 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
   
   // Format the creation time from the createdAt date - Fixed: Convert Date to string for formatTime
   const registrationTime = workLog.createdAt 
-    ? formatTime(workLog.createdAt.toString()) 
+    ? formatTime(typeof workLog.createdAt === 'string' 
+        ? workLog.createdAt 
+        : workLog.createdAt.toISOString()) 
     : '';
   
   return (
