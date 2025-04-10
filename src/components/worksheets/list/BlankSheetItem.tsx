@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,11 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { 
-  FileBarChart, LinkIcon, Euro, FileCheck, 
-  Calendar, Tag, FileText, Printer, Download,
-  CheckSquare
+  FileBarChart, LinkIcon, Euro, FileCheck, FileSignature,
+  Calendar, Tag, FileText, Printer, Download, Landmark
 } from 'lucide-react';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, formatNumber } from '@/utils/helpers';
 import { WorkLog } from '@/types/models';
 import { 
   DropdownMenu, 
@@ -25,7 +25,8 @@ import {
   extractLinkedProjectId,
   extractHourlyRate,
   extractSignedQuote,
-  extractRegistrationTime 
+  extractRegistrationTime,
+  extractQuoteValue
 } from '@/utils/helpers';
 import { ProjectInfo } from '@/types/models';
 import { toast } from 'sonner';
@@ -58,6 +59,11 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
     ? hourlyRate > 0
     : parseFloat(hourlyRate || '0') > 0;
   const signedQuote = extractSignedQuote(sheet.notes || '');
+  const quoteValue = extractQuoteValue(sheet.notes || '');
+  const hasQuoteValue = typeof quoteValue === 'number' 
+    ? quoteValue > 0
+    : parseFloat(String(quoteValue) || '0') > 0;
+  const hasSignature = !!sheet.clientSignature;
 
   const handleInvoiceToggle = (checked: boolean) => {
     updateWorkLog(sheet.id, { invoiced: checked });
@@ -125,10 +131,26 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
                 </Badge>
               )}
               
+              {hasQuoteValue && (
+                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
+                  <Landmark className="h-3 w-3 text-blue-600" />
+                  Devis: {formatNumber(typeof quoteValue === 'number' 
+                    ? quoteValue 
+                    : parseFloat(String(quoteValue) || '0'))}€ HT
+                </Badge>
+              )}
+              
               {signedQuote && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
                   <FileCheck className="h-3 w-3 text-green-600" />
                   Devis signé
+                </Badge>
+              )}
+              
+              {hasSignature && (
+                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-amber-50">
+                  <FileSignature className="h-3 w-3 text-amber-600" />
+                  Signature client
                 </Badge>
               )}
               

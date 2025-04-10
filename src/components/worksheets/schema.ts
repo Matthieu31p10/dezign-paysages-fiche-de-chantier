@@ -35,6 +35,7 @@ export const blankWorkSheetSchema = z.object({
   vatRate: z.enum(["10", "20"]).default("20"),
   signedQuote: z.boolean().default(false),
   quoteValue: z.number().optional(), // Champ pour la valeur du devis HT
+  clientSignature: z.string().optional() // Champ pour la signature du client
 });
 
 export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;

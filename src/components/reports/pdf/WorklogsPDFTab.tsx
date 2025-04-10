@@ -10,6 +10,7 @@ import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/helpers';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PDFOptions {
   includeContactInfo: boolean;
@@ -19,11 +20,14 @@ interface PDFOptions {
   includeWatering: boolean;
   includeNotes: boolean;
   includeTimeTracking: boolean;
+  includeSummary: boolean;
 }
 
 const WorklogsPDFTab = () => {
   const { workLogs, getProjectById, settings } = useApp();
+  const [activeTab, setActiveTab] = useState<string>('regular');
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>('');
+  const [selectedBlankWorkLogId, setSelectedBlankWorkLogId] = useState<string>('');
   
   // Options PDF avec valeurs par défaut (toutes activées)
   const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
@@ -33,13 +37,21 @@ const WorklogsPDFTab = () => {
     includeTasks: true,
     includeWatering: true,
     includeNotes: true,
-    includeTimeTracking: true
+    includeTimeTracking: true,
+    includeSummary: true
   });
   
-  // Sécurité: vérifier que les fiches de suivi sont disponibles
-  const availableWorkLogs = workLogs.filter(log => {
+  // Filtrer les fiches de suivi régulières
+  const regularWorkLogs = workLogs.filter(log => {
     const project = getProjectById(log.projectId);
-    return project && log.personnel && log.personnel.length > 0;
+    return project && log.personnel && log.personnel.length > 0 && 
+      (!log.projectId.startsWith('blank-') && !log.projectId.startsWith('DZFV'));
+  });
+  
+  // Filtrer les fiches vierges
+  const blankWorksheets = workLogs.filter(log => {
+    return log.personnel && log.personnel.length > 0 &&
+      (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
   });
   
   const handleOptionChange = (option: keyof PDFOptions, value: boolean) => {
@@ -49,21 +61,23 @@ const WorklogsPDFTab = () => {
     }));
   };
   
-  const handleGenerateWorkLogPDF = async () => {
-    if (!selectedWorkLogId) {
-      toast.error('Veuillez sélectionner une fiche de suivi');
+  const handleGenerateWorkLogPDF = async (isBlank: boolean = false) => {
+    const selectedId = isBlank ? selectedBlankWorkLogId : selectedWorkLogId;
+    
+    if (!selectedId) {
+      toast.error(`Veuillez sélectionner une fiche ${isBlank ? 'vierge' : 'de suivi'}`);
       return;
     }
     
-    const workLog = workLogs.find(log => log.id === selectedWorkLogId);
+    const workLog = workLogs.find(log => log.id === selectedId);
     if (!workLog) {
-      toast.error('Fiche de suivi non trouvée');
+      toast.error('Fiche non trouvée');
       return;
     }
     
     // Sécurité: vérification supplémentaire
     if (!workLog.personnel || workLog.personnel.length === 0) {
-      toast.error('Cette fiche de suivi n\'a pas de personnel assigné');
+      toast.error('Cette fiche n\'a pas de personnel assigné');
       return;
     }
     
@@ -76,7 +90,11 @@ const WorklogsPDFTab = () => {
         project,
         companyInfo: pdfOptions.includeCompanyInfo ? settings.companyInfo : undefined,
         companyLogo: pdfOptions.includeCompanyInfo ? settings.companyLogo : undefined,
-        pdfOptions
+        pdfOptions: {
+          ...pdfOptions,
+          // Ajouter les options pour l'affichage du bilan (avec taux horaire, etc.)
+          includeSummary: pdfOptions.includeSummary
+        }
       };
       
       const fileName = await generatePDF(pdfData);
@@ -91,161 +109,314 @@ const WorklogsPDFTab = () => {
   
   return (
     <div className="space-y-4">
-      <div className="space-y-2 pt-2">
-        <Label htmlFor="worklog-select">Sélectionner une fiche de suivi</Label>
-        <Select 
-          value={selectedWorkLogId} 
-          onValueChange={setSelectedWorkLogId}
-        >
-          <SelectTrigger id="worklog-select">
-            <SelectValue placeholder="Choisir une fiche de suivi" />
-          </SelectTrigger>
-          <SelectContent>
-            {availableWorkLogs.length === 0 ? (
-              <SelectItem value="none" disabled>Aucune fiche de suivi disponible</SelectItem>
-            ) : (
-              availableWorkLogs.map(workLog => {
-                const project = getProjectById(workLog.projectId);
-                return (
-                  <SelectItem key={workLog.id} value={workLog.id}>
-                    {formatDate(workLog.date)} - {project?.name || 'Chantier inconnu'}
-                  </SelectItem>
-                );
-              })
-            )}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="border rounded-md p-3 space-y-3">
-        <h3 className="font-medium">Options d'affichage</h3>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="regular">Fiches de suivi</TabsTrigger>
+          <TabsTrigger value="blank">Fiches vierges</TabsTrigger>
+        </TabsList>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-company-info"
-              checked={pdfOptions.includeCompanyInfo}
-              onCheckedChange={(checked) => handleOptionChange('includeCompanyInfo', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-company-info"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        <TabsContent value="regular" className="space-y-4 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="worklog-select">Sélectionner une fiche de suivi</Label>
+            <Select 
+              value={selectedWorkLogId} 
+              onValueChange={setSelectedWorkLogId}
             >
-              Informations de l'entreprise
-            </label>
+              <SelectTrigger id="worklog-select">
+                <SelectValue placeholder="Choisir une fiche de suivi" />
+              </SelectTrigger>
+              <SelectContent>
+                {regularWorkLogs.length === 0 ? (
+                  <SelectItem value="none" disabled>Aucune fiche de suivi disponible</SelectItem>
+                ) : (
+                  regularWorkLogs.map(workLog => {
+                    const project = getProjectById(workLog.projectId);
+                    return (
+                      <SelectItem key={workLog.id} value={workLog.id}>
+                        {formatDate(workLog.date)} - {project?.name || 'Chantier inconnu'}
+                      </SelectItem>
+                    );
+                  })
+                )}
+              </SelectContent>
+            </Select>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-contact-info"
-              checked={pdfOptions.includeContactInfo}
-              onCheckedChange={(checked) => handleOptionChange('includeContactInfo', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-contact-info"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Informations du chantier
-            </label>
+          <div className="border rounded-md p-3 space-y-3">
+            <h3 className="font-medium">Options d'affichage</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-company-info"
+                  checked={pdfOptions.includeCompanyInfo}
+                  onCheckedChange={(checked) => handleOptionChange('includeCompanyInfo', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-company-info"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Informations de l'entreprise
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-contact-info"
+                  checked={pdfOptions.includeContactInfo}
+                  onCheckedChange={(checked) => handleOptionChange('includeContactInfo', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-contact-info"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Informations du chantier
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-personnel"
+                  checked={pdfOptions.includePersonnel}
+                  onCheckedChange={(checked) => handleOptionChange('includePersonnel', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-personnel"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Personnel
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-tasks"
+                  checked={pdfOptions.includeTasks}
+                  onCheckedChange={(checked) => handleOptionChange('includeTasks', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-tasks"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Travaux effectués
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-watering"
+                  checked={pdfOptions.includeWatering}
+                  onCheckedChange={(checked) => handleOptionChange('includeWatering', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-watering"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Arrosages
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-notes"
+                  checked={pdfOptions.includeNotes}
+                  onCheckedChange={(checked) => handleOptionChange('includeNotes', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-notes"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Notes et observations
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-time-tracking"
+                  checked={pdfOptions.includeTimeTracking}
+                  onCheckedChange={(checked) => handleOptionChange('includeTimeTracking', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-time-tracking"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Suivi de temps
+                </label>
+              </div>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-personnel"
-              checked={pdfOptions.includePersonnel}
-              onCheckedChange={(checked) => handleOptionChange('includePersonnel', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-personnel"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                disabled={!selectedWorkLogId || regularWorkLogs.length === 0}
+                className="w-full"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Générer PDF
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Générer un PDF</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Voulez-vous générer un PDF pour la fiche de suivi sélectionnée ?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleGenerateWorkLogPDF(false)}>
+                  Générer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TabsContent>
+        
+        <TabsContent value="blank" className="space-y-4 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="blank-worklog-select">Sélectionner une fiche vierge</Label>
+            <Select 
+              value={selectedBlankWorkLogId} 
+              onValueChange={setSelectedBlankWorkLogId}
             >
-              Personnel
-            </label>
+              <SelectTrigger id="blank-worklog-select">
+                <SelectValue placeholder="Choisir une fiche vierge" />
+              </SelectTrigger>
+              <SelectContent>
+                {blankWorksheets.length === 0 ? (
+                  <SelectItem value="none" disabled>Aucune fiche vierge disponible</SelectItem>
+                ) : (
+                  blankWorksheets.map(workLog => {
+                    const clientName = extractClientName(workLog.notes || '');
+                    return (
+                      <SelectItem key={workLog.id} value={workLog.id}>
+                        {formatDate(workLog.date)} - {clientName || 'Client non spécifié'} - {workLog.projectId}
+                      </SelectItem>
+                    );
+                  })
+                )}
+              </SelectContent>
+            </Select>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-tasks"
-              checked={pdfOptions.includeTasks}
-              onCheckedChange={(checked) => handleOptionChange('includeTasks', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-tasks"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Travaux effectués
-            </label>
+          <div className="border rounded-md p-3 space-y-3">
+            <h3 className="font-medium">Options d'affichage</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-company-info-blank"
+                  checked={pdfOptions.includeCompanyInfo}
+                  onCheckedChange={(checked) => handleOptionChange('includeCompanyInfo', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-company-info-blank"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Informations de l'entreprise
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-personnel-blank"
+                  checked={pdfOptions.includePersonnel}
+                  onCheckedChange={(checked) => handleOptionChange('includePersonnel', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-personnel-blank"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Personnel
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-tasks-blank"
+                  checked={pdfOptions.includeTasks}
+                  onCheckedChange={(checked) => handleOptionChange('includeTasks', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-tasks-blank"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Travaux effectués
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-notes-blank"
+                  checked={pdfOptions.includeNotes}
+                  onCheckedChange={(checked) => handleOptionChange('includeNotes', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-notes-blank"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Notes et observations
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-time-tracking-blank"
+                  checked={pdfOptions.includeTimeTracking}
+                  onCheckedChange={(checked) => handleOptionChange('includeTimeTracking', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-time-tracking-blank"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Suivi de temps
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="include-summary-blank"
+                  checked={pdfOptions.includeSummary}
+                  onCheckedChange={(checked) => handleOptionChange('includeSummary', checked as boolean)}
+                />
+                <label 
+                  htmlFor="include-summary-blank"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Bilan financier
+                </label>
+              </div>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-watering"
-              checked={pdfOptions.includeWatering}
-              onCheckedChange={(checked) => handleOptionChange('includeWatering', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-watering"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Arrosages
-            </label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-notes"
-              checked={pdfOptions.includeNotes}
-              onCheckedChange={(checked) => handleOptionChange('includeNotes', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-notes"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Notes et observations
-            </label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="include-time-tracking"
-              checked={pdfOptions.includeTimeTracking}
-              onCheckedChange={(checked) => handleOptionChange('includeTimeTracking', checked as boolean)}
-            />
-            <label 
-              htmlFor="include-time-tracking"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Suivi de temps
-            </label>
-          </div>
-        </div>
-      </div>
-      
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button 
-            disabled={!selectedWorkLogId || availableWorkLogs.length === 0}
-            className="w-full"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Générer PDF
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Générer un PDF</AlertDialogTitle>
-            <AlertDialogDescription>
-              Voulez-vous générer un PDF pour la fiche de suivi sélectionnée ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleGenerateWorkLogPDF}>
-              Générer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                disabled={!selectedBlankWorkLogId || blankWorksheets.length === 0}
+                className="w-full"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Générer PDF
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Générer un PDF</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Voulez-vous générer un PDF pour la fiche vierge sélectionnée ?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleGenerateWorkLogPDF(true)}>
+                  Générer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

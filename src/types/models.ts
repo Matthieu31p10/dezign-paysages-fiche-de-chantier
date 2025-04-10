@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -76,39 +75,25 @@ export interface Consumable {
 export interface WorkLog {
   id: string;
   projectId: string;
-  date: string | Date;
-  duration?: number;
+  date: string;
   personnel: string[];
   timeTracking: {
-    departure: string;
-    arrival: string;
-    end: string;
-    breakTime: string; 
+    departure?: string;
+    arrival?: string;
+    end?: string;
+    breakTime?: string;
     totalHours: number;
   };
-  tasksPerformed?: {
-    mowing: boolean;
-    brushcutting: boolean;
-    blower: boolean;
-    manualWeeding: boolean;
-    whiteVinegar: boolean;
-    pruning: {
-      done: boolean;
-      progress: number;
-    };
-    watering: 'none' | 'on' | 'off';
-    customTasks?: { [id: string]: boolean }; 
-    tasksProgress?: { [id: string]: number }; 
-  };
-  notes?: string; 
+  duration?: number;
+  waterConsumption?: number;
+  wasteManagement?: string;
   tasks?: string;
-  waterConsumption?: number; 
-  wasteManagement?: string; // Support for multiple waste management types
-  hourlyRate?: number;
+  notes?: string;
   consumables?: Consumable[];
-  invoiced?: boolean;
-  isArchived?: boolean; // Pour archiver les fiches de suivi
   createdAt?: Date;
+  invoiced?: boolean;
+  isArchived?: boolean;
+  clientSignature?: string; // Champ pour la signature client
 }
 
 export interface Team {

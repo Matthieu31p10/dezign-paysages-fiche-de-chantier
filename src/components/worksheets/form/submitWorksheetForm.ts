@@ -12,6 +12,27 @@ interface SubmitWorksheetFormProps {
   setIsSubmitting: (isSubmitting: boolean) => void;
 }
 
+// Fonction pour générer un ID unique pour les fiches vierges
+const generateUniqueBlankSheetId = (workLogs: WorkLog[]): string => {
+  // Trouver le dernier numéro utilisé pour les fiches vierges
+  let maxNumber = 0;
+  
+  workLogs.forEach(log => {
+    if (log.projectId && log.projectId.startsWith('DZFV')) {
+      const numberPart = log.projectId.substring(4); // Extraire la partie numérique après "DZFV"
+      const number = parseInt(numberPart, 10);
+      if (!isNaN(number) && number > maxNumber) {
+        maxNumber = number;
+      }
+    }
+  });
+  
+  // Créer un nouvel ID avec le prochain numéro
+  const nextNumber = maxNumber + 1;
+  const paddedNumber = nextNumber.toString().padStart(5, '0');
+  return `DZFV${paddedNumber}`;
+};
+
 export async function submitWorksheetForm({
   data,
   addWorkLog,
@@ -27,13 +48,14 @@ export async function submitWorksheetForm({
     const structuredNotes = `
 CLIENT: ${data.clientName || ''}
 ADRESSE: ${data.address || ''}
-PHONE: ${data.contactPhone || ''}
+TÉLÉPHONE: ${data.contactPhone || ''}
 EMAIL: ${data.contactEmail || ''}
-PROJECT_ID: ${data.linkedProjectId || ''}
-HOURLY_RATE: ${data.hourlyRate || 0}
-VAT_RATE: ${data.vatRate || '20'}
-SIGNED_QUOTE: ${data.signedQuote ? 'true' : 'false'}
-QUOTE_VALUE: ${data.quoteValue || 0}
+ID PROJET: ${data.linkedProjectId || ''}
+TAUX HORAIRE: ${data.hourlyRate || 0}
+TVA: ${data.vatRate || '20'}
+DEVIS SIGNÉ: ${data.signedQuote ? 'oui' : 'non'}
+VALEUR DEVIS: ${data.quoteValue || 0}
+HEURE D'ENREGISTREMENT: ${new Date().toISOString()}
 DESCRIPTION: ${data.notes || ''}
 `;
     
@@ -50,7 +72,9 @@ DESCRIPTION: ${data.notes || ''}
     // Création de l'objet workLog
     const workLog: WorkLog = {
       id: existingWorkLogId || `blank-${Date.now()}`,
-      projectId: data.linkedProjectId ? `blank-${data.linkedProjectId}` : 'blank',
+      projectId: existingWorkLogId ? 
+        (existingWorkLogId.startsWith('DZFV') ? existingWorkLogId : `DZFV${Date.now()}`) : 
+        generateUniqueBlankSheetId(workLogContext?.workLogs || []),
       date: data.date.toISOString(),
       personnel: data.personnel || [],
       timeTracking: {
@@ -63,7 +87,8 @@ DESCRIPTION: ${data.notes || ''}
       notes: structuredNotes,
       tasks: data.tasks || '',
       wasteManagement: data.wasteManagement || 'none',
-      consumables: validatedConsumables
+      consumables: validatedConsumables,
+      clientSignature: data.clientSignature // Ajout de la signature du client
     };
     
     if (existingWorkLogId) {

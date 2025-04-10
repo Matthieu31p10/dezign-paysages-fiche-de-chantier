@@ -14,6 +14,7 @@ import ConsumablesSection from './ConsumablesSection';
 import WorksheetSummary from './WorksheetSummary';
 import AdditionalNotesSection from './form/AdditionalNotesSection';
 import FormActions from './form/FormActions';
+import ClientSignatureSection from './form/ClientSignatureSection';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -21,7 +22,7 @@ interface BlankWorkSheetFormProps {
 }
 
 const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess, workLogId }) => {
-  const { teams, getWorkLogById } = useApp();
+  const { teams, getWorkLogById, workLogs } = useApp();
   const {
     form,
     isSubmitting,
@@ -36,7 +37,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess, work
     handlePersonnelChange,
     handleCancel,
     loadWorkLogData
-  } = useBlankWorksheetForm(onSuccess, workLogId);
+  } = useBlankWorksheetForm(onSuccess, workLogId, workLogs);
   
   // Charger les données de la fiche si un ID est fourni
   useEffect(() => {
@@ -90,6 +91,10 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess, work
         <Separator />
         
         <WorksheetSummary />
+        
+        <Separator />
+        
+        <ClientSignatureSection />
         
         <Separator />
         

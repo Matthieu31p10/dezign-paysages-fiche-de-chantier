@@ -7,6 +7,7 @@ import { calculateTotalHours } from '@/utils/time';
 import { useApp } from '@/context/AppContext';
 import { useProjectLink } from './useProjectLinkHook';
 import { submitWorksheetForm } from './submitWorksheetForm';
+import { WorkLog } from '@/types/models';
 import { 
   extractClientName,
   extractAddress, 
@@ -20,7 +21,11 @@ import {
   extractQuoteValue
 } from '@/utils/helpers';
 
-export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string | null) => {
+export const useBlankWorksheetForm = (
+  onSuccess?: () => void, 
+  workLogId?: string | null, 
+  workLogs?: WorkLog[]
+) => {
   const { addWorkLog, updateWorkLog, getWorkLogById } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -46,6 +51,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       vatRate: "20",
       signedQuote: false,
       quoteValue: 0,
+      clientSignature: '',
     }
   });
   
@@ -129,6 +135,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       vatRate,  // Use the corrected value
       signedQuote: signedQuote || false,
       quoteValue: Number(quoteValue) || 0,
+      clientSignature: workLog.clientSignature || '',
     });
     
     if (linkedProjectId) {
@@ -143,7 +150,8 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       updateWorkLog,
       existingWorkLogId: workLogId,
       onSuccess,
-      setIsSubmitting
+      setIsSubmitting,
+      workLogs
     });
   };
   
@@ -168,6 +176,7 @@ export const useBlankWorksheetForm = (onSuccess?: () => void, workLogId?: string
       vatRate: "20",
       signedQuote: false,
       quoteValue: 0,
+      clientSignature: '',
     });
     
     projectLinkHook.handleClearProject();

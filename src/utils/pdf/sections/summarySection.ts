@@ -1,5 +1,6 @@
 
 import { PDFData } from '../types';
+import { extractHourlyRate, extractVatRate, extractQuoteValue } from '@/utils/helpers';
 
 export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos: number, contentWidth: number): number => {
   if (!data.pdfOptions?.includeSummary) {
@@ -15,18 +16,38 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   
   yPos += 10;
   
+  // Récupérer les données de taux horaire et TVA depuis les notes si non fournies
+  let hourlyRate = data.hourlyRate || 0;
+  let vatRate = data.vatRate || 20;
+  let quoteValue = data.quoteValue || 0;
+  
+  // Si les données ne sont pas directement disponibles, les extraire des notes
+  if (data.workLog?.notes) {
+    if (!hourlyRate) {
+      const extractedRate = extractHourlyRate(data.workLog.notes);
+      hourlyRate = typeof extractedRate === 'number' ? extractedRate : parseFloat(extractedRate || '0');
+    }
+    
+    if (!vatRate) {
+      const extractedVat = extractVatRate(data.workLog.notes);
+      vatRate = extractedVat === '10' ? 10 : 20;
+    }
+    
+    if (!quoteValue) {
+      const extractedQuoteValue = extractQuoteValue(data.workLog.notes);
+      quoteValue = typeof extractedQuoteValue === 'number' ? extractedQuoteValue : parseFloat(String(extractedQuoteValue) || '0');
+    }
+  }
+  
   // Récupérer les données avec valeurs par défaut pour gérer les données manquantes
   const totalHours = data.workLog?.timeTracking?.totalHours || 0;
-  const hourlyRate = data.hourlyRate || 0;
   const laborCost = totalHours * hourlyRate;
   
-  const consumables = data.consumables || [];
+  const consumables = data.workLog?.consumables || [];
   const consumablesCost = consumables.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   
   const totalHT = laborCost + consumablesCost;
   
-  // Utiliser le taux de TVA fourni ou par défaut 20%
-  const vatRate = data.vatRate || 20;
   const vatAmount = totalHT * (vatRate / 100);
   const totalTTC = totalHT + vatAmount;
   
@@ -34,7 +55,6 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   const signedQuote = data.signedQuote ? "Oui" : "Non";
   
   // Valeur du devis et différence
-  const quoteValue = data.quoteValue || 0;
   const difference = quoteValue > 0 ? (quoteValue - totalHT).toFixed(2) : null;
   
   // Créer un tableau pour le bilan

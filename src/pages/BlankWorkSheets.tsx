@@ -56,14 +56,15 @@ const BlankWorkSheets = () => {
   
   // Handle exporting PDF
   const handleExportPDF = (id: string) => {
-    // Implement PDF export functionality
-    toast.success("Export PDF en cours...");
+    // Redirect to reports page with PDF generation tab open
+    navigate('/reports?tab=tools&generate=blank&id=' + id);
+    toast.success("Redirection vers la génération de PDF...");
   };
   
   // Handle printing
   const handlePrint = (id: string) => {
-    // Implement print functionality
-    toast.success("Impression en cours...");
+    // Same as export for now
+    handleExportPDF(id);
   };
   
   // Gérer le succès du formulaire
@@ -72,6 +73,11 @@ const BlankWorkSheets = () => {
     setActiveTab('list');
     setEditingWorkLogId(null);
   };
+
+  const handleCreateNew = () => {
+    setEditingWorkLogId(null);
+    setActiveTab('new');
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -84,6 +90,14 @@ const BlankWorkSheets = () => {
         </div>
         
         <div className="flex gap-2">
+          <Button
+            onClick={handleCreateNew}
+            variant="default"
+          >
+            <FilePlus className="w-4 h-4 mr-2" />
+            Nouvelle fiche vierge
+          </Button>
+          
           <Button
             onClick={() => navigate('/worklogs')}
             variant="outline"
@@ -130,16 +144,31 @@ const BlankWorkSheets = () => {
         </TabsList>
         
         <TabsContent value="list" className="p-0 border-0 mt-6">
-          <BlankWorkSheetList 
-            sheets={blankWorkSheets}
-            onCreateNew={() => {
-              setEditingWorkLogId(null);
-              setActiveTab('new');
-            }}
-            onEdit={handleEditWorksheet}
-            onExportPDF={handleExportPDF}
-            onPrint={handlePrint}
-          />
+          {blankWorkSheets.length === 0 ? (
+            <Card>
+              <CardContent className="py-10">
+                <div className="text-center">
+                  <FileIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Aucune fiche vierge</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Vous n'avez encore créé aucune fiche vierge.
+                  </p>
+                  <Button onClick={handleCreateNew}>
+                    <FilePlus className="w-4 h-4 mr-2" />
+                    Créer une fiche vierge
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <BlankWorkSheetList 
+              sheets={blankWorkSheets}
+              onCreateNew={handleCreateNew}
+              onEdit={handleEditWorksheet}
+              onExportPDF={handleExportPDF}
+              onPrint={handlePrint}
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="new" className="p-0 border-0 mt-6">
