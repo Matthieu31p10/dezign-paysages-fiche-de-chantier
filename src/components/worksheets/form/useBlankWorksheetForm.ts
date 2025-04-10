@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { blankWorkSheetSchema, BlankWorkSheetValues } from '../schema';
@@ -91,6 +92,7 @@ export const useBlankWorksheetForm = (
     const workLog = getWorkLogById(id);
     if (!workLog) return;
     
+    // Extract all data from the worklog
     const clientName = extractClientName(workLog.notes || '');
     const address = extractAddress(workLog.notes || '');
     const contactPhone = extractContactPhone(workLog.notes || '');
@@ -103,10 +105,15 @@ export const useBlankWorksheetForm = (
     const quoteValue = extractQuoteValue(workLog.notes || '');
     
     console.log("Chargement des données pour édition:", {
+      clientName,
+      address,
+      contactPhone,
+      contactEmail,
       hourlyRate,
       vatRateValue,
       signedQuote, 
-      quoteValue
+      quoteValue,
+      linkedProjectId
     });
     
     // Ensure vatRate is either "10" or "20"
@@ -118,12 +125,12 @@ export const useBlankWorksheetForm = (
       contactPhone,
       contactEmail,
       date: new Date(workLog.date),
-      personnel: workLog.personnel,
-      departure: workLog.timeTracking.departure || '08:00',
-      arrival: workLog.timeTracking.arrival || '08:30',
-      end: workLog.timeTracking.end || '16:30',
-      breakTime: workLog.timeTracking.breakTime || '00:30',
-      totalHours: workLog.timeTracking.totalHours || 7.5,
+      personnel: workLog.personnel || [],
+      departure: workLog.timeTracking?.departure || '08:00',
+      arrival: workLog.timeTracking?.arrival || '08:30',
+      end: workLog.timeTracking?.end || '16:30',
+      breakTime: workLog.timeTracking?.breakTime || '00:30',
+      totalHours: workLog.timeTracking?.totalHours || 7.5,
       hourlyRate: Number(hourlyRate) || 0,
       wasteManagement: workLog.wasteManagement || 'none',
       teamFilter: 'all',
@@ -131,7 +138,7 @@ export const useBlankWorksheetForm = (
       notes: notes || '',
       tasks: workLog.tasks || '',
       consumables: workLog.consumables || [],
-      vatRate,  // Use the corrected value
+      vatRate,
       signedQuote: signedQuote || false,
       quoteValue: Number(quoteValue) || 0,
       clientSignature: workLog.clientSignature || '',

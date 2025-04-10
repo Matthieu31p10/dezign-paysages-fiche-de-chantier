@@ -15,6 +15,9 @@ import WorksheetSummary from './WorksheetSummary';
 import AdditionalNotesSection from './form/AdditionalNotesSection';
 import FormActions from './form/FormActions';
 import ClientSignatureSection from './form/ClientSignatureSection';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
@@ -51,54 +54,85 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess, work
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <ProjectLinkSection 
-          selectedProject={selectedProject}
-          openProjectsCombobox={openProjectsCombobox}
-          setOpenProjectsCombobox={setOpenProjectsCombobox}
-          activeProjects={activeProjects}
-          handleProjectSelect={handleProjectSelect}
-          handleClearProject={handleClearProject}
-        />
+        {isEditing && (
+          <Alert className="bg-blue-50 border-blue-100">
+            <InfoIcon className="h-4 w-4 text-blue-500" />
+            <AlertDescription className="text-blue-700">
+              Vous modifiez la fiche vierge {workLogId}. Tous les champs sont modifiables.
+            </AlertDescription>
+          </Alert>
+        )}
         
-        <Separator />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <ProjectLinkSection 
+              selectedProject={selectedProject}
+              openProjectsCombobox={openProjectsCombobox}
+              setOpenProjectsCombobox={setOpenProjectsCombobox}
+              activeProjects={activeProjects}
+              handleProjectSelect={handleProjectSelect}
+              handleClearProject={handleClearProject}
+            />
+          </CardContent>
+        </Card>
         
-        <ClientInfoSection />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <ClientInfoSection />
+          </CardContent>
+        </Card>
         
-        <Separator />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <InterventionDetailsSection 
+              teams={teams}
+              handleTeamFilterChange={handleTeamFilterChange}
+              handlePersonnelChange={handlePersonnelChange}
+            />
+          </CardContent>
+        </Card>
         
-        <InterventionDetailsSection 
-          teams={teams}
-          handleTeamFilterChange={handleTeamFilterChange}
-          handlePersonnelChange={handlePersonnelChange}
-        />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <TimeTrackingFormSection />
+          </CardContent>
+        </Card>
         
-        <Separator />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <TasksSection />
+          </CardContent>
+        </Card>
         
-        <TimeTrackingFormSection />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <WasteManagementSection />
+          </CardContent>
+        </Card>
         
-        <Separator />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <ConsumablesSection />
+          </CardContent>
+        </Card>
         
-        <TasksSection />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <WorksheetSummary />
+          </CardContent>
+        </Card>
         
-        <Separator />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <ClientSignatureSection />
+          </CardContent>
+        </Card>
         
-        <WasteManagementSection />
-        
-        <Separator />
-        
-        <ConsumablesSection />
-        
-        <Separator />
-        
-        <WorksheetSummary />
-        
-        <Separator />
-        
-        <ClientSignatureSection />
-        
-        <Separator />
-        
-        <AdditionalNotesSection />
+        <Card className="border shadow-sm">
+          <CardContent className="pt-6">
+            <AdditionalNotesSection />
+          </CardContent>
+        </Card>
         
         <FormActions 
           isSubmitting={isSubmitting}
