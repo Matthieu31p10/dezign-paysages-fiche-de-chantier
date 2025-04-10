@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 interface FormActionsProps {
   isSubmitting: boolean;
   handleCancel: () => void;
-  isEditing?: boolean; // Nouvelle prop pour indiquer si on est en mode édition
+  isEditing?: boolean;
 }
 
 const FormActions: React.FC<FormActionsProps> = ({

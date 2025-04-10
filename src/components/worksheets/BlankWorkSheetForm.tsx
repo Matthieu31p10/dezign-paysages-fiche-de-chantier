@@ -21,7 +21,7 @@ import { InfoIcon } from 'lucide-react';
 
 interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
-  workLogId?: string | null; // Ajout d'une prop pour l'ID de la fiche à modifier
+  workLogId?: string | null;
 }
 
 const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({ onSuccess, workLogId }) => {
