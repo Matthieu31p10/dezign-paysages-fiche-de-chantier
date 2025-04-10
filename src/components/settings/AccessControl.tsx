@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
@@ -27,7 +26,7 @@ type UserPermission = {
 };
 
 const AccessControl = ({ isAdmin }: AccessControlProps) => {
-  const { users, updateUserPermissions } = useApp();
+  const { settings, updateSettings } = useApp();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [userPermissions, setUserPermissions] = useState<UserPermission[]>([]);
   
@@ -44,6 +43,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
   
   // Initialisation des permissions utilisateur
   useEffect(() => {
+    const users = settings?.users || [];
     if (users && users.length > 0) {
       const initialUserPermissions = users.map(user => {
         // Si l'utilisateur n'a pas de permissions définies, on lui attribue les valeurs par défaut
@@ -54,7 +54,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
         
         return {
           userId: user.id,
-          userName: user.name || user.email,
+          userName: user.name || user.username,
           permissions
         };
       });
@@ -64,7 +64,7 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
         setSelectedUserId(initialUserPermissions[0].userId);
       }
     }
-  }, [users]);
+  }, [settings]);
   
   const handleUpdatePermission = (userId: string, permissionId: string, value: boolean) => {
     // Mettre à jour l'état local
@@ -88,7 +88,24 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
     updatedPermissions[permissionId] = value;
     
     try {
-      updateUserPermissions(userId, updatedPermissions);
+      // Update the user permissions in settings
+      const updatedUsers = (settings?.users || []).map(user => {
+        if (user.id === userId) {
+          return {
+            ...user,
+            permissions: {
+              ...(user.permissions || {}),
+              [permissionId]: value
+            }
+          };
+        }
+        return user;
+      });
+      
+      updateSettings({ 
+        users: updatedUsers 
+      });
+      
       toast.success('Permissions mises à jour');
     } catch (error) {
       toast.error('Erreur lors de la mise à jour des permissions');

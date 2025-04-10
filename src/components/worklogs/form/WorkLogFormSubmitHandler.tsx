@@ -63,7 +63,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // S'assurer que toutes les valeurs numériques sont traitées comme des nombres
       const payload = {
         projectId: data.projectId,
-        date: data.date,
+        date: data.date.toISOString(), // Convert Date to string for WorkLog
         duration: Number(data.duration) || 0,
         personnel: safePersonnel,
         timeTracking: {

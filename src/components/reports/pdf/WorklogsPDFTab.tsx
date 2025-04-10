@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,6 +10,7 @@ import { toast } from 'sonner';
 import { formatDate } from '@/utils/helpers';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { extractClientName } from '@/utils/notes-extraction';
 
 interface PDFOptions {
   includeContactInfo: boolean;
@@ -29,7 +29,6 @@ const WorklogsPDFTab = () => {
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>('');
   const [selectedBlankWorkLogId, setSelectedBlankWorkLogId] = useState<string>('');
   
-  // Options PDF avec valeurs par défaut (toutes activées)
   const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
     includeContactInfo: true,
     includeCompanyInfo: true,
@@ -41,14 +40,12 @@ const WorklogsPDFTab = () => {
     includeSummary: true
   });
   
-  // Filtrer les fiches de suivi régulières
   const regularWorkLogs = workLogs.filter(log => {
     const project = getProjectById(log.projectId);
     return project && log.personnel && log.personnel.length > 0 && 
       (!log.projectId.startsWith('blank-') && !log.projectId.startsWith('DZFV'));
   });
   
-  // Filtrer les fiches vierges
   const blankWorksheets = workLogs.filter(log => {
     return log.personnel && log.personnel.length > 0 &&
       (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
@@ -75,7 +72,6 @@ const WorklogsPDFTab = () => {
       return;
     }
     
-    // Sécurité: vérification supplémentaire
     if (!workLog.personnel || workLog.personnel.length === 0) {
       toast.error('Cette fiche n\'a pas de personnel assigné');
       return;
@@ -84,7 +80,6 @@ const WorklogsPDFTab = () => {
     const project = pdfOptions.includeContactInfo ? getProjectById(workLog.projectId) : undefined;
     
     try {
-      // Utilisation de la fonction generatePDF avec les informations de l'entreprise et les options
       const pdfData = {
         workLog,
         project,
@@ -92,7 +87,6 @@ const WorklogsPDFTab = () => {
         companyLogo: pdfOptions.includeCompanyInfo ? settings.companyLogo : undefined,
         pdfOptions: {
           ...pdfOptions,
-          // Ajouter les options pour l'affichage du bilan (avec taux horaire, etc.)
           includeSummary: pdfOptions.includeSummary
         }
       };

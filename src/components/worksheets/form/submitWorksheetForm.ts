@@ -2,6 +2,7 @@
 import { BlankWorkSheetValues } from '../schema';
 import { useApp } from '@/context/AppContext';
 import { WorkLog, Consumable } from '@/types/models';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 
 interface SubmitWorksheetFormProps {
   data: BlankWorkSheetValues;
@@ -10,10 +11,11 @@ interface SubmitWorksheetFormProps {
   existingWorkLogId?: string | null;
   onSuccess?: () => void;
   setIsSubmitting: (isSubmitting: boolean) => void;
+  workLogs?: WorkLog[]; // Add workLogs to interface
 }
 
 // Fonction pour générer un ID unique pour les fiches vierges
-const generateUniqueBlankSheetId = (workLogs: WorkLog[]): string => {
+const generateUniqueBlankSheetId = (workLogs: WorkLog[] = []): string => {
   // Trouver le dernier numéro utilisé pour les fiches vierges
   let maxNumber = 0;
   
@@ -39,7 +41,8 @@ export async function submitWorksheetForm({
   updateWorkLog,
   existingWorkLogId,
   onSuccess,
-  setIsSubmitting
+  setIsSubmitting,
+  workLogs = [] // Default to empty array
 }: SubmitWorksheetFormProps) {
   setIsSubmitting(true);
   
@@ -74,8 +77,8 @@ DESCRIPTION: ${data.notes || ''}
       id: existingWorkLogId || `blank-${Date.now()}`,
       projectId: existingWorkLogId ? 
         (existingWorkLogId.startsWith('DZFV') ? existingWorkLogId : `DZFV${Date.now()}`) : 
-        generateUniqueBlankSheetId(workLogContext?.workLogs || []),
-      date: data.date.toISOString(),
+        generateUniqueBlankSheetId(workLogs),
+      date: data.date.toISOString(), // Convert Date to string for workLog.date
       personnel: data.personnel || [],
       timeTracking: {
         departure: data.departure,

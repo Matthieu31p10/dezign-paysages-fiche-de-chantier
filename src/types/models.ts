@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -75,7 +76,7 @@ export interface Consumable {
 export interface WorkLog {
   id: string;
   projectId: string;
-  date: string;
+  date: string;  // Make sure this is string, not Date
   personnel: string[];
   timeTracking: {
     departure?: string;
@@ -94,6 +95,20 @@ export interface WorkLog {
   invoiced?: boolean;
   isArchived?: boolean;
   clientSignature?: string; // Champ pour la signature client
+  tasksPerformed?: {  // Add the missing tasksPerformed property
+    watering?: 'none' | 'on' | 'off';
+    customTasks?: Record<string, boolean>;
+    tasksProgress?: Record<string, number>;
+    pruning?: { 
+      done: boolean;
+      progress: number;
+    };
+    mowing?: boolean;
+    brushcutting?: boolean;
+    blower?: boolean;
+    manualWeeding?: boolean;
+    whiteVinegar?: boolean;
+  };
 }
 
 export interface Team {
