@@ -1,5 +1,8 @@
-// This file is now handled by helpers.ts to avoid duplication
-// Keeping the file for backward compatibility
 
-// Re-export the formatNumber function from helpers
-export { formatNumber } from './helpers';
+// Number Formatting
+export const formatNumber = (num: number): string => {
+  return new Intl.NumberFormat('fr-FR', { 
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0
+  }).format(num);
+};
