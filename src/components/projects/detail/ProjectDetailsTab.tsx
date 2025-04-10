@@ -1,11 +1,11 @@
-
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ProjectInfo } from '@/types/models';
 import { Phone, Mail, Users, Calendar, Clock } from 'lucide-react';
 import { formatNumber } from '@/utils/helpers';
 import { Button } from '@/components/ui/button';
 import { File } from 'lucide-react';
+import ProjectProgressCard from './ProjectProgressCard';
 
 interface ProjectDetailsTabProps {
   project: ProjectInfo;
@@ -110,8 +110,5 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
     </div>
   );
 };
-
-// We'll define this component separately below
-const ProjectProgressCard = React.lazy(() => import('./ProjectProgressCard'));
 
 export default ProjectDetailsTab;
