@@ -19,9 +19,9 @@ export const getWasteManagementText = (wasteCode?: string): string => {
     case 'big_bag_5': return '5 Big-bags';
     
     // Half dumpsters
-    case 'half_dumpster_1': return '1 × 1/2 Benne';
-    case 'half_dumpster_2': return '2 × 1/2 Bennes';
-    case 'half_dumpster_3': return '3 × 1/2 Bennes';
+    case 'half_dumpster_1': return '1 × ½ Benne';
+    case 'half_dumpster_2': return '2 × ½ Bennes';
+    case 'half_dumpster_3': return '3 × ½ Bennes';
     
     // Full dumpsters
     case 'dumpster_1': return '1 Benne';
@@ -33,21 +33,30 @@ export const getWasteManagementText = (wasteCode?: string): string => {
   }
 };
 
+// Définition des couleurs pour tout le PDF
+export const pdfColors = {
+  primary: [61, 174, 43], // Vert du logo
+  text: [60, 60, 60],
+  lightGrey: [245, 245, 245],
+  border: [220, 220, 220],
+  heading: [100, 100, 100]
+};
+
 // Fonction utilitaire pour dessiner une boîte d'information
 export function drawInfoBox(pdf: any, x: number, y: number, width: number, height: number, title: string, contentDrawer: () => void) {
   // Rectangle de fond
-  pdf.setFillColor(245, 245, 245);
-  pdf.setDrawColor(220, 220, 220);
+  pdf.setFillColor(pdfColors.lightGrey[0], pdfColors.lightGrey[1], pdfColors.lightGrey[2]);
+  pdf.setDrawColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]); // Utiliser la couleur verte pour la bordure
   pdf.roundedRect(x, y, width, height, 2, 2, 'FD');
   
   // Titre
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]); // Titre en vert
   pdf.text(title, x + 5, y + 6);
   
   // Reset text color
-  pdf.setTextColor(60, 60, 60);
+  pdf.setTextColor(pdfColors.text[0], pdfColors.text[1], pdfColors.text[2]);
   
   // Contenu
   contentDrawer();
@@ -56,18 +65,18 @@ export function drawInfoBox(pdf: any, x: number, y: number, width: number, heigh
 // Fonction utilitaire pour dessiner une boîte de temps
 export function drawTimeBox(pdf: any, x: number, y: number, width: number, title: string, time: string) {
   // Rectangle de fond
-  pdf.setFillColor(245, 245, 245);
-  pdf.setDrawColor(220, 220, 220);
+  pdf.setFillColor(pdfColors.lightGrey[0], pdfColors.lightGrey[1], pdfColors.lightGrey[2]);
+  pdf.setDrawColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]); // Bordure verte
   pdf.roundedRect(x, y, width, 20, 2, 2, 'FD');
   
   // Titre
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]); // Titre en vert
   pdf.text(title, x + 5, y + 6);
   
   // Heure
-  pdf.setTextColor(60, 60, 60);
+  pdf.setTextColor(pdfColors.text[0], pdfColors.text[1], pdfColors.text[2]);
   pdf.setFontSize(14);
   pdf.setFont('helvetica', 'bold');
   pdf.text(time, x + 5, y + 16);

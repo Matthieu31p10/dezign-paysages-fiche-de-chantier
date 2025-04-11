@@ -6,8 +6,13 @@ import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from './schema';
 import { FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { CustomTask } from '@/types/models';
 
-const TasksSection: React.FC = () => {
+interface TasksSectionProps {
+  customTasks?: CustomTask[];
+}
+
+const TasksSection: React.FC<TasksSectionProps> = ({ customTasks = [] }) => {
   const { control } = useFormContext<BlankWorkSheetValues>();
   
   return (

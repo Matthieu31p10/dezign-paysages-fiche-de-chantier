@@ -18,7 +18,6 @@ import {
 // Extended context type with additional methods
 interface ExtendedWorkLogsContextType extends WorkLogsContextType {
   deleteWorkLogsByProjectId: (projectId: string) => void;
-  updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => void;
   archiveWorkLogsByProjectId: (projectId: string, archive: boolean) => void;
 }
 
@@ -49,7 +48,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   /**
    * Add a new workLog
    */
-  const addWorkLog = (workLog: WorkLog): WorkLog => {
+  const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
     // Validate data
     if (!workLog.projectId || !workLog.date || !workLog.personnel || workLog.personnel.length === 0) {
       console.error("Invalid worklog data:", workLog);

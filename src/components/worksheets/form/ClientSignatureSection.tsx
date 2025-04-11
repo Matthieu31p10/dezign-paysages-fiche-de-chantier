@@ -6,14 +6,19 @@ import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/for
 import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
 import { Pen, Eraser } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 const ClientSignatureSection = () => {
   const { control, setValue, watch } = useFormContext<BlankWorkSheetValues>();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
   const savedSignature = watch('clientSignature');
   
+  // Initialiser le canvas quand le dialogue est ouvert
   useEffect(() => {
+    if (!signatureDialogOpen) return;
+    
     // Initialiser le canvas
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -35,7 +40,7 @@ const ClientSignatureSection = () => {
       };
       img.src = savedSignature;
     }
-  }, [savedSignature]);
+  }, [savedSignature, signatureDialogOpen]);
   
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
@@ -102,6 +107,11 @@ const ClientSignatureSection = () => {
     setValue('clientSignature', '');
   };
   
+  const saveSignature = () => {
+    // Déjà sauvegardé par stopDrawing, fermer juste le dialogue
+    setSignatureDialogOpen(false);
+  };
+  
   return (
     <FormField
       control={control}
@@ -119,35 +129,81 @@ const ClientSignatureSection = () => {
               <FormLabel className="text-sm">
                 Veuillez faire signer le client ci-dessous:
               </FormLabel>
-              <div className="border-2 border-dashed border-gray-300 rounded-md mt-2 p-1">
-                <canvas
-                  ref={canvasRef}
-                  width={500}
-                  height={200}
-                  className="bg-white w-full touch-none"
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
-                  onTouchStart={startDrawing}
-                  onTouchMove={draw}
-                  onTouchEnd={stopDrawing}
-                />
-              </div>
+              
+              <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
+                <div className="flex flex-col items-center mt-3">
+                  {savedSignature ? (
+                    <div className="border rounded-md p-3 w-full">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-sm font-medium">Signature enregistrée</p>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Pen className="h-3.5 w-3.5 mr-1.5" />
+                            Modifier
+                          </Button>
+                        </DialogTrigger>
+                      </div>
+                      <div className="bg-white rounded border p-2">
+                        <img 
+                          src={savedSignature} 
+                          alt="Signature du client" 
+                          className="max-h-24 max-w-full mx-auto" 
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full">
+                        <Pen className="h-4 w-4 mr-2" />
+                        Ajouter une signature
+                      </Button>
+                    </DialogTrigger>
+                  )}
+                </div>
+                
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Signature du client</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="border-2 border-dashed border-gray-300 rounded-md mt-2 p-1">
+                    <canvas
+                      ref={canvasRef}
+                      width={500}
+                      height={200}
+                      className="bg-white w-full touch-none"
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                    />
+                  </div>
+                  
+                  <DialogFooter className="flex justify-between">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={clearSignature}
+                    >
+                      <Eraser className="h-4 w-4 mr-2" />
+                      Effacer
+                    </Button>
+                    
+                    <DialogClose asChild>
+                      <Button type="button" onClick={saveSignature}>
+                        Valider la signature
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
               <FormControl>
                 <input type="hidden" {...field} />
               </FormControl>
-              <div className="flex justify-end mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={clearSignature}
-                >
-                  <Eraser className="h-4 w-4 mr-2" />
-                  Effacer
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </FormItem>

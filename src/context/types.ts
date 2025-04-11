@@ -15,7 +15,7 @@ export interface ProjectsContextType {
 
 export type WorkLogsContextType = {
   workLogs: WorkLog[];
-  addWorkLog: (workLog: WorkLog) => WorkLog;
+  addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
   updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => Promise<void>;
   deleteWorkLog: (id: string) => void;
   getWorkLogById: (id: string) => WorkLog | undefined;

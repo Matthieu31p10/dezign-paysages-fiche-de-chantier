@@ -89,6 +89,7 @@ const BlankWorkSheetForm = ({
             isSubmitting={isSubmitting}
             handleCancel={handleCancel}
             isEditing={!!initialData}
+            onSubmit={handleSubmit}
           />
         </div>
         

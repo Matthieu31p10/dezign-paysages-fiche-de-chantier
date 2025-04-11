@@ -20,43 +20,37 @@ export const useBlankWorksheetForm = ({
   workLogs = [],
   projectInfos = []
 }: UseBlankWorksheetFormProps) => {
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    initialData?.linkedProjectId || null
+  );
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   
   // Initialize the form with default values
   const form = useForm<BlankWorkSheetValues>({
     defaultValues: {
-      clientName: '',
-      address: '',
-      contactPhone: '',
-      contactEmail: '',
-      date: new Date(),
-      personnel: [],
-      departure: '',
-      arrival: '',
-      end: '',
-      breakTime: '',
-      selectedTasks: [],
-      tasksProgress: {},
-      wasteManagement: 'none',
-      notes: '',
-      clientSignature: null,
-      consumables: [],
-      totalHours: 0,
-      hourlyRate: 0
+      clientName: initialData?.clientName || '',
+      address: initialData?.address || '',
+      contactPhone: initialData?.contactPhone || '',
+      contactEmail: initialData?.contactEmail || '',
+      date: initialData?.date ? new Date(initialData.date) : new Date(),
+      personnel: initialData?.personnel || [],
+      departure: initialData?.timeTracking?.departure || '',
+      arrival: initialData?.timeTracking?.arrival || '',
+      end: initialData?.timeTracking?.end || '',
+      breakTime: initialData?.timeTracking?.breakTime || '',
+      tasks: initialData?.tasks || '',
+      wasteManagement: initialData?.wasteManagement || 'none',
+      notes: initialData?.notes || '',
+      clientSignature: initialData?.clientSignature || null,
+      consumables: initialData?.consumables || [],
+      totalHours: initialData?.totalHours || 0,
+      hourlyRate: initialData?.hourlyRate || 0
     }
   });
   
   // Handle time calculations
-  const timeCalculation = useTimeCalculation({ form });
+  useTimeCalculation({ form });
   
-  // Handle worklog data loading
-  const { loadWorkLogData } = useWorksheetLoader({
-    form,
-    getWorkLogById: (id: string) => workLogs.find(wl => wl.id === id),
-    handleProjectSelect
-  });
-
   // Handle project linking
   const handleProjectSelect = (projectId: string | null) => {
     setSelectedProjectId(projectId);
@@ -82,6 +76,20 @@ export const useBlankWorksheetForm = ({
     setSelectedProject(null);
   };
   
+  // Handle worklog data loading
+  const { loadWorkLogData } = useWorksheetLoader({
+    form,
+    getWorkLogById: (id: string) => workLogs.find(wl => wl.id === id),
+    handleProjectSelect
+  });
+  
+  // Load the linked project if it exists
+  useEffect(() => {
+    if (initialData?.linkedProjectId) {
+      handleProjectSelect(initialData.linkedProjectId);
+    }
+  }, [initialData?.linkedProjectId]);
+  
   // Calculate total hours
   const calculateTotalHours = () => {
     const departure = form.watch('departure');
@@ -91,33 +99,12 @@ export const useBlankWorksheetForm = ({
     
     // Logic to calculate hours based on these values
     console.log("Calculating hours based on:", departure, arrival, end, breakTime);
-    // Placeholder calculation
-    const hours = 7.5; // Default value
-    form.setValue('totalHours', hours);
-    
-    return hours;
+    // We'll let the useTimeCalculation hook handle the actual calculation
   };
   
   // Handle form submission and cancellation
   const formActions = useFormActions({
     form,
-    addWorkLog: async (workLog: WorkLog) => {
-      // Adapt to the Promise-based API
-      try {
-        return await addWorkLog(workLog);
-      } catch (error) {
-        console.error("Error adding work log", error);
-        throw error;
-      }
-    },
-    updateWorkLog: async (workLog: WorkLog) => {
-      try {
-        await updateWorkLog(workLog);
-      } catch (error) {
-        console.error("Error updating work log", error);
-        throw error;
-      }
-    },
     workLogId: initialData?.id,
     onSuccess,
     workLogs,
@@ -134,15 +121,4 @@ export const useBlankWorksheetForm = ({
     calculateTotalHours,
     ...formActions,
   };
-};
-
-// Placeholder functions to make TypeScript happy - these will be provided at runtime
-const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
-  console.log('Adding work log...', workLog);
-  return Promise.resolve(workLog);
-};
-
-const updateWorkLog = async (workLog: WorkLog): Promise<void> => {
-  console.log('Updating work log...', workLog);
-  return Promise.resolve();
 };

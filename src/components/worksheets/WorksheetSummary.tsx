@@ -1,188 +1,109 @@
 
-import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { Card, CardContent } from '@/components/ui/card';
-import { Calculator, FileCheck, Wallet } from 'lucide-react';
+import { formatDate } from '@/utils/date';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, Calendar, Clock, ClipboardCheck, Trash } from 'lucide-react';
 import { BlankWorkSheetValues } from './schema';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 
-const WorksheetSummary: React.FC = () => {
-  const { watch, setValue } = useFormContext<BlankWorkSheetValues>();
-  
-  const totalHours = watch('totalHours');
-  const hourlyRate = watch('hourlyRate') || 0;
-  const consumables = watch('consumables') || [];
-  const vatRate = watch('vatRate') || "20";
-  const signedQuote = watch('signedQuote') || false;
-  const quoteValue = watch('quoteValue') || 0;
-  
-  // Calcul du coût total de la main d'œuvre
-  const laborCost = totalHours * hourlyRate;
-  
-  // Calcul du coût total des consommables
-  const consumablesCost = consumables.reduce((total, item) => total + item.totalPrice, 0);
-  
-  // Calcul du total HT
-  const totalHT = laborCost + consumablesCost;
-  
-  // Calcul de la TVA
-  const vatAmount = totalHT * (parseInt(vatRate) / 100);
-  
-  // Calcul du total TTC
-  const totalTTC = totalHT + vatAmount;
-  
-  // Différence entre devis et réalisation
-  const difference = quoteValue > 0 ? (quoteValue - totalHT).toFixed(2) : '0.00';
-  
-  // Gestion du changement de taux de TVA
-  const handleVatRateChange = (value: string) => {
-    setValue('vatRate', value as "10" | "20");
-  };
-  
-  // Gestion du changement du statut "Devis signé"
-  const handleSignedQuoteChange = (checked: boolean) => {
-    setValue('signedQuote', checked);
-  };
-  
-  // Gestion du changement de la valeur du devis
-  const handleQuoteValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-    setValue('quoteValue', value);
-  };
+interface WorksheetSummaryProps {
+  formValues: BlankWorkSheetValues;
+  projectName?: string | null;
+}
+
+const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) => {
+  // Calculate total hours worked
+  const totalHours = formValues.totalHours || 0;
   
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium flex items-center">
-        <Calculator className="w-5 h-5 mr-2 text-muted-foreground" />
-        Bilan de l'intervention
-      </h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <FormField
-          name="vatRate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Taux de TVA</FormLabel>
-              <Select 
-                value={field.value} 
-                onValueChange={handleVatRateChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un taux de TVA" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10%</SelectItem>
-                  <SelectItem value="20">20%</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            name="signedQuote"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center space-x-3 space-y-0 mt-8">
-                <FormControl>
-                  <Checkbox 
-                    checked={field.value} 
-                    onCheckedChange={handleSignedQuoteChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="flex items-center cursor-pointer">
-                    <FileCheck className="w-4 h-4 mr-2" />
-                    Devis signé
-                  </FormLabel>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            name="quoteValue"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Valeur devis HT
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      value={field.value || ''}
-                      onChange={e => {
-                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                        field.onChange(value);
-                      }}
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <span className="text-muted-foreground">€</span>
-                    </div>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-      </div>
-      
-      <Card>
-        <CardContent className="pt-4">
-          <div className="space-y-4">
-            <table className="w-full">
-              <tbody>
-                <tr className="border-b">
-                  <td className="py-2">Main d'œuvre</td>
-                  <td className="py-2 text-right font-medium">
-                    {totalHours.toFixed(2)} h x {hourlyRate.toFixed(2)} € = {laborCost.toFixed(2)} €
-                  </td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Consommables</td>
-                  <td className="py-2 text-right font-medium">{consumablesCost.toFixed(2)} €</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2 font-semibold">Total HT</td>
-                  <td className="py-2 text-right font-bold">{totalHT.toFixed(2)} €</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">TVA ({vatRate}%)</td>
-                  <td className="py-2 text-right font-medium">{vatAmount.toFixed(2)} €</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2 font-semibold">TOTAL TTC</td>
-                  <td className="py-2 text-right font-bold">{totalTTC.toFixed(2)} €</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Devis signé</td>
-                  <td className="py-2 text-right font-medium">{signedQuote ? 'Oui' : 'Non'}</td>
-                </tr>
-                {quoteValue > 0 && (
-                  <tr className="border-b">
-                    <td className="py-2">Différence Devis/Réalisation HT</td>
-                    <td className={`py-2 text-right font-medium ${parseFloat(difference) < 0 ? 'text-red-500' : 'text-green-500'}`}>
-                      {difference} €
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+    <Card className="sticky top-4">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <FileText className="h-5 w-5 text-primary" />
+          Résumé
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Project link */}
+        {projectName && (
+          <div className="border rounded-md p-3 bg-muted/50">
+            <p className="text-sm font-medium">Chantier associé</p>
+            <p className="text-sm">{projectName}</p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+        
+        {/* Date */}
+        <div className="flex items-start gap-3">
+          <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">Date d'intervention</p>
+            <p className="text-sm">
+              {formValues.date ? formatDate(formValues.date) : 'Non spécifiée'}
+            </p>
+          </div>
+        </div>
+        
+        {/* Time */}
+        <div className="flex items-start gap-3">
+          <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">Temps de travail</p>
+            <p className="text-sm">
+              {totalHours > 0 
+                ? `${totalHours.toFixed(2)} heures` 
+                : 'Non calculé'
+              }
+            </p>
+            {formValues.arrival && formValues.end && (
+              <p className="text-xs text-muted-foreground">
+                {formValues.arrival} - {formValues.end}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {/* Personnel */}
+        <div className="flex items-start gap-3">
+          <ClipboardCheck className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">Personnel</p>
+            {formValues.personnel && formValues.personnel.length > 0 ? (
+              <ul className="text-sm list-disc list-inside">
+                {formValues.personnel.map((personId) => (
+                  <li key={personId}>{personId}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">Aucun personnel sélectionné</p>
+            )}
+          </div>
+        </div>
+        
+        {/* Waste Management */}
+        {formValues.wasteManagement && formValues.wasteManagement !== 'none' && (
+          <div className="flex items-start gap-3">
+            <Trash className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium">Gestion des déchets</p>
+              <p className="text-sm">
+                {formValues.wasteManagement.startsWith('big_bag') && 'Big-bag'}
+                {formValues.wasteManagement.startsWith('half_dumpster') && '½ Benne'}
+                {formValues.wasteManagement.startsWith('dumpster') && 'Benne'}
+                {' - '}
+                {formValues.wasteManagement.split('_')[1] || '1'} unité(s)
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Client info */}
+        {formValues.clientName && (
+          <div className="border-t pt-3 mt-3">
+            <p className="text-sm font-medium">Client</p>
+            <p className="text-sm">{formValues.clientName}</p>
+            {formValues.address && <p className="text-xs text-muted-foreground">{formValues.address}</p>}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

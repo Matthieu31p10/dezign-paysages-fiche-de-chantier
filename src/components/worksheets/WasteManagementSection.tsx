@@ -62,7 +62,7 @@ const WasteManagementSection: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="none">Aucun</SelectItem>
                     <SelectItem value="big_bag">Big-bag</SelectItem>
-                    <SelectItem value="half_dumpster">1/2 Benne</SelectItem>
+                    <SelectItem value="half_dumpster">½ Benne</SelectItem>
                     <SelectItem value="dumpster">Benne</SelectItem>
                   </SelectContent>
                 </Select>
