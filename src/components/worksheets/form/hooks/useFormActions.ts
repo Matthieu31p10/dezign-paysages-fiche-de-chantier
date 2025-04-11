@@ -7,7 +7,7 @@ import { WorkLog } from '@/types/models';
 
 type UseFormActionsProps = {
   form: UseFormReturn<BlankWorkSheetValues>;
-  addWorkLog: (workLog: WorkLog) => Promise<void>;
+  addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
   updateWorkLog: (workLog: WorkLog) => Promise<void>;
   workLogId?: string | null;
   onSuccess?: () => void;

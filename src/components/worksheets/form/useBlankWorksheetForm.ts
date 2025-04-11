@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { WorkLog } from '@/types/models';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 import { BlankWorkSheetValues } from '../schema';
 import { useProjectLink } from './useProjectLinkHook';
 import { useFormInitialization } from './hooks/useFormInitialization';
@@ -18,6 +18,7 @@ export const useBlankWorksheetForm = (
   workLogs?: WorkLog[]
 ) => {
   const { addWorkLog, updateWorkLog, getWorkLogById } = useApp();
+  const workLogsContext = useWorkLogs();
   
   // Initialize form with default values
   const form = useFormInitialization();
@@ -54,3 +55,6 @@ export const useBlankWorksheetForm = (
     loadWorkLogData
   };
 };
+
+// Add missing type import
+import { WorkLog } from '@/types/models';
