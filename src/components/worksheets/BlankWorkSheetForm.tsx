@@ -1,20 +1,20 @@
 
 import { WorkLog } from '@/types/models';
-import { WorksheetSummary } from './WorksheetSummary';
-import { ProjectLinkSection } from './form/ProjectLinkSection';
-import { ClientInfoSection } from './form/ClientInfoSection';
-import { InterventionDetailsSection } from './form/InterventionDetailsSection';
-import { AdditionalNotesSection } from './form/AdditionalNotesSection';
-import { TimeTrackingFormSection } from './form/TimeTrackingFormSection';
-import { FormActions } from './form/FormActions';
+import WorksheetSummary from './WorksheetSummary';
+import ProjectLinkSection from './form/ProjectLinkSection';
+import ClientInfoSection from './form/ClientInfoSection';
+import InterventionDetailsSection from './form/InterventionDetailsSection';
+import AdditionalNotesSection from './form/AdditionalNotesSection';
+import TimeTrackingFormSection from './form/TimeTrackingFormSection';
+import FormActions from './form/FormActions';
 import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
-import { WorkLogFormProvider } from './form/WorkLogFormContext';
+import { FormProvider } from 'react-hook-form';
 import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
-import { TasksSection } from './TasksSection';
-import { WasteManagementSection } from './WasteManagementSection';
-import { ClientSignatureSection } from './form/ClientSignatureSection';
-import { ConsumablesSection } from './ConsumablesSection';
+import TasksSection from './TasksSection';
+import WasteManagementSection from './WasteManagementSection';
+import ClientSignatureSection from './form/ClientSignatureSection';
+import ConsumablesSection from './ConsumablesSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -55,7 +55,7 @@ const BlankWorkSheetForm = ({
   const { settings } = useApp();
   
   return (
-    <WorkLogFormProvider form={form}>
+    <FormProvider {...form}>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         <div className="md:col-span-2 space-y-6">
           <ProjectLinkSection
@@ -87,8 +87,8 @@ const BlankWorkSheetForm = ({
           
           <FormActions 
             isSubmitting={isSubmitting}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
+            handleCancel={handleCancel}
+            isEditing={!!initialData}
           />
         </div>
         
@@ -99,7 +99,7 @@ const BlankWorkSheetForm = ({
           />
         </div>
       </div>
-    </WorkLogFormProvider>
+    </FormProvider>
   );
 };
 

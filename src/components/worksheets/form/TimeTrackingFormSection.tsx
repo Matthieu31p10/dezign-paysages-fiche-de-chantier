@@ -6,7 +6,13 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
 
-const TimeTrackingFormSection: React.FC = () => {
+interface TimeTrackingFormSectionProps {
+  onTimeChange?: () => void;
+}
+
+const TimeTrackingFormSection: React.FC<TimeTrackingFormSectionProps> = ({ 
+  onTimeChange 
+}) => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const totalHours = watch('totalHours');
   
@@ -28,6 +34,10 @@ const TimeTrackingFormSection: React.FC = () => {
                 <Input 
                   type="time" 
                   {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (onTimeChange) onTimeChange();
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -45,6 +55,10 @@ const TimeTrackingFormSection: React.FC = () => {
                 <Input 
                   type="time" 
                   {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (onTimeChange) onTimeChange();
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -62,6 +76,10 @@ const TimeTrackingFormSection: React.FC = () => {
                 <Input 
                   type="time" 
                   {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (onTimeChange) onTimeChange();
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -79,6 +97,10 @@ const TimeTrackingFormSection: React.FC = () => {
                 <Input 
                   type="time" 
                   {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (onTimeChange) onTimeChange();
+                  }}
                 />
               </FormControl>
               <FormMessage />

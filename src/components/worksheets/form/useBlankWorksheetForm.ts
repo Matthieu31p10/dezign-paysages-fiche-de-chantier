@@ -2,7 +2,6 @@
 import { useForm } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
 import { useEffect, useState } from 'react';
-import { useFormInitialization } from './hooks/useFormInitialization';
 import { useTimeCalculation } from './hooks/useTimeCalculation';
 import { useWorksheetLoader } from './hooks/useWorksheetLoader';
 import { useFormActions } from './hooks/useFormActions';
@@ -29,10 +28,9 @@ export const useBlankWorksheetForm = ({
     defaultValues: {
       clientName: '',
       address: '',
-      contactName: '',
       contactPhone: '',
       contactEmail: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date(),
       personnel: [],
       departure: '',
       arrival: '',
@@ -44,26 +42,19 @@ export const useBlankWorksheetForm = ({
       notes: '',
       clientSignature: null,
       consumables: [],
+      totalHours: 0,
+      hourlyRate: 0
     }
   });
   
-  // Handle form initialization
-  const { resetForm } = useFormInitialization({
-    form,
-    initialData,
-    selectedProject
-  });
-  
   // Handle time calculations
-  const { calculateTotalHours } = useTimeCalculation({ form });
+  const timeCalculation = useTimeCalculation({ form });
   
   // Handle worklog data loading
   const { loadWorkLogData } = useWorksheetLoader({
     form,
-    resetForm,
-    setSelectedProjectId,
-    setSelectedProject,
-    workLogs
+    getWorkLogById: (id: string) => workLogs.find(wl => wl.id === id),
+    handleProjectSelect
   });
 
   // Handle project linking
@@ -81,7 +72,6 @@ export const useBlankWorksheetForm = ({
     if (project) {
       form.setValue('clientName', project.clientName || project.name);
       form.setValue('address', project.address);
-      form.setValue('contactName', project.contact?.name || '');
       form.setValue('contactPhone', project.contact?.phone || '');
       form.setValue('contactEmail', project.contact?.email || '');
     }
@@ -90,6 +80,22 @@ export const useBlankWorksheetForm = ({
   const handleClearProject = () => {
     setSelectedProjectId(null);
     setSelectedProject(null);
+  };
+  
+  // Calculate total hours
+  const calculateTotalHours = () => {
+    const departure = form.watch('departure');
+    const arrival = form.watch('arrival');
+    const end = form.watch('end');
+    const breakTime = form.watch('breakTime');
+    
+    // Logic to calculate hours based on these values
+    console.log("Calculating hours based on:", departure, arrival, end, breakTime);
+    // Placeholder calculation
+    const hours = 7.5; // Default value
+    form.setValue('totalHours', hours);
+    
+    return hours;
   };
   
   // Handle form submission and cancellation

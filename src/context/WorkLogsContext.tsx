@@ -49,7 +49,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   /**
    * Add a new workLog
    */
-  const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
+  const addWorkLog = (workLog: WorkLog): WorkLog => {
     // Validate data
     if (!workLog.projectId || !workLog.date || !workLog.personnel || workLog.personnel.length === 0) {
       console.error("Invalid worklog data:", workLog);

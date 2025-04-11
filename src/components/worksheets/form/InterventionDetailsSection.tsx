@@ -12,22 +12,21 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { CalendarIcon } from 'lucide-react';
-import { Team } from '@/types/models';
 import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
+import { useApp } from '@/context/AppContext';
 
-interface InterventionDetailsSectionProps {
-  teams: Team[];
-  handleTeamFilterChange: (value: string) => void;
-  handlePersonnelChange: (selectedPersonnel: string[]) => void;
-}
-
-const InterventionDetailsSection: React.FC<InterventionDetailsSectionProps> = ({
-  teams,
-  handleTeamFilterChange,
-  handlePersonnelChange
-}) => {
-  const { control, watch } = useFormContext<BlankWorkSheetValues>();
-  const teamFilter = watch('teamFilter');
+const InterventionDetailsSection: React.FC = () => {
+  const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
+  const { teams } = useApp();
+  const teamFilter = watch('teamFilter') || 'all';
+  
+  const handleTeamFilterChange = (value: string) => {
+    setValue('teamFilter', value);
+  };
+  
+  const handlePersonnelChange = (selectedPersonnel: string[]) => {
+    setValue('personnel', selectedPersonnel);
+  };
   
   return (
     <div className="space-y-4">

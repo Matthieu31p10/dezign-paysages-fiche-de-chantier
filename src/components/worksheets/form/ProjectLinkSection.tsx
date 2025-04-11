@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LinkIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -9,22 +9,20 @@ import { FormControl } from '@/components/ui/form';
 import { ProjectInfo } from '@/types/models';
 
 interface ProjectLinkSectionProps {
-  selectedProject: string | null;
-  openProjectsCombobox: boolean;
-  setOpenProjectsCombobox: (open: boolean) => void;
-  activeProjects: ProjectInfo[];
-  handleProjectSelect: (projectId: string) => void;
-  handleClearProject: () => void;
+  selectedProjectId: string | null;
+  onProjectSelect: (projectId: string) => void;
+  onClearProject: () => void;
+  projectInfos: ProjectInfo[];
 }
 
 const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
-  selectedProject,
-  openProjectsCombobox,
-  setOpenProjectsCombobox,
-  activeProjects,
-  handleProjectSelect,
-  handleClearProject
+  selectedProjectId,
+  onProjectSelect,
+  onClearProject,
+  projectInfos
 }) => {
+  const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
+  
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium flex items-center">
@@ -41,11 +39,11 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
               aria-expanded={openProjectsCombobox}
               className={cn(
                 "w-full justify-between",
-                !selectedProject && "text-muted-foreground"
+                !selectedProjectId && "text-muted-foreground"
               )}
             >
-              {selectedProject ? 
-                activeProjects.find(project => project.id === selectedProject)?.name :
+              {selectedProjectId ? 
+                projectInfos.find(project => project.id === selectedProjectId)?.name :
                 "Sélectionner un projet existant..."
               }
             </Button>
@@ -57,11 +55,11 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
             <CommandList>
               <CommandEmpty>Aucun projet trouvé.</CommandEmpty>
               <CommandGroup>
-                {activeProjects.map(project => (
+                {projectInfos.map(project => (
                   <CommandItem
                     key={project.id}
                     value={project.id}
-                    onSelect={() => handleProjectSelect(project.id)}
+                    onSelect={() => onProjectSelect(project.id)}
                   >
                     {project.name}
                   </CommandItem>
@@ -69,13 +67,13 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
               </CommandGroup>
             </CommandList>
           </Command>
-          {selectedProject && (
+          {selectedProjectId && (
             <div className="p-2 border-t">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 className="w-full justify-start text-destructive"
-                onClick={handleClearProject}
+                onClick={onClearProject}
               >
                 Effacer la sélection
               </Button>
@@ -84,9 +82,9 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
         </PopoverContent>
       </Popover>
       
-      {selectedProject && (
+      {selectedProjectId && (
         <div className="rounded-md bg-muted p-3 text-sm">
-          <p className="font-medium">Projet sélectionné: {activeProjects.find(p => p.id === selectedProject)?.name}</p>
+          <p className="font-medium">Projet sélectionné: {projectInfos.find(p => p.id === selectedProjectId)?.name}</p>
           <p className="text-muted-foreground">Les informations du client ont été préremplies.</p>
         </div>
       )}

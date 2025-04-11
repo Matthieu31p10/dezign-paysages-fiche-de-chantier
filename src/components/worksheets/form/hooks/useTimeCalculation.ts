@@ -2,12 +2,17 @@
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
-import { calculateTotalHours } from '@/utils/time';
+import { calculateTotalHours as calculateHours } from '@/utils/time';
+
+interface UseTimeCalculationProps {
+  form: UseFormReturn<BlankWorkSheetValues>;
+}
 
 /**
  * Hook to handle time calculation effects
  */
-export const useTimeCalculation = (form: UseFormReturn<BlankWorkSheetValues>) => {
+export const useTimeCalculation = ({ form }: UseTimeCalculationProps) => {
+  // Auto-calculate total hours when time fields change
   useEffect(() => {
     const departureTime = form.watch("departure");
     const arrivalTime = form.watch("arrival");
@@ -17,7 +22,7 @@ export const useTimeCalculation = (form: UseFormReturn<BlankWorkSheetValues>) =>
     
     if (departureTime && arrivalTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
       try {
-        const calculatedTotalHours = calculateTotalHours(
+        const calculatedTotalHours = calculateHours(
           departureTime,
           arrivalTime,
           endTime,
@@ -38,4 +43,8 @@ export const useTimeCalculation = (form: UseFormReturn<BlankWorkSheetValues>) =>
     form.watch("personnel").length, 
     form
   ]);
+  
+  return {
+    // Return empty object as we're only using the side effect
+  };
 };
