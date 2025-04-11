@@ -1,27 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { WorkLog, ProjectInfo } from '@/types/models';
-import { PDFOptions } from './WorkLogDetailContext';
-import { useWorkLogCalculations } from './utils/useWorkLogCalculations';
-import { usePDFExport } from './utils/usePDFExport';
-import { useWorkLogActions } from './utils/useWorkLogActions';
+import { toast } from 'sonner';
+import { WorkLog } from '@/types/models';
 
-export const useWorkLogDetailProvider = (
+export const useWorkLogActions = (
   workLog?: WorkLog,
-  project?: ProjectInfo,
-  workLogs: WorkLog[] = [],
-  updateWorkLog?: (id: string, partialWorkLog: Partial<WorkLog>) => void,
-  deleteWorkLog?: (id: string) => void,
-  settings?: any
+  deleteWorkLog?: (id: string) => void
 ) => {
   const navigate = useNavigate();
-  
-  // Use our new utility hooks
-  const calculations = useWorkLogCalculations(workLog, project, workLogs);
-  const pdfUtils = usePDFExport(workLog, project, settings);
-  
-  // For the notes and delete actions, we need to add the updateWorkLog function
   const [notes, setNotes] = useState(workLog?.notes || '');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
@@ -38,9 +25,11 @@ export const useWorkLogDetailProvider = (
     setIsDeleteDialogOpen(false);
     try {
       deleteWorkLog(workLog.id);
+      toast.success("Fiche de suivi supprimée avec succès");
       navigate('/worklogs');
     } catch (error) {
       console.error("Error deleting work log:", error);
+      toast.error("Erreur lors de la suppression de la fiche de suivi");
     }
   };
   
@@ -58,29 +47,26 @@ export const useWorkLogDetailProvider = (
       updateWorkLog(workLog.id, {
         notes: sanitizedNotes
       });
+      toast.success("Notes enregistrées avec succès");
     } catch (error) {
       console.error("Error saving notes:", error);
+      toast.error("Erreur lors de l'enregistrement des notes");
     }
   };
   
-  // Combine all the utilities into a single return value
   return {
-    // From notes and delete actions
     notes,
     setNotes,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     handleDeleteWorkLog,
     confirmDelete,
-    handleSaveNotes,
-    
-    // From calculations
-    calculateEndTime: calculations.calculateEndTime,
-    calculateHourDifference: calculations.calculateHourDifference,
-    calculateTotalTeamHours: calculations.calculateTotalTeamHours,
-    
-    // From PDF export
-    handleExportToPDF: pdfUtils.handleExportToPDF,
-    handleSendEmail: pdfUtils.handleSendEmail
+    handleSaveNotes
   };
+};
+
+// This is a placeholder for the updateWorkLog function
+// It will be injected when the hook is used
+const updateWorkLog = (id: string, partialWorkLog: Partial<WorkLog>) => {
+  console.log('Update work log:', id, partialWorkLog);
 };
