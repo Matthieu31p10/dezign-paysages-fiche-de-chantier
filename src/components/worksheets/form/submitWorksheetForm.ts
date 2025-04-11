@@ -2,6 +2,7 @@
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
 import { formatStructuredNotes, validateConsumables, createWorkLogFromFormData } from './utils/formatWorksheetData';
+import { generateUniqueBlankSheetId } from './utils/generateUniqueIds';
 
 interface SubmitWorksheetFormProps {
   data: BlankWorkSheetValues;
@@ -41,6 +42,12 @@ export async function submitWorksheetForm({
       structuredNotes, 
       validatedConsumables
     );
+    
+    // Pour les nouvelles fiches vierges, générer un ID DZFV séquentiel
+    if (!existingWorkLogId && (!workLog.projectId || workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('temp-'))) {
+      // Remplacer l'ID temporaire par un ID séquentiel DZFV
+      workLog.projectId = generateUniqueBlankSheetId(workLogs);
+    }
     
     // Save or update the workLog
     if (existingWorkLogId) {

@@ -10,25 +10,28 @@ export const sanitizeText = (text?: string): string => {
 
 // Fonction pour obtenir le texte pour la gestion des déchets
 export const getWasteManagementText = (wasteCode?: string): string => {
-  switch (wasteCode) {
-    // Big bags
+  if (!wasteCode || wasteCode === 'none') return 'Aucune collecte';
+  
+  const parts = wasteCode.split('_');
+  const type = parts[0];
+  const quantity = parts.length > 1 ? parts[1] : '1';
+  
+  switch (type) {
+    case 'big_bag': return `${quantity} Big-bag${quantity !== '1' ? 's' : ''}`;
+    case 'half_dumpster': return `${quantity} × ½ Benne${quantity !== '1' ? 's' : ''}`;
+    case 'dumpster': return `${quantity} Benne${quantity !== '1' ? 's' : ''}`;
+    // Support pour les anciens formats
     case 'big_bag_1': return '1 Big-bag';
     case 'big_bag_2': return '2 Big-bags';
     case 'big_bag_3': return '3 Big-bags';
     case 'big_bag_4': return '4 Big-bags';
     case 'big_bag_5': return '5 Big-bags';
-    
-    // Half dumpsters
     case 'half_dumpster_1': return '1 × ½ Benne';
     case 'half_dumpster_2': return '2 × ½ Bennes';
     case 'half_dumpster_3': return '3 × ½ Bennes';
-    
-    // Full dumpsters
     case 'dumpster_1': return '1 Benne';
     case 'dumpster_2': return '2 Bennes';
     case 'dumpster_3': return '3 Bennes';
-    
-    case 'none': 
     default: return 'Aucune collecte';
   }
 };
@@ -46,7 +49,7 @@ export const pdfColors = {
 export function drawInfoBox(pdf: any, x: number, y: number, width: number, height: number, title: string, contentDrawer: () => void) {
   // Rectangle de fond
   pdf.setFillColor(pdfColors.lightGrey[0], pdfColors.lightGrey[1], pdfColors.lightGrey[2]);
-  pdf.setDrawColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]); // Utiliser la couleur verte pour la bordure
+  pdf.setDrawColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]); // Bordure verte
   pdf.roundedRect(x, y, width, height, 2, 2, 'FD');
   
   // Titre

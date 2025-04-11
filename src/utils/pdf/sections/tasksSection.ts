@@ -1,113 +1,56 @@
 
 import { PDFData } from '../types';
-import { sanitizeText } from '../pdfHelpers';
+import { sanitizeText, pdfColors } from '../pdfHelpers';
 
 export const drawTasksSection = (pdf: any, data: PDFData, margin: number, yPos: number, pageWidth: number, contentWidth: number): number => {
-  if (!data.pdfOptions?.includeTasks) {
-    return yPos;
-  }
-  
-  yPos += 8; // Réduire l'espace avant cette section
-  
+  // Titre de la section
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
-  pdf.text("Tâches personnalisées", margin, yPos);
+  pdf.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
+  pdf.text('Tâches réalisées', margin, yPos + 10);
   
-  // For custom tasks list format
-  if (data.workLog?.tasksPerformed?.customTasks) {
-    const customTasks = data.workLog.tasksPerformed.customTasks;
-    const taskIds = Object.keys(customTasks);
-    
-    if (taskIds.length > 0) {
-      // Utiliser 3 colonnes au lieu de 2 pour mieux utiliser l'espace
-      const colWidth = contentWidth / 3;
-      
-      yPos += 8;
-      
-      // Traiter toutes les tâches en colonnes sans limite
-      for (let i = 0; i < taskIds.length; i++) {
-        const taskId = taskIds[i];
-        const done = customTasks[taskId];
-        const progress = data.workLog?.tasksPerformed?.tasksProgress?.[taskId] || 0;
-        
-        // Définir la colonne (0, 1, ou 2)
-        const colIndex = i % 3;
-        const colX = margin + (colIndex * colWidth);
-        
-        // Nom de la tâche (plus descriptif)
-        pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'bold');
-        
-        // Utiliser le nom de la tâche au lieu de l'ID
-        const taskName = data.customTasks?.find(task => task.id === taskId)?.name || taskId;
-        const shortenedName = taskName.length > 20 ? 
-          taskName.substring(0, 20) + "..." : 
-          taskName;
-          
-        pdf.text(sanitizeText(shortenedName), colX, yPos);
-        
-        // Icône de statut
-        if (done) {
-          pdf.setTextColor(61, 174, 43);
-          pdf.text("✓", colX + colWidth - 15, yPos);
-          pdf.setTextColor(60, 60, 60);
-        }
-        
-        // Barre de progression (plus petite)
-        const progressWidth = colWidth - 20;
-        yPos += 4;
-        
-        // Fond de la barre de progression
-        pdf.setFillColor(220, 220, 220);
-        pdf.rect(colX, yPos, progressWidth, 2, 'F');
-        
-        // Remplissage de la barre de progression
-        pdf.setFillColor(61, 174, 43);
-        pdf.rect(colX, yPos, progressWidth * progress / 100, 2, 'F');
-        
-        // Pourcentage
-        pdf.setFontSize(7);
-        pdf.text(`${progress}%`, colX + progressWidth + 2, yPos + 2);
-        
-        // Passer à la ligne suivante si on a traité 3 tâches ou si c'est la dernière tâche
-        if (colIndex === 2 || i === taskIds.length - 1) {
-          yPos += 7; // Espacement entre les lignes de tâches
-        }
-      }
-    } else {
-      // Pas de tâches personnalisées
-      yPos += 8;
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'italic');
-      pdf.text("Aucune tâche personnalisée définie", margin, yPos);
-      yPos += 4;
-    }
-  }
-  // For free-text tasks description (from blank worksheets)
-  else if (data.workLog?.tasks) {
-    yPos += 8;
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    
-    // Split the text into multiple lines to fit the page width
-    const textLines = pdf.splitTextToSize(
-      sanitizeText(data.workLog.tasks), 
-      contentWidth - 10
-    );
-    
-    // Draw each line
-    for (let i = 0; i < textLines.length; i++) {
-      pdf.text(textLines[i], margin, yPos);
-      yPos += 5;
-    }
-  } else {
-    // No tasks defined
-    yPos += 8;
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'italic');
-    pdf.text("Aucune tâche définie", margin, yPos);
-    yPos += 4;
+  // Réinitialiser la couleur du texte
+  pdf.setTextColor(pdfColors.text[0], pdfColors.text[1], pdfColors.text[2]);
+  
+  // Augmenter la position verticale pour le contenu
+  yPos += 15;
+  
+  // Rectangle de fond pour le contenu
+  pdf.setFillColor(pdfColors.lightGrey[0], pdfColors.lightGrey[1], pdfColors.lightGrey[2]);
+  pdf.setDrawColor(pdfColors.border[0], pdfColors.border[1], pdfColors.border[2]);
+  pdf.roundedRect(margin, yPos, contentWidth, 40, 1, 1, 'FD');
+  
+  // Traitement du texte des tâches
+  let tasksText = sanitizeText(data.workLog?.tasks || '');
+  
+  // S'assurer que le texte est lisible et ne contient pas de caractères HTML ou de code
+  if (tasksText.includes('<') || tasksText.includes('>')) {
+    // Tentative de nettoyage des balises HTML
+    tasksText = tasksText.replace(/<[^>]*>/g, ' ');
   }
   
-  return yPos + 2; // Réduire l'espace après la section
-}
+  // Créer un texte multiligne
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  
+  // Calculer la hauteur du texte
+  const splitText = pdf.splitTextToSize(tasksText, contentWidth - 10);
+  const textHeight = splitText.length * 5; // 5mm par ligne
+  
+  // Ajuster la hauteur du rectangle si nécessaire
+  const minHeight = 40;
+  const neededHeight = Math.max(minHeight, textHeight + 10); // 10mm de marge
+  
+  // Redessiner le rectangle avec la hauteur ajustée
+  pdf.setFillColor(pdfColors.lightGrey[0], pdfColors.lightGrey[1], pdfColors.lightGrey[2]);
+  pdf.setDrawColor(pdfColors.border[0], pdfColors.border[1], pdfColors.border[2]);
+  pdf.roundedRect(margin, yPos, contentWidth, neededHeight, 1, 1, 'FD');
+  
+  // Dessiner le texte
+  pdf.text(splitText, margin + 5, yPos + 8);
+  
+  // Mise à jour de la position verticale
+  yPos += neededHeight + 10;
+  
+  return yPos;
+};

@@ -7,12 +7,14 @@ interface FormActionsProps {
   isSubmitting: boolean;
   handleCancel: () => void;
   isEditing?: boolean;
+  onSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
 }
 
 const FormActions: React.FC<FormActionsProps> = ({
   isSubmitting,
   handleCancel,
-  isEditing = false
+  isEditing = false,
+  onSubmit
 }) => {
   return (
     <div className="flex justify-between">
@@ -29,6 +31,7 @@ const FormActions: React.FC<FormActionsProps> = ({
         type="submit"
         disabled={isSubmitting}
         className="min-w-32"
+        onClick={onSubmit}
       >
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {isSubmitting 

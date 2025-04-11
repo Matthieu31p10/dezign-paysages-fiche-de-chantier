@@ -39,4 +39,4 @@ export const drawInfoBoxesSection = (pdf: any, data: PDFData, margin: number, yP
   });
   
   return yPos + 25; // Réduire l'espace après cette section
-}
+};

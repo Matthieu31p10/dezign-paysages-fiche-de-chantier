@@ -202,7 +202,7 @@ const ClientSignatureSection = () => {
               </Dialog>
               
               <FormControl>
-                <input type="hidden" {...field} />
+                <input type="hidden" value={field.value || ''} onChange={(e) => field.onChange(e.target.value)} />
               </FormControl>
             </CardContent>
           </Card>

@@ -2,49 +2,89 @@
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
-import { calculateTotalHours as calculateHours } from '@/utils/time';
 
-interface UseTimeCalculationProps {
-  form: UseFormReturn<BlankWorkSheetValues>;
-}
-
-/**
- * Hook to handle time calculation effects
- */
-export const useTimeCalculation = ({ form }: UseTimeCalculationProps) => {
-  // Auto-calculate total hours when time fields change
+export const useTimeCalculation = (form: UseFormReturn<BlankWorkSheetValues>) => {
+  // Watch for changes in time-related fields
   useEffect(() => {
-    const departureTime = form.watch("departure");
-    const arrivalTime = form.watch("arrival");
-    const endTime = form.watch("end");
-    const breakTimeValue = form.watch("breakTime");
-    const selectedPersonnel = form.watch("personnel");
-    
-    if (departureTime && arrivalTime && endTime && breakTimeValue && selectedPersonnel.length > 0) {
-      try {
-        const calculatedTotalHours = calculateHours(
-          departureTime,
-          arrivalTime,
-          endTime,
-          breakTimeValue,
-          selectedPersonnel.length
-        );
-        
-        form.setValue('totalHours', Number(calculatedTotalHours));
-      } catch (error) {
-        console.error("Error calculating total hours:", error);
+    const subscription = form.watch((value, { name }) => {
+      // Only calculate when time-related fields change
+      if (
+        name === 'departure' ||
+        name === 'arrival' ||
+        name === 'end' ||
+        name === 'breakTime'
+      ) {
+        calculateTotalHours(value);
       }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  // Calculate total hours function
+  const calculateTotalHours = (values: any) => {
+    const { departure, arrival, end, breakTime } = values;
+
+    // Make sure we have all the required values
+    if (!departure || !arrival || !end) {
+      form.setValue('totalHours', 0);
+      return;
     }
-  }, [
-    form.watch("departure"), 
-    form.watch("arrival"), 
-    form.watch("end"), 
-    form.watch("breakTime"), 
-    form.watch("personnel").length, 
-    form
-  ]);
-  
-  return {
-    // Return empty object as we're only using the side effect
+
+    try {
+      // Parse the time strings into Date objects
+      const departureTime = parseTimeString(departure);
+      const arrivalTime = parseTimeString(arrival);
+      const endTime = parseTimeString(end);
+      const breakDuration = parseFloat(breakTime || '0');
+
+      // Calculate total minutes spent on site
+      let totalMinutes = 0;
+
+      // Calculate travel time to site
+      const travelToSiteMinutes = getMinutesDifference(departureTime, arrivalTime);
+
+      // Calculate time spent on site (end - arrival - break)
+      const onSiteMinutes = getMinutesDifference(arrivalTime, endTime) - (breakDuration * 60);
+
+      // Total time is travel + on-site time
+      totalMinutes = onSiteMinutes;
+
+      // Convert to hours with 2 decimal precision
+      const totalHours = Math.max(0, parseFloat((totalMinutes / 60).toFixed(2)));
+      
+      // Update the form
+      form.setValue('totalHours', totalHours);
+
+    } catch (error) {
+      console.error('Error calculating time:', error);
+      form.setValue('totalHours', 0);
+    }
   };
+
+  return {
+    calculateTotalHours
+  };
+};
+
+// Helper function to parse time strings (HH:MM format)
+const parseTimeString = (timeStr: string): Date => {
+  if (!timeStr || !timeStr.includes(':')) {
+    throw new Error('Invalid time format');
+  }
+
+  const [hours, minutes] = timeStr.split(':').map(num => parseInt(num, 10));
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+};
+
+// Helper function to get minutes difference between two Date objects
+const getMinutesDifference = (start: Date, end: Date): number => {
+  // If end is before start (e.g., overnight work), add 24 hours
+  let diff = end.getTime() - start.getTime();
+  if (diff < 0) {
+    diff += 24 * 60 * 60 * 1000;
+  }
+  return diff / (1000 * 60);
 };

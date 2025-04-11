@@ -6,6 +6,7 @@ import { useTimeCalculation } from './hooks/useTimeCalculation';
 import { useWorksheetLoader } from './hooks/useWorksheetLoader';
 import { useFormActions } from './hooks/useFormActions';
 import { WorkLog } from '@/types/models';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 
 interface UseBlankWorksheetFormProps {
   initialData?: any;
@@ -24,6 +25,7 @@ export const useBlankWorksheetForm = ({
     initialData?.linkedProjectId || null
   );
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  const { addWorkLog, updateWorkLog } = useWorkLogs();
   
   // Initialize the form with default values
   const form = useForm<BlankWorkSheetValues>({
@@ -49,7 +51,7 @@ export const useBlankWorksheetForm = ({
   });
   
   // Handle time calculations
-  useTimeCalculation({ form });
+  useTimeCalculation(form);
   
   // Handle project linking
   const handleProjectSelect = (projectId: string | null) => {

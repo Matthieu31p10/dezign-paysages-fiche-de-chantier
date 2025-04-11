@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { WorkLog } from '@/types/models';
 import WorksheetSummary from './WorksheetSummary';
 import ProjectLinkSection from './form/ProjectLinkSection';
@@ -29,7 +30,7 @@ const BlankWorkSheetForm = ({
   projectInfos = [],
   existingWorkLogs = []
 }: BlankWorkSheetFormProps) => {
-  const { addWorkLog, updateWorkLog, workLogs: contextWorkLogs } = useWorkLogs();
+  const { workLogs: contextWorkLogs } = useWorkLogs();
   
   // Initialize the form with our custom hook
   const formMethods = useBlankWorksheetForm({
@@ -89,7 +90,6 @@ const BlankWorkSheetForm = ({
             isSubmitting={isSubmitting}
             handleCancel={handleCancel}
             isEditing={!!initialData}
-            onSubmit={handleSubmit}
           />
         </div>
         
