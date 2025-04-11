@@ -3,53 +3,54 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { WorkLog } from '@/types/models';
 import { WorkLogsContextType } from './types';
 import { toast } from 'sonner';
+import { 
+  loadWorkLogsFromStorage, 
+  saveWorkLogsToStorage 
+} from './workLogs/workLogsStorage';
+import { 
+  getWorkLogById, 
+  getWorkLogsByProjectId, 
+  getTotalDuration, 
+  getTotalVisits, 
+  getLastVisitDate 
+} from './workLogs/workLogsOperations';
 
-const WorkLogsContext = createContext<WorkLogsContextType & { 
+// Extended context type with additional methods
+interface ExtendedWorkLogsContextType extends WorkLogsContextType {
   deleteWorkLogsByProjectId: (projectId: string) => void;
   updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => void;
   archiveWorkLogsByProjectId: (projectId: string, archive: boolean) => void;
-} | undefined>(undefined);
+}
 
-// Local storage key
-const WORKLOGS_STORAGE_KEY = 'landscaping-worklogs';
+const WorkLogsContext = createContext<ExtendedWorkLogsContextType | undefined>(undefined);
 
 export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workLogs, setWorkLogs] = useState<WorkLog[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Charger les données depuis localStorage au montage initial
+  // Load data from localStorage on initial mount
   useEffect(() => {
     try {
       setIsLoading(true);
-      const storedWorkLogs = localStorage.getItem(WORKLOGS_STORAGE_KEY);
-      if (storedWorkLogs) {
-        const parsedLogs = JSON.parse(storedWorkLogs);
-        console.log("Loaded work logs from storage:", parsedLogs);
-        setWorkLogs(parsedLogs);
-      }
-    } catch (error) {
-      console.error('Error loading work logs from localStorage:', error);
-      toast.error('Erreur lors du chargement des fiches de suivi');
+      const loadedWorkLogs = loadWorkLogsFromStorage();
+      setWorkLogs(loadedWorkLogs);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Sauvegarder les données dans localStorage chaque fois qu'elles changent
+  // Save data to localStorage whenever it changes
   useEffect(() => {
     if (!isLoading) {
-      try {
-        localStorage.setItem(WORKLOGS_STORAGE_KEY, JSON.stringify(workLogs));
-        console.log("Saved work logs to storage:", workLogs);
-      } catch (error) {
-        console.error('Error saving work logs to localStorage:', error);
-        toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
-      }
+      saveWorkLogsToStorage(workLogs);
     }
   }, [workLogs, isLoading]);
 
-  const addWorkLog = (workLog: WorkLog) => {
-    // Validation des données
+  /**
+   * Add a new workLog
+   */
+  const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
+    // Validate data
     if (!workLog.projectId || !workLog.date || !workLog.personnel || workLog.personnel.length === 0) {
       console.error("Invalid worklog data:", workLog);
       throw new Error('Données invalides pour la fiche de suivi');
@@ -61,14 +62,16 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       createdAt: new Date(),
     };
     
-    // Utilisation de la méthode fonctionnelle pour mise à jour de l'état
+    // Use functional state update
     setWorkLogs((prev) => [...prev, newWorkLog]);
     console.log("WorkLog added successfully:", newWorkLog);
     return newWorkLog;
   };
 
-  // Support both old and new function signatures for updateWorkLog
-  const updateWorkLog = (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => {
+  /**
+   * Update an existing workLog - supports both single ID and full WorkLog object
+   */
+  const updateWorkLog = async (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>): Promise<void> => {
     setWorkLogs((prev) => {
       // Handle case where first argument is an ID string and second is a partial worklog
       if (typeof idOrWorkLog === 'string' && partialWorkLog) {
@@ -82,7 +85,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         return prev.map((w) => {
           if (w.id === id) {
-            // Fusionner les objets pour une mise à jour partielle
+            // Merge objects for partial update
             return { ...w, ...partialWorkLog };
           }
           return w;
@@ -113,7 +116,10 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     console.log(`WorkLog updated successfully:`, idOrWorkLog);
   };
 
-  const deleteWorkLog = (id: string) => {
+  /**
+   * Delete a workLog by its ID
+   */
+  const deleteWorkLog = (id: string): void => {
     setWorkLogs((prev) => {
       const exists = prev.some(w => w.id === id);
       if (!exists) {
@@ -124,7 +130,10 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     console.log("WorkLog deleted successfully:", id);
   };
 
-  const deleteWorkLogsByProjectId = (projectId: string) => {
+  /**
+   * Delete all workLogs for a specific project
+   */
+  const deleteWorkLogsByProjectId = (projectId: string): void => {
     setWorkLogs((prev) => {
       const filtered = prev.filter((w) => w.projectId !== projectId);
       console.log(`Deleted ${prev.length - filtered.length} worklogs for project ${projectId}`);
@@ -132,8 +141,10 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
-  // Nouvelle fonction pour archiver/désarchiver les fiches de suivi d'un chantier
-  const archiveWorkLogsByProjectId = (projectId: string, archive: boolean) => {
+  /**
+   * Archive or unarchive all workLogs for a specific project
+   */
+  const archiveWorkLogsByProjectId = (projectId: string, archive: boolean): void => {
     setWorkLogs((prev) => {
       const updated = prev.map(workLog => {
         if (workLog.projectId === projectId) {
@@ -150,47 +161,23 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
-  const getWorkLogById = (id: string): WorkLog | undefined => {
-    return workLogs.find((workLog) => workLog.id === id);
-  };
-
-  const getWorkLogsByProjectId = (projectId: string): WorkLog[] => {
-    return workLogs.filter((workLog) => workLog.projectId === projectId);
-  };
-  
-  const getTotalDuration = (projectId: string): number => {
-    return getWorkLogsByProjectId(projectId).reduce((total, log) => total + (log.duration || 0), 0);
-  };
-  
-  const getTotalVisits = (projectId: string): number => {
-    return getWorkLogsByProjectId(projectId).length;
-  };
-  
-  const getLastVisitDate = (projectId: string): Date | null => {
-    const logs = getWorkLogsByProjectId(projectId);
-    if (logs.length === 0) return null;
-    
-    return new Date(
-      Math.max(...logs.map(log => new Date(log.date).getTime()))
-    );
+  // Create the context value with all required methods
+  const contextValue: ExtendedWorkLogsContextType = {
+    workLogs,
+    addWorkLog,
+    updateWorkLog,
+    deleteWorkLog,
+    getWorkLogById: (id) => getWorkLogById(workLogs, id),
+    getWorkLogsByProjectId: (projectId) => getWorkLogsByProjectId(workLogs, projectId),
+    getTotalDuration: (projectId) => getTotalDuration(workLogs, projectId),
+    getTotalVisits: (projectId) => getTotalVisits(workLogs, projectId),
+    getLastVisitDate: (projectId) => getLastVisitDate(workLogs, projectId),
+    deleteWorkLogsByProjectId,
+    archiveWorkLogsByProjectId,
   };
 
   return (
-    <WorkLogsContext.Provider
-      value={{
-        workLogs,
-        addWorkLog,
-        updateWorkLog,
-        deleteWorkLog,
-        getWorkLogById,
-        getWorkLogsByProjectId,
-        getTotalDuration,
-        getTotalVisits,
-        getLastVisitDate,
-        deleteWorkLogsByProjectId,
-        archiveWorkLogsByProjectId,
-      }}
-    >
+    <WorkLogsContext.Provider value={contextValue}>
       {children}
     </WorkLogsContext.Provider>
   );

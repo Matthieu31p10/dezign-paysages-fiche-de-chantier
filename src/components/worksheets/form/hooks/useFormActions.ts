@@ -1,11 +1,12 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
 import { submitWorksheetForm } from '../submitWorksheetForm';
 import { WorkLog } from '@/types/models';
+import { useNavigate } from 'react-router-dom';
 
-type UseFormActionsProps = {
+interface UseFormActionsProps {
   form: UseFormReturn<BlankWorkSheetValues>;
   addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
   updateWorkLog: (workLog: WorkLog) => Promise<void>;
@@ -13,23 +14,23 @@ type UseFormActionsProps = {
   onSuccess?: () => void;
   workLogs?: WorkLog[];
   handleClearProject: () => void;
-};
+}
 
-/**
- * Hook to handle form actions like submit, reset, and filters
- */
 export const useFormActions = ({
   form,
   addWorkLog,
   updateWorkLog,
   workLogId,
   onSuccess,
-  workLogs,
+  workLogs = [],
   handleClearProject
 }: UseFormActionsProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
   
-  const handleSubmit = async (data: BlankWorkSheetValues) => {
+  // Handle form submission
+  const handleSubmit = form.handleSubmit(async (data) => {
+    // Submit the form data
     await submitWorksheetForm({
       data,
       addWorkLog,
@@ -39,53 +40,18 @@ export const useFormActions = ({
       setIsSubmitting,
       workLogs
     });
-  };
+  });
   
-  const resetForm = () => {
-    form.reset({
-      clientName: '',
-      address: '',
-      date: new Date(),
-      personnel: [],
-      departure: '08:00',
-      arrival: '08:30',
-      end: '16:30',
-      breakTime: '00:30',
-      totalHours: 7.5,
-      hourlyRate: 0,
-      wasteManagement: 'none',
-      teamFilter: 'all',
-      linkedProjectId: '',
-      notes: '',
-      tasks: '',
-      consumables: [],
-      vatRate: "20",
-      signedQuote: false,
-      quoteValue: 0,
-      clientSignature: '',
-    });
-    
-    handleClearProject();
-  };
-  
-  const handleTeamFilterChange = (value: string) => {
-    form.setValue('teamFilter', value);
-  };
-  
-  const handlePersonnelChange = (selectedPersonnel: string[]) => {
-    form.setValue('personnel', selectedPersonnel);
-  };
-  
+  // Handle form cancellation
   const handleCancel = () => {
-    if (onSuccess) onSuccess();
+    form.reset();
+    handleClearProject();
+    navigate(-1);
   };
   
   return {
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit),
-    handleTeamFilterChange,
-    handlePersonnelChange,
-    handleCancel,
-    resetForm
+    handleSubmit,
+    handleCancel
   };
 };

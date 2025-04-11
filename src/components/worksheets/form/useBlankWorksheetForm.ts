@@ -32,8 +32,13 @@ export const useBlankWorksheetForm = (
   // Set up form actions (submit, reset, etc.)
   const formActions = useFormActions({
     form,
-    addWorkLog,
-    updateWorkLog,
+    // Fix Promise type issues by wrapping the functions
+    addWorkLog: async (workLog) => {
+      return await addWorkLog(workLog);
+    },
+    updateWorkLog: async (workLog) => {
+      await updateWorkLog(workLog);
+    },
     workLogId,
     onSuccess,
     workLogs,
