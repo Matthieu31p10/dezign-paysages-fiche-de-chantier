@@ -1,16 +1,18 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/context/AppContext';
 import { generatePDF } from '@/utils/pdf';
-import { FileText } from 'lucide-react';
+import { FileText, FilePlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/helpers';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { extractClientName } from '@/utils/notes-extraction';
+import { useLocation } from 'react-router-dom';
 
 interface PDFOptions {
   includeContactInfo: boolean;
@@ -25,9 +27,25 @@ interface PDFOptions {
 
 const WorklogsPDFTab = () => {
   const { workLogs, getProjectById, settings } = useApp();
-  const [activeTab, setActiveTab] = useState<string>('regular');
-  const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>('');
-  const [selectedBlankWorkLogId, setSelectedBlankWorkLogId] = useState<string>('');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const generateType = queryParams.get('generate');
+  const generateId = queryParams.get('id');
+  
+  const [activeTab, setActiveTab] = useState<string>(generateType === 'blank' ? 'blank' : 'regular');
+  const [selectedWorkLogId, setSelectedWorkLogId] = useState<string>(generateType === 'regular' ? (generateId || '') : '');
+  const [selectedBlankWorkLogId, setSelectedBlankWorkLogId] = useState<string>(generateType === 'blank' ? (generateId || '') : '');
+  
+  // Auto-génération si les paramètres d'URL sont présents
+  useEffect(() => {
+    if (generateType && generateId) {
+      if (generateType === 'blank' && selectedBlankWorkLogId === generateId) {
+        handleGenerateWorkLogPDF(true);
+      } else if (generateType === 'regular' && selectedWorkLogId === generateId) {
+        handleGenerateWorkLogPDF(false);
+      }
+    }
+  }, [selectedBlankWorkLogId, selectedWorkLogId, generateType, generateId]);
   
   const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
     includeContactInfo: true,
@@ -47,8 +65,7 @@ const WorklogsPDFTab = () => {
   });
   
   const blankWorksheets = workLogs.filter(log => {
-    return log.personnel && log.personnel.length > 0 &&
-      (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
+    return (log.projectId?.startsWith('blank-') || log.projectId?.startsWith('DZFV'));
   });
   
   const handleOptionChange = (option: keyof PDFOptions, value: boolean) => {
@@ -72,9 +89,9 @@ const WorklogsPDFTab = () => {
       return;
     }
     
-    if (!workLog.personnel || workLog.personnel.length === 0) {
-      toast.error('Cette fiche n\'a pas de personnel assigné');
-      return;
+    // Ne pas exiger du personnel pour les fiches vierges
+    if (!isBlank && (!workLog.personnel || workLog.personnel.length === 0)) {
+      toast.warning('Cette fiche n\'a pas de personnel assigné');
     }
     
     const project = pdfOptions.includeContactInfo ? getProjectById(workLog.projectId) : undefined;
@@ -279,13 +296,22 @@ const WorklogsPDFTab = () => {
               </SelectTrigger>
               <SelectContent>
                 {blankWorksheets.length === 0 ? (
-                  <SelectItem value="none" disabled>Aucune fiche vierge disponible</SelectItem>
+                  <SelectItem value="none" disabled>
+                    <div className="flex items-center">
+                      <span>Aucune fiche vierge disponible</span>
+                    </div>
+                  </SelectItem>
                 ) : (
                   blankWorksheets.map(workLog => {
                     const clientName = extractClientName(workLog.notes || '');
                     return (
                       <SelectItem key={workLog.id} value={workLog.id}>
-                        {formatDate(workLog.date)} - {clientName || 'Client non spécifié'} - {workLog.projectId}
+                        <div className="flex items-center gap-2">
+                          <span>{formatDate(workLog.date)}</span>
+                          <span className="font-medium">{clientName || 'Client non spécifié'}</span>
+                          <span className="text-muted-foreground text-xs">{workLog.projectId}</span>
+                          <span className="ml-auto text-xs">{workLog.personnel?.length || 0} personnels</span>
+                        </div>
                       </SelectItem>
                     );
                   })
@@ -390,7 +416,7 @@ const WorklogsPDFTab = () => {
                 disabled={!selectedBlankWorkLogId || blankWorksheets.length === 0}
                 className="w-full"
               >
-                <FileText className="h-4 w-4 mr-2" />
+                <FilePlus className="h-4 w-4 mr-2" />
                 Générer PDF
               </Button>
             </AlertDialogTrigger>

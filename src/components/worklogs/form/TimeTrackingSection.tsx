@@ -108,7 +108,7 @@ const TimeTrackingSection: React.FC = () => {
             <div className="text-sm">
               <span>Écart:</span> 
               <span className={`ml-2 font-medium ${timeDeviationClass}`}>
-                {Math.abs(timeDeviation).toFixed(2)}h {timeDeviation >= 0 ? 'sur' : 'sous'} estimé
+                {Math.abs(Number(timeDeviation)).toFixed(2)}h {Number(timeDeviation) >= 0 ? 'sur' : 'sous'} estimé
               </span>
             </div>
           </div>

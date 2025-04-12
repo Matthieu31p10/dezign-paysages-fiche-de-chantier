@@ -13,14 +13,16 @@ export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos
     pdf.text(data.project.name, pageWidth - margin, yPos, { align: 'right' });
   } else {
     // Changer "Fiche de suivi" par "Fiche Vierge" pour les fiches vierges
-    const isBlankSheet = data.workLog?.projectId.startsWith('blank-');
+    const isBlankSheet = data.workLog?.projectId && 
+      (data.workLog?.projectId.startsWith('blank-') || data.workLog?.projectId.startsWith('DZFV'));
     pdf.text(isBlankSheet ? "Fiche Vierge" : "Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
   }
   
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
   // Changer "Fiche de suivi" par "Fiche Vierge" pour les fiches vierges
-  const isBlankSheet = data.workLog?.projectId.startsWith('blank-');
+  const isBlankSheet = data.workLog?.projectId && 
+    (data.workLog?.projectId.startsWith('blank-') || data.workLog?.projectId.startsWith('DZFV'));
   pdf.text(`${isBlankSheet ? 'Fiche Vierge' : 'Fiche de suivi'} du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
   
   // Ligne de séparation
@@ -56,19 +58,35 @@ export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(10);
   if (data.workLog) {
-    pdf.text(`${data.workLog.duration} heures`, col2X, yPos + 6);
+    pdf.text(`${data.workLog.duration || '0'} heures`, col2X, yPos + 6);
   }
   
   // Colonne 3: Temps total (équipe)
   const col3X = margin + (contentWidth * 2/3);
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'bold');
-  pdf.text("Temps total (équipe)", col3X, yPos);
   
-  pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(10);
-  const totalTime = data.workLog?.timeTracking?.totalHours || 0;
-  pdf.text(`${totalTime.toFixed(2)} heures`, col3X, yPos + 6);
+  // Pour les fiches vierges, afficher le total équipe (heures × nombre de personnel)
+  const isBlankWorksheet = data.workLog?.projectId && 
+    (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
+  
+  if (isBlankWorksheet) {
+    pdf.text("Temps total équipe", col3X, yPos);
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    const totalHours = data.workLog?.timeTracking?.totalHours || 0;
+    const personnelCount = data.workLog?.personnel?.length || 1;
+    const teamTotalHours = totalHours * personnelCount;
+    pdf.text(`${teamTotalHours.toFixed(2)} heures (${totalHours.toFixed(2)}h × ${personnelCount})`, col3X, yPos + 6);
+  } else {
+    pdf.text("Temps total", col3X, yPos);
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    const totalTime = data.workLog?.timeTracking?.totalHours || 0;
+    pdf.text(`${totalTime.toFixed(2)} heures`, col3X, yPos + 6);
+  }
   
   return yPos + 12; // Réduire l'espace après cette section
 }

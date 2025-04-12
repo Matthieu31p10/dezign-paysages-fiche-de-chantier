@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { 
   FileBarChart, LinkIcon, Euro, FileCheck, FileSignature,
-  Calendar, Tag, FileText, Printer, Download, Landmark
+  Calendar, Tag, FileText, Printer, Download, Landmark, Users, Clock
 } from 'lucide-react';
 import { formatDate, formatNumber } from '@/utils/helpers';
 import { WorkLog } from '@/types/models';
@@ -64,6 +64,18 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
     ? quoteValue > 0
     : parseFloat(String(quoteValue) || '0') > 0;
   const hasSignature = !!sheet.clientSignature;
+  
+  // Calculer le coût total (heures × taux horaire × nombre de personnes)
+  const totalHours = typeof sheet.timeTracking?.totalHours === 'string' 
+    ? parseFloat(sheet.timeTracking.totalHours) 
+    : (sheet.timeTracking?.totalHours || 0);
+  
+  const hourlyRateValue = typeof hourlyRate === 'number' 
+    ? hourlyRate 
+    : parseFloat(hourlyRate || '0');
+  
+  const personnelCount = sheet.personnel?.length || 1;
+  const totalCost = totalHours * hourlyRateValue * personnelCount;
 
   const handleInvoiceToggle = (checked: boolean) => {
     updateWorkLog(sheet.id, { invoiced: checked });
@@ -71,7 +83,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   };
 
   return (
-    <Card className="hover:border-primary/40 transition-all border-l-4 border-l-transparent hover:border-l-primary">
+    <Card className={`hover:border-primary/40 transition-all border-l-4 ${sheet.invoiced ? 'border-l-green-500' : 'border-l-amber-500'} hover:border-l-primary`}>
       <CardContent className="p-4">
         <div className="flex flex-col md:flex-row gap-2 md:gap-4 justify-between">
           <div className="flex-1 cursor-pointer" onClick={() => navigate(`/worklogs/${sheet.id}`)}>
@@ -86,9 +98,20 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
                 </Badge>
               )}
               
-              <Badge variant="outline" className="ml-auto md:ml-0">
+              <Badge variant="outline" className="ml-auto md:ml-0 flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
                 {formatDate(sheet.date)}
               </Badge>
+              
+              {registrationTime && (
+                <Badge variant="outline" className="flex items-center gap-1 text-xs">
+                  <Clock className="h-3 w-3" />
+                  {new Date(registrationTime).toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </Badge>
+              )}
             </div>
             
             {linkedProject && (
@@ -109,7 +132,12 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
             )}
             
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <div className="flex flex-wrap gap-1">
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{personnelCount} personnel</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-1 ml-2">
                 {sheet.personnel.slice(0, 3).map((person, i) => (
                   <Badge key={i} variant="secondary" className="text-xs">
                     {person}
@@ -121,13 +149,27 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
                   </Badge>
                 )}
               </div>
-              
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3 mt-2">
               {hasHourlyRate && (
-                <Badge variant="outline" className="flex items-center gap-1 text-xs">
-                  <Euro className="h-3 w-3" />
-                  {(typeof hourlyRate === 'number' 
-                    ? hourlyRate 
-                    : parseFloat(hourlyRate || '0')).toFixed(2)}€/h
+                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
+                  <Euro className="h-3 w-3 text-blue-600" />
+                  {hourlyRateValue.toFixed(2)}€/h
+                </Badge>
+              )}
+              
+              {totalHours > 0 && (
+                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-violet-50">
+                  <Clock className="h-3 w-3 text-violet-600" />
+                  {totalHours.toFixed(1)}h × {personnelCount} = {(totalHours * personnelCount).toFixed(1)}h
+                </Badge>
+              )}
+              
+              {hasHourlyRate && totalHours > 0 && (
+                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
+                  <Euro className="h-3 w-3 text-green-600" />
+                  Total: {totalCost.toFixed(2)}€
                 </Badge>
               )}
               
@@ -153,19 +195,6 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
                   Signature client
                 </Badge>
               )}
-              
-              {registrationTime && (
-                <Badge variant="outline" className="flex items-center gap-1 text-xs ml-auto">
-                  <Calendar className="h-3 w-3" />
-                  {new Date(registrationTime).toLocaleString('fr-FR', { 
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </Badge>
-              )}
             </div>
           </div>
           
@@ -187,14 +216,12 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               </div>
             </div>
 
-            <div className="text-right mr-2">
+            <div className="text-right mr-2 bg-muted/30 px-3 py-1 rounded-md">
               <div className="text-sm font-medium">
-                {(typeof sheet.timeTracking.totalHours === 'string' 
-                  ? Number(sheet.timeTracking.totalHours) 
-                  : sheet.timeTracking.totalHours).toFixed(1)} h
+                {totalHours.toFixed(1)} h
               </div>
               <div className="text-xs text-muted-foreground">
-                Durée
+                {personnelCount > 1 ? `× ${personnelCount} = ${(totalHours * personnelCount).toFixed(1)}h` : 'Durée'}
               </div>
             </div>
             
