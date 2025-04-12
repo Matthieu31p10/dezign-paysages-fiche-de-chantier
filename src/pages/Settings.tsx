@@ -112,7 +112,7 @@ const Settings = () => {
       </Tabs>
       
       <AddUserDialog
-        open={isAddUserDialogOpen}
+        isOpen={isAddUserDialogOpen}
         onOpenChange={setIsAddUserDialogOpen}
       />
     </div>
