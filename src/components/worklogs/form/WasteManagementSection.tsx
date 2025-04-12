@@ -35,19 +35,19 @@ const WasteManagementSection: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold flex items-center">
-        <Trash2 className="w-5 h-5 mr-2 text-muted-foreground" />
+    <div className="space-y-3">
+      <h3 className="text-base font-medium flex items-center">
+        <Trash2 className="w-4 h-4 mr-2 text-muted-foreground" />
         Gestion des déchets
       </h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField
           control={form.control}
           name="wasteType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type de collecte</FormLabel>
+              <FormLabel className="text-sm">Type de collecte</FormLabel>
               <FormControl>
                 <Select 
                   value={wasteType}
@@ -62,7 +62,7 @@ const WasteManagementSection: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="none">Aucun</SelectItem>
                     <SelectItem value="big_bag">Big-bag</SelectItem>
-                    <SelectItem value="half_dumpster">1/2 Benne</SelectItem>
+                    <SelectItem value="half_dumpster">½ Benne</SelectItem>
                     <SelectItem value="dumpster">Benne</SelectItem>
                   </SelectContent>
                 </Select>
@@ -78,7 +78,7 @@ const WasteManagementSection: React.FC = () => {
             name="wasteQuantity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Quantité</FormLabel>
+                <FormLabel className="text-sm">Quantité</FormLabel>
                 <FormControl>
                   <Select 
                     value={quantity}
