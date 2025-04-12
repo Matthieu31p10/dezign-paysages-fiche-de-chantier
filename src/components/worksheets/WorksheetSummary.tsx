@@ -1,7 +1,7 @@
 
 import { formatDate } from '@/utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Calendar, Clock, ClipboardCheck, Trash } from 'lucide-react';
+import { FileText, Calendar, Clock, ClipboardCheck, Trash, Calculator } from 'lucide-react';
 import { BlankWorkSheetValues } from './schema';
 
 interface WorksheetSummaryProps {
@@ -12,6 +12,9 @@ interface WorksheetSummaryProps {
 const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) => {
   // Calculate total hours worked
   const totalHours = formValues.totalHours || 0;
+  const personnelCount = formValues.personnel?.length || 1;
+  const totalTeamHours = totalHours * personnelCount;
+  const totalAmount = totalTeamHours * (formValues.hourlyRate || 0);
   
   return (
     <Card className="sticky top-4">
@@ -46,14 +49,22 @@ const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) =>
           <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
           <div>
             <p className="text-sm font-medium">Temps de travail</p>
-            <p className="text-sm">
-              {totalHours > 0 
-                ? `${totalHours.toFixed(2)} heures` 
-                : 'Non calculé'
-              }
-            </p>
+            <div className="text-sm grid grid-cols-2 gap-1">
+              <span>Personnel:</span> 
+              <span className="font-medium">{totalHours.toFixed(2)}h</span>
+              
+              <span>Équipe ({personnelCount} pers.):</span> 
+              <span className="font-medium">{totalTeamHours.toFixed(2)}h</span>
+              
+              {formValues.hourlyRate > 0 && (
+                <>
+                  <span>Total:</span> 
+                  <span className="font-medium">{totalAmount.toFixed(2)}€</span>
+                </>
+              )}
+            </div>
             {formValues.arrival && formValues.end && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 {formValues.arrival} - {formValues.end}
               </p>
             )}

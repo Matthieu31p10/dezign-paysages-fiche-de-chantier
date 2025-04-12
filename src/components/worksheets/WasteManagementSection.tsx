@@ -86,7 +86,6 @@ const WasteManagementSection: React.FC = () => {
                       setQuantity(value);
                       updateWasteManagement(wasteType, value);
                     }}
-                    disabled={wasteType === 'none'}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Quantité" />
