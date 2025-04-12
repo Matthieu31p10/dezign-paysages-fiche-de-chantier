@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import CancelButton from './actions/CancelButton';
+import SubmitButton from './actions/SubmitButton';
+import FormActionsContainer from './actions/FormActionsContainer';
 
 interface FormActionsProps {
   isSubmitting: boolean;
@@ -17,29 +18,18 @@ const FormActions: React.FC<FormActionsProps> = ({
   onSubmit
 }) => {
   return (
-    <div className="flex justify-between">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={handleCancel}
-        disabled={isSubmitting}
-      >
-        Annuler
-      </Button>
+    <FormActionsContainer>
+      <CancelButton 
+        onClick={handleCancel} 
+        disabled={isSubmitting} 
+      />
       
-      <Button 
-        type="submit"
-        disabled={isSubmitting}
-        className="min-w-32"
+      <SubmitButton 
+        isSubmitting={isSubmitting}
+        isEditing={isEditing}
         onClick={onSubmit}
-      >
-        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isSubmitting 
-          ? (isEditing ? "Modification..." : "Création...") 
-          : (isEditing ? "Modifier la fiche" : "Créer la fiche")
-        }
-      </Button>
-    </div>
+      />
+    </FormActionsContainer>
   );
 };
 
