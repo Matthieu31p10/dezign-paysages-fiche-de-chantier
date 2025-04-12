@@ -1,180 +1,166 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Download, Upload, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { createBackupZip, restoreFromZip } from '@/utils/backupUtils';
+import { Download, Upload, AlertTriangle, Database } from 'lucide-react';
+import { backupData, restoreData } from '@/utils/backupUtils';
+import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
-const BackupRestoreSection: React.FC = () => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const BackupRestoreSection = () => {
+  const { toast } = useToast();
+  const [file, setFile] = useState<File | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isCreatingBackup, setIsCreatingBackup] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
   
   const handleBackup = async () => {
-    setIsCreatingBackup(true);
     try {
-      await createBackupZip();
+      setIsBackingUp(true);
+      await backupData();
+      toast({
+        title: "Sauvegarde réussie",
+        description: "Vos données ont été sauvegardées avec succès.",
+      });
+    } catch (error) {
+      console.error("Backup error:", error);
+      toast({
+        title: "Erreur de sauvegarde",
+        description: "Une erreur est survenue lors de la sauvegarde des données.",
+        variant: "destructive",
+      });
     } finally {
-      setIsCreatingBackup(false);
+      setIsBackingUp(false);
     }
   };
   
-  const handleRestoreClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-  
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    // Réinitialiser le champ de fichier pour pouvoir sélectionner le même fichier plusieurs fois
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleRestore = async () => {
+    if (!file) {
+      toast({
+        title: "Aucun fichier sélectionné",
+        description: "Veuillez sélectionner un fichier de sauvegarde.",
+        variant: "destructive",
+      });
+      return;
     }
     
-    setDialogOpen(true);
-    
-    // Stocker le fichier pour l'utiliser lors de la confirmation
-    const zipFile = file;
-    
-    // L'utilisateur confirme via la boîte de dialogue
-    const confirmRestore = async () => {
+    try {
       setIsRestoring(true);
-      setDialogOpen(false);
+      await restoreData(file);
+      toast({
+        title: "Restauration réussie",
+        description: "Vos données ont été restaurées avec succès. La page va se recharger.",
+      });
       
-      try {
-        const success = await restoreFromZip(zipFile);
-        if (success) {
-          toast.success("Restauration terminée. Veuillez recharger la page pour voir les changements.");
-        }
-      } finally {
-        setIsRestoring(false);
-      }
-    };
-    
-    // Attacher la fonction de confirmation à window pour y accéder depuis la boîte de dialogue
-    (window as any).confirmRestore = confirmRestore;
+      // Reload the page after successful restore
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error("Restore error:", error);
+      toast({
+        title: "Erreur de restauration",
+        description: "Une erreur est survenue lors de la restauration des données.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRestoring(false);
+      setFile(null);
+    }
   };
   
   return (
-    <Card className="w-full mb-6">
-      <CardHeader>
-        <CardTitle>Sauvegarde et restauration</CardTitle>
-        <CardDescription>
-          Sauvegardez vos données ou restaurez une sauvegarde précédente
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5 text-muted-foreground" />
+            Sauvegarde et restauration
+          </CardTitle>
+          <CardDescription>
+            Sauvegardez et restaurez toutes les données de l'application
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div className="space-y-2">
-            <h3 className="text-base font-medium">Sauvegarder vos données</h3>
+            <h3 className="text-sm font-medium">Sauvegarde des données</h3>
             <p className="text-sm text-muted-foreground">
-              Créez un fichier ZIP contenant toutes vos données (projets, fiches de suivi, équipes, etc.)
+              Téléchargez une copie de toutes vos données (projets, fiches de suivi, paramètres, etc.)
             </p>
             <Button 
               onClick={handleBackup} 
-              disabled={isCreatingBackup}
-              className="w-full mt-2"
+              disabled={isBackingUp}
+              className="mt-2"
             >
-              {isCreatingBackup ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Création en cours...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Télécharger une sauvegarde
-                </>
-              )}
+              {isBackingUp ? "Sauvegarde en cours..." : "Télécharger la sauvegarde"}
+              <Download className="ml-2 h-4 w-4" />
             </Button>
           </div>
           
-          <div className="space-y-2">
-            <h3 className="text-base font-medium">Restaurer une sauvegarde</h3>
-            <p className="text-sm text-muted-foreground">
-              Importez un fichier ZIP de sauvegarde pour restaurer vos données
-            </p>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              accept=".zip" 
-              className="hidden" 
-            />
-            <Button
-              variant="outline"
-              onClick={handleRestoreClick}
-              disabled={isRestoring}
-              className="w-full mt-2"
-            >
-              {isRestoring ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Restauration en cours...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Importer une sauvegarde
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-        
-        <Alert variant="warning">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Attention</AlertTitle>
-          <AlertDescription>
-            La restauration d'une sauvegarde remplacera toutes vos données actuelles. 
-            Assurez-vous de créer une sauvegarde avant de procéder à une restauration.
-          </AlertDescription>
-        </Alert>
-      </CardContent>
-      
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmer la restauration</DialogTitle>
-            <DialogDescription>
-              Vous êtes sur le point de restaurer une sauvegarde. Cette action remplacera toutes vos données actuelles et ne peut pas être annulée.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Alert className="my-4">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant="destructive" className="mt-6">
+            <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Attention</AlertTitle>
             <AlertDescription>
-              Après la restauration, la page sera rechargée pour appliquer les changements.
+              La restauration remplacera toutes les données actuelles. Cette action est irréversible.
             </AlertDescription>
           </Alert>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => {
-                if (typeof (window as any).confirmRestore === 'function') {
-                  (window as any).confirmRestore();
-                }
-              }}
-            >
-              Confirmer la restauration
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Card>
+          <div className="space-y-2 pt-2">
+            <h3 className="text-sm font-medium">Restauration des données</h3>
+            <p className="text-sm text-muted-foreground">
+              Restaurez vos données à partir d'une sauvegarde
+            </p>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="mt-2">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Restaurer une sauvegarde
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Restaurer les données</DialogTitle>
+                  <DialogDescription>
+                    Sélectionnez un fichier de sauvegarde pour restaurer vos données. Attention, cette action remplacera toutes les données actuelles.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="backup-file">Fichier de sauvegarde</Label>
+                    <Input 
+                      id="backup-file" 
+                      type="file" 
+                      accept=".zip" 
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button 
+                    variant="destructive" 
+                    disabled={!file || isRestoring}
+                    onClick={handleRestore}
+                  >
+                    {isRestoring ? "Restauration en cours..." : "Restaurer les données"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 

@@ -11,6 +11,7 @@ import UserList from '@/components/settings/UserList';
 import AddUserDialog from '@/components/settings/AddUserDialog';
 import { UserCog, Users, LogIn, Building, ShieldCheck, Database } from 'lucide-react';
 import BackupRestoreSection from '@/components/settings/BackupRestoreSection';
+import { DialogTrigger } from '@/components/ui/dialog';
 
 const Settings = () => {
   const { auth, canUserAccess } = useAuth();
@@ -76,17 +77,12 @@ const Settings = () => {
                 </CardDescription>
               </div>
               
-              <AddUserDialog
-                open={isAddUserDialogOpen}
-                onOpenChange={setIsAddUserDialogOpen}
-              >
-                <Button onClick={() => setIsAddUserDialogOpen(true)}>
-                  Ajouter un utilisateur
-                </Button>
-              </AddUserDialog>
+              <Button onClick={() => setIsAddUserDialogOpen(true)}>
+                Ajouter un utilisateur
+              </Button>
             </CardHeader>
             <CardContent>
-              <UserList />
+              <UserList isAdmin={canManageUsers} />
             </CardContent>
           </Card>
           
@@ -114,6 +110,11 @@ const Settings = () => {
           <BackupRestoreSection />
         </TabsContent>
       </Tabs>
+      
+      <AddUserDialog
+        open={isAddUserDialogOpen}
+        onOpenChange={setIsAddUserDialogOpen}
+      />
     </div>
   );
 };

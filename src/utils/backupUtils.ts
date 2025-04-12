@@ -1,125 +1,138 @@
 
-import { toast } from 'sonner';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 
-// Clés de stockage local utilisées dans l'application
-const STORAGE_KEYS = [
-  'landscaping-projects',
-  'landscaping-worklogs',
-  'landscaping-teams',
-  'landscaping-settings',
-  'landscaping-auth'
-];
+interface BackupData {
+  projects?: unknown;
+  workLogs?: unknown;
+  settings?: unknown;
+  teams?: unknown;
+  users?: unknown;
+}
 
 /**
- * Crée une sauvegarde ZIP de toutes les données de l'application
+ * Creates a backup of all application data
  */
-export const createBackupZip = async (): Promise<void> => {
-  try {
-    const zip = new JSZip();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupFolder = zip.folder(`landscaping-backup-${timestamp}`);
-    
-    if (!backupFolder) {
-      throw new Error("Impossible de créer le dossier de sauvegarde");
-    }
-    
-    // Ajouter chaque élément de localStorage au ZIP
-    let hasData = false;
-    
-    for (const key of STORAGE_KEYS) {
-      const data = localStorage.getItem(key);
-      if (data) {
-        hasData = true;
-        // Formatter le JSON pour une meilleure lisibilité
-        const formattedData = JSON.stringify(JSON.parse(data), null, 2);
-        backupFolder.file(`${key}.json`, formattedData);
-      }
-    }
-    
-    if (!hasData) {
-      toast.warning("Aucune donnée à sauvegarder trouvée");
-      return;
-    }
-    
-    // Ajouter un fichier README
-    backupFolder.file('README.txt', 
-      `Sauvegarde de l'application Landscaping\n` +
-      `Date: ${new Date().toLocaleString('fr-FR')}\n\n` +
-      `Pour restaurer cette sauvegarde, utilisez la fonction "Importer une sauvegarde" dans les paramètres de l'application.`
-    );
-    
-    // Générer le ZIP
-    const content = await zip.generateAsync({ type: 'blob' });
-    
-    // Télécharger le fichier
-    saveAs(content, `landscaping-backup-${timestamp}.zip`);
-    
-    toast.success("Sauvegarde créée avec succès");
-  } catch (error) {
-    console.error("Erreur lors de la création de la sauvegarde:", error);
-    toast.error("Erreur lors de la création de la sauvegarde");
+export const backupData = async (): Promise<void> => {
+  // Create a new zip archive
+  const zip = new JSZip();
+  
+  // Get all data from localStorage
+  const allData: BackupData = {};
+  
+  // Add projects data if available
+  const projectsData = localStorage.getItem('projects');
+  if (projectsData) {
+    allData.projects = JSON.parse(projectsData);
   }
+  
+  // Add workLogs data if available
+  const workLogsData = localStorage.getItem('workLogs');
+  if (workLogsData) {
+    allData.workLogs = JSON.parse(workLogsData);
+  }
+  
+  // Add settings data if available
+  const settingsData = localStorage.getItem('settings');
+  if (settingsData) {
+    allData.settings = JSON.parse(settingsData);
+  }
+  
+  // Add teams data if available
+  const teamsData = localStorage.getItem('teams');
+  if (teamsData) {
+    allData.teams = JSON.parse(teamsData);
+  }
+  
+  // Add users data if available
+  const usersData = localStorage.getItem('users');
+  if (usersData) {
+    allData.users = JSON.parse(usersData);
+  }
+  
+  // Create a JSON file with all data
+  zip.file('data.json', JSON.stringify(allData, null, 2));
+  
+  // Generate the zip file
+  const content = await zip.generateAsync({ type: 'blob' });
+  
+  // Create a timestamp for the filename
+  const date = new Date();
+  const formattedDate = date.toISOString().split('T')[0];
+  
+  // Save the zip file
+  saveAs(content, `backup-${formattedDate}.zip`);
 };
 
 /**
- * Restaure les données depuis un fichier ZIP
+ * Restores data from a backup file
  */
-export const restoreFromZip = async (file: File): Promise<boolean> => {
-  try {
-    const zip = new JSZip();
-    const zipContent = await zip.loadAsync(file);
-    
-    // Vérifier si c'est un fichier de sauvegarde valide
-    const isValid = Object.keys(zipContent.files).some(path => 
-      STORAGE_KEYS.some(key => path.includes(`${key}.json`))
-    );
-    
-    if (!isValid) {
-      toast.error("Le fichier ZIP ne semble pas être une sauvegarde valide");
-      return false;
+export const restoreData = async (file: File): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    // Check if file is a zip file
+    if (!file.name.endsWith('.zip')) {
+      reject(new Error('Le fichier doit être au format ZIP'));
+      return;
     }
     
-    // Restaurer chaque fichier dans localStorage
-    let restoredCount = 0;
+    // Read the file
+    const reader = new FileReader();
     
-    // Trouver le dossier racine (au cas où)
-    const rootFolder = Object.keys(zipContent.files)
-      .filter(path => zipContent.files[path].dir)
-      .sort((a, b) => a.length - b.length)[0] || '';
-    
-    const promises = STORAGE_KEYS.map(async (key) => {
-      // Chercher le fichier dans le zip (avec ou sans dossier parent)
-      const fileName = `${key}.json`;
-      const filePath = rootFolder ? `${rootFolder}${fileName}` : fileName;
-      const filePathWithSlash = rootFolder && !rootFolder.endsWith('/') ? `${rootFolder}/${fileName}` : filePath;
-      
-      const file = zipContent.files[filePath] || zipContent.files[filePathWithSlash];
-      
-      if (file && !file.dir) {
-        try {
-          const content = await file.async('string');
-          localStorage.setItem(key, content);
-          restoredCount++;
-        } catch (error) {
-          console.error(`Erreur lors de la restauration de ${key}:`, error);
+    reader.onload = async (event) => {
+      try {
+        if (!event.target || !event.target.result) {
+          reject(new Error('Erreur lors de la lecture du fichier'));
+          return;
         }
+        
+        // Load the zip file
+        const zip = new JSZip();
+        const content = await zip.loadAsync(event.target.result);
+        
+        // Extract the data.json file
+        const dataFile = content.files['data.json'];
+        
+        if (!dataFile) {
+          reject(new Error('Fichier de sauvegarde invalide'));
+          return;
+        }
+        
+        // Parse the JSON data
+        const jsonContent = await dataFile.async('text');
+        const data: BackupData = JSON.parse(jsonContent);
+        
+        // Restore data to localStorage
+        if (data.projects) {
+          localStorage.setItem('projects', JSON.stringify(data.projects));
+        }
+        
+        if (data.workLogs) {
+          localStorage.setItem('workLogs', JSON.stringify(data.workLogs));
+        }
+        
+        if (data.settings) {
+          localStorage.setItem('settings', JSON.stringify(data.settings));
+        }
+        
+        if (data.teams) {
+          localStorage.setItem('teams', JSON.stringify(data.teams));
+        }
+        
+        if (data.users) {
+          localStorage.setItem('users', JSON.stringify(data.users));
+        }
+        
+        resolve();
+      } catch (error) {
+        console.error('Restore error:', error);
+        reject(new Error('Erreur lors de la restauration des données'));
       }
-    });
+    };
     
-    await Promise.all(promises);
+    reader.onerror = () => {
+      reject(new Error('Erreur lors de la lecture du fichier'));
+    };
     
-    if (restoredCount === 0) {
-      toast.error("Aucune donnée n'a pu être restaurée");
-      return false;
-    }
-    
-    toast.success(`Restauration réussie: ${restoredCount} éléments restaurés`);
-    return true;
-  } catch (error) {
-    console.error("Erreur lors de la restauration de la sauvegarde:", error);
-    toast.error("Erreur lors de la restauration de la sauvegarde");
-    return false;
-  }
+    reader.readAsArrayBuffer(file);
+  });
 };
