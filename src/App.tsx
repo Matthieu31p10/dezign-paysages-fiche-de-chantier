@@ -1,62 +1,146 @@
-
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProviders } from './context/AppProviders';
-import Layout from './components/layout/Layout';
-import Projects from './pages/Projects';
+import React, { useEffect, useState } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { useAuth } from './context/AuthContext';
+import { AppProvider } from './context/AppContext';
+import { WorkLogsProvider } from './context/WorkLogsContext';
+import { ProjectsProvider } from './context/ProjectsContext';
+import { SettingsProvider } from './context/SettingsContext';
+import { TeamsProvider } from './context/TeamsContext';
+import { UsersProvider } from './context/UsersContext';
+import LoginPage from './pages/LoginPage';
+import Dashboard from './pages/Dashboard';
 import WorkLogs from './pages/WorkLogs';
+import Projects from './pages/Projects';
 import Reports from './pages/Reports';
-import ProjectNew from './pages/ProjectNew';
-import ProjectEdit from './pages/ProjectEdit';
-import ProjectDetail from './components/projects/ProjectDetail';
-import WorkLogNew from './pages/WorkLogNew';
-import WorkLogEdit from './pages/WorkLogEdit';
-import WorkLogDetail from './components/worklogs/detail/WorkLogDetail';
-import Settings from './pages/Settings';
-import NotFound from './pages/NotFound';
-import Login from './components/auth/Login';
-import Unauthorized from './pages/Unauthorized';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as SonnerToaster } from 'sonner';
-import BlankWorkSheets from './pages/BlankWorkSheets';
+import Admin from './pages/Admin';
+import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
+import { initializeFirebase } from './firebase';
 import './App.css';
+import BlankWorkSheetsPage from './pages/blank-worksheets';
 
-function App() {
+const AppContent = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const [transitionStage, setTransitionStage] = useState("fadeIn");
+
+  useEffect(() => {
+    if (location.pathname !== displayLocation.pathname) {
+      setTransitionStage("fadeOut");
+      const timeoutId = setTimeout(() => {
+        setDisplayLocation(location);
+        setTransitionStage("fadeIn");
+      }, 300); // match the CSS transition duration
+      return () => clearTimeout(timeoutId);
+    }
+  }, [location, displayLocation]);
+
   return (
-    <AppProviders>
-      <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
-          
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/projects" replace />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="projects/new" element={<ProjectNew />} />
-              <Route path="projects/:id" element={<ProjectDetail />} />
-              <Route path="projects/:id/edit" element={<ProjectEdit />} />
-              <Route path="worklogs" element={<WorkLogs />} />
-              <Route path="worklogs/new" element={<WorkLogNew />} />
-              <Route path="worklogs/:id" element={<WorkLogDetail />} />
-              <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
-              
-              {/* Use a route with ProtectedRoute wrapper for the module */}
-              <Route path="blank-worksheets" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheets />} />} />
-              
-              <Route path="reports" element={<Reports />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Route>
-        </Routes>
-      </Router>
-      <Toaster />
-      <SonnerToaster position="top-right" richColors />
-    </AppProviders>
+    <div className={`${transitionStage} route-transition`}>
+      <Routes location={displayLocation}>
+        <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/worklogs"
+          element={
+            <ProtectedRoute>
+              <WorkLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/worklogs/:id"
+          element={
+            <ProtectedRoute>
+              <WorkLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/blank-worksheets"
+          element={
+            <ProtectedRoute>
+              <BlankWorkSheetsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
+      </Routes>
+    </div>
   );
-}
+};
+
+const App: React.FC = () => {
+  useEffect(() => {
+    initializeFirebase();
+  }, []);
+
+  return (
+    <AppProvider>
+      <SettingsProvider>
+        <TeamsProvider>
+          <UsersProvider>
+            <ProjectsProvider>
+              <WorkLogsProvider>
+                <Router>
+                  <AppContent />
+                </Router>
+                <Toaster position="bottom-center" richColors closeButton />
+              </WorkLogsProvider>
+            </ProjectsProvider>
+          </UsersProvider>
+        </TeamsProvider>
+      </SettingsProvider>
+    </AppProvider>
+  );
+};
 
 export default App;
