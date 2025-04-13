@@ -18,7 +18,7 @@ import { useApp } from '@/context/AppContext';
 const InterventionDetailsSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const { teams } = useApp();
-  const teamFilter = watch('teamFilter') || 'all';
+  const teamFilterValue = watch('teamFilter') || 'all';
   
   const handleTeamFilterChange = (value: string) => {
     setValue('teamFilter', value);
@@ -79,7 +79,7 @@ const InterventionDetailsSection: React.FC = () => {
         
         <div>
           <FormLabel>Équipe</FormLabel>
-          <Select value={teamFilter} onValueChange={handleTeamFilterChange}>
+          <Select value={teamFilterValue} onValueChange={handleTeamFilterChange}>
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner une équipe (optionnel)" />
             </SelectTrigger>

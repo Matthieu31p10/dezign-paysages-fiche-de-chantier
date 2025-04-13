@@ -10,7 +10,8 @@ import {
   FileBarChart, LinkIcon, Euro, FileCheck, FileSignature,
   Calendar, Tag, FileText, Printer, Download, Landmark, Users, Clock
 } from 'lucide-react';
-import { formatDate, formatNumber } from '@/utils/helpers';
+import { formatDate } from '@/utils/date';
+import { formatNumber } from '@/utils/format-utils';
 import { WorkLog } from '@/types/models';
 import { 
   DropdownMenu, 
@@ -25,9 +26,9 @@ import {
   extractLinkedProjectId,
   extractHourlyRate,
   extractSignedQuote,
-  extractRegistrationTime,
   extractQuoteValue
-} from '@/utils/helpers';
+} from '@/utils/notes-extraction';
+import { extractRegistrationTime } from '@/utils/date-helpers';
 import { ProjectInfo } from '@/types/models';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
@@ -50,32 +51,24 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const navigate = useNavigate();
   const { updateWorkLog } = useWorkLogs();
   
-  const clientName = extractClientName(sheet.notes || '');
-  const address = extractAddress(sheet.notes || '');
+  const clientName = sheet.clientName || extractClientName(sheet.notes || '');
+  const address = sheet.address || extractAddress(sheet.notes || '');
   const description = extractDescription(sheet.notes || '');
   const registrationTime = extractRegistrationTime(sheet.notes || '');
-  const hourlyRate = extractHourlyRate(sheet.notes || '');
-  const hasHourlyRate = typeof hourlyRate === 'number' 
-    ? hourlyRate > 0
-    : parseFloat(hourlyRate || '0') > 0;
-  const signedQuote = extractSignedQuote(sheet.notes || '');
-  const quoteValue = extractQuoteValue(sheet.notes || '');
-  const hasQuoteValue = typeof quoteValue === 'number' 
-    ? quoteValue > 0
-    : parseFloat(String(quoteValue) || '0') > 0;
+  
+  // Use direct properties if available, otherwise extract from notes
+  const hourlyRate = sheet.hourlyRate || extractHourlyRate(sheet.notes || '') || 0;
+  const hasHourlyRate = hourlyRate > 0;
+  
+  const signedQuote = sheet.isQuoteSigned || extractSignedQuote(sheet.notes || '');
+  const quoteValue = sheet.signedQuoteAmount || extractQuoteValue(sheet.notes || '') || 0;
+  const hasQuoteValue = quoteValue > 0;
   const hasSignature = !!sheet.clientSignature;
   
   // Calculer le coût total (heures × taux horaire × nombre de personnes)
-  const totalHours = typeof sheet.timeTracking?.totalHours === 'string' 
-    ? parseFloat(sheet.timeTracking.totalHours) 
-    : (sheet.timeTracking?.totalHours || 0);
-  
-  const hourlyRateValue = typeof hourlyRate === 'number' 
-    ? hourlyRate 
-    : parseFloat(hourlyRate || '0');
-  
+  const totalHours = sheet.timeTracking?.totalHours || 0;
   const personnelCount = sheet.personnel?.length || 1;
-  const totalCost = totalHours * hourlyRateValue * personnelCount;
+  const totalCost = totalHours * hourlyRate * personnelCount;
 
   const handleInvoiceToggle = (checked: boolean) => {
     updateWorkLog(sheet.id, { invoiced: checked });
@@ -155,7 +148,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               {hasHourlyRate && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
                   <Euro className="h-3 w-3 text-blue-600" />
-                  {hourlyRateValue.toFixed(2)}€/h
+                  {hourlyRate.toFixed(2)}€/h
                 </Badge>
               )}
               
@@ -176,9 +169,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               {hasQuoteValue && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
                   <Landmark className="h-3 w-3 text-blue-600" />
-                  Devis: {formatNumber(typeof quoteValue === 'number' 
-                    ? quoteValue 
-                    : parseFloat(String(quoteValue) || '0'))}€ HT
+                  Devis: {formatNumber(quoteValue)}€ HT
                 </Badge>
               )}
               

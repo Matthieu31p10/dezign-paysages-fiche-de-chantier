@@ -1,43 +1,37 @@
-
 import { WorkLog } from '@/types/models';
 
 /**
- * Generates a unique ID for blank worksheets based on the existing worklog IDs
- * Format: DZFV + padded number (e.g., DZFV00001)
+ * Generates a unique temporary ID for new work logs
  */
-export const generateUniqueBlankSheetId = (workLogs: WorkLog[] = []): string => {
-  // Find the highest number used for blank sheets
-  let maxNumber = 0;
-  
-  workLogs.forEach(log => {
-    // Chercher à la fois les anciens formats (blank-) et les nouveaux (DZFV)
-    if (log.projectId) {
-      if (log.projectId.startsWith('DZFV')) {
-        const numberPart = log.projectId.substring(4); // Extract the numeric part after "DZFV"
-        const number = parseInt(numberPart, 10);
-        if (!isNaN(number) && number > maxNumber) {
-          maxNumber = number;
-        }
-      }
-      // Conversion des anciens IDs si nécessaire
-      else if (log.projectId.startsWith('blank-')) {
-        // Maintenir la séquence en considérant les anciens IDs
-        maxNumber = Math.max(maxNumber, 1);
-      }
-    }
-  });
-  
-  // Create a new ID with the next number
-  const nextNumber = maxNumber + 1;
-  const paddedNumber = nextNumber.toString().padStart(5, '0');
-  return `DZFV${paddedNumber}`;
+export const generateTemporaryId = (): string => {
+  return 'temp_' + Date.now().toString() + '_' + Math.random().toString(36).substring(2, 9);
 };
 
 /**
- * Generates a temporary ID for a new worksheet before it's saved
+ * Generates a unique ID for blank worksheets
+ * Format: DZFV (Date Zeroes Far Verified) + timestamp
  */
-export const generateTemporaryId = (): string => {
-  return `temp-${Date.now()}`;
+export const generateUniqueBlankSheetId = (existingWorkLogs: WorkLog[]): string => {
+  const baseId = 'DZFV' + Date.now().toString();
+  
+  // Check if the ID is already used
+  const isIdUnique = (id: string) => !existingWorkLogs.some(log => log.projectId === id);
+  
+  // If the base ID is unique, return it
+  if (isIdUnique(baseId)) {
+    return baseId;
+  }
+  
+  // Otherwise, append a random string until we get a unique ID
+  let counter = 0;
+  let uniqueId = baseId;
+  
+  while (!isIdUnique(uniqueId) && counter < 10) {
+    uniqueId = baseId + '_' + Math.random().toString(36).substring(2, 6);
+    counter++;
+  }
+  
+  return uniqueId;
 };
 
 /**

@@ -34,7 +34,10 @@ export const BlankWorkSheetSchema = z.object({
   hourlyRate: z.number().default(0),
   signedQuoteAmount: z.number().default(0),
   isQuoteSigned: z.boolean().default(false),
-  linkedProjectId: z.string().optional(),
+  linkedProjectId: z.string().nullable().optional(),
+  teamFilter: z.string().optional(),
+  vatRate: z.string().optional().default('20'),
+  quoteValue: z.number().optional(),
 });
 
 // Create a type from the schema

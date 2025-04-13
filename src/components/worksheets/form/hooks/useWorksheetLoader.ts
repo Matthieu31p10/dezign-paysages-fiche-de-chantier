@@ -1,96 +1,68 @@
 
-import { useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
 import { WorkLog } from '@/types/models';
-import { 
-  extractClientName,
-  extractAddress, 
-  extractContactPhone, 
-  extractContactEmail, 
-  extractDescription,
-  extractHourlyRate,
-  extractVatRate,
-  extractSignedQuote,
-  extractLinkedProjectId,
-  extractQuoteValue
-} from '@/utils/helpers';
+import { useEffect } from 'react';
 
-type UseWorksheetLoaderProps = {
+interface UseWorksheetLoaderProps {
   form: UseFormReturn<BlankWorkSheetValues>;
   getWorkLogById: (id: string) => WorkLog | undefined;
-  handleProjectSelect: (projectId: string) => void;
-};
+  handleProjectSelect: (projectId: string | null) => void;
+}
 
-/**
- * Hook to handle loading worksheet data for editing
- */
-export const useWorksheetLoader = ({ 
-  form, 
-  getWorkLogById, 
-  handleProjectSelect 
+export const useWorksheetLoader = ({
+  form,
+  getWorkLogById,
+  handleProjectSelect
 }: UseWorksheetLoaderProps) => {
   
-  const loadWorkLogData = useCallback((id: string) => {
-    const workLog = getWorkLogById(id);
-    if (!workLog) return;
+  // Load work log data into the form
+  const loadWorkLogData = (workLogId: string) => {
+    if (!workLogId) return;
     
-    // Extract all data from the worklog
-    const clientName = extractClientName(workLog.notes || '');
-    const address = extractAddress(workLog.notes || '');
-    const contactPhone = extractContactPhone(workLog.notes || '');
-    const contactEmail = extractContactEmail(workLog.notes || '');
-    const notes = extractDescription(workLog.notes || '');
-    const hourlyRate = extractHourlyRate(workLog.notes || '');
-    const vatRateValue = extractVatRate(workLog.notes || '');
-    const signedQuote = extractSignedQuote(workLog.notes || '');
-    const linkedProjectId = extractLinkedProjectId(workLog.notes || '');
-    const quoteValue = extractQuoteValue(workLog.notes || '');
-    
-    console.log("Chargement des données pour édition:", {
-      clientName,
-      address,
-      contactPhone,
-      contactEmail,
-      hourlyRate,
-      vatRateValue,
-      signedQuote, 
-      quoteValue,
-      linkedProjectId
-    });
-    
-    // Ensure vatRate is either "10" or "20"
-    const vatRate = vatRateValue === "10" ? "10" : "20";
-    
-    form.reset({
-      clientName,
-      address,
-      contactPhone,
-      contactEmail,
-      date: new Date(workLog.date),
-      personnel: workLog.personnel || [],
-      departure: workLog.timeTracking?.departure || '08:00',
-      arrival: workLog.timeTracking?.arrival || '08:30',
-      end: workLog.timeTracking?.end || '16:30',
-      breakTime: workLog.timeTracking?.breakTime || '00:30',
-      totalHours: workLog.timeTracking?.totalHours || 7.5,
-      hourlyRate: Number(hourlyRate) || 0,
-      wasteManagement: workLog.wasteManagement || 'none',
-      teamFilter: 'all',
-      linkedProjectId: linkedProjectId || '',
-      notes: notes || '',
-      tasks: workLog.tasks || '',
-      consumables: workLog.consumables || [],
-      vatRate,
-      signedQuote: signedQuote || false,
-      quoteValue: Number(quoteValue) || 0,
-      clientSignature: workLog.clientSignature || '',
-    });
-    
-    if (linkedProjectId) {
-      handleProjectSelect(linkedProjectId);
+    const workLog = getWorkLogById(workLogId);
+    if (!workLog) {
+      console.error(`Work log with ID ${workLogId} not found`);
+      return;
     }
-  }, [form, getWorkLogById, handleProjectSelect]);
+    
+    console.log("Loading work log data:", workLog);
+    
+    // Set common fields
+    form.reset({
+      id: workLog.id,
+      clientName: workLog.clientName || '',
+      address: workLog.address || '',
+      contactPhone: workLog.contactPhone || '',
+      contactEmail: workLog.contactEmail || '',
+      date: workLog.date ? new Date(workLog.date) : new Date(),
+      personnel: workLog.personnel || [],
+      departure: workLog.timeTracking?.departure || '',
+      arrival: workLog.timeTracking?.arrival || '',
+      end: workLog.timeTracking?.end || '',
+      breakTime: workLog.timeTracking?.breakTime || '',
+      totalHours: workLog.timeTracking?.totalHours || 0,
+      tasks: workLog.tasks || '',
+      wasteManagement: workLog.wasteManagement || 'none',
+      notes: workLog.notes || '',
+      clientSignature: workLog.clientSignature || null,
+      consumables: workLog.consumables || [],
+      hourlyRate: workLog.hourlyRate || 0,
+      signedQuoteAmount: workLog.signedQuoteAmount || 0,
+      isQuoteSigned: workLog.isQuoteSigned || false,
+      linkedProjectId: workLog.linkedProjectId || null,
+      teamFilter: 'all'
+    });
+    
+    // If there's a linked project, select it
+    if (workLog.linkedProjectId) {
+      handleProjectSelect(workLog.linkedProjectId);
+    }
+    
+    console.log("Form data loaded:", form.getValues());
+  };
   
-  return { loadWorkLogData };
+  return {
+    loadWorkLogData
+  };
 };

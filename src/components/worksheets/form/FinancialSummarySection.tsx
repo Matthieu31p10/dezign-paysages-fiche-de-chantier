@@ -110,7 +110,7 @@ const FinancialSummarySection: React.FC = () => {
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span>Devis:</span>
-                <span className="font-medium">{watch('signedQuoteAmount').toFixed(2)}€</span>
+                <span className="font-medium">{(watch('signedQuoteAmount') || 0).toFixed(2)}€</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Coûts estimés:</span>
@@ -118,8 +118,8 @@ const FinancialSummarySection: React.FC = () => {
               </div>
               <div className="flex justify-between text-sm font-medium pt-1 border-t">
                 <span>Différence:</span>
-                <span className={watch('signedQuoteAmount') >= totalEstimate ? 'text-green-600' : 'text-red-600'}>
-                  {(watch('signedQuoteAmount') - totalEstimate).toFixed(2)}€
+                <span className={((watch('signedQuoteAmount') || 0) >= totalEstimate) ? 'text-green-600' : 'text-red-600'}>
+                  {((watch('signedQuoteAmount') || 0) - totalEstimate).toFixed(2)}€
                 </span>
               </div>
             </div>

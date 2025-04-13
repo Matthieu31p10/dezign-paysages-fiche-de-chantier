@@ -1,8 +1,9 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface TimeDeviationProps {
-  deviation: string | null;
+  deviation: string;
   deviationClass: string;
   showInBlankSheets?: boolean;
 }
@@ -10,19 +11,19 @@ interface TimeDeviationProps {
 const TimeDeviation: React.FC<TimeDeviationProps> = ({ 
   deviation, 
   deviationClass,
-  showInBlankSheets = true 
+  showInBlankSheets = true
 }) => {
-  if (deviation === null || !showInBlankSheets) return null;
+  if (!showInBlankSheets) return null;
   
   return (
-    <div className="flex items-center px-3 py-2 rounded border bg-muted/30">
-      <div className="text-sm">
-        <span>Écart:</span> 
-        <span className={`ml-2 font-medium ${deviationClass}`}>
-          {Math.abs(Number(deviation)).toFixed(2)}h {Number(deviation) >= 0 ? 'sur' : 'sous'} estimé
-        </span>
-      </div>
-    </div>
+    <Card className="h-full">
+      <CardContent className="p-3 h-full flex flex-col justify-center">
+        <div className="text-sm text-muted-foreground mb-1">Écart du temps de passage:</div>
+        <div className={`font-medium text-lg ${deviationClass}`}>
+          {deviation}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

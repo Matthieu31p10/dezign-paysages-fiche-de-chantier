@@ -14,8 +14,8 @@ EMAIL: ${data.contactEmail || ''}
 ID PROJET: ${data.linkedProjectId || ''}
 TAUX HORAIRE: ${data.hourlyRate || 0}
 TVA: ${data.vatRate || '20'}
-DEVIS SIGNÉ: ${data.signedQuote ? 'oui' : 'non'}
-VALEUR DEVIS: ${data.quoteValue || 0}
+DEVIS SIGNÉ: ${data.isQuoteSigned ? 'oui' : 'non'}
+VALEUR DEVIS: ${data.signedQuoteAmount || 0}
 HEURE D'ENREGISTREMENT: ${new Date().toISOString()}
 DESCRIPTION: ${data.notes || ''}
 `;
@@ -63,17 +63,25 @@ export const createWorkLogFromFormData = (
     date: data.date.toISOString(),
     personnel: data.personnel || [],
     timeTracking: {
-      departure: data.departure,
-      arrival: data.arrival,
-      end: data.end,
-      breakTime: data.breakTime,
-      totalHours: data.totalHours
+      departure: data.departure || '',
+      arrival: data.arrival || '',
+      end: data.end || '',
+      breakTime: data.breakTime || '',
+      totalHours: data.totalHours || 0
     },
     notes: structuredNotes,
     tasks: data.tasks || '',
     wasteManagement: data.wasteManagement || 'none',
     consumables: validatedConsumables,
-    clientSignature: data.clientSignature
+    clientSignature: data.clientSignature || null,
+    clientName: data.clientName || '',
+    address: data.address || '',
+    contactPhone: data.contactPhone || '',
+    contactEmail: data.contactEmail || '',
+    hourlyRate: data.hourlyRate || 0,
+    linkedProjectId: data.linkedProjectId || undefined,
+    signedQuoteAmount: data.signedQuoteAmount || 0,
+    isQuoteSigned: data.isQuoteSigned || false
   };
 };
 

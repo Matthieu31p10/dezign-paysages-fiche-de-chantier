@@ -1,12 +1,13 @@
 
 import { useForm } from 'react-hook-form';
-import { BlankWorkSheetValues } from '../schema';
+import { BlankWorkSheetValues, BlankWorkSheetSchema } from '../schema';
 import { useEffect, useState } from 'react';
 import { useTimeCalculation } from './hooks/useTimeCalculation';
 import { useWorksheetLoader } from './hooks/useWorksheetLoader';
 import { useFormActions } from './hooks/useFormActions';
 import { WorkLog } from '@/types/models';
 import { useWorkLogs } from '@/context/WorkLogsContext';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface UseBlankWorksheetFormProps {
   initialData?: any;
@@ -27,8 +28,9 @@ export const useBlankWorksheetForm = ({
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   
-  // Initialize the form with default values
+  // Initialize the form with default values and validation
   const form = useForm<BlankWorkSheetValues>({
+    resolver: zodResolver(BlankWorkSheetSchema),
     defaultValues: {
       clientName: initialData?.clientName || '',
       address: initialData?.address || '',
@@ -49,7 +51,8 @@ export const useBlankWorksheetForm = ({
       hourlyRate: initialData?.hourlyRate || 0,
       signedQuoteAmount: initialData?.signedQuoteAmount || 0,
       isQuoteSigned: initialData?.isQuoteSigned || false,
-      linkedProjectId: initialData?.linkedProjectId || null
+      linkedProjectId: initialData?.linkedProjectId || null,
+      teamFilter: initialData?.teamFilter || 'all'
     }
   });
   
