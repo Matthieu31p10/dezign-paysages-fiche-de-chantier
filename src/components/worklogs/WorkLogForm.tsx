@@ -40,7 +40,9 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     timeDeviationClass,
     handlePersonnelChange,
     handleTeamFilterChange,
-    handleCancel
+    handleCancel,
+    previousYearsHours,
+    currentYearTarget
   } = useWorkLogFormState({
     initialData,
     projectInfos,
@@ -68,7 +70,10 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           
           <Separator />
           
-          <TimeTrackingSection />
+          <TimeTrackingSection 
+            previousYearsHours={previousYearsHours}
+            currentYearTarget={currentYearTarget}
+          />
           
           <Separator />
           

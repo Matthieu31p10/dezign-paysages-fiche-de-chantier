@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
+import { calculateTotalHours } from '@/utils/time';
 
 interface TimeTrackingFormSectionProps {
   onTimeChange?: () => void;
@@ -18,6 +19,29 @@ const TimeTrackingFormSection: React.FC<TimeTrackingFormSectionProps> = ({
   const personnel = watch('personnel') || [];
   const personnelCount = personnel.length || 1;
   const totalTeamHours = totalHours * personnelCount;
+  
+  // Auto-calculate hours when inputs change
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'departure' || name === 'arrival' || name === 'end' || name === 'breakTime' || name === 'personnel') {
+        const departure = value.departure || '';
+        const arrival = value.arrival || '';
+        const end = value.end || '';
+        const breakTime = value.breakTime || '';
+        const personnelCount = (value.personnel || []).length || 1;
+        
+        if (departure && arrival && end) {
+          try {
+            const calculatedHours = calculateTotalHours(departure, arrival, end, breakTime, 1);
+            setValue('totalHours', calculatedHours);
+          } catch (error) {
+            console.error('Error calculating hours:', error);
+          }
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
   
   return (
     <div className="space-y-4">

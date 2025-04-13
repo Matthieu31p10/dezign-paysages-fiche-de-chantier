@@ -1,7 +1,7 @@
 
 import { formatDate } from '@/utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Calendar, Clock, ClipboardCheck, Trash, Calculator } from 'lucide-react';
+import { FileText, Calendar, Clock, ClipboardCheck, Trash, Calculator, Check, X } from 'lucide-react';
 import { BlankWorkSheetValues } from './schema';
 
 interface WorksheetSummaryProps {
@@ -14,7 +14,20 @@ const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) =>
   const totalHours = formValues.totalHours || 0;
   const personnelCount = formValues.personnel?.length || 1;
   const totalTeamHours = totalHours * personnelCount;
-  const totalAmount = totalTeamHours * (formValues.hourlyRate || 0);
+  const hourlyRate = formValues.hourlyRate || 0;
+  const totalLaborAmount = totalTeamHours * hourlyRate;
+  
+  // Calculate supplies total
+  const totalSupplies = formValues.consumables?.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0;
+  
+  // Total estimate (labor + supplies)
+  const totalEstimate = totalLaborAmount + totalSupplies;
+  
+  // Signed quote amount (if any)
+  const signedQuoteAmount = formValues.signedQuoteAmount || 0;
+  
+  // Calculate difference between estimate and signed quote
+  const quoteDifference = signedQuoteAmount > 0 ? (signedQuoteAmount - totalEstimate) : 0;
   
   return (
     <Card className="sticky top-4">
@@ -56,10 +69,10 @@ const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) =>
               <span>Équipe ({personnelCount} pers.):</span> 
               <span className="font-medium">{totalTeamHours.toFixed(2)}h</span>
               
-              {formValues.hourlyRate > 0 && (
+              {hourlyRate > 0 && (
                 <>
-                  <span>Total:</span> 
-                  <span className="font-medium">{totalAmount.toFixed(2)}€</span>
+                  <span>Main d'œuvre:</span> 
+                  <span className="font-medium">{totalLaborAmount.toFixed(2)}€</span>
                 </>
               )}
             </div>
@@ -70,6 +83,43 @@ const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) =>
             )}
           </div>
         </div>
+        
+        {/* Financial Summary */}
+        {(hourlyRate > 0 || totalSupplies > 0 || signedQuoteAmount > 0) && (
+          <div className="flex items-start gap-3">
+            <Calculator className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div>
+              <p className="text-sm font-medium">Bilan financier</p>
+              <div className="text-sm grid grid-cols-2 gap-1">
+                {totalSupplies > 0 && (
+                  <>
+                    <span>Fournitures:</span> 
+                    <span className="font-medium">{totalSupplies.toFixed(2)}€</span>
+                  </>
+                )}
+                
+                {(totalLaborAmount > 0 || totalSupplies > 0) && (
+                  <>
+                    <span>Total estimé:</span> 
+                    <span className="font-medium">{totalEstimate.toFixed(2)}€</span>
+                  </>
+                )}
+                
+                {signedQuoteAmount > 0 && (
+                  <>
+                    <span>Devis signé:</span> 
+                    <span className="font-medium">{signedQuoteAmount.toFixed(2)}€</span>
+                    
+                    <span>Différence:</span> 
+                    <span className={`font-medium ${quoteDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {quoteDifference.toFixed(2)}€
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Personnel */}
         <div className="flex items-start gap-3">
@@ -87,6 +137,22 @@ const WorksheetSummary = ({ formValues, projectName }: WorksheetSummaryProps) =>
             )}
           </div>
         </div>
+        
+        {/* Signed Quote Status */}
+        {signedQuoteAmount > 0 && (
+          <div className="flex items-start gap-3">
+            {formValues.isQuoteSigned ? (
+              <Check className="h-5 w-5 text-green-500 mt-0.5" />
+            ) : (
+              <X className="h-5 w-5 text-red-500 mt-0.5" />
+            )}
+            <div>
+              <p className="text-sm font-medium">
+                {formValues.isQuoteSigned ? "Devis signé" : "Devis non signé"}
+              </p>
+            </div>
+          </div>
+        )}
         
         {/* Waste Management */}
         {formValues.wasteManagement && formValues.wasteManagement !== 'none' && (

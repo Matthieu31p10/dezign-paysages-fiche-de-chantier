@@ -33,11 +33,11 @@ export const calculateTotalHours = (
       workTimeMinutes += 24 * 60; // Handle crossing midnight
     }
 
-    // Calculate total time
-    const totalTimeMinutes = travelTimeMinutes + workTimeMinutes - breakMinutes;
+    // Calculate total time (only count work time, not travel time for blank sheets)
+    const totalTimeMinutes = workTimeMinutes - breakMinutes;
 
-    // Convert minutes to hours, multiply by personnel count, and round to 2 decimal places
-    return Math.round((totalTimeMinutes / 60) * personnelCount * 100) / 100;
+    // Convert minutes to hours and round to 2 decimal places
+    return Math.round((totalTimeMinutes / 60) * 100) / 100;
   } catch (error) {
     console.error('Error calculating total hours:', error);
     return 0;

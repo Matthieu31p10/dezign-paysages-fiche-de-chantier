@@ -4,10 +4,15 @@ import React from 'react';
 interface TimeDeviationProps {
   deviation: string | null;
   deviationClass: string;
+  showInBlankSheets?: boolean;
 }
 
-const TimeDeviation: React.FC<TimeDeviationProps> = ({ deviation, deviationClass }) => {
-  if (deviation === null) return null;
+const TimeDeviation: React.FC<TimeDeviationProps> = ({ 
+  deviation, 
+  deviationClass,
+  showInBlankSheets = true 
+}) => {
+  if (deviation === null || !showInBlankSheets) return null;
   
   return (
     <div className="flex items-center px-3 py-2 rounded border bg-muted/30">

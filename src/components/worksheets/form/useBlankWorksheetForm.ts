@@ -46,7 +46,10 @@ export const useBlankWorksheetForm = ({
       clientSignature: initialData?.clientSignature || null,
       consumables: initialData?.consumables || [],
       totalHours: initialData?.totalHours || 0,
-      hourlyRate: initialData?.hourlyRate || 0
+      hourlyRate: initialData?.hourlyRate || 0,
+      signedQuoteAmount: initialData?.signedQuoteAmount || 0,
+      isQuoteSigned: initialData?.isQuoteSigned || false,
+      linkedProjectId: initialData?.linkedProjectId || null
     }
   });
   

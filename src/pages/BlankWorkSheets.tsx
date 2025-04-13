@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, ArrowLeft, Plus, List, FileIcon, Download, FileBarChart } from 'lucide-react';
+import { FilePlus, ArrowLeft, Plus, List, FileIcon, FileBarChart } from 'lucide-react';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';

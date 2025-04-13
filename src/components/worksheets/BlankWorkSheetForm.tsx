@@ -16,6 +16,7 @@ import TasksSection from './TasksSection';
 import WasteManagementSection from './WasteManagementSection';
 import ClientSignatureSection from './form/ClientSignatureSection';
 import ConsumablesSection from './ConsumablesSection';
+import FinancialSummarySection from './form/FinancialSummarySection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -81,6 +82,8 @@ const BlankWorkSheetForm = ({
           <WasteManagementSection />
           
           <ConsumablesSection />
+          
+          <FinancialSummarySection />
           
           <AdditionalNotesSection />
           

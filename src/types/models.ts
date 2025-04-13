@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -66,11 +65,11 @@ export interface CustomTask {
 
 export interface Consumable {
   supplier?: string;
-  product?: string;  // Optional product
-  unit?: string;     // Optional unit
-  quantity: number;  // Required field
-  unitPrice: number;  // Required field
-  totalPrice: number;  // Required field
+  product?: string;  
+  unit?: string;     
+  quantity: number;  
+  unitPrice: number;  
+  totalPrice: number;  
 }
 
 export interface WorkLog {
@@ -94,8 +93,8 @@ export interface WorkLog {
   createdAt?: Date;
   invoiced?: boolean;
   isArchived?: boolean;
-  clientSignature?: string; // Champ pour la signature client
-  tasksPerformed?: {  // Add the missing tasksPerformed property
+  clientSignature?: string;
+  tasksPerformed?: {
     watering?: 'none' | 'on' | 'off';
     customTasks?: Record<string, boolean>;
     tasksProgress?: Record<string, number>;
@@ -109,6 +108,14 @@ export interface WorkLog {
     manualWeeding?: boolean;
     whiteVinegar?: boolean;
   };
+  clientName?: string;
+  address?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  hourlyRate?: number;
+  linkedProjectId?: string;
+  signedQuoteAmount?: number;
+  isQuoteSigned?: boolean;
 }
 
 export interface Team {

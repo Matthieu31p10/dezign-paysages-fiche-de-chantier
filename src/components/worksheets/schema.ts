@@ -1,41 +1,41 @@
 
-import * as z from 'zod';
+import { z } from 'zod';
 
-// Schema pour les valeurs de la fiche vierge
-export const blankWorkSheetSchema = z.object({
-  clientName: z.string().min(1, { message: "Nom du client requis" }),
-  address: z.string().min(1, { message: "Adresse requise" }),
-  contactPhone: z.string().optional(),
-  contactEmail: z.string().optional(),
-  date: z.date({
-    required_error: "Date requise",
-  }),
-  personnel: z.array(z.string()).min(1, { message: "Au moins une personne requise" }),
-  departure: z.string().min(1, { message: "Heure de départ requise" }),
-  arrival: z.string().min(1, { message: "Heure d'arrivée requise" }),
-  end: z.string().min(1, { message: "Heure de fin requise" }),
-  breakTime: z.string().default("00:30"),
-  totalHours: z.number(),
-  hourlyRate: z.number().optional(),
-  wasteManagement: z.string().default('none'),
-  teamFilter: z.string().optional(),
-  linkedProjectId: z.string().optional(),
-  notes: z.string().optional(),
-  tasks: z.string().optional(),
-  consumables: z.array(
-    z.object({
-      supplier: z.string().optional(),
-      product: z.string().optional(),
-      unit: z.string().optional(),
-      quantity: z.number(),
-      unitPrice: z.number(),
-      totalPrice: z.number()
-    })
-  ).optional(),
-  vatRate: z.enum(["10", "20"]).default("20"),
-  signedQuote: z.boolean().default(false),
-  quoteValue: z.number().optional(), // Champ pour la valeur du devis HT
-  clientSignature: z.string().optional() // Champ pour la signature du client
+// Create a schema for consumables
+const ConsumableSchema = z.object({
+  id: z.string().optional(),
+  supplier: z.string().optional(),
+  product: z.string().optional(),
+  unit: z.string().optional(),
+  quantity: z.number().default(0),
+  unitPrice: z.number().default(0),
+  totalPrice: z.number().default(0),
 });
 
-export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;
+// Define the blank work sheet schema
+export const BlankWorkSheetSchema = z.object({
+  id: z.string().optional(),
+  clientName: z.string().optional(),
+  address: z.string().optional(),
+  contactPhone: z.string().optional(),
+  contactEmail: z.string().optional(),
+  date: z.date(),
+  personnel: z.array(z.string()).default([]),
+  departure: z.string().optional(),
+  arrival: z.string().optional(),
+  end: z.string().optional(),
+  breakTime: z.string().optional(),
+  tasks: z.string().optional(),
+  wasteManagement: z.string().default('none'),
+  notes: z.string().optional(),
+  clientSignature: z.string().nullable().optional(),
+  consumables: z.array(ConsumableSchema).default([]),
+  totalHours: z.number().default(0),
+  hourlyRate: z.number().default(0),
+  signedQuoteAmount: z.number().default(0),
+  isQuoteSigned: z.boolean().default(false),
+  linkedProjectId: z.string().optional(),
+});
+
+// Create a type from the schema
+export type BlankWorkSheetValues = z.infer<typeof BlankWorkSheetSchema>;
