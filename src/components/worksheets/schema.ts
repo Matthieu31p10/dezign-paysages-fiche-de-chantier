@@ -32,10 +32,8 @@ export const BlankWorkSheetSchema = z.object({
   consumables: z.array(ConsumableSchema).default([]),
   totalHours: z.number().default(0),
   hourlyRate: z.number().default(0),
-  teamFilter: z.string().default('all'),
-  vatRate: z.enum(["10", "20"]).default("20"),
-  signedQuote: z.boolean().default(false),
-  quoteValue: z.number().default(0),
+  signedQuoteAmount: z.number().default(0),
+  isQuoteSigned: z.boolean().default(false),
   linkedProjectId: z.string().optional(),
 });
 

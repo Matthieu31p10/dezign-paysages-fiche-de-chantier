@@ -1,55 +1,115 @@
 
-import React, { createContext, useContext, useState } from 'react';
-import { AuthState, User, UserRole } from '@/types/models';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, UserRole, AuthState } from '@/types/models';
 import { AuthContextType } from './types';
+import { toast } from 'sonner';
+import { useSettings } from './SettingsContext';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Local storage key
 const AUTH_STORAGE_KEY = 'landscaping-auth';
 
+// Default admin user
+const DEFAULT_ADMIN: User = {
+  id: 'admin-default',
+  username: 'admin',
+  password: 'admin',
+  role: 'admin',
+  createdAt: new Date(),
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize state from localStorage if available
-  const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-  const initialAuth: AuthState = storedAuth 
-    ? JSON.parse(storedAuth) 
-    : { currentUser: null, isAuthenticated: false };
+  const [auth, setAuth] = useState<AuthState>({
+    currentUser: null,
+    isAuthenticated: false,
+  });
+  const { settings, updateSettings } = useSettings();
 
-  const [auth, setAuth] = useState<AuthState>(initialAuth);
-  const [users, setUsers] = useState<User[]>([]);
+  // Ensure default admin user exists
+  useEffect(() => {
+    const currentUsers = settings.users || [];
+    if (currentUsers.length === 0) {
+      updateSettings({
+        users: [DEFAULT_ADMIN]
+      });
+    }
+  }, [settings, updateSettings]);
 
-  // Login functionality
+  // Load auth data from localStorage on initial render
+  useEffect(() => {
+    try {
+      const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (storedAuth) {
+        const parsedAuth = JSON.parse(storedAuth);
+        // Vérifier si l'utilisateur existe toujours dans les paramètres
+        const users = settings.users || [];
+        if (parsedAuth.currentUser && users.some(u => u.id === parsedAuth.currentUser.id)) {
+          setAuth(parsedAuth);
+        } else {
+          // Si l'utilisateur n'existe plus, déconnexion
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading auth from localStorage:', error);
+      // En cas d'erreur, supprimer les données potentiellement corrompues
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, [settings.users]);
+
+  // Save auth data to localStorage whenever it changes
+  useEffect(() => {
+    if (auth.isAuthenticated && auth.currentUser) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+    } else if (!auth.isAuthenticated) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, [auth]);
+
   const login = (username: string, password: string): boolean => {
-    // Simplified login - replace with real authentication in production
-    if (username === 'admin' && password === 'admin') {
-      const user: User = {
-        id: '1',
-        username: 'admin',
-        password: 'admin', // In a real app, this would be hashed
-        role: 'admin',
-        name: 'Administrator',
-        createdAt: new Date(),
-      };
-      
-      const newAuth = { currentUser: user, isAuthenticated: true };
-      setAuth(newAuth);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newAuth));
+    if (!username || !password) {
+      toast.error('Veuillez remplir tous les champs');
+      return false;
+    }
+    
+    const users = settings.users || [];
+    const user = users.find(
+      (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+    );
+
+    if (user) {
+      setAuth({
+        currentUser: user,
+        isAuthenticated: true,
+      });
+      toast.success(`Bienvenue, ${user.name || user.username}`);
       return true;
     }
+
+    toast.error('Identifiant ou mot de passe incorrect');
     return false;
   };
 
-  // Logout functionality
   const logout = () => {
-    setAuth({ currentUser: null, isAuthenticated: false });
-    localStorage.removeItem(AUTH_STORAGE_KEY);
+    setAuth({
+      currentUser: null,
+      isAuthenticated: false,
+    });
+    toast.success('Déconnexion réussie');
   };
 
-  // Add a new user
   const addUser = (userData: Omit<User, 'id' | 'createdAt'>): User | null => {
-    // Check if username already exists
-    const existingUser = users.find(user => user.username === userData.username);
-    if (existingUser) return null;
+    if (!userData.username || !userData.password) {
+      toast.error('Le nom d\'utilisateur et le mot de passe sont obligatoires');
+      return null;
+    }
+    
+    const users = settings.users || [];
+    if (users.some((u) => u.username.toLowerCase() === userData.username.toLowerCase())) {
+      toast.error('Ce nom d\'utilisateur existe déjà');
+      return null;
+    }
 
     const newUser: User = {
       ...userData,
@@ -57,55 +117,92 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date(),
     };
 
-    setUsers(prev => [...prev, newUser]);
+    const updatedUsers = [...users, newUser];
+    updateSettings({
+      users: updatedUsers,
+    });
+
+    toast.success('Utilisateur ajouté avec succès');
     return newUser;
   };
 
-  // Update a user
   const updateUser = (updatedUser: User) => {
-    setUsers(prev => 
-      prev.map(user => user.id === updatedUser.id ? updatedUser : user)
+    if (!updatedUser.username) {
+      toast.error('Le nom d\'utilisateur est obligatoire');
+      return;
+    }
+    
+    const users = settings.users || [];
+    // Vérifier si le nom d'utilisateur existe déjà pour un autre utilisateur
+    const usernameTaken = users.some(
+      (u) => u.id !== updatedUser.id && u.username.toLowerCase() === updatedUser.username.toLowerCase()
     );
+    
+    if (usernameTaken) {
+      toast.error('Ce nom d\'utilisateur existe déjà');
+      return;
+    }
+
+    const updatedUsers = users.map((user) =>
+      user.id === updatedUser.id ? updatedUser : user
+    );
+
+    updateSettings({
+      users: updatedUsers,
+    });
+
+    if (auth.currentUser && auth.currentUser.id === updatedUser.id) {
+      setAuth({
+        ...auth,
+        currentUser: updatedUser,
+      });
+    }
+
+    toast.success('Utilisateur mis à jour avec succès');
   };
 
-  // Delete a user
   const deleteUser = (id: string) => {
-    setUsers(prev => prev.filter(user => user.id !== id));
+    if (id === 'admin-default') {
+      toast.error('Impossible de supprimer l\'administrateur par défaut');
+      return;
+    }
+
+    if (auth.currentUser && auth.currentUser.id === id) {
+      toast.error('Impossible de supprimer votre propre compte');
+      return;
+    }
+
+    const users = settings.users || [];
+    const updatedUsers = users.filter((user) => user.id !== id);
+
+    updateSettings({
+      users: updatedUsers,
+    });
+
+    toast.success('Utilisateur supprimé avec succès');
   };
 
-  // Get the current user
   const getCurrentUser = (): User | null => {
     return auth.currentUser;
   };
 
-  // Check if the current user has the required role
   const canUserAccess = (requiredRole: UserRole): boolean => {
-    if (!auth.currentUser) return false;
-    
-    const userRole = auth.currentUser.role;
-    if (userRole === 'admin') return true;
-    if (userRole === 'manager' && requiredRole !== 'admin') return true;
-    if (userRole === 'user' && requiredRole === 'user') return true;
-    
-    return false;
-  };
+    if (!auth.isAuthenticated || !auth.currentUser) {
+      return false;
+    }
 
-  // Update a user's permissions
-  const updateUserPermissions = (userId: string, permissions: Record<string, boolean>) => {
-    setUsers(prev => 
-      prev.map(user => {
-        if (user.id === userId) {
-          return {
-            ...user,
-            permissions: {
-              ...(user.permissions || {}),
-              ...permissions,
-            },
-          };
-        }
-        return user;
-      })
-    );
+    const userRole = auth.currentUser.role;
+
+    switch (requiredRole) {
+      case 'user':
+        return true;
+      case 'manager':
+        return userRole === 'manager' || userRole === 'admin';
+      case 'admin':
+        return userRole === 'admin';
+      default:
+        return false;
+    }
   };
 
   return (
@@ -119,8 +216,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteUser,
         getCurrentUser,
         canUserAccess,
-        users,
-        updateUserPermissions,
       }}
     >
       {children}

@@ -1,14 +1,14 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BlankWorkSheetSchema, BlankWorkSheetValues } from '../../schema';
+import { blankWorkSheetSchema, BlankWorkSheetValues } from '../../schema';
 
 /**
  * Hook to initialize the blank worksheet form with default values
  */
 export const useFormInitialization = () => {
   const form = useForm<BlankWorkSheetValues>({
-    resolver: zodResolver(BlankWorkSheetSchema),
+    resolver: zodResolver(blankWorkSheetSchema),
     defaultValues: {
       clientName: '',
       address: '',

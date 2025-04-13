@@ -2,37 +2,48 @@
 import { WorkLog } from '@/types/models';
 
 /**
- * Generates a unique blank sheet ID with the DZFV prefix
- * Example: DZFV20250101001 for the first sheet of January 1, 2025
+ * Generates a unique ID for blank worksheets based on the existing worklog IDs
+ * Format: DZFV + padded number (e.g., DZFV00001)
  */
 export const generateUniqueBlankSheetId = (workLogs: WorkLog[] = []): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const datePrefix = `DZFV${year}${month}${day}`;
+  // Find the highest number used for blank sheets
+  let maxNumber = 0;
   
-  // Find existing sheet IDs with the same date prefix and get the highest sequence number
-  const existingIds = workLogs
-    .filter(log => log.projectId && log.projectId.startsWith(datePrefix))
-    .map(log => {
-      const seqStr = log.projectId?.substring(datePrefix.length) || '';
-      return parseInt(seqStr) || 0;
-    });
-
-  // Get the highest sequence number or default to 0 if none found
-  const highestSeq = existingIds.length > 0 ? Math.max(...existingIds) : 0;
+  workLogs.forEach(log => {
+    // Chercher à la fois les anciens formats (blank-) et les nouveaux (DZFV)
+    if (log.projectId) {
+      if (log.projectId.startsWith('DZFV')) {
+        const numberPart = log.projectId.substring(4); // Extract the numeric part after "DZFV"
+        const number = parseInt(numberPart, 10);
+        if (!isNaN(number) && number > maxNumber) {
+          maxNumber = number;
+        }
+      }
+      // Conversion des anciens IDs si nécessaire
+      else if (log.projectId.startsWith('blank-')) {
+        // Maintenir la séquence en considérant les anciens IDs
+        maxNumber = Math.max(maxNumber, 1);
+      }
+    }
+  });
   
-  // Create a new ID with incremented sequence
-  const nextSeq = highestSeq + 1;
-  const sequenceStr = String(nextSeq).padStart(3, '0');
-  
-  return `${datePrefix}${sequenceStr}`;
+  // Create a new ID with the next number
+  const nextNumber = maxNumber + 1;
+  const paddedNumber = nextNumber.toString().padStart(5, '0');
+  return `DZFV${paddedNumber}`;
 };
 
 /**
- * Generates a temporary ID for new work logs
+ * Generates a temporary ID for a new worksheet before it's saved
  */
 export const generateTemporaryId = (): string => {
-  return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  return `temp-${Date.now()}`;
+};
+
+/**
+ * Vérifie si un projectId correspond à une fiche vierge
+ */
+export const isBlankWorksheet = (projectId?: string): boolean => {
+  if (!projectId) return false;
+  return projectId.startsWith('DZFV') || projectId.startsWith('blank-');
 };
