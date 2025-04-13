@@ -17,6 +17,7 @@ export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos
   yPos += 10;
   
   // Récupérer les données de taux horaire et TVA depuis les notes si non fournies
+  // Use data.hourlyRate directly instead of data.workLog.hourlyRate
   let hourlyRate = data.hourlyRate || 0;
   let vatRate = data.vatRate || 20;
   let quoteValue = data.quoteValue || 0;

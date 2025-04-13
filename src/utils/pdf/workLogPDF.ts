@@ -141,7 +141,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     checkAndAddPage(50); // Hauteur estimée pour le bilan
     
     // Section bilan - pour les fiches vierges, calculer en fonction du nombre de personnel
-    if (data.pdfOptions?.includeSummary && data.workLog.hourlyRate && data.workLog.timeTracking?.totalHours) {
+    // Use data.hourlyRate and data.workLog.timeTracking separately
+    if (data.pdfOptions?.includeSummary && data.hourlyRate && data.workLog.timeTracking?.totalHours) {
       yPos = drawSummarySection(pdf, data, margin, yPos, contentWidth);
     }
     
