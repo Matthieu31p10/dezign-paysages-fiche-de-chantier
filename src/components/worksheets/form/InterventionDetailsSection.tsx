@@ -105,7 +105,7 @@ const InterventionDetailsSection: React.FC = () => {
                 <FormLabel>Personnel</FormLabel>
                 <FormControl>
                   <PersonnelDialog 
-                    selectedPersonnel={field.value} 
+                    selectedPersonnel={field.value || []} 
                     onChange={handlePersonnelChange}
                   />
                 </FormControl>

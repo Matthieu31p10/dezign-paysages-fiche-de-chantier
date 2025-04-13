@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -13,21 +14,15 @@ import { WorkLogsProvider } from './context/WorkLogsContext';
 import { ProjectsProvider } from './context/ProjectsContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { TeamsProvider } from './context/TeamsContext';
-import { UsersProvider } from './context/UsersContext';
-import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import WorkLogs from './pages/WorkLogs';
 import Projects from './pages/Projects';
 import Reports from './pages/Reports';
-import Admin from './pages/Admin';
-import Profile from './pages/Profile';
-import ProtectedRoute from './components/ProtectedRoute';
-import { initializeFirebase } from './firebase';
 import './App.css';
 import BlankWorkSheetsPage from './pages/blank-worksheets';
 
 const AppContent = () => {
-  const { user } = useAuth();
+  const { auth } = useAuth();
   const location = useLocation();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [transitionStage, setTransitionStage] = useState("fadeIn");
@@ -46,13 +41,13 @@ const AppContent = () => {
   return (
     <div className={`${transitionStage} route-transition`}>
       <Routes location={displayLocation}>
-        <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
+        <Route path="/login" element={!auth?.isAuthenticated ? <div>Login Page</div> : <Navigate to="/dashboard" />} />
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <div>Dashboard</div>
             </ProtectedRoute>
           }
         />
@@ -100,7 +95,7 @@ const AppContent = () => {
           path="/admin"
           element={
             <ProtectedRoute>
-              <Admin />
+              <div>Admin</div>
             </ProtectedRoute>
           }
         />
@@ -108,7 +103,7 @@ const AppContent = () => {
           path="/profile"
           element={
             <ProtectedRoute>
-              <Profile />
+              <div>Profile</div>
             </ProtectedRoute>
           }
         />
@@ -119,24 +114,18 @@ const AppContent = () => {
 };
 
 const App: React.FC = () => {
-  useEffect(() => {
-    initializeFirebase();
-  }, []);
-
   return (
     <AppProvider>
       <SettingsProvider>
         <TeamsProvider>
-          <UsersProvider>
-            <ProjectsProvider>
-              <WorkLogsProvider>
-                <Router>
-                  <AppContent />
-                </Router>
-                <Toaster position="bottom-center" richColors closeButton />
-              </WorkLogsProvider>
-            </ProjectsProvider>
-          </UsersProvider>
+          <ProjectsProvider>
+            <WorkLogsProvider>
+              <Router>
+                <AppContent />
+              </Router>
+              <Toaster position="bottom-center" richColors closeButton />
+            </WorkLogsProvider>
+          </ProjectsProvider>
         </TeamsProvider>
       </SettingsProvider>
     </AppProvider>
