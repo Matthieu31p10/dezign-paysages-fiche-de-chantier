@@ -1,42 +1,48 @@
 
-// Extract client name from notes
-export const extractClientName = (notes: string): string => {
-  const match = notes.match(/CLIENT:\s*(.+)/);
-  return match ? match[1].trim() : '';
-};
-
-// Extract address from notes
-export const extractAddress = (notes: string): string => {
-  const match = notes.match(/ADRESSE:\s*(.+)/);
-  return match ? match[1].trim() : '';
-};
-
-// Extract description from notes
-export const extractDescription = (notes: string): string => {
-  const match = notes.match(/DESCRIPTION:\s*(.+)/);
-  return match ? match[1].trim() : '';
-};
-
-// Extract linked project ID from notes
-export const extractLinkedProjectId = (notes: string): string | null => {
-  const match = notes.match(/ID PROJET:\s*(.+)/);
-  return match && match[1].trim() !== '' ? match[1].trim() : null;
-};
+// Functions to extract information from notes
 
 // Extract hourly rate from notes
-export const extractHourlyRate = (notes: string): number | null => {
-  const match = notes.match(/TAUX HORAIRE:\s*(\d+(\.\d+)?)/);
-  return match ? parseFloat(match[1]) : null;
+export const extractHourlyRate = (notes: string): number | string | null => {
+  if (!notes) return null;
+  
+  const hourlyRateRegex = /taux\s*horaire\s*:?\s*(\d+(?:[.,]\d+)?)/i;
+  const match = notes.match(hourlyRateRegex);
+  
+  if (match && match[1]) {
+    // Replace comma with dot for proper parsing
+    const rateStr = match[1].replace(',', '.');
+    return parseFloat(rateStr);
+  }
+  
+  return null;
 };
 
-// Extract signed quote status from notes
-export const extractSignedQuote = (notes: string): boolean => {
-  const match = notes.match(/DEVIS SIGNÉ:\s*(\w+)/);
-  return match ? match[1].toLowerCase() === 'oui' : false;
+// Extract VAT rate from notes
+export const extractVatRate = (notes: string): '10' | '20' => {
+  if (!notes) return '20';
+  
+  const vatRegex = /tva\s*:?\s*(\d+)%?/i;
+  const match = notes.match(vatRegex);
+  
+  if (match && match[1] === '10') {
+    return '10';
+  }
+  
+  return '20';
 };
 
 // Extract quote value from notes
-export const extractQuoteValue = (notes: string): number | null => {
-  const match = notes.match(/VALEUR DEVIS:\s*(\d+(\.\d+)?)/);
-  return match ? parseFloat(match[1]) : null;
+export const extractQuoteValue = (notes: string): number | string | null => {
+  if (!notes) return null;
+  
+  const quoteRegex = /devis\s*:?\s*(\d+(?:[.,]\d+)?)/i;
+  const match = notes.match(quoteRegex);
+  
+  if (match && match[1]) {
+    // Replace comma with dot for proper parsing
+    const valueStr = match[1].replace(',', '.');
+    return parseFloat(valueStr);
+  }
+  
+  return null;
 };

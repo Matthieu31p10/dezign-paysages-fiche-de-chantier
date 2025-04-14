@@ -36,10 +36,15 @@ export const useProjectFiltering = (projectInfos: ProjectInfo[], workLogs: WorkL
         const logsA = workLogs.filter(log => log.projectId === a.id);
         const logsB = workLogs.filter(log => log.projectId === b.id);
         
+        // Fix: use correct types with getDaysSinceLastEntry
         const daysA = getDaysSinceLastEntry(logsA) || Number.MAX_SAFE_INTEGER;
         const daysB = getDaysSinceLastEntry(logsB) || Number.MAX_SAFE_INTEGER;
         
-        return daysA - daysB;
+        // Make sure daysA and daysB are numbers before the operation
+        const numDaysA = typeof daysA === 'number' ? daysA : Number.MAX_SAFE_INTEGER;
+        const numDaysB = typeof daysB === 'number' ? daysB : Number.MAX_SAFE_INTEGER;
+        
+        return numDaysA - numDaysB;
       }
       return 0;
     });

@@ -66,7 +66,7 @@ const LastVisitCell: React.FC<{
     <div className="flex flex-col items-center">
       <span className="text-sm">{formatDate(lastVisitDate)}</span>
       <span className="text-xs text-muted-foreground">
-        (il y a {daysSinceLastVisit} jours)
+        {daysSinceLastVisit !== null ? `(il y a ${daysSinceLastVisit} jours)` : ''}
       </span>
     </div>
   );
@@ -101,6 +101,7 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
           {projects.map(project => {
             const projectLogs = workLogs.filter(log => log.projectId === project.id);
             const teamName = teams.find(t => t.id === project.team)?.name;
+            // Fix: pass projectLogs as array
             const daysSinceLastVisit = getDaysSinceLastEntry(projectLogs);
             
             // Calculate hours with proper types
@@ -108,7 +109,7 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
               return sum + (log.timeTracking?.totalHours || 0);
             }, 0);
             
-            // Fix the calculateAverageHoursPerVisit call by providing both arguments
+            // Calculate average hours - avoid division by zero
             const averageHours = projectLogs.length > 0
               ? totalHours / projectLogs.length
               : 0;

@@ -25,6 +25,7 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
     ? Math.min(100, Math.round((totalHours / project.annualTotalHours) * 100))
     : 0;
   
+  // Fix: pass workLogs as array instead of string
   const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
   // Calculate average hours per visit directly

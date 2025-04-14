@@ -1,6 +1,6 @@
 
 import { PDFData } from '../types';
-import { extractHourlyRate, extractVatRate, extractQuoteValue } from '@/utils/helpers';
+import { extractHourlyRate, extractVatRate, extractQuoteValue } from '@/utils/notes-extraction';
 
 export const drawSummarySection = (pdf: any, data: PDFData, margin: number, yPos: number, contentWidth: number): number => {
   if (!data.pdfOptions?.includeSummary) {

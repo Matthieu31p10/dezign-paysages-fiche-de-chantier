@@ -13,3 +13,31 @@ export * from './format-utils';
 
 // Re-export statistics utility functions
 export * from './stats-utils';
+
+// Function to get days since last entry from work logs
+export const getDaysSinceLastEntry = (workLogs: any[]): number | null => {
+  if (!workLogs || workLogs.length === 0) return null;
+  
+  // Find the most recent date
+  const dates = workLogs.map(log => new Date(log.date));
+  const mostRecentDate = new Date(Math.max(...dates.map(date => date.getTime())));
+  
+  // Calculate days difference
+  const today = new Date();
+  const diffTime = today.getTime() - mostRecentDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
+};
+
+// Utility function to calculate average hours per visit
+export const calculateAverageHoursPerVisit = (workLogs: any[]): number => {
+  if (!workLogs || workLogs.length === 0) return 0;
+  
+  const totalHours = workLogs.reduce((sum, log) => {
+    const hours = log.timeTracking?.totalHours || 0;
+    return sum + (typeof hours === 'string' ? parseFloat(hours) : hours);
+  }, 0);
+  
+  return totalHours / workLogs.length;
+};
