@@ -57,22 +57,34 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const registrationTime = extractRegistrationTime(sheet.notes || '');
   
   // Use direct properties if available, otherwise extract from notes
-  const hourlyRate = sheet.hourlyRate || extractHourlyRate(sheet.notes || '') || 0;
-  const hasHourlyRate = hourlyRate > 0;
+  const extractedHourlyRate = extractHourlyRate(sheet.notes || '') || 0;
+  const hourlyRate = typeof sheet.hourlyRate === 'number' ? sheet.hourlyRate : extractedHourlyRate;
+  const hasHourlyRate = typeof hourlyRate === 'number' && hourlyRate > 0;
   
   const signedQuote = sheet.isQuoteSigned || extractSignedQuote(sheet.notes || '');
-  const quoteValue = sheet.signedQuoteAmount || extractQuoteValue(sheet.notes || '') || 0;
-  const hasQuoteValue = quoteValue > 0;
+  const extractedQuoteValue = extractQuoteValue(sheet.notes || '') || 0;
+  const quoteValue = typeof sheet.signedQuoteAmount === 'number' ? sheet.signedQuoteAmount : extractedQuoteValue;
+  const hasQuoteValue = typeof quoteValue === 'number' && quoteValue > 0;
   const hasSignature = !!sheet.clientSignature;
   
-  // Calculer le coût total (heures × taux horaire × nombre de personnes)
+  // Calculate the total cost (hours × hourly rate × number of people)
   const totalHours = sheet.timeTracking?.totalHours || 0;
   const personnelCount = sheet.personnel?.length || 1;
-  const totalCost = totalHours * hourlyRate * personnelCount;
+  // Ensure all values in calculation are numbers
+  const calcTotalHours = typeof totalHours === 'number' ? totalHours : parseFloat(totalHours as string) || 0;
+  const totalCost = calcTotalHours * hourlyRate * personnelCount;
 
   const handleInvoiceToggle = (checked: boolean) => {
     updateWorkLog(sheet.id, { invoiced: checked });
     toast.success(`Fiche ${checked ? 'marquée comme facturée' : 'marquée comme non facturée'}`);
+  };
+
+  // Helper function to ensure numbers for formatting
+  const formatNumberValue = (value: string | number): string => {
+    if (typeof value === 'number') {
+      return value.toFixed(2);
+    }
+    return parseFloat(value || '0').toFixed(2);
   };
 
   return (
@@ -148,14 +160,14 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               {hasHourlyRate && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
                   <Euro className="h-3 w-3 text-blue-600" />
-                  {hourlyRate.toFixed(2)}€/h
+                  {formatNumberValue(hourlyRate)}€/h
                 </Badge>
               )}
               
               {totalHours > 0 && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs bg-violet-50">
                   <Clock className="h-3 w-3 text-violet-600" />
-                  {totalHours.toFixed(1)}h × {personnelCount} = {(totalHours * personnelCount).toFixed(1)}h
+                  {formatNumberValue(calcTotalHours)}h × {personnelCount} = {(calcTotalHours * personnelCount).toFixed(1)}h
                 </Badge>
               )}
               
@@ -169,7 +181,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
               {hasQuoteValue && (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
                   <Landmark className="h-3 w-3 text-blue-600" />
-                  Devis: {formatNumber(quoteValue)}€ HT
+                  Devis: {formatNumber(quoteValue as number)}€ HT
                 </Badge>
               )}
               
@@ -209,10 +221,10 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
 
             <div className="text-right mr-2 bg-muted/30 px-3 py-1 rounded-md">
               <div className="text-sm font-medium">
-                {totalHours.toFixed(1)} h
+                {formatNumberValue(calcTotalHours)} h
               </div>
               <div className="text-xs text-muted-foreground">
-                {personnelCount > 1 ? `× ${personnelCount} = ${(totalHours * personnelCount).toFixed(1)}h` : 'Durée'}
+                {personnelCount > 1 ? `× ${personnelCount} = ${(calcTotalHours * personnelCount).toFixed(1)}h` : 'Durée'}
               </div>
             </div>
             

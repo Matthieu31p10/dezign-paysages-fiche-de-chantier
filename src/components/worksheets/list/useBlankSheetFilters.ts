@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { WorkLog } from '@/types/models';
 import { formatDate, getCurrentYear, filterWorkLogsByYear, getYearsFromWorkLogs } from '@/utils/helpers';
-import { extractClientName, extractAddress, extractLinkedProjectId } from '@/utils/helpers';
+import { extractClientName, extractAddress, extractLinkedProjectId } from '@/utils/notes-extraction';
 
 export const useBlankSheetFilters = (workLogs: WorkLog[], getProjectById: (id: string) => any) => {
   const [search, setSearch] = useState('');
