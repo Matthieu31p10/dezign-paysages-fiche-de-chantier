@@ -2,14 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { useProjects } from '@/context/ProjectsContext';
 import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHeader';
 import BlankWorkSheetAlert from '@/components/worksheets/page/BlankWorkSheetAlert';
 import BlankWorkSheetList from '@/components/worksheets/list/BlankWorkSheetList';
-import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
+import BlankWorkSheetForm from '@/components/worksheets/form/BlankWorkSheetForm';
 import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkSheetTabContent';
+import OriginalBlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 
 const BlankWorkSheets = () => {
   const navigate = useNavigate();
@@ -24,6 +26,9 @@ const BlankWorkSheets = () => {
   
   // State to store the ID of the worksheet being edited
   const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
+  
+  // Dialog state for new worksheet creation
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   
   // Filter only blank worksheets
   const blankWorkSheets = workLogs.filter(log => 
@@ -71,12 +76,13 @@ const BlankWorkSheets = () => {
     toast.success(editingWorkLogId ? "Fiche modifiée avec succès" : "Fiche créée avec succès");
     setActiveTab('list');
     setEditingWorkLogId(null);
+    setIsNewDialogOpen(false);
   };
 
   const handleCreateNew = () => {
+    setIsNewDialogOpen(true);
     setEditingWorkLogId(null);
-    setActiveTab('new');
-  }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -105,22 +111,39 @@ const BlankWorkSheets = () => {
           </TabsTrigger>
         </TabsList>
         
-        <BlankWorkSheetList 
-          activeTab={activeTab}
-          blankWorkSheets={blankWorkSheets}
-          handleCreateNew={handleCreateNew}
-          handleEditWorksheet={handleEditWorksheet}
-          handleExportPDF={handleExportPDF}
-          handlePrint={handlePrint}
-        />
+        <TabsContent value="list" className="p-0 border-0 mt-6">
+          <BlankWorkSheetList 
+            sheets={blankWorkSheets}
+            onEdit={handleEditWorksheet}
+            onExportPDF={handleExportPDF}
+            onPrint={handlePrint}
+            onCreateNew={handleCreateNew}
+          />
+        </TabsContent>
         
-        <BlankWorkSheetForm 
-          activeTab={activeTab}
-          editingWorkLogId={editingWorkLogId}
-          getWorkLogById={getWorkLogById}
-          handleFormSuccess={handleFormSuccess}
-        />
+        {activeTab === 'new' && (
+          <BlankWorkSheetForm 
+            editingWorkLogId={editingWorkLogId}
+            getWorkLogById={getWorkLogById}
+            handleFormSuccess={handleFormSuccess}
+          />
+        )}
       </Tabs>
+      
+      {/* Dialog pour créer une nouvelle fiche */}
+      <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <div className="py-4">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              Nouvelle fiche vierge
+            </h2>
+            <OriginalBlankWorkSheetForm 
+              onSuccess={handleFormSuccess}
+              projectInfos={activeProjects}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -65,6 +65,7 @@ export const useBlankWorksheetForm = ({
     
     if (!projectId) {
       setSelectedProject(null);
+      form.setValue('linkedProjectId', null);
       return;
     }
     
@@ -72,22 +73,24 @@ export const useBlankWorksheetForm = ({
     setSelectedProject(project || null);
     
     if (project) {
-      form.setValue('clientName', project.clientName || project.name);
-      form.setValue('address', project.address);
+      form.setValue('clientName', project.clientName || project.name || '');
+      form.setValue('address', project.address || '');
       form.setValue('contactPhone', project.contact?.phone || '');
       form.setValue('contactEmail', project.contact?.email || '');
+      form.setValue('linkedProjectId', project.id);
     }
   };
   
   const handleClearProject = () => {
     setSelectedProjectId(null);
     setSelectedProject(null);
+    form.setValue('linkedProjectId', null);
   };
   
   // Handle worklog data loading
   const { loadWorkLogData } = useWorksheetLoader({
     form,
-    getWorkLogById: (id: string) => workLogs.find(wl => wl.id === id),
+    getWorkLogById: (id: string) => workLogs.find(wl => wl.id === id) || null,
     handleProjectSelect
   });
   

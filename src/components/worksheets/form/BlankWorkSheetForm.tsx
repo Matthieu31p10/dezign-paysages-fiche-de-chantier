@@ -7,22 +7,16 @@ import { WorkLog } from '@/types/models';
 import OriginalBlankWorkSheetForm from '../BlankWorkSheetForm';
 
 interface BlankWorkSheetFormProps {
-  activeTab: string;
   editingWorkLogId: string | null;
   getWorkLogById: (id: string) => WorkLog;
   handleFormSuccess: () => void;
 }
 
 const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
-  activeTab,
   editingWorkLogId,
   getWorkLogById,
   handleFormSuccess
 }) => {
-  if (activeTab !== 'new') {
-    return null;
-  }
-  
   return (
     <TabsContent value="new" className="p-0 border-0 mt-6">
       <Card>

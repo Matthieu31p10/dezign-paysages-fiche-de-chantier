@@ -7,21 +7,26 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from '@/lib/utils';
 import { FormControl } from '@/components/ui/form';
 import { ProjectInfo } from '@/types/models';
+import { useProjects } from '@/context/ProjectsContext';
 
 interface ProjectLinkSectionProps {
   selectedProjectId: string | null;
   onProjectSelect: (projectId: string) => void;
   onClearProject: () => void;
-  projectInfos: ProjectInfo[];
+  projectInfos?: ProjectInfo[];
 }
 
 const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
   selectedProjectId,
   onProjectSelect,
   onClearProject,
-  projectInfos
+  projectInfos = []
 }) => {
   const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
+  const { getActiveProjects } = useProjects();
+  
+  // Utilisons les projets actifs du contexte si aucun projectInfos n'est fourni
+  const availableProjects = projectInfos.length > 0 ? projectInfos : getActiveProjects();
   
   return (
     <div className="space-y-4">
@@ -43,7 +48,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
               )}
             >
               {selectedProjectId ? 
-                projectInfos.find(project => project.id === selectedProjectId)?.name :
+                availableProjects.find(project => project.id === selectedProjectId)?.name :
                 "Sélectionner un projet existant..."
               }
             </Button>
@@ -55,7 +60,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
             <CommandList>
               <CommandEmpty>Aucun projet trouvé.</CommandEmpty>
               <CommandGroup>
-                {projectInfos.map(project => (
+                {availableProjects.map(project => (
                   <CommandItem
                     key={project.id}
                     value={project.id}
@@ -84,7 +89,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
       
       {selectedProjectId && (
         <div className="rounded-md bg-muted p-3 text-sm">
-          <p className="font-medium">Projet sélectionné: {projectInfos.find(p => p.id === selectedProjectId)?.name}</p>
+          <p className="font-medium">Projet sélectionné: {availableProjects.find(p => p.id === selectedProjectId)?.name}</p>
           <p className="text-muted-foreground">Les informations du client ont été préremplies.</p>
         </div>
       )}

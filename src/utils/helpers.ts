@@ -1,61 +1,32 @@
 
-// This file now acts as a central re-export file for all helper utilities
-// to maintain backward compatibility
-
-// Re-export all date helper functions
-export * from './date-helpers';
-
-// Re-export notes extraction functions
-export * from './notes-extraction';
-
-// Re-export format utility functions
-export * from './format-utils';
-
-// Re-export statistics utility functions
-export * from './stats-utils';
-
-// Re-export notes utils but avoid name conflicts
-import { extractClientName, extractAddress, extractContactPhone, extractContactEmail, 
-  extractDescription, extractHourlyRate, extractVatRate, extractSignedQuote, 
-  extractQuoteValue, extractLinkedProjectId } from './notes-utils';
-
+// Export essentials from other utility files
+export { formatDate, formatPrice, formatNumber, formatPercentage } from './format-utils';
 export { 
-  extractClientName,
-  extractAddress,
-  extractContactPhone,
-  extractContactEmail,
-  extractDescription,
-  extractHourlyRate,
-  extractVatRate,
-  extractSignedQuote,
-  extractQuoteValue,
-  extractLinkedProjectId
+  getCurrentYear, 
+  getMonthName, 
+  getLastNMonths,
+  getDaysBetweenDates,
+} from './date-utils';
+
+// Re-export from date-helpers without the duplicate
+export { 
+  filterWorkLogsByYear,
+  parseTimeString,
+  calculateHoursBetween,
+  // Note: We're excluding extractRegistrationTime which was causing the error
+} from './date-helpers';
+
+// Original helper functions
+export const truncateText = (text: string, maxLength: number): string => {
+  if (!text) return '';
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-// Function to get days since last entry from work logs
-export const getDaysSinceLastEntry = (workLogs: any[]): number | null => {
-  if (!workLogs || workLogs.length === 0) return null;
-  
-  // Find the most recent date
-  const dates = workLogs.map(log => new Date(log.date));
-  const mostRecentDate = new Date(Math.max(...dates.map(date => date.getTime())));
-  
-  // Calculate days difference
-  const today = new Date();
-  const diffTime = today.getTime() - mostRecentDate.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  return diffDays;
-};
-
-// Utility function to calculate average hours per visit
-export const calculateAverageHoursPerVisit = (workLogs: any[]): number => {
-  if (!workLogs || workLogs.length === 0) return 0;
-  
-  const totalHours = workLogs.reduce((sum, log) => {
-    const hours = log.timeTracking?.totalHours || 0;
-    return sum + (typeof hours === 'string' ? parseFloat(hours) : hours);
-  }, 0);
-  
-  return totalHours / workLogs.length;
+export const generateInitials = (name: string): string => {
+  if (!name) return '';
+  return name
+    .split(' ')
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('')
+    .substring(0, 2);
 };
