@@ -14,6 +14,22 @@ export * from './format-utils';
 // Re-export statistics utility functions
 export * from './stats-utils';
 
+// Re-export notes utils but rename the duplicate function to avoid conflicts
+import { extractRegistrationTime as extractRegTimeFromNotes } from './notes-utils';
+export { 
+  extractClientName,
+  extractAddress,
+  extractContactPhone,
+  extractContactEmail,
+  extractDescription,
+  extractHourlyRate,
+  extractVatRate,
+  extractSignedQuote,
+  extractQuoteValue,
+  extractLinkedProjectId,
+  extractRegTimeFromNotes as extractRegistrationTimeFromNotes
+} from './notes-utils';
+
 // Function to get days since last entry from work logs
 export const getDaysSinceLastEntry = (workLogs: any[]): number | null => {
   if (!workLogs || workLogs.length === 0) return null;
