@@ -1,8 +1,9 @@
 
 import { useState, useMemo } from 'react';
 import { WorkLog } from '@/types/models';
-import { formatDate, getCurrentYear, filterWorkLogsByYear, getYearsFromWorkLogs } from '@/utils/helpers';
-import { extractClientName, extractAddress, extractLinkedProjectId } from '@/utils/helpers';
+import { formatDate, getCurrentYear } from '@/utils/helpers';
+import { getYearsFromWorkLogs } from '@/utils/date-helpers';
+import { extractClientName, extractAddress, extractLinkedProjectId } from '@/utils/notes-extraction';
 
 // Filter for blank worksheets
 const useBlankWorksheetFilter = (workLogs: WorkLog[]) => {
@@ -24,7 +25,10 @@ const useAvailableYears = (worksheets: WorkLog[]) => {
 const useYearFilter = (worksheets: WorkLog[], selectedYear: number) => {
   return useMemo(() => {
     return selectedYear 
-      ? filterWorkLogsByYear(worksheets, selectedYear) 
+      ? worksheets.filter(log => {
+          const date = new Date(log.date);
+          return date.getFullYear() === selectedYear;
+        })
       : worksheets;
   }, [worksheets, selectedYear]);
 };

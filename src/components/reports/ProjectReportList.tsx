@@ -20,7 +20,7 @@ import {
   getDaysSinceLastEntry, 
   calculateAverageHoursPerVisit,
   formatDate
-} from '@/utils/helpers';
+} from '@/utils/date-helpers';
 import { cn } from '@/lib/utils';
 
 // Create smaller components to improve structure
@@ -110,9 +110,7 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
             }, 0);
             
             // Calculate average hours - avoid division by zero
-            const averageHours = projectLogs.length > 0
-              ? totalHours / projectLogs.length
-              : 0;
+            const averageHours = calculateAverageHoursPerVisit(projectLogs);
             
             // Get the date of last visit with proper typing
             const lastVisitDate = projectLogs.length > 0 

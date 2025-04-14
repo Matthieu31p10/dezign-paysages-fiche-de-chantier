@@ -1,20 +1,41 @@
 
 // Export essentials from other utility files
-export { formatDate, formatPrice, formatNumber, formatPercentage } from './format-utils';
+export { 
+  formatDate, 
+  formatPrice, 
+  formatNumber, 
+  formatPercentage, 
+  formatTime,
+  formatMonthYear 
+} from './format-utils';
+
 export { 
   getCurrentYear, 
+  getCurrentMonth,
   getMonthName, 
   getLastNMonths,
   getDaysBetweenDates,
-} from './date-utils';
-
-// Re-export from date-helpers without the duplicate
-export { 
+  getDaysSinceLastEntry,
+  calculateAverageHoursPerVisit,
   filterWorkLogsByYear,
+  groupWorkLogsByMonth,
+  getYearsFromWorkLogs,
   parseTimeString,
-  calculateHoursBetween,
-  // Note: We're excluding extractRegistrationTime which was causing the error
+  calculateHoursBetween
 } from './date-helpers';
+
+// Export from notes-extraction
+export {
+  extractClientName,
+  extractAddress,
+  extractDescription,
+  extractLinkedProjectId,
+  extractRegistrationTime,
+  extractHourlyRate,
+  extractQuoteValue,
+  extractSignedQuote,
+  extractVatRate
+} from './notes-extraction';
 
 // Original helper functions
 export const truncateText = (text: string, maxLength: number): string => {

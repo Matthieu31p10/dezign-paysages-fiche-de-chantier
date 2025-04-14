@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import WorkLogList from '@/components/worklogs/WorkLogList';
-import { getCurrentYear, getCurrentMonth, getYearsFromWorkLogs } from '@/utils/helpers';
+import { getCurrentYear } from '@/utils/date-helpers';
+import { getYearsFromWorkLogs } from '@/utils/date-helpers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, CalendarX, Filter, Calendar, CalendarIcon, UsersIcon } from 'lucide-react';
@@ -66,6 +67,11 @@ const WorkLogs = () => {
       return matchesProject && matchesTeam && matchesYear && matchesMonth && matchesWeek && matchesDay;
     });
   }, [workLogs, selectedProjectId, selectedTeamId, selectedYear, selectedMonth, timeFilter, projectInfos, currentWeek]);
+  
+  // Obtenir le mois courant (1-12)
+  const getCurrentMonth = () => {
+    return new Date().getMonth() + 1; // Date.getMonth() renvoie 0-11
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">

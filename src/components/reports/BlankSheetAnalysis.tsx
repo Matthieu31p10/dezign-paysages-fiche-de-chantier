@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { WorkLog } from '@/types/models';
-import { filterWorkLogsByYear } from '@/utils/helpers';
+import { filterWorkLogsByYear, formatNumber, formatPrice } from '@/utils/helpers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatNumber, formatPrice } from '@/utils/helpers';
 import { FileText, Users, CreditCard, Ban } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
@@ -29,20 +28,22 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
   const nonInvoicedSheets = yearlyBlankSheets.filter(sheet => !sheet.invoiced);
   
   const invoicedAmount = invoicedSheets.reduce((total, sheet) => 
-    total + (sheet.signedQuoteAmount || 0), 0);
+    total + (typeof sheet.signedQuoteAmount === 'number' ? sheet.signedQuoteAmount : 0), 0);
   
   const nonInvoicedAmount = nonInvoicedSheets.reduce((total, sheet) => 
-    total + (sheet.signedQuoteAmount || 0), 0);
+    total + (typeof sheet.signedQuoteAmount === 'number' ? sheet.signedQuoteAmount : 0), 0);
   
   const totalAmount = invoicedAmount + nonInvoicedAmount;
   
   // Statistiques de personnel
-  const personnelCounts = {};
+  const personnelCounts: Record<string, number> = {};
   
   yearlyBlankSheets.forEach(sheet => {
     if (sheet.personnel && Array.isArray(sheet.personnel)) {
       sheet.personnel.forEach(person => {
-        personnelCounts[person] = (personnelCounts[person] || 0) + 1;
+        if (typeof person === 'string') {
+          personnelCounts[person] = (personnelCounts[person] || 0) + 1;
+        }
       });
     }
   });

@@ -4,7 +4,6 @@
 
 import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { WorkLog } from '@/types/models';
 
 // Helper function to ensure we're working with actual Date objects
 export const ensureDate = (date: string | Date): Date => {
@@ -23,13 +22,5 @@ export const isToday = (date: string | Date): boolean => {
   return isSameDay(ensureDate(date), new Date());
 };
 
-// Re-export common functions from helpers to maintain backward compatibility
-export {
-  formatDate,
-  formatTime,
-  getCurrentMonth,
-  getCurrentYear,
-  formatMonthYear,
-  getDaysSinceLastEntry,
-  groupWorkLogsByMonth
-} from './helpers';
+// Re-export du module date-helpers pour la compatibilité
+export * from './date-helpers';

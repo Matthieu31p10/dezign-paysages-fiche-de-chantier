@@ -21,13 +21,49 @@ export const getCurrentYear = (): number => {
 };
 
 // Days since last entry
-export const getDaysSinceLastEntry = (lastEntryDate: string): string => {
-  if (!lastEntryDate) return 'Aucune entrée';
-  const date = new Date(lastEntryDate);
-  return formatDistanceToNow(date, { addSuffix: true, locale: fr });
+export const getDaysSinceLastEntry = (workLogs: WorkLog[]): number | null => {
+  if (!workLogs || workLogs.length === 0) return null;
+  
+  // Trouver la date la plus récente
+  const lastEntryDate = workLogs
+    .map(log => new Date(log.date))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+  
+  // Calculer la différence en jours
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - lastEntryDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
 };
 
-// Calculate average hours per visit
+// Calculer la durée entre deux heures (ex: "08:00" et "12:00") en heures
+export const calculateHoursBetween = (startTime: string, endTime: string): number => {
+  if (!startTime || !endTime) return 0;
+  
+  const [startHours, startMinutes] = startTime.split(':').map(Number);
+  const [endHours, endMinutes] = endTime.split(':').map(Number);
+  
+  const start = startHours + startMinutes / 60;
+  const end = endHours + endMinutes / 60;
+  
+  return end - start;
+};
+
+// Parser une chaîne d'heure (ex: "08:00") en objet Date
+export const parseTimeString = (timeString: string): Date | null => {
+  if (!timeString) return null;
+  
+  const [hours, minutes] = timeString.split(':').map(Number);
+  if (isNaN(hours) || isNaN(minutes)) return null;
+  
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  
+  return date;
+};
+
+// Calculer la moyenne d'heures par visite
 export const calculateAverageHoursPerVisit = (workLogs: WorkLog[], precision: number = 1): number => {
   if (!workLogs || workLogs.length === 0) return 0;
   
@@ -77,8 +113,32 @@ export const getYearsFromWorkLogs = (workLogs: WorkLog[]): number[] => {
   return Array.from(years).sort((a, b) => b - a); // Sort descending
 };
 
-// Extract registration time from notes
-export const extractRegistrationTime = (notes: string): string | null => {
-  const match = notes.match(/HEURE D'ENREGISTREMENT:\s*(.+)/);
-  return match ? match[1].trim() : null;
+// Get month name
+export const getMonthName = (month: number): string => {
+  const date = new Date();
+  date.setMonth(month - 1);
+  return format(date, 'MMMM', { locale: fr });
+};
+
+// Get last N months
+export const getLastNMonths = (n: number): { month: number; year: number }[] => {
+  const result = [];
+  const now = new Date();
+  
+  for (let i = 0; i < n; i++) {
+    const date = new Date();
+    date.setMonth(now.getMonth() - i);
+    result.push({
+      month: date.getMonth() + 1,
+      year: date.getFullYear()
+    });
+  }
+  
+  return result;
+};
+
+// Get days between dates
+export const getDaysBetweenDates = (startDate: Date, endDate: Date): number => {
+  const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };

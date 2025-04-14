@@ -3,7 +3,7 @@ import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Building2, Clock, Home, Landmark, Users, Calendar, Timer, AlertCircle } from 'lucide-react';
-import { getDaysSinceLastEntry } from '@/utils/helpers';
+import { getDaysSinceLastEntry } from '@/utils/date-helpers';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 

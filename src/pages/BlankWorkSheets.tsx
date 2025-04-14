@@ -113,7 +113,7 @@ const BlankWorkSheets = () => {
         
         <TabsContent value="list" className="p-0 border-0 mt-6">
           <BlankWorkSheetList 
-            sheets={blankWorkSheets}
+            workLogs={blankWorkSheets}
             onEdit={handleEditWorksheet}
             onExportPDF={handleExportPDF}
             onPrint={handlePrint}

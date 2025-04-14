@@ -1,6 +1,6 @@
 
 import { WorkLog } from '@/types/models';
-import { formatMonthYear } from '@/utils/helpers';
+import { formatMonthYear } from '@/utils/format-utils';
 import WorkLogItem from './WorkLogItem';
 
 interface WorkLogMonthGroupProps {
