@@ -14,8 +14,8 @@ export * from './format-utils';
 // Re-export statistics utility functions
 export * from './stats-utils';
 
-// Re-export notes utils but rename the duplicate function to avoid conflicts
-import { extractRegistrationTime as extractRegTimeFromNotes } from './notes-utils';
+// Re-export notes utils but avoid name conflicts
+import { extractRegistrationTime as extractRegTime } from './notes-utils';
 export { 
   extractClientName,
   extractAddress,
@@ -27,7 +27,7 @@ export {
   extractSignedQuote,
   extractQuoteValue,
   extractLinkedProjectId,
-  extractRegTimeFromNotes as extractRegistrationTimeFromNotes
+  extractRegTime as extractRegistrationTimeFromNotes
 } from './notes-utils';
 
 // Function to get days since last entry from work logs

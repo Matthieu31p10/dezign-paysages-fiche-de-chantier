@@ -1,5 +1,6 @@
 
-import React, { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from "@/components/ui/badge";
 import { LinkIcon, Users, Clock, Euro, Landmark, FileCheck, FileSignature } from 'lucide-react';
 import { WorkLog, ProjectInfo } from '@/types/models';
