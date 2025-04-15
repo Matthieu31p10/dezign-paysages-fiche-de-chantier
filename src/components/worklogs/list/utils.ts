@@ -29,7 +29,7 @@ export const sortWorkLogs = (logs: WorkLog[], sortOption: string, getProjectById
 
 // Sort months in the correct order based on the sort option
 export const sortMonths = (months: string[], sortOption: string) => {
-  return months.sort((a, b) => {
+  return [...months].sort((a, b) => {
     const [monthA, yearA] = a.split('-').map(Number);
     const [monthB, yearB] = b.split('-').map(Number);
     
@@ -41,4 +41,13 @@ export const sortMonths = (months: string[], sortOption: string) => {
       return monthB - monthA;
     }
   });
+};
+
+// Get formatted month name from month number
+export const getMonthName = (monthNumber: number): string => {
+  const monthNames = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+  return monthNames[monthNumber - 1];
 };

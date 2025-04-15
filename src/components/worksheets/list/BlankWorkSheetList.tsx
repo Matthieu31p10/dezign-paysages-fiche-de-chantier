@@ -14,7 +14,7 @@ interface BlankWorkSheetListProps {
 }
 
 const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCreateNew }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<string>('all');
   
   // Filtre pour les fiches vierges seulement
@@ -24,10 +24,10 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCre
   
   // Filtrage par terme de recherche et statut de facturation
   const filteredSheets = blankSheets.filter(sheet => {
-    const matchesSearch = !searchTerm || 
-      (sheet.clientName && sheet.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (sheet.address && sheet.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (sheet.notes && sheet.notes.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = !search || 
+      (sheet.clientName && sheet.clientName.toLowerCase().includes(search.toLowerCase())) ||
+      (sheet.address && sheet.address.toLowerCase().includes(search.toLowerCase())) ||
+      (sheet.notes && sheet.notes.toLowerCase().includes(search.toLowerCase()));
     
     const matchesInvoiced = 
       invoicedFilter === 'all' ||
@@ -43,7 +43,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCre
   });
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    setSearch(e.target.value);
   };
   
   const handleInvoicedFilterChange = (value: string) => {
@@ -51,7 +51,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCre
   };
   
   const handleClearFilters = () => {
-    setSearchTerm('');
+    setSearch('');
     setInvoicedFilter('all');
   };
   
@@ -59,7 +59,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCre
     return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
   }
   
-  const hasFilters = searchTerm !== '' || invoicedFilter !== 'all';
+  const hasFilters = search !== '' || invoicedFilter !== 'all';
   
   return (
     <div className="space-y-6">
@@ -72,9 +72,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCre
       </div>
       
       <BlankSheetFilters
-        searchTerm={searchTerm}
-        invoicedFilter={invoicedFilter}
+        search={search}
         onSearchChange={handleSearchChange}
+        invoicedFilter={invoicedFilter}
         onInvoicedFilterChange={handleInvoicedFilterChange}
         onClearFilters={handleClearFilters}
       />

@@ -1,44 +1,60 @@
 
-// Utilitaires de formatage
-
-// Format une date au format DD/MM/YYYY
-export const formatDate = (date: Date | string): string => {
-  if (!date) return '';
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
+// Format date to string in French format
+export const formatDate = (dateString: string): string => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
 };
 
-// Format un prix en euros avec le symbole €
-export const formatPrice = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2
-  }).format(amount);
+// Format price to string with Euro symbol
+export const formatPrice = (price: number | string): string => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return `${numPrice.toFixed(2)} €`;
 };
 
-// Format un nombre avec des séparateurs de milliers
+// Format number with thousands separator
 export const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('fr-FR').format(num);
+  return num.toLocaleString('fr-FR');
 };
 
-// Format un pourcentage avec le symbole %
-export const formatPercentage = (value: number): string => {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'percent',
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1
-  }).format(value / 100);
+// Format percentage to string with % symbol
+export const formatPercentage = (percentage: number): string => {
+  return `${percentage.toFixed(1)}%`;
 };
 
-// Format une heure au format HH:MM
+// Format time from 24h format (e.g. "14:30") to display format (e.g. "14h30")
 export const formatTime = (time: string): string => {
   if (!time) return '';
-  return time;
+  
+  // Handle ISO date strings
+  if (time.includes('T')) {
+    const date = new Date(time);
+    return `${date.getHours()}h${date.getMinutes().toString().padStart(2, '0')}`;
+  }
+  
+  // Handle HH:MM format
+  const [hours, minutes] = time.split(':');
+  return `${hours}h${minutes}`;
 };
 
-// Format un mois et une année pour l'affichage (ex: "Janvier 2023")
-export const formatMonthYear = (monthYear: string): string => {
-  if (!monthYear) return '';
-  return monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+// Format month and year (input format: "YYYY-MM" or "MM YYYY")
+export const formatMonthYear = (monthYearString: string): string => {
+  // Check the format (either "YYYY-MM" or "Month YYYY")
+  if (monthYearString.includes('-')) {
+    // Format is "YYYY-MM"
+    const [year, month] = monthYearString.split('-').map(Number);
+    const monthNames = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    return `${monthNames[month - 1]} ${year}`;
+  } else {
+    // Format is already "Month YYYY"
+    return monthYearString;
+  }
 };

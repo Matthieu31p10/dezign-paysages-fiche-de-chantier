@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { WorkLog } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,17 @@ import { formatDate, formatTime } from '@/utils/helpers';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash, User, Clock, FileText } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 
 interface WorkLogItemProps {
   workLog: WorkLog;
@@ -15,7 +25,7 @@ interface WorkLogItemProps {
   projectId?: string;
 }
 
-const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
+const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, index, projectId }) => {
   const navigate = useNavigate();
   const { deleteWorkLog, getProjectById } = useApp();
   
@@ -31,7 +41,7 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
   const project = getProjectById(workLog.projectId);
   const worklogCode = generateWorkLogCode(index);
   
-  // Format the creation time from the createdAt date - Fixed: Convert Date to string for formatTime
+  // Format the creation time from the createdAt date
   const registrationTime = workLog.createdAt 
     ? formatTime(typeof workLog.createdAt === 'string' 
         ? workLog.createdAt 
@@ -90,30 +100,45 @@ const WorkLogItem = ({ workLog, index, projectId }: WorkLogItemProps) => {
             <Edit className="w-4 h-4" />
           </Button>
           
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Trash className="w-4 h-4 text-destructive" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Cette action est irréversible. Elle supprimera définitivement la fiche de suivi.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleDeleteWorkLog(workLog.id)}>
-                  Supprimer
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <WorkLogDeleteButton 
+            workLogId={workLog.id} 
+            onDelete={handleDeleteWorkLog} 
+          />
         </div>
       </div>
     </div>
+  );
+};
+
+// Extract the delete button into its own component
+interface WorkLogDeleteButtonProps {
+  workLogId: string;
+  onDelete: (id: string) => void;
+}
+
+const WorkLogDeleteButton: React.FC<WorkLogDeleteButtonProps> = ({ workLogId, onDelete }) => {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Trash className="w-4 h-4 text-destructive" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Cette action est irréversible. Elle supprimera définitivement la fiche de suivi.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={() => onDelete(workLogId)}>
+            Supprimer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

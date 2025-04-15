@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { WorkLog } from '@/types/models';
 import { formatMonthYear } from '@/utils/format-utils';
 import WorkLogItem from './WorkLogItem';
@@ -9,7 +10,7 @@ interface WorkLogMonthGroupProps {
   projectId?: string;
 }
 
-const WorkLogMonthGroup = ({ month, workLogs, projectId }: WorkLogMonthGroupProps) => {
+const WorkLogMonthGroup: React.FC<WorkLogMonthGroupProps> = ({ month, workLogs, projectId }) => {
   // Format le mois et l'année pour l'affichage (ex: "Janvier 2023")
   const formattedMonth = formatMonthYear(month);
   
