@@ -1,108 +1,125 @@
 
 import React, { useState } from 'react';
 import { WorkLog } from '@/types/models';
-import BlankSheetItem from './BlankSheetItem';
-import BlankSheetFilters from './BlankSheetFilters';
-import NoResults from './NoResults';
-import EmptyBlankWorkSheetState from '../EmptyBlankWorkSheetState';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, FileText } from 'lucide-react';
+import BlankSheetItem from './blank-sheet-item';
+import { useProjects } from '@/context/ProjectsContext';
+import { ProjectInfo } from '@/types/models';
 
 interface BlankWorkSheetListProps {
-  workLogs: WorkLog[];
-  onCreateNew: () => void;
+  sheets?: WorkLog[];
+  onSelectSheet?: (id: string) => void;
+  onCreateNew?: () => void;
   onEdit?: (id: string) => void;
   onExportPDF?: (id: string) => void;
   onPrint?: (id: string) => void;
 }
 
 const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ 
-  workLogs, 
+  sheets = [], 
+  onSelectSheet,
   onCreateNew,
   onEdit,
-  onExportPDF,
-  onPrint
+  onExportPDF = () => {},
+  onPrint = () => {}
 }) => {
   const [search, setSearch] = useState('');
-  const [invoicedFilter, setInvoicedFilter] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterInvoiced, setFilterInvoiced] = useState<string>('all');
+  const { getProjectById } = useProjects();
   
-  // Filtre pour les fiches vierges seulement
-  const blankSheets = workLogs.filter(log => 
-    log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'))
-  );
+  // Safety check for data
+  const validSheets = Array.isArray(sheets) ? sheets : [];
   
-  // Filtrage par terme de recherche et statut de facturation
-  const filteredSheets = blankSheets.filter(sheet => {
-    const matchesSearch = !search || 
-      (sheet.clientName && sheet.clientName.toLowerCase().includes(search.toLowerCase())) ||
-      (sheet.address && sheet.address.toLowerCase().includes(search.toLowerCase())) ||
-      (sheet.notes && sheet.notes.toLowerCase().includes(search.toLowerCase()));
-    
-    const matchesInvoiced = 
-      invoicedFilter === 'all' ||
-      (invoicedFilter === 'invoiced' && sheet.invoiced) ||
-      (invoicedFilter === 'not-invoiced' && !sheet.invoiced);
-    
-    return matchesSearch && matchesInvoiced;
-  });
-  
-  // Tri par date (plus récent en premier)
-  const sortedSheets = [...filteredSheets].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
-  
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
+  const getFilteredSheets = () => {
+    return validSheets.filter(sheet => {
+      // Filter by search term
+      const matchesSearch = !search ? true : (
+        (sheet.projectId?.toLowerCase().includes(search.toLowerCase()) || false) ||
+        (sheet.notes?.toLowerCase().includes(search.toLowerCase()) || false) ||
+        (sheet.personnel?.some(person => person.toLowerCase().includes(search.toLowerCase())) || false)
+      );
+      
+      // Filter by invoiced status
+      const matchesInvoiced = filterInvoiced === 'all' || 
+        (filterInvoiced === 'invoiced' && sheet.invoiced) ||
+        (filterInvoiced === 'not-invoiced' && !sheet.invoiced);
+      
+      return matchesSearch && matchesInvoiced;
+    });
   };
   
-  const handleInvoicedFilterChange = (value: string) => {
-    setInvoicedFilter(value);
+  const filteredSheets = getFilteredSheets();
+  
+  const handleSelectSheet = (id: string) => {
+    if (onSelectSheet) onSelectSheet(id);
+  };
+
+  const handleEdit = (id: string) => {
+    if (onEdit) onEdit(id);
   };
   
-  const handleClearFilters = () => {
-    setSearch('');
-    setInvoicedFilter('all');
+  const handleExportPDF = (id: string) => {
+    if (onExportPDF) onExportPDF(id);
   };
   
-  if (blankSheets.length === 0) {
-    return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
-  }
-  
-  const hasFilters = search !== '' || invoicedFilter !== 'all';
+  const handlePrint = (id: string) => {
+    if (onPrint) onPrint(id);
+  };
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Fiches vierges ({blankSheets.length})</h2>
-        <Button onClick={onCreateNew} size="sm">
-          <Plus className="h-4 w-4 mr-1.5" />
-          Nouvelle fiche vierge
-        </Button>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative w-full sm:w-auto flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher une fiche..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        
+        <Select
+          value={filterInvoiced}
+          onValueChange={setFilterInvoiced}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Facturation" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous</SelectItem>
+            <SelectItem value="invoiced">Facturé</SelectItem>
+            <SelectItem value="not-invoiced">Non facturé</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
-      <BlankSheetFilters
-        search={search}
-        onSearchChange={handleSearchChange}
-        invoicedFilter={invoicedFilter}
-        onInvoicedFilterChange={handleInvoicedFilterChange}
-        onClearFilters={handleClearFilters}
-      />
-      
-      {sortedSheets.length === 0 ? (
-        <NoResults 
-          hasFilters={Boolean(hasFilters)}
-          onClearFilters={handleClearFilters}
-          onCreateNew={onCreateNew}
-        />
+      {filteredSheets.length === 0 ? (
+        <Card>
+          <CardContent className="py-10">
+            <div className="text-center">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Aucune fiche trouvée</h3>
+              <p className="text-muted-foreground">
+                Aucune fiche ne correspond à vos critères de recherche.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-4">
-          {sortedSheets.map((worklog) => (
-            <BlankSheetItem 
-              key={worklog.id} 
-              worklog={worklog} 
-              onEdit={onEdit}
-              onExportPDF={onExportPDF}
-              onPrint={onPrint}
+        <div className="grid grid-cols-1 gap-4">
+          {filteredSheets.map((sheet) => (
+            <BlankSheetItem
+              key={sheet.id}
+              sheet={sheet}
+              linkedProject={sheet.linkedProjectId ? getProjectById(sheet.linkedProjectId) : null}
+              onEdit={handleEdit}
+              onExportPDF={handleExportPDF}
+              onPrint={handlePrint}
             />
           ))}
         </div>

@@ -1,20 +1,55 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { formatPrice } from '@/utils/helpers';
 import { Progress } from '@/components/ui/progress';
+import { WorkLog } from '@/types/models';
 
 interface AmountDistributionProps {
-  invoicedAmount: number;
-  nonInvoicedAmount: number;
-  totalAmount: number;
+  workLogs: WorkLog[];
+  invoicedAmount?: number;
+  nonInvoicedAmount?: number;
+  totalAmount?: number;
 }
 
 const AmountDistribution = ({ 
-  invoicedAmount, 
-  nonInvoicedAmount, 
-  totalAmount 
+  workLogs,
+  invoicedAmount: propInvoicedAmount,
+  nonInvoicedAmount: propNonInvoicedAmount,
+  totalAmount: propTotalAmount
 }: AmountDistributionProps) => {
+  // Calculate amounts if not provided as props
+  const { invoicedAmount, nonInvoicedAmount, totalAmount } = useMemo(() => {
+    if (propInvoicedAmount !== undefined && propNonInvoicedAmount !== undefined && propTotalAmount !== undefined) {
+      return { 
+        invoicedAmount: propInvoicedAmount, 
+        nonInvoicedAmount: propNonInvoicedAmount, 
+        totalAmount: propTotalAmount 
+      };
+    }
+
+    // Calculate from workLogs
+    let invoiced = 0;
+    let nonInvoiced = 0;
+
+    workLogs.forEach(sheet => {
+      // Get amount from hourly rate * hours or from signed quote amount
+      const sheetAmount = sheet.isQuoteSigned 
+        ? (sheet.signedQuoteAmount || 0)
+        : (sheet.hourlyRate || 0) * (sheet.timeTracking?.totalHours || 0);
+      
+      if (sheet.invoiced) {
+        invoiced += sheetAmount;
+      } else {
+        nonInvoiced += sheetAmount;
+      }
+    });
+
+    const total = invoiced + nonInvoiced;
+    
+    return { invoicedAmount: invoiced, nonInvoicedAmount: nonInvoiced, totalAmount: total };
+  }, [workLogs, propInvoicedAmount, propNonInvoicedAmount, propTotalAmount]);
+
   return (
     <Card>
       <CardHeader>

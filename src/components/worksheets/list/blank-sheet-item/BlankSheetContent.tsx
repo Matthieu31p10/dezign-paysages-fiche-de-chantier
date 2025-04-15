@@ -39,7 +39,7 @@ const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
   const hourlyRate = typeof sheet.hourlyRate === 'number' ? sheet.hourlyRate : extractedHourlyRate;
   const hasHourlyRate = typeof hourlyRate === 'number' && hourlyRate > 0;
   
-  const signedQuote = sheet.isQuoteSigned || extractSignedQuote(sheet.notes || '');
+  const signedQuote = sheet.isQuoteSigned === true || extractSignedQuote(sheet.notes || '');
   const extractedQuoteValue = extractQuoteValue(sheet.notes || '') || 0;
   const quoteValue = typeof sheet.signedQuoteAmount === 'number' ? sheet.signedQuoteAmount : extractedQuoteValue;
   const hasQuoteValue = typeof quoteValue === 'number' && quoteValue > 0;
@@ -97,12 +97,12 @@ const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
         </div>
         
         <div className="flex flex-wrap gap-1 ml-2">
-          {sheet.personnel.slice(0, 3).map((person, i) => (
+          {sheet.personnel && sheet.personnel.slice(0, 3).map((person, i) => (
             <Badge key={i} variant="secondary" className="text-xs">
               {person}
             </Badge>
           ))}
-          {sheet.personnel.length > 3 && (
+          {sheet.personnel && sheet.personnel.length > 3 && (
             <Badge variant="secondary" className="text-xs">
               +{sheet.personnel.length - 3} autres
             </Badge>

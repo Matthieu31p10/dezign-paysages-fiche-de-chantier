@@ -2,55 +2,40 @@
 import React from 'react';
 import { WorkLog } from '@/types/models';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, Ban } from 'lucide-react';
 import { formatNumber, formatPercentage } from '@/utils/format-utils';
 import StatCard from './StatCard';
 import ProgressBar from './ProgressBar';
 
 interface StatsOverviewProps {
-  workLogs: WorkLog[];
-  selectedYear: number;
   totalSheets: number;
-  invoicedSheets: number;
-  uninvoicedSheets: number;
-  invoicedPercentage: number;
-  totalPersonnel: number;
-  avgPersonnelPerSheet: number;
+  totalAmount: number;
+  totalHours: number;
+  invoicedCount: number;
+  workLogs?: WorkLog[];
+  selectedYear?: number;
+  invoicedSheets?: number;
+  uninvoicedSheets?: number;
+  invoicedPercentage?: number;
+  totalPersonnel?: number;
+  avgPersonnelPerSheet?: number;
 }
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({
-  workLogs,
-  selectedYear,
+  workLogs = [],
+  selectedYear = new Date().getFullYear(),
   totalSheets,
-  invoicedSheets,
-  uninvoicedSheets,
-  invoicedPercentage,
-  totalPersonnel,
-  avgPersonnelPerSheet
+  invoicedCount,
+  totalAmount,
+  totalHours,
+  invoicedSheets = 0,
+  uninvoicedSheets = 0,
+  invoicedPercentage = 0,
+  totalPersonnel = 0,
+  avgPersonnelPerSheet = 0
 }) => {
-  // Calculate total hours spent across all blank sheets
-  const totalHours = workLogs.reduce((sum, log) => {
-    return sum + (log.timeTracking?.totalHours || 0);
-  }, 0);
-
   // Format for display
   const formattedTotalHours = formatNumber(Math.round(totalHours));
   const formattedAvgPersonnel = avgPersonnelPerSheet.toFixed(1);
-
-  // Determine trend icons (these would ideally be calculated based on historical data)
-  const invoicedTrend = (
-    <span className="inline-flex items-center text-green-600">
-      <ArrowUp className="w-3 h-3 mr-1" />
-      <span>+5%</span>
-    </span>
-  );
-
-  const uninvoicedTrend = (
-    <span className="inline-flex items-center text-red-600">
-      <ArrowDown className="w-3 h-3 mr-1" />
-      <span>-2%</span>
-    </span>
-  );
 
   return (
     <div className="space-y-6">
@@ -68,14 +53,14 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
         />
         
         <StatCard 
-          title="Facturation"
-          value={`${invoicedPercentage}%`}
-          description={`${invoicedSheets} fiches facturées sur ${totalSheets}`}
+          title="Montant total"
+          value={`${formatNumber(totalAmount)}€`}
+          description={`${invoicedCount} fiches facturées sur ${totalSheets}`}
         />
         
         <StatCard 
           title="Personnel"
-          value={formattedAvgPersonnel}
+          value={formattedAvgPersonnel || "0"}
           description={`${totalPersonnel} personnes au total`}
         />
       </div>

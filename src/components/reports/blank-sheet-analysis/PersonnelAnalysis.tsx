@@ -4,30 +4,42 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import ProgressBar from './ProgressBar';
 
 interface PersonnelAnalysisProps {
-  topPersonnel: [string, number][];
-  totalPersonnelAssignments: number;
+  personnelStats: Record<string, number>;
+  topPersonnel?: [string, number][];
+  totalPersonnelAssignments?: number;
 }
 
 const PersonnelAnalysis = ({ 
-  topPersonnel, 
-  totalPersonnelAssignments 
+  personnelStats,
+  topPersonnel = [], 
+  totalPersonnelAssignments = 0 
 }: PersonnelAnalysisProps) => {
+  // If topPersonnel is not provided, calculate it from personnelStats
+  const displayPersonnel = topPersonnel.length > 0 ? topPersonnel : 
+    Object.entries(personnelStats)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+  // Calculate total if not provided
+  const totalAssignments = totalPersonnelAssignments > 0 ? totalPersonnelAssignments :
+    Object.values(personnelStats).reduce((sum, count) => sum + count, 0);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Personnel le plus assigné</CardTitle>
       </CardHeader>
       <CardContent>
-        {topPersonnel.length > 0 ? (
+        {displayPersonnel.length > 0 ? (
           <div className="space-y-4">
-            {topPersonnel.map(([name, count]) => (
+            {displayPersonnel.map(([name, count]) => (
               <div key={name} className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>{name}</span>
                   <span className="font-medium">{count} fiches</span>
                 </div>
                 <ProgressBar 
-                  value={(count / totalPersonnelAssignments) * 100} 
+                  value={totalAssignments > 0 ? (count / totalAssignments) * 100 : 0} 
                   className="h-2"
                 />
               </div>

@@ -1,44 +1,46 @@
 
 import React from 'react';
-import { WorkLog } from '@/types/models';
-import { ProjectInfo } from '@/types/models';
-import { Card, CardContent } from "@/components/ui/card";
-import BlankSheetHeader from './BlankSheetHeader';
+import { WorkLog, ProjectInfo } from '@/types/models';
+import { Card } from '@/components/ui/card';
 import BlankSheetContent from './BlankSheetContent';
 import BlankSheetActions from './BlankSheetActions';
 
-interface BlankSheetItemProps {
-  sheet: WorkLog;
-  linkedProject: ProjectInfo | null;
-  onEdit: (id: string) => void;
-  onExportPDF: (id: string) => void;
-  onPrint: (id: string) => void;
+export interface BlankSheetItemProps {
+  sheet?: WorkLog;
+  worklog?: WorkLog;
+  linkedProject?: ProjectInfo | null;
+  onEdit?: (id: string) => void;
+  onExportPDF?: (id: string) => void;
+  onPrint?: (id: string) => void;
 }
 
 const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   sheet,
+  worklog,
   linkedProject,
   onEdit,
   onExportPDF,
   onPrint
 }) => {
+  // Use either sheet or worklog prop (for backwards compatibility)
+  const sheetData = sheet || worklog;
+  
+  if (!sheetData) return null;
+  
   return (
-    <Card className={`hover:border-primary/40 transition-all border-l-4 ${sheet.invoiced ? 'border-l-green-500' : 'border-l-amber-500'} hover:border-l-primary`}>
-      <CardContent className="p-4">
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 justify-between">
-          <BlankSheetContent 
-            sheet={sheet} 
-            linkedProject={linkedProject} 
-          />
-          
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      <div className="flex flex-col md:flex-row gap-4">
+        <BlankSheetContent sheet={sheetData} linkedProject={linkedProject} />
+        
+        <div className="flex items-center gap-2 md:ml-auto">
           <BlankSheetActions 
-            sheet={sheet} 
+            sheet={sheetData}
             onEdit={onEdit}
             onExportPDF={onExportPDF}
             onPrint={onPrint}
           />
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };

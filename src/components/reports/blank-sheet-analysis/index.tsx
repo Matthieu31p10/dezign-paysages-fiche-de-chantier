@@ -67,10 +67,49 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
     return personnelCounts;
   }, [blankSheets]);
   
-  // Get all staff members who have worked on blank sheets
-  const allStaff = useMemo(() => {
-    return Object.keys(personnelStats).sort();
+  // Calculate top personnel and total assignments
+  const topPersonnel = useMemo(() => {
+    return Object.entries(personnelStats)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
   }, [personnelStats]);
+  
+  const totalPersonnelAssignments = useMemo(() => {
+    return Object.values(personnelStats).reduce((sum, count) => sum + count, 0);
+  }, [personnelStats]);
+  
+  // Calculate invoiced vs non-invoiced amounts
+  const { invoicedAmount, nonInvoicedAmount } = useMemo(() => {
+    let invoiced = 0;
+    let nonInvoiced = 0;
+    
+    blankSheets.forEach(sheet => {
+      const sheetAmount = sheet.isQuoteSigned 
+        ? (sheet.signedQuoteAmount || 0)
+        : (sheet.hourlyRate || 0) * (sheet.timeTracking?.totalHours || 0);
+      
+      if (sheet.invoiced) {
+        invoiced += sheetAmount;
+      } else {
+        nonInvoiced += sheetAmount;
+      }
+    });
+    
+    return { invoicedAmount: invoiced, nonInvoicedAmount: nonInvoiced };
+  }, [blankSheets]);
+  
+  // Calculate statistics for StatsOverview
+  const invoicedSheets = blankSheets.filter(s => s.invoiced).length;
+  const uninvoicedSheets = blankSheets.length - invoicedSheets;
+  const invoicedPercentage = blankSheets.length > 0 
+    ? Math.round((invoicedSheets / blankSheets.length) * 100) 
+    : 0;
+  
+  // Calculate total personnel and average per sheet
+  const totalPersonnel = useMemo(() => Object.keys(personnelStats).length, [personnelStats]);
+  const avgPersonnelPerSheet = blankSheets.length > 0 
+    ? blankSheets.reduce((sum, sheet) => sum + (sheet.personnel?.length || 0), 0) / blankSheets.length
+    : 0;
   
   if (blankSheets.length === 0) {
     return (
@@ -90,15 +129,31 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
   return (
     <div className="space-y-6">
       <StatsOverview 
+        workLogs={blankSheets}
+        selectedYear={selectedYear}
         totalSheets={blankSheets.length} 
         totalAmount={totalAmount} 
         totalHours={totalHours}
-        invoicedCount={blankSheets.filter(s => s.invoiced).length}
+        invoicedCount={invoicedSheets}
+        invoicedSheets={invoicedSheets}
+        uninvoicedSheets={uninvoicedSheets}
+        invoicedPercentage={invoicedPercentage}
+        totalPersonnel={totalPersonnel}
+        avgPersonnelPerSheet={avgPersonnelPerSheet}
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PersonnelAnalysis personnelStats={personnelStats} />
-        <AmountDistribution workLogs={blankSheets} />
+        <PersonnelAnalysis 
+          personnelStats={personnelStats} 
+          topPersonnel={topPersonnel}
+          totalPersonnelAssignments={totalPersonnelAssignments}
+        />
+        <AmountDistribution 
+          workLogs={blankSheets}
+          invoicedAmount={invoicedAmount}
+          nonInvoicedAmount={nonInvoicedAmount}
+          totalAmount={totalAmount}
+        />
       </div>
     </div>
   );

@@ -116,7 +116,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Section tâches personnalisées
     if (data.workLog.tasks) {
-      yPos = drawTasksSection(pdf, data, margin, yPos, pageWidth, contentWidth);
+      yPos = drawTasksSection(pdf, data, margin, yPos, contentWidth);
     }
     
     // Ligne de séparation fine
