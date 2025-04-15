@@ -1,33 +1,40 @@
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { FileQuestion } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
 
-interface NoResultsProps {
+export interface NoResultsProps {
+  hasFilters: boolean;
   onClearFilters: () => void;
+  onCreateNew: () => void;
 }
 
-const NoResults: React.FC<NoResultsProps> = ({ onClearFilters }) => {
+const NoResults: React.FC<NoResultsProps> = ({ hasFilters, onClearFilters, onCreateNew }) => {
   return (
-    <Card className="border-dashed">
-      <CardContent className="py-8 text-center">
-        <div className="flex flex-col items-center space-y-2">
-          <Search className="h-12 w-12 text-muted-foreground mb-2" />
-          <h3 className="text-lg font-medium">Aucun résultat</h3>
-          <p className="text-muted-foreground">
-            Aucune fiche vierge ne correspond à votre recherche
+    <div className="py-10 flex flex-col items-center justify-center text-center">
+      <FileQuestion className="h-12 w-12 text-muted-foreground mb-3" />
+      <h3 className="text-lg font-semibold mb-1">Aucune fiche trouvée</h3>
+      
+      {hasFilters ? (
+        <>
+          <p className="text-muted-foreground mb-4">
+            Aucune fiche ne correspond à vos critères de recherche.
           </p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={onClearFilters}
-          >
-            Réinitialiser les filtres
+          <Button variant="outline" onClick={onClearFilters}>
+            Effacer les filtres
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </>
+      ) : (
+        <>
+          <p className="text-muted-foreground mb-4">
+            Aucune fiche vierge ne correspond à votre recherche.
+          </p>
+          <Button onClick={onCreateNew}>
+            Créer une nouvelle fiche vierge
+          </Button>
+        </>
+      )}
+    </div>
   );
 };
 

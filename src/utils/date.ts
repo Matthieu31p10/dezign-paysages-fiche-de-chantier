@@ -1,6 +1,7 @@
 
 import { WorkLog } from '@/types/models';
-import { ensureDate, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil, formatTime as formatTimeUtil } from './date-utils';
+import { ensureDate, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from './date-utils';
+import { formatTime } from './format-utils';
 
 // Réexportation des fonctions pour assurer la compatibilité avec l'ancien code
 export const getCurrentYear = (): number => {
@@ -13,7 +14,7 @@ export const getCurrentMonth = (): number => {
 
 export const formatDate = formatDateUtil;
 export const formatDateTime = formatDateTimeUtil;
-export const formatTime = formatTimeUtil;
+export const formatTime = formatTime;
 
 // Group work logs by month
 export const groupWorkLogsByMonth = (workLogs: WorkLog[]): Record<string, WorkLog[]> => {
