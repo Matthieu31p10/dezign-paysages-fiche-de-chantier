@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -19,8 +19,8 @@ import { ProjectInfo, WorkLog, Team } from '@/types/models';
 import { 
   getDaysSinceLastEntry, 
   calculateAverageHoursPerVisit,
-  formatDate
 } from '@/utils/date-helpers';
+import { formatDate } from '@/utils/date';
 import { cn } from '@/lib/utils';
 
 // Create smaller components to improve structure

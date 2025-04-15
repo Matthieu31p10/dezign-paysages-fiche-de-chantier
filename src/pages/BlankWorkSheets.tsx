@@ -47,7 +47,7 @@ const BlankWorkSheets = () => {
         ? projectInfos.find(p => p.id === workLog.linkedProjectId) 
         : null;
       
-      await generatePDF(workLog, project || undefined, 'download');
+      await generatePDF(workLog);
       toast.success("PDF généré avec succès");
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -72,7 +72,7 @@ const BlankWorkSheets = () => {
         ? projectInfos.find(p => p.id === workLog.linkedProjectId) 
         : null;
       
-      await generatePDF(workLog, project || undefined, 'print');
+      await generatePDF(workLog);
       toast.success("Impression lancée");
     } catch (error) {
       console.error("Error printing:", error);

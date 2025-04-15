@@ -12,7 +12,7 @@ import { drawTimeTrackingSection } from './sections/timeTrackingSection';
 import { drawTasksSection } from './sections/tasksSection';
 import { drawNotesSection } from './sections/notesSection';
 import { drawConsumablesSection } from './sections/consumablesSection';
-import { drawSummarySection } from './sections/summarySection';
+import { addSummarySection as drawSummarySection } from './sections/summarySection';
 
 // Cette fonction gère la génération de PDF pour les fiches de suivi avec le nouveau design
 export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
@@ -165,7 +165,8 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
       pdf.setPage(i);
       pdf.setFontSize(7);
       pdf.setTextColor(150, 150, 150);
-      pdf.text(`Document généré le ${formatDate(new Date())} - Page ${i}/${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      const currentDate = new Date();
+      pdf.text(`Document généré le ${formatDate(currentDate)} - Page ${i}/${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
     }
     
     // Génération du nom de fichier

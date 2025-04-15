@@ -11,9 +11,18 @@ import { Plus } from 'lucide-react';
 interface BlankWorkSheetListProps {
   workLogs: WorkLog[];
   onCreateNew: () => void;
+  onEdit?: (id: string) => void;
+  onExportPDF?: (id: string) => void;
+  onPrint?: (id: string) => void;
 }
 
-const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCreateNew }) => {
+const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ 
+  workLogs, 
+  onCreateNew,
+  onEdit,
+  onExportPDF,
+  onPrint
+}) => {
   const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<string>('all');
   
@@ -87,8 +96,14 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ workLogs, onCre
         />
       ) : (
         <div className="space-y-4">
-          {sortedSheets.map((sheet) => (
-            <BlankSheetItem key={sheet.id} worklog={sheet} />
+          {sortedSheets.map((worklog) => (
+            <BlankSheetItem 
+              key={worklog.id} 
+              worklog={worklog} 
+              onEdit={onEdit}
+              onExportPDF={onExportPDF}
+              onPrint={onPrint}
+            />
           ))}
         </div>
       )}

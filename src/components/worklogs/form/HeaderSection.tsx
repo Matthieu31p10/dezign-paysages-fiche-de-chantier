@@ -9,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { addDays } from 'date-fns';
-import { formatDate } from '@/utils/helpers';
+import { formatDate } from '@/utils/date';
 import { ProjectInfo, Team } from '@/types/models';
 import PersonnelDialog from '../PersonnelDialog';
 import { useWorkLogForm } from './WorkLogFormContext';
@@ -109,7 +109,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? formatDate(dateValue) : <span>Pick a date</span>}
+                    {dateValue ? formatDate(dateValue) : <span>Sélectionner une date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">

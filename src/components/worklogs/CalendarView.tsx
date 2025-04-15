@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatDate } from '@/utils/helpers';
+import { formatDate } from '@/utils/date';
 import { Calendar as CalendarIcon, ArrowRight, Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -132,8 +132,5 @@ export default CalendarView;
 
 // Helper function to format date as YYYY-MM-DD for comparison
 const formatDateKey = (date: Date): string => {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
   return date.toISOString().split('T')[0];
 };
