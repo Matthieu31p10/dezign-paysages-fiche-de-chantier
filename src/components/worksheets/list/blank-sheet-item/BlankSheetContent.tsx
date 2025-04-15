@@ -1,112 +1,101 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Badge } from "@/components/ui/badge";
-import { LinkIcon, Users, Clock, Euro, Landmark, FileCheck, FileSignature } from 'lucide-react';
 import { WorkLog, ProjectInfo } from '@/types/models';
-import { 
-  extractClientName, 
-  extractAddress, 
-  extractDescription, 
-  extractLinkedProjectId,
-  extractHourlyRate,
-  extractSignedQuote,
-  extractQuoteValue
-} from '@/utils/notes-extraction';
-import { extractRegistrationTime } from '@/utils/date-helpers';
-import { formatNumber } from '@/utils/format-utils';
-import BlankSheetHeader from './BlankSheetHeader';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, MapPin, Phone, Mail, Link2, CheckCircle2, AlertTriangle, Clock, Euro } from 'lucide-react';
+import { formatDate } from '@/utils/date';
 import BlankSheetStats from './BlankSheetStats';
+import BlankSheetHeader from './BlankSheetHeader';
 
 interface BlankSheetContentProps {
   sheet: WorkLog;
-  linkedProject: ProjectInfo | null;
+  linkedProject?: ProjectInfo | null;
 }
 
 const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
   sheet,
   linkedProject
 }) => {
-  const navigate = useNavigate();
+  if (!sheet) return null;
   
-  const clientName = sheet.clientName || extractClientName(sheet.notes || '');
-  const address = sheet.address || extractAddress(sheet.notes || '');
-  const description = extractDescription(sheet.notes || '');
-  const registrationTime = extractRegistrationTime(sheet.notes || '');
-  
-  // Use direct properties if available, otherwise extract from notes
-  const extractedHourlyRate = extractHourlyRate(sheet.notes || '') || 0;
-  const hourlyRate = typeof sheet.hourlyRate === 'number' ? sheet.hourlyRate : extractedHourlyRate;
-  const hasHourlyRate = typeof hourlyRate === 'number' && hourlyRate > 0;
-  
-  // Fix the type issue: ensure signedQuote is a boolean
-  const signedQuote = sheet.isQuoteSigned === true || Boolean(extractSignedQuote(sheet.notes || ''));
-  const extractedQuoteValue = extractQuoteValue(sheet.notes || '') || 0;
-  const quoteValue = typeof sheet.signedQuoteAmount === 'number' ? sheet.signedQuoteAmount : extractedQuoteValue;
-  const hasQuoteValue = typeof quoteValue === 'number' && quoteValue > 0;
-  const hasSignature = !!sheet.clientSignature;
-  
-  // Calculate the total cost (hours × hourly rate × number of people)
-  const totalHours = sheet.timeTracking?.totalHours || 0;
-  const personnelCount = sheet.personnel?.length || 1;
-  // Ensure all values in calculation are numbers
-  const calcTotalHours = typeof totalHours === 'number' ? totalHours : parseFloat(totalHours as string) || 0;
-  const totalCost = calcTotalHours * hourlyRate * personnelCount;
-
-  // Helper function to ensure numbers for formatting
+  // Formatage des valeurs numériques
   const formatNumberValue = (value: string | number): string => {
-    if (typeof value === 'number') {
-      return value.toFixed(2);
+    if (typeof value === 'string') {
+      return parseFloat(value).toLocaleString('fr-FR', { 
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2 
+      });
     }
-    return parseFloat(value || '0').toFixed(2);
+    return value.toLocaleString('fr-FR', { 
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2 
+    });
   };
-
-  const handleClick = () => {
-    navigate(`/worklogs/${sheet.id}`);
-  };
-
+  
+  // Extraction des informations de contact
+  const clientName = sheet.clientName || '';
+  const address = sheet.address || '';
+  const contactPhone = sheet.contactPhone || '';
+  const contactEmail = sheet.contactEmail || '';
+  
+  // Calcul du coût total
+  const totalHours = sheet.timeTracking?.totalHours || 0;
+  const hourlyRate = sheet.hourlyRate || 0;
+  const personnelCount = sheet.personnel?.length || 1;
+  const totalCost = totalHours * hourlyRate * personnelCount;
+  
+  // Informations sur le devis
+  const hasQuoteValue = sheet.signedQuoteAmount && sheet.signedQuoteAmount > 0;
+  const quoteValue = sheet.signedQuoteAmount || 0;
+  
+  // Facturation et signature
+  const invoiced = sheet.invoiced || false;
+  const hasSignature = Boolean(sheet.clientSignature);
+  const signedQuote = Boolean(sheet.isQuoteSigned);
+  
+  const hasHourlyRate = hourlyRate > 0;
+  
   return (
-    <div className="flex-1 cursor-pointer" onClick={handleClick}>
+    <div className="flex-1">
       <BlankSheetHeader 
-        clientName={clientName} 
-        projectId={sheet.projectId} 
-        date={sheet.date}
-        registrationTime={registrationTime}
+        sheet={sheet}
+        invoiced={invoiced}
       />
       
-      {linkedProject && (
-        <div className="flex items-center text-sm text-primary mb-1">
-          <LinkIcon className="h-3 w-3 mr-1" />
-          <span>Associée au projet: {linkedProject.name}</span>
-        </div>
-      )}
-      
-      <p className="text-sm text-muted-foreground mb-1">
-        {address || "Adresse non spécifiée"}
-      </p>
-      
-      {description && (
-        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-          {description}
-        </p>
-      )}
-      
-      <div className="flex flex-wrap items-center gap-2 mb-1">
-        <div className="flex items-center gap-1">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">{personnelCount} personnel</span>
-        </div>
+      <div className="space-y-2 mt-2">
+        {clientName && (
+          <div className="flex items-center text-sm">
+            <span className="font-medium">{clientName}</span>
+          </div>
+        )}
         
-        <div className="flex flex-wrap gap-1 ml-2">
-          {sheet.personnel && sheet.personnel.slice(0, 3).map((person, i) => (
-            <Badge key={i} variant="secondary" className="text-xs">
-              {person}
-            </Badge>
-          ))}
-          {sheet.personnel && sheet.personnel.length > 3 && (
-            <Badge variant="secondary" className="text-xs">
-              +{sheet.personnel.length - 3} autres
-            </Badge>
+        {address && (
+          <div className="flex items-center text-sm">
+            <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+            <span>{address}</span>
+          </div>
+        )}
+        
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          {contactPhone && (
+            <div className="flex items-center">
+              <Phone className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+              <span>{contactPhone}</span>
+            </div>
+          )}
+          
+          {contactEmail && (
+            <div className="flex items-center">
+              <Mail className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+              <span>{contactEmail}</span>
+            </div>
+          )}
+          
+          {linkedProject && (
+            <div className="flex items-center">
+              <Link2 className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+              <span>Projet lié: {linkedProject.name}</span>
+            </div>
           )}
         </div>
       </div>
@@ -114,10 +103,10 @@ const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
       <BlankSheetStats 
         hourlyRate={hourlyRate}
         hasHourlyRate={hasHourlyRate}
-        totalHours={calcTotalHours}
+        totalHours={totalHours}
         personnelCount={personnelCount}
         totalCost={totalCost}
-        quoteValue={quoteValue as number}
+        quoteValue={quoteValue}
         hasQuoteValue={hasQuoteValue}
         signedQuote={signedQuote}
         hasSignature={hasSignature}

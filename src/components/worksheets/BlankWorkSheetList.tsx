@@ -98,11 +98,11 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
         />
       ) : (
         <div className="space-y-4">
-          {sortedSheets.map((worklog) => (
+          {sortedSheets.map((sheet) => (
             <BlankSheetItem 
-              key={worklog.id} 
-              sheet={worklog}
-              linkedProject={worklog.linkedProjectId ? getProjectById(worklog.linkedProjectId) : null}
+              key={sheet.id} 
+              sheet={sheet}
+              linkedProject={sheet.linkedProjectId ? getProjectById(sheet.linkedProjectId) : null}
               onEdit={onEdit}
               onExportPDF={onExportPDF}
               onPrint={onPrint}

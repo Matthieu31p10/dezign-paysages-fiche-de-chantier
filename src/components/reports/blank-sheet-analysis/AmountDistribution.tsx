@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { WorkLog } from '@/types/models';
@@ -5,9 +6,17 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 
 interface AmountDistributionProps {
   workLogs: WorkLog[];
+  invoicedAmount?: number;
+  nonInvoicedAmount?: number;
+  totalAmount?: number;
 }
 
-const AmountDistribution: React.FC<AmountDistributionProps> = ({ workLogs }) => {
+const AmountDistribution: React.FC<AmountDistributionProps> = ({ 
+  workLogs,
+  invoicedAmount,
+  nonInvoicedAmount,
+  totalAmount
+}) => {
   // Calculating data for the pie chart
   const calculateChartData = () => {
     const thresholds = [

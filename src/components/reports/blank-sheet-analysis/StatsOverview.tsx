@@ -9,17 +9,27 @@ interface StatsOverviewProps {
   totalAmount: number;
   totalHours: number;
   invoicedCount: number;
+  workLogs?: any[];
+  selectedYear?: number;
+  invoicedSheets?: number;
+  uninvoicedSheets?: number;
+  invoicedPercentage?: number;
+  totalPersonnel?: number;
+  avgPersonnelPerSheet?: number;
 }
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({
   totalSheets,
   totalAmount,
   totalHours,
-  invoicedCount
+  invoicedCount,
+  invoicedPercentage: providedInvoicedPercentage,
+  // Autres props optionnelles
 }) => {
-  const invoicedPercentage = totalSheets > 0
-    ? Math.round((invoicedCount / totalSheets) * 100)
-    : 0;
+  // Calculer le pourcentage si non fourni
+  const invoicedPercentage = providedInvoicedPercentage !== undefined 
+    ? providedInvoicedPercentage 
+    : (totalSheets > 0 ? Math.round((invoicedCount / totalSheets) * 100) : 0);
 
   const averageAmount = totalSheets > 0
     ? totalAmount / totalSheets

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText } from 'lucide-react';
+import { Plus, FileText, BarChart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
 import { useApp } from '@/context/AppContext';
@@ -92,10 +92,17 @@ const BlankWorkSheets = () => {
           </p>
         </div>
         
-        <Button onClick={handleCreateNew}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle fiche vierge
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleCreateNew} variant="default">
+            <Plus className="w-4 h-4 mr-2" />
+            Nouvelle fiche vierge
+          </Button>
+          
+          <Button onClick={() => navigate('/reports')} variant="outline">
+            <BarChart className="w-4 h-4 mr-2" />
+            Voir les statistiques
+          </Button>
+        </div>
       </div>
       
       {blankSheets.length === 0 ? (

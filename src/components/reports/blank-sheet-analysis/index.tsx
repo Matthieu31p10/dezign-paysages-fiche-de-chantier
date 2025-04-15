@@ -129,17 +129,12 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
   return (
     <div className="space-y-6">
       <StatsOverview 
-        workLogs={blankSheets}
-        selectedYear={selectedYear}
         totalSheets={blankSheets.length} 
         totalAmount={totalAmount} 
         totalHours={totalHours}
         invoicedCount={invoicedSheets}
-        invoicedSheets={invoicedSheets}
-        uninvoicedSheets={uninvoicedSheets}
         invoicedPercentage={invoicedPercentage}
-        totalPersonnel={totalPersonnel}
-        avgPersonnelPerSheet={avgPersonnelPerSheet}
+        // Suppression des props non reconnues
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
