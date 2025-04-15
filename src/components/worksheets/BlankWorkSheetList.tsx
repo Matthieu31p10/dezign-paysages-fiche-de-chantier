@@ -7,6 +7,7 @@ import NoResults from './list/NoResults';
 import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { useProjects } from '@/context/ProjectsContext';
 
 interface BlankWorkSheetListProps {
   workLogs: WorkLog[];
@@ -25,6 +26,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<string>('all');
+  const { getProjectById } = useProjects();
   
   // Filtre pour les fiches vierges seulement
   const blankSheets = workLogs.filter(log => 
@@ -99,7 +101,8 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
           {sortedSheets.map((worklog) => (
             <BlankSheetItem 
               key={worklog.id} 
-              sheet={worklog} 
+              sheet={worklog}
+              linkedProject={worklog.linkedProjectId ? getProjectById(worklog.linkedProjectId) : null}
               onEdit={onEdit}
               onExportPDF={onExportPDF}
               onPrint={onPrint}

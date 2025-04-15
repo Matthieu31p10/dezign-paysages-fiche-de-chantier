@@ -5,7 +5,7 @@ import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import BlankWorkSheetList from '@/components/worksheets/list/BlankWorkSheetList';
+import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
 import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
 import { generatePDF } from '@/utils/pdfGenerator';
@@ -117,7 +117,7 @@ const BlankWorkSheets = () => {
         <Card>
           <CardContent className="pt-6">
             <BlankWorkSheetList 
-              workLogs={workLogs} 
+              workLogs={blankSheets} 
               onCreateNew={handleCreateNew}
               onEdit={handleEdit}
               onExportPDF={handleExportPDF}

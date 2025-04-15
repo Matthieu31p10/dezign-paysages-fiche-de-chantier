@@ -39,7 +39,8 @@ const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
   const hourlyRate = typeof sheet.hourlyRate === 'number' ? sheet.hourlyRate : extractedHourlyRate;
   const hasHourlyRate = typeof hourlyRate === 'number' && hourlyRate > 0;
   
-  const signedQuote = sheet.isQuoteSigned === true || extractSignedQuote(sheet.notes || '');
+  // Fix the type issue: ensure signedQuote is a boolean
+  const signedQuote = sheet.isQuoteSigned === true || Boolean(extractSignedQuote(sheet.notes || ''));
   const extractedQuoteValue = extractQuoteValue(sheet.notes || '') || 0;
   const quoteValue = typeof sheet.signedQuoteAmount === 'number' ? sheet.signedQuoteAmount : extractedQuoteValue;
   const hasQuoteValue = typeof quoteValue === 'number' && quoteValue > 0;

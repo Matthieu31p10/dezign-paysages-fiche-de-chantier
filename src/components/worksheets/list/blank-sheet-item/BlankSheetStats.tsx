@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Euro, Clock, Landmark, FileCheck, FileSignature } from 'lucide-react';
-import { formatNumber } from '@/utils/format-utils';
+import { Clock, Euro, FileCheck, FileSignature } from 'lucide-react';
 
 interface BlankSheetStatsProps {
   hourlyRate: number;
@@ -30,47 +28,46 @@ const BlankSheetStats: React.FC<BlankSheetStatsProps> = ({
   formatNumberValue
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-3 mt-2">
+    <div className="grid grid-cols-2 gap-3 mt-3">
+      <div className="flex items-center text-sm">
+        <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+        <span>
+          <span className="font-medium">{formatNumberValue(totalHours)}</span> heures
+          {personnelCount > 1 && ` × ${personnelCount}`}
+        </span>
+      </div>
+      
       {hasHourlyRate && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
-          <Euro className="h-3 w-3 text-blue-600" />
-          {formatNumberValue(hourlyRate)}€/h
-        </Badge>
-      )}
-      
-      {totalHours > 0 && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs bg-violet-50">
-          <Clock className="h-3 w-3 text-violet-600" />
-          {formatNumberValue(totalHours)}h × {personnelCount} = {(totalHours * personnelCount).toFixed(1)}h
-        </Badge>
-      )}
-      
-      {hasHourlyRate && totalHours > 0 && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
-          <Euro className="h-3 w-3 text-green-600" />
-          Total: {totalCost.toFixed(2)}€
-        </Badge>
+        <div className="flex items-center text-sm">
+          <Euro className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+          <span>
+            <span className="font-medium">{hourlyRate}</span> €/h
+            {totalCost > 0 && ` (${Math.round(totalCost)} € total)`}
+          </span>
+        </div>
       )}
       
       {hasQuoteValue && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs bg-blue-50">
-          <Landmark className="h-3 w-3 text-blue-600" />
-          Devis: {formatNumber(quoteValue)}€ HT
-        </Badge>
+        <div className="flex items-center text-sm">
+          <FileCheck className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+          <span>
+            Devis: <span className="font-medium">{Math.round(quoteValue)}</span> €
+          </span>
+        </div>
       )}
       
       {signedQuote && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs bg-green-50">
-          <FileCheck className="h-3 w-3 text-green-600" />
-          Devis signé
-        </Badge>
+        <div className="flex items-center text-sm">
+          <FileSignature className="w-3.5 h-3.5 mr-1.5 text-green-500" />
+          <span className="text-green-600">Devis signé</span>
+        </div>
       )}
       
       {hasSignature && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs bg-amber-50">
-          <FileSignature className="h-3 w-3 text-amber-600" />
-          Signature client
-        </Badge>
+        <div className="flex items-center text-sm">
+          <FileSignature className="w-3.5 h-3.5 mr-1.5 text-green-500" />
+          <span className="text-green-600">Signature client</span>
+        </div>
       )}
     </div>
   );

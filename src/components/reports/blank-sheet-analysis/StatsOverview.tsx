@@ -1,92 +1,59 @@
 
 import React from 'react';
-import { WorkLog } from '@/types/models';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { formatNumber, formatPercentage } from '@/utils/format-utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { FileText, Euro, Clock, FileCheck } from 'lucide-react';
 import StatCard from './StatCard';
-import ProgressBar from './ProgressBar';
 
 interface StatsOverviewProps {
   totalSheets: number;
   totalAmount: number;
   totalHours: number;
   invoicedCount: number;
-  workLogs?: WorkLog[];
-  selectedYear?: number;
-  invoicedSheets?: number;
-  uninvoicedSheets?: number;
-  invoicedPercentage?: number;
-  totalPersonnel?: number;
-  avgPersonnelPerSheet?: number;
 }
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({
-  workLogs = [],
-  selectedYear = new Date().getFullYear(),
   totalSheets,
-  invoicedCount,
   totalAmount,
   totalHours,
-  invoicedSheets = 0,
-  uninvoicedSheets = 0,
-  invoicedPercentage = 0,
-  totalPersonnel = 0,
-  avgPersonnelPerSheet = 0
+  invoicedCount
 }) => {
-  // Format for display
-  const formattedTotalHours = formatNumber(Math.round(totalHours));
-  const formattedAvgPersonnel = avgPersonnelPerSheet.toFixed(1);
+  const invoicedPercentage = totalSheets > 0
+    ? Math.round((invoicedCount / totalSheets) * 100)
+    : 0;
+
+  const averageAmount = totalSheets > 0
+    ? totalAmount / totalSheets
+    : 0;
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Fiches vierges" 
-          value={totalSheets} 
-          description={`Total des fiches en ${selectedYear}`}
-        />
-        
-        <StatCard 
-          title="Heures travaillées"
-          value={formattedTotalHours}
-          description="Nombre total d'heures"
-        />
-        
-        <StatCard 
-          title="Montant total"
-          value={`${formatNumber(totalAmount)}€`}
-          description={`${invoicedCount} fiches facturées sur ${totalSheets}`}
-        />
-        
-        <StatCard 
-          title="Personnel"
-          value={formattedAvgPersonnel || "0"}
-          description={`${totalPersonnel} personnes au total`}
-        />
-      </div>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium">État de facturation</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ProgressBar 
-            value={invoicedPercentage} 
-            label="Facturées" 
-            count={invoicedSheets}
-            total={totalSheets}
-            className="h-2 mt-1 bg-muted"
-          />
-          
-          <ProgressBar 
-            value={100 - invoicedPercentage} 
-            label="Non facturées" 
-            count={uninvoicedSheets}
-            total={totalSheets}
-            className="h-2 mt-1 bg-muted"
-          />
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <StatCard
+        title="Total des fiches"
+        value={totalSheets.toString()}
+        description="Nombre total de fiches vierges"
+        icon={<FileText className="h-8 w-8 text-primary" />}
+      />
+      
+      <StatCard
+        title="Montant total"
+        value={`${Math.round(totalAmount).toLocaleString()} €`}
+        description={`Moyenne de ${Math.round(averageAmount).toLocaleString()} € par fiche`}
+        icon={<Euro className="h-8 w-8 text-primary" />}
+      />
+      
+      <StatCard
+        title="Heures totales"
+        value={totalHours.toFixed(1)}
+        description={`Moyenne de ${(totalSheets > 0 ? totalHours / totalSheets : 0).toFixed(1)} heures par fiche`}
+        icon={<Clock className="h-8 w-8 text-primary" />}
+      />
+      
+      <StatCard
+        title="Fiches facturées"
+        value={`${invoicedCount} (${invoicedPercentage}%)`}
+        description={`${totalSheets - invoicedCount} fiches non facturées`}
+        icon={<FileCheck className="h-8 w-8 text-primary" />}
+      />
     </div>
   );
 };

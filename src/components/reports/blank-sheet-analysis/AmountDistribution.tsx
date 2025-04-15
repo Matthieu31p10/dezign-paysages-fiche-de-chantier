@@ -1,97 +1,99 @@
-
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { formatPrice } from '@/utils/helpers';
-import { Progress } from '@/components/ui/progress';
 import { WorkLog } from '@/types/models';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface AmountDistributionProps {
   workLogs: WorkLog[];
-  invoicedAmount?: number;
-  nonInvoicedAmount?: number;
-  totalAmount?: number;
 }
 
-const AmountDistribution = ({ 
-  workLogs,
-  invoicedAmount: propInvoicedAmount,
-  nonInvoicedAmount: propNonInvoicedAmount,
-  totalAmount: propTotalAmount
-}: AmountDistributionProps) => {
-  // Calculate amounts if not provided as props
-  const { invoicedAmount, nonInvoicedAmount, totalAmount } = useMemo(() => {
-    if (propInvoicedAmount !== undefined && propNonInvoicedAmount !== undefined && propTotalAmount !== undefined) {
-      return { 
-        invoicedAmount: propInvoicedAmount, 
-        nonInvoicedAmount: propNonInvoicedAmount, 
-        totalAmount: propTotalAmount 
-      };
-    }
+const AmountDistribution: React.FC<AmountDistributionProps> = ({ workLogs }) => {
+  // Calculating data for the pie chart
+  const calculateChartData = () => {
+    const thresholds = [
+      { name: "< 500€", value: 0, color: "#A2D2FF" },
+      { name: "500€ - 1000€", value: 0, color: "#BDE0FE" },
+      { name: "1000€ - 2000€", value: 0, color: "#FFAFCC" },
+      { name: "> 2000€", value: 0, color: "#FFC8DD" }
+    ];
 
-    // Calculate from workLogs
-    let invoiced = 0;
-    let nonInvoiced = 0;
-
-    workLogs.forEach(sheet => {
-      // Get amount from hourly rate * hours or from signed quote amount
-      const sheetAmount = sheet.isQuoteSigned 
-        ? (sheet.signedQuoteAmount || 0)
-        : (sheet.hourlyRate || 0) * (sheet.timeTracking?.totalHours || 0);
+    workLogs.forEach(log => {
+      const amount = calculateTotalAmount(log);
       
-      if (sheet.invoiced) {
-        invoiced += sheetAmount;
+      if (amount < 500) {
+        thresholds[0].value++;
+      } else if (amount < 1000) {
+        thresholds[1].value++;
+      } else if (amount < 2000) {
+        thresholds[2].value++;
       } else {
-        nonInvoiced += sheetAmount;
+        thresholds[3].value++;
       }
     });
 
-    const total = invoiced + nonInvoiced;
+    return thresholds.filter(item => item.value > 0);
+  };
+
+  const calculateTotalAmount = (log: WorkLog): number => {
+    // Check if there's a signed quote amount
+    if (log.signedQuoteAmount && typeof log.signedQuoteAmount === 'number') {
+      return log.signedQuoteAmount;
+    }
     
-    return { invoicedAmount: invoiced, nonInvoicedAmount: nonInvoiced, totalAmount: total };
-  }, [workLogs, propInvoicedAmount, propNonInvoicedAmount, propTotalAmount]);
+    // Otherwise calculate from hours and rate
+    const totalHours = log.timeTracking?.totalHours || 0;
+    const hourlyRate = log.hourlyRate || 0;
+    const personnelCount = log.personnel?.length || 1;
+    
+    return typeof totalHours === 'number' 
+      ? totalHours * hourlyRate * personnelCount 
+      : parseFloat(totalHours as string || '0') * hourlyRate * personnelCount;
+  };
+
+  const data = calculateChartData();
+
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Distribution des montants</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[300px] flex items-center justify-center">
+          <p className="text-muted-foreground">Aucune donnée disponible</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Répartition des montants</CardTitle>
+        <CardTitle className="text-lg">Distribution des montants</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col h-full justify-center">
-          {totalAmount > 0 ? (
-            <>
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                  <span>Facturé</span>
-                </div>
-                <span className="font-medium">{formatPrice(invoicedAmount)}</span>
-              </div>
-              <Progress 
-                value={(invoicedAmount / totalAmount) * 100} 
-                className="h-4 mb-4"
-              />
-              
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
-                  <span>Non facturé</span>
-                </div>
-                <span className="font-medium">{formatPrice(nonInvoicedAmount)}</span>
-              </div>
-              <Progress 
-                value={(nonInvoicedAmount / totalAmount) * 100} 
-                className="h-4"
-              />
-              
-              <div className="mt-4 text-center">
-                <span className="text-sm text-muted-foreground">Montant total: </span>
-                <span className="font-bold">{formatPrice(totalAmount)}</span>
-              </div>
-            </>
-          ) : (
-            <p className="text-muted-foreground text-center">Aucun montant enregistré</p>
-          )}
-        </div>
+      <CardContent className="h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              fill="#8884d8"
+              paddingAngle={5}
+              dataKey="value"
+              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip 
+              formatter={(value) => [`${value} fiches`, '']}
+            />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );
