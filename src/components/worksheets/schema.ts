@@ -38,6 +38,7 @@ export const BlankWorkSheetSchema = z.object({
   teamFilter: z.string().optional(),
   vatRate: z.string().optional().default('20'),
   quoteValue: z.number().optional(),
+  invoiced: z.boolean().default(false), // Added missing invoiced field
 });
 
 // Create a type from the schema

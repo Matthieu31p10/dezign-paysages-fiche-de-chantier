@@ -71,7 +71,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Dessiner l'en-tête avec le logo et les informations de l'entreprise
     if (data.pdfOptions?.includeCompanyInfo) {
-      yPos = drawHeaderSection(pdf, data, margin, yPos);
+      yPos = drawHeaderSection(pdf, data, margin, yPos, contentWidth);
     } else {
       yPos += 5; // Donner un peu d'espace en haut si pas d'en-tête d'entreprise
     }
@@ -90,7 +90,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Section personnel présent
     if (data.workLog.personnel && data.workLog.personnel.length > 0) {
-      yPos = drawPersonnelSection(pdf, data, margin, yPos);
+      yPos = drawPersonnelSection(pdf, data, margin, yPos, contentWidth);
     }
     
     // Ligne de séparation fine
@@ -143,7 +143,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     // Section bilan - pour les fiches vierges, calculer en fonction du nombre de personnel
     // Use data.hourlyRate and data.workLog.timeTracking separately
     if (data.pdfOptions?.includeSummary && data.workLog.timeTracking?.totalHours) {
-      yPos = drawSummarySection(pdf, data.workLog, yPos, {
+      yPos = drawSummarySection(pdf, data.workLog, yPos, margin, {
         normal: 10,
         title: 14,
         subtitle: 12

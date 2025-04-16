@@ -211,7 +211,7 @@ const TimeTrackingSection: React.FC = () => {
             <FormControl>
               <input
                 type="checkbox"
-                checked={field.value}
+                checked={field.value || false}
                 onChange={field.onChange}
                 className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
               />

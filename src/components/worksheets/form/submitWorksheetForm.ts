@@ -49,10 +49,8 @@ export async function submitWorksheetForm({
       workLog.projectId = generateUniqueBlankSheetId(workLogs);
     }
     
-    // Add invoiced status if provided
-    if (data.invoiced !== undefined) {
-      workLog.invoiced = data.invoiced;
-    }
+    // Add invoiced status
+    workLog.invoiced = data.invoiced;
     
     // Save or update the workLog
     if (existingWorkLogId) {

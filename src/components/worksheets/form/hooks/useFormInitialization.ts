@@ -38,7 +38,8 @@ export const useFormInitialization = ({
       signedQuoteAmount: initialData?.signedQuoteAmount || 0,
       isQuoteSigned: initialData?.isQuoteSigned || false,
       linkedProjectId: initialData?.linkedProjectId || null,
-      teamFilter: 'all'
+      teamFilter: 'all',
+      invoiced: initialData?.invoiced || false
     }
   });
 };
