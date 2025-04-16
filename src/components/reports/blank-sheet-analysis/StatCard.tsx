@@ -7,7 +7,7 @@ interface StatCardProps {
   title: string;
   value: string | number;
   description?: string;
-  icon?: LucideIcon;
+  icon: LucideIcon;
   iconClassName?: string;
 }
 
@@ -21,8 +21,8 @@ const StatCard = ({ title, value, description, icon: Icon, iconClassName }: Stat
       </CardHeader>
       <CardContent>
         <div className="flex items-center">
-          {Icon && <Icon className={`h-4 w-4 mr-2 ${iconClassName || ''}`} />}
-          <div className="text-2xl font-bold">{value}</div>
+          <Icon className={`h-8 w-8 text-primary ${iconClassName || ''}`} />
+          <div className="text-2xl font-bold ml-2">{value}</div>
         </div>
         {description && (
           <p className="text-xs text-muted-foreground mt-1">

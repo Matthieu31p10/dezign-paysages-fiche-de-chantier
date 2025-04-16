@@ -3,19 +3,22 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { FileBarChart, Tag, Calendar, Clock } from 'lucide-react';
 import { formatDate } from '@/utils/date';
+import { WorkLog } from '@/types/models';
 
 interface BlankSheetHeaderProps {
-  clientName: string;
+  clientName?: string;
   projectId?: string;
   date: string | Date;
   registrationTime: string | null;
+  invoiced?: boolean;
 }
 
 const BlankSheetHeader: React.FC<BlankSheetHeaderProps> = ({
   clientName,
   projectId,
   date,
-  registrationTime
+  registrationTime,
+  invoiced
 }) => {
   return (
     <div className="flex items-center gap-2 mb-1.5">
@@ -41,6 +44,12 @@ const BlankSheetHeader: React.FC<BlankSheetHeaderProps> = ({
             hour: '2-digit',
             minute: '2-digit'
           })}
+        </Badge>
+      )}
+      
+      {invoiced && (
+        <Badge variant="success" className="bg-green-100 text-green-800">
+          Facturée
         </Badge>
       )}
     </div>

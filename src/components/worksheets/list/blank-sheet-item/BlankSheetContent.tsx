@@ -2,7 +2,7 @@
 import React from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Phone, Mail, Link2, CheckCircle2, AlertTriangle, Clock, Euro } from 'lucide-react';
+import { MapPin, Phone, Mail, Link2, CheckCircle2, AlertTriangle, Clock, Euro } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import BlankSheetStats from './BlankSheetStats';
 import BlankSheetHeader from './BlankSheetHeader';
@@ -58,7 +58,10 @@ const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
   return (
     <div className="flex-1">
       <BlankSheetHeader 
-        sheet={sheet}
+        clientName={clientName}
+        projectId={sheet.projectId}
+        date={sheet.date}
+        registrationTime={sheet.createdAt ? (typeof sheet.createdAt === 'string' ? sheet.createdAt : sheet.createdAt.toISOString()) : null}
         invoiced={invoiced}
       />
       

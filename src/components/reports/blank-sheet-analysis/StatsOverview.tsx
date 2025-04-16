@@ -41,28 +41,28 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
         title="Total des fiches"
         value={totalSheets.toString()}
         description="Nombre total de fiches vierges"
-        icon={<FileText className="h-8 w-8 text-primary" />}
+        icon={FileText}
       />
       
       <StatCard
         title="Montant total"
         value={`${Math.round(totalAmount).toLocaleString()} €`}
         description={`Moyenne de ${Math.round(averageAmount).toLocaleString()} € par fiche`}
-        icon={<Euro className="h-8 w-8 text-primary" />}
+        icon={Euro}
       />
       
       <StatCard
         title="Heures totales"
         value={totalHours.toFixed(1)}
         description={`Moyenne de ${(totalSheets > 0 ? totalHours / totalSheets : 0).toFixed(1)} heures par fiche`}
-        icon={<Clock className="h-8 w-8 text-primary" />}
+        icon={Clock}
       />
       
       <StatCard
         title="Fiches facturées"
         value={`${invoicedCount} (${invoicedPercentage}%)`}
         description={`${totalSheets - invoicedCount} fiches non facturées`}
-        icon={<FileCheck className="h-8 w-8 text-primary" />}
+        icon={FileCheck}
       />
     </div>
   );

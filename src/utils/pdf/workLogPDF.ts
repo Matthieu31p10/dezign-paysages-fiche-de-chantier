@@ -71,13 +71,13 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Dessiner l'en-tête avec le logo et les informations de l'entreprise
     if (data.pdfOptions?.includeCompanyInfo) {
-      yPos = drawHeaderSection(pdf, data, margin, yPos, pageWidth, contentWidth);
+      yPos = drawHeaderSection(pdf, data, margin, yPos, contentWidth);
     } else {
       yPos += 5; // Donner un peu d'espace en haut si pas d'en-tête d'entreprise
     }
     
     // Dessiner la section des détails du passage
-    yPos = drawDetailsSection(pdf, data, margin, yPos, pageWidth, contentWidth);
+    yPos = drawDetailsSection(pdf, data, margin, yPos, contentWidth);
     
     // Vérifier l'espace avant de dessiner les boîtes d'information
     checkAndAddPage(30); // Hauteur estimée pour les boîtes d'info
@@ -142,7 +142,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Section bilan - pour les fiches vierges, calculer en fonction du nombre de personnel
     // Use data.hourlyRate and data.workLog.timeTracking separately
-    if (data.pdfOptions?.includeSummary && data.hourlyRate && data.workLog.timeTracking?.totalHours) {
+    if (data.pdfOptions?.includeSummary && data.workLog.timeTracking?.totalHours) {
       yPos = drawSummarySection(pdf, data, margin, yPos, contentWidth);
     }
     
