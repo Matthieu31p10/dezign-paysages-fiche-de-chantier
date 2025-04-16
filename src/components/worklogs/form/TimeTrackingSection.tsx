@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import { FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
 import TimeInputsGrid from './time-tracking/TimeInputsGrid';
 import TimeDeviation from './time-tracking/TimeDeviation';
-import TotalHoursDisplay from './time-tracking/TotalHoursDisplay';
 import { useWorkLogForm } from './WorkLogFormContext';
 
 interface TimeTrackingSectionProps {
@@ -48,10 +48,19 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
           control={control}
           name="totalHours"
           render={({ field }) => (
-            <TotalHoursDisplay
-              value={field.value || 0}
-              onChange={field.onChange}
-            />
+            <FormItem>
+              <FormLabel className="text-sm">Heures (auto)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  step="0.01"
+                  readOnly
+                  value={(field.value || 0).toFixed(2)}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
         />
         

@@ -71,7 +71,7 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     
     // Dessiner l'en-tête avec le logo et les informations de l'entreprise
     if (data.pdfOptions?.includeCompanyInfo) {
-      yPos = drawHeaderSection(pdf, data, margin, yPos, contentWidth);
+      yPos = drawHeaderSection(pdf, data, margin, yPos);
     } else {
       yPos += 5; // Donner un peu d'espace en haut si pas d'en-tête d'entreprise
     }

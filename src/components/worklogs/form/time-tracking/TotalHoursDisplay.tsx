@@ -2,32 +2,27 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useWorkLogForm } from '../WorkLogFormContext';
 
-const TotalHoursDisplay: React.FC = () => {
-  const { form } = useWorkLogForm();
-  const { control } = form;
-  
+interface TotalHoursDisplayProps {
+  value: number;
+  onChange: (value: number) => void;
+}
+
+const TotalHoursDisplay: React.FC<TotalHoursDisplayProps> = ({ value, onChange }) => {
   return (
-    <FormField
-      control={control}
-      name="totalHours"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-sm">Heures (auto)</FormLabel>
-          <FormControl>
-            <Input 
-              type="number" 
-              step="0.01"
-              readOnly
-              value={field.value.toFixed(2)}
-              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <FormItem>
+      <FormLabel className="text-sm">Heures (auto)</FormLabel>
+      <FormControl>
+        <Input 
+          type="number" 
+          step="0.01"
+          readOnly
+          value={value.toFixed(2)}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
   );
 };
 
