@@ -58,28 +58,28 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Informations générales</CardTitle>
+        <Card className="border-green-100">
+          <CardHeader className="bg-green-50 rounded-t-lg">
+            <CardTitle className="text-lg text-green-800">Informations générales</CardTitle>
             <CardDescription>Détails principaux du chantier</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-5">
             <div>
               <div className="flex items-center mb-4">
-                <Badge variant="outline" className="mr-2">
+                <Badge variant="outline" className="mr-2 bg-green-50 text-green-700 border-green-200">
                   <Building className="w-3.5 h-3.5 mr-1" />
                   {getProjectTypeLabel(project.projectType)}
                 </Badge>
                 
                 {project.irrigation && (
-                  <Badge variant="outline" className="mr-2">
+                  <Badge variant="outline" className="mr-2 bg-blue-50 text-blue-700 border-blue-200">
                     <Tag className="w-3.5 h-3.5 mr-1" />
                     Irrigation: {getIrrigationLabel(project.irrigation)}
                   </Badge>
                 )}
                 
                 {project.mowerType && (
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
                     <Tag className="w-3.5 h-3.5 mr-1" />
                     Tondeuse: {getMowerTypeLabel(project.mowerType)}
                   </Badge>
@@ -138,38 +138,38 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
               </div>
             </div>
             
-            <Separator />
+            <Separator className="bg-green-100" />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-500">Informations de planification</h3>
+                <h3 className="text-sm font-medium text-green-700">Informations de planification</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 border rounded-md bg-slate-50">
-                    <p className="text-xs text-muted-foreground mb-1">Passages par an</p>
+                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
+                    <p className="text-xs text-green-600 mb-1">Passages par an</p>
                     <p className="flex items-center text-sm font-medium">
-                      <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <Calendar className="w-4 h-4 mr-2 text-green-600" />
                       {project.annualVisits}
                     </p>
                   </div>
                   
-                  <div className="p-3 border rounded-md bg-slate-50">
-                    <p className="text-xs text-muted-foreground mb-1">Heures par passage</p>
+                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
+                    <p className="text-xs text-green-600 mb-1">Heures par passage</p>
                     <p className="flex items-center text-sm font-medium">
-                      <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <Clock className="w-4 h-4 mr-2 text-green-600" />
                       {formatNumber(project.visitDuration)}
                     </p>
                   </div>
                   
-                  <div className="p-3 border rounded-md bg-slate-50">
-                    <p className="text-xs text-muted-foreground mb-1">Heures totales par an</p>
+                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
+                    <p className="text-xs text-green-600 mb-1">Heures totales par an</p>
                     <p className="flex items-center text-sm font-medium">
-                      <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <Clock className="w-4 h-4 mr-2 text-green-600" />
                       {formatNumber(project.annualTotalHours)}
                     </p>
                   </div>
                   
-                  <div className="p-3 border rounded-md bg-slate-50">
-                    <p className="text-xs text-muted-foreground mb-1">Heures restantes</p>
+                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
+                    <p className="text-xs text-green-600 mb-1">Heures restantes</p>
                     <p className="flex items-center text-sm font-medium">
                       <Clock className="w-4 h-4 mr-2 text-emerald-500" />
                       {formatNumber(annualRemainingHours)}
@@ -216,9 +216,9 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
       <div className="space-y-6">
         <ProjectProgressCard project={project} />
         
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Suivi des heures</CardTitle>
+        <Card className="border-green-100">
+          <CardHeader className="bg-green-50 rounded-t-lg">
+            <CardTitle className="text-sm text-green-700">Suivi des heures</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

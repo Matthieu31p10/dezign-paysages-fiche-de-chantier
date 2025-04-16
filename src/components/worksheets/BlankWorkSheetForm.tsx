@@ -17,6 +17,7 @@ import WasteManagementSection from './WasteManagementSection';
 import ClientSignatureSection from './form/ClientSignatureSection';
 import ConsumablesSection from './ConsumablesSection';
 import FinancialSummarySection from './form/FinancialSummarySection';
+import RecurringClientSection from './form/RecurringClientSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -66,6 +67,8 @@ const BlankWorkSheetForm = ({
             onClearProject={handleClearProject}
             projectInfos={projectInfos}
           />
+          
+          <RecurringClientSection />
           
           <ClientInfoSection />
           

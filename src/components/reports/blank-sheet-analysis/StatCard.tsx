@@ -13,7 +13,7 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, description, icon: Icon, iconClassName }: StatCardProps) => {
   return (
-    <Card>
+    <Card className="bg-white border-green-100 hover:border-green-200 transition-colors">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -21,7 +21,7 @@ const StatCard = ({ title, value, description, icon: Icon, iconClassName }: Stat
       </CardHeader>
       <CardContent>
         <div className="flex items-center">
-          <Icon className={`h-8 w-8 text-primary ${iconClassName || ''}`} />
+          <Icon className={`h-8 w-8 text-green-600 ${iconClassName || ''}`} />
           <div className="text-2xl font-bold ml-2">{value}</div>
         </div>
         {description && (

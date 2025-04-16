@@ -48,7 +48,7 @@ const BlankSheetHeader: React.FC<BlankSheetHeaderProps> = ({
       )}
       
       {invoiced && (
-        <Badge variant="success" className="bg-green-100 text-green-800">
+        <Badge variant="outline" className="bg-green-100 text-green-800">
           Facturée
         </Badge>
       )}

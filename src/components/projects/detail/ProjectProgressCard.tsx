@@ -27,9 +27,9 @@ const ProjectProgressCard: React.FC<ProjectProgressCardProps> = ({ project }) =>
   const completedVisits = projectWorkLogs.length;
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Progression</CardTitle>
+    <Card className="border-green-100">
+      <CardHeader className="bg-green-50 rounded-t-lg">
+        <CardTitle className="text-lg text-green-700">Progression</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -40,7 +40,7 @@ const ProjectProgressCard: React.FC<ProjectProgressCardProps> = ({ project }) =>
             </span>
           </div>
           <progress 
-            className="w-full h-2 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-secondary [&::-webkit-progress-value]:bg-primary"
+            className="w-full h-2 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-green-100 [&::-webkit-progress-value]:bg-green-600"
             value={completedVisits} 
             max={project.annualVisits}
           />
@@ -54,16 +54,16 @@ const ProjectProgressCard: React.FC<ProjectProgressCardProps> = ({ project }) =>
             </span>
           </div>
           <progress 
-            className="w-full h-2 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-secondary [&::-webkit-progress-value]:bg-primary"
+            className="w-full h-2 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-green-100 [&::-webkit-progress-value]:bg-green-600"
             value={totalCompletedHours} 
             max={project.annualTotalHours}
           />
         </div>
         
-        <Separator />
+        <Separator className="bg-green-100" />
         
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Reste à effectuer</h3>
+          <h3 className="text-sm font-medium text-green-700">Reste à effectuer</h3>
           <div className="text-sm">
             <p>
               <span className="font-medium">{project.annualVisits - completedVisits}</span> passages
@@ -74,11 +74,11 @@ const ProjectProgressCard: React.FC<ProjectProgressCardProps> = ({ project }) =>
           </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="bg-green-50 rounded-b-lg">
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full"
+          className="w-full bg-white hover:bg-green-100 text-green-700 border-green-200"
           onClick={() => navigate(`/worklogs/new?projectId=${project.id}`)}
         >
           <Calendar className="w-4 h-4 mr-2" />
