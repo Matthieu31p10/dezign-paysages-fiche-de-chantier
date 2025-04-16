@@ -31,7 +31,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
   const { control, watch, formState: { errors } } = form;
   
   const dateValue = watch("date");
-  const selectedPersonnel = watch("personnel");
+  const selectedPersonnel = watch("personnel") || []; // Add fallback empty array to prevent undefined
   
   return (
     <>
@@ -161,7 +161,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           control={control}
           render={({ field }) => (
             <PersonnelDialog 
-              selectedPersonnel={field.value} 
+              selectedPersonnel={field.value || []} // Add fallback empty array here too
               onChange={handlePersonnelChange}
             />
           )}
