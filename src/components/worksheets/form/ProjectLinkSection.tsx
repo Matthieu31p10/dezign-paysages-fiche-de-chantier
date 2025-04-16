@@ -38,7 +38,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
       project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      project.additionalInfo?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [availableProjects, searchTerm]);
   
@@ -141,11 +141,10 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
             </Button>
           </div>
           
-          {availableProjects.find(p => p.id === selectedProjectId)?.status && (
-            <Badge variant="outline" className="mt-2 bg-white">
-              Statut: {availableProjects.find(p => p.id === selectedProjectId)?.status}
-            </Badge>
-          )}
+          {/* We don't use the status field as it doesn't exist in ProjectInfo */}
+          <Badge variant="outline" className="mt-2 bg-white">
+            Projet associé
+          </Badge>
         </div>
       )}
     </div>

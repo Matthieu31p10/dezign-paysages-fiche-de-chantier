@@ -24,6 +24,7 @@ export const generatePDF = async (data: PDFData): Promise<string> => {
       throw new Error('ID de projet manquant dans la fiche de suivi');
     }
     
+    // Call the appropriate PDF generator with the provided data
     return generateWorkLogPDF(data);
   } catch (error) {
     console.error('Erreur lors de la validation des données PDF:', error);

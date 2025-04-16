@@ -1,8 +1,10 @@
+
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { WorkLog } from '@/types/models';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { PDFData } from './types';
 
 // Function to format a date
 const formatDate = (date: Date | string): string => {
@@ -19,8 +21,14 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-// Function to generate the PDF
-export const generateWorkLogPDF = (workLog: WorkLog) => {
+// Updated function signature to receive PDFData and return a file name
+export const generateWorkLogPDF = (data: PDFData): string => {
+  // Make sure we have a WorkLog object
+  if (!data.workLog) {
+    throw new Error('WorkLog data is required');
+  }
+  
+  const workLog = data.workLog;
   const doc = new jsPDF();
 
   // Define margins and starting Y position
@@ -71,6 +79,7 @@ export const generateWorkLogPDF = (workLog: WorkLog) => {
     const x2 = margin + boxWidth + margin;
     doc.rect(x2, y, boxWidth, boxHeight);
     doc.text(`Date: ${formatDate(workLog.date)}`, x2 + 2, y + 5);
+    // Use an optional property access for teamFilter which might not exist
     doc.text(`Team: ${workLog.teamFilter || 'N/A'}`, x2 + 2, y + 10);
 
     // Box 3: Project ID
@@ -111,12 +120,13 @@ export const generateWorkLogPDF = (workLog: WorkLog) => {
       ]);
     });
 
-    doc.autoTable({
+    // Use the AutoTable plugin through typecasting to access autoTable method
+    (doc as any).autoTable({
       head: [tableColumn],
       body: tableRows,
       startY: y,
       margin: { left: margin, right: margin },
-      didParseCell: function (data) {
+      didParseCell: function (data: any) {
         if (data.section === 'head') {
           doc.setFont('helvetica', 'bold');
         } else {
@@ -133,7 +143,8 @@ export const generateWorkLogPDF = (workLog: WorkLog) => {
   const financialSummarySection = (doc: jsPDF, workLog: WorkLog, y: number, options: any) => {
     const { margin } = options;
     addSectionTitle('Financial Summary');
-    addKeyValuePair('Total Hours', String(workLog.totalHours || 0));
+    // Use timeTracking.totalHours for consistency
+    addKeyValuePair('Total Hours', String(workLog.timeTracking?.totalHours || 0));
     addKeyValuePair('Hourly Rate', formatCurrency(workLog.hourlyRate || 0));
     addKeyValuePair('Signed Quote Amount', formatCurrency(workLog.signedQuoteAmount || 0));
     addKeyValuePair('Is Quote Signed', String(workLog.isQuoteSigned || false));
@@ -162,6 +173,10 @@ export const generateWorkLogPDF = (workLog: WorkLog) => {
   // Add financial summary section
   y = financialSummarySection(doc, workLog, y, options);
 
-  // Save the PDF
-  doc.save(`worklog-${workLog.id}.pdf`);
+  // Save the PDF with a consistent file name
+  const fileName = `worklog-${workLog.id}.pdf`;
+  doc.save(fileName);
+  
+  // Return the file name for reference
+  return fileName;
 };
