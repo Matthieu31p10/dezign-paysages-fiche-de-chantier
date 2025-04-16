@@ -1,192 +1,167 @@
-
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { formatDate } from '../date';
-import { PDFData } from './types';
-import { sanitizeText } from './pdfHelpers';
-import { drawHeaderSection } from './sections/headerSection';
-import { drawDetailsSection } from './sections/detailsSection';
-import { drawInfoBoxesSection } from './sections/infoBoxesSection';
-import { drawPersonnelSection } from './sections/personnelSection';
-import { drawTimeTrackingSection } from './sections/timeTrackingSection';
-import { drawTasksSection } from './sections/tasksSection';
-import { drawNotesSection } from './sections/notesSection';
-import { drawConsumablesSection } from './sections/consumablesSection';
-import { addSummarySection as drawSummarySection } from './sections/summarySection';
+import { WorkLog } from '@/types/models';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-// Cette fonction gère la génération de PDF pour les fiches de suivi avec le nouveau design
-export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
-  try {
-    // Vérification minimale des données - permet les données manquantes
-    if (!data.workLog) {
-      throw new Error('Données de fiche de suivi manquantes');
-    }
-    
-    // Initialisation du PDF
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
+// Function to format a date
+const formatDate = (date: Date | string): string => {
+  if (!date) return '';
+  const parsedDate = typeof date === 'string' ? new Date(date) : date;
+  return format(parsedDate, 'dd MMMM yyyy', { locale: fr });
+};
+
+// Function to format currency
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('fr-CA', {
+    style: 'currency',
+    currency: 'CAD',
+  }).format(amount);
+};
+
+// Function to generate the PDF
+export const generateWorkLogPDF = (workLog: WorkLog) => {
+  const doc = new jsPDF();
+
+  // Define margins and starting Y position
+  const margin = 10;
+  let y = margin;
+
+  // Function to add a styled header
+  const addHeader = (text: string) => {
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(text, margin, y);
+    y += 8;
+  };
+
+  // Function to add a section title
+  const addSectionTitle = (text: string) => {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(text, margin, y);
+    y += 6;
+  };
+
+  // Function to add a key-value pair
+  const addKeyValuePair = (key: string, value: string | number | boolean | null | undefined) => {
+    if (value === null || value === undefined) return;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${key}:`, margin, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(value), margin + 25, y);
+    y += 5;
+  };
+
+  // Function to create info boxes section
+  const infoBoxesSection = (doc: jsPDF, workLog: WorkLog, y: number, options: any) => {
+    const { margin } = options;
+    const boxWidth = (doc.internal.pageSize.getWidth() - 4 * margin) / 3;
+    const boxHeight = 20;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    // Box 1: Client Name and Address
+    doc.rect(margin, y, boxWidth, boxHeight);
+    doc.text(`Client: ${workLog.clientName || 'N/A'}`, margin + 2, y + 5);
+    doc.text(`Address: ${workLog.address || 'N/A'}`, margin + 2, y + 10);
+
+    // Box 2: Date and Team
+    const x2 = margin + boxWidth + margin;
+    doc.rect(x2, y, boxWidth, boxHeight);
+    doc.text(`Date: ${formatDate(workLog.date)}`, x2 + 2, y + 5);
+    doc.text(`Team: ${workLog.teamFilter || 'N/A'}`, x2 + 2, y + 10);
+
+    // Box 3: Project ID
+    const x3 = x2 + boxWidth + margin;
+    doc.rect(x3, y, boxWidth, boxHeight);
+    doc.text(`Project ID: ${workLog.projectId || 'N/A'}`, x3 + 2, y + 5);
+
+    return y + boxHeight + margin;
+  };
+
+  // Function to create details section
+  const detailsSection = (doc: jsPDF, workLog: WorkLog, y: number, options: any, label: string, value: string) => {
+    const { margin } = options;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${label}:`, margin, y);
+    doc.setFont('helvetica', 'normal');
+    const maxWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+    const textLines = doc.splitTextToSize(value, maxWidth - 30);
+    doc.text(textLines, margin + 30, y);
+    y += textLines.length * 5 + margin;
+    return y;
+  };
+
+  // Function to create consumables table
+  const consumablesTable = (doc: jsPDF, workLog: WorkLog, y: number, options: any) => {
+    const { margin } = options;
+    addSectionTitle('Consumables Used');
+    const tableColumn = ['Product', 'Quantity', 'Unit Price', 'Total Price'];
+    const tableRows: string[][] = [];
+
+    workLog.consumables?.forEach(consumable => {
+      tableRows.push([
+        consumable.product || 'N/A',
+        String(consumable.quantity || 0),
+        formatCurrency(consumable.unitPrice || 0),
+        formatCurrency(consumable.totalPrice || 0),
+      ]);
     });
-    
-    // Couleurs
-    const primaryColor = [61, 174, 43]; // Vert plus vif
-    const textColor = [60, 60, 60]; // Texte gris foncé
-    
-    // Marge et dimensions
-    const margin = 15;
-    const pageWidth = 210;
-    const pageHeight = 297;
-    const contentWidth = pageWidth - (margin * 2);
-    
-    // Réglage des couleurs de texte
-    pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-    
-    // Position verticale courante
-    let yPos = margin;
-    
-    // Hauteur disponible pour le contenu (en tenant compte de l'espace pour le pied de page)
-    const availableHeight = pageHeight - (margin * 2) - 10; // 10mm reserved for footer
-    
-    // Fonction pour vérifier s'il reste assez d'espace et ajouter une page si nécessaire
-    const checkAndAddPage = (requiredHeight: number): void => {
-      if (yPos + requiredHeight > availableHeight) {
-        // Add a new page
-        pdf.addPage();
-        
-        // Reset vertical position to top margin
-        yPos = margin;
-        
-        // Add a small header to indicate continuation
-        pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'italic');
-        // Vérifier si c'est une fiche vierge
-        const isBlankSheet = data.workLog?.projectId && 
-          (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
-        const docTitle = isBlankSheet ? 'Fiche Vierge' : 'Fiche de suivi';
-        pdf.text(`Suite - ${data.project?.name || docTitle} - ${formatDate(data.workLog?.date)}`, margin, yPos);
-        yPos += 8;
-      }
-    };
-    
-    // Dessiner l'en-tête avec le logo et les informations de l'entreprise
-    if (data.pdfOptions?.includeCompanyInfo) {
-      yPos = drawHeaderSection(pdf, data, margin, yPos, contentWidth);
-    } else {
-      yPos += 5; // Donner un peu d'espace en haut si pas d'en-tête d'entreprise
-    }
-    
-    // Dessiner la section des détails du passage
-    yPos = drawDetailsSection(pdf, data, margin, yPos, contentWidth);
-    
-    // Vérifier l'espace avant de dessiner les boîtes d'information
-    checkAndAddPage(30); // Hauteur estimée pour les boîtes d'info
-    
-    // Dessiner les boîtes d'information
-    yPos = drawInfoBoxesSection(pdf, data, margin, yPos, contentWidth);
-    
-    // Vérifier l'espace avant de dessiner la section personnel
-    checkAndAddPage(30); // Hauteur estimée pour la section personnel
-    
-    // Section personnel présent
-    if (data.workLog.personnel && data.workLog.personnel.length > 0) {
-      yPos = drawPersonnelSection(pdf, data, margin, yPos, contentWidth);
-    }
-    
-    // Ligne de séparation fine
-    pdf.setDrawColor(220, 220, 220);
-    pdf.setLineWidth(0.2);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
-    // Vérifier l'espace avant de dessiner la section suivi du temps
-    checkAndAddPage(30); // Hauteur estimée pour le suivi du temps
-    
-    // Section suivi du temps
-    if (data.workLog.timeTracking) {
-      yPos = drawTimeTrackingSection(pdf, data, margin, yPos, contentWidth);
-    }
-    
-    // Ligne de séparation fine
-    pdf.setDrawColor(220, 220, 220);
-    pdf.setLineWidth(0.2);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
-    // Vérifier l'espace avant de dessiner la section tâches
-    checkAndAddPage(50); // Hauteur estimée pour les tâches
-    
-    // Section tâches personnalisées
-    if (data.workLog.tasks) {
-      yPos = drawTasksSection(pdf, data, margin, yPos, contentWidth);
-    }
-    
-    // Ligne de séparation fine
-    pdf.setDrawColor(220, 220, 220);
-    pdf.setLineWidth(0.2);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
-    // Vérifier l'espace avant de dessiner la section consommables
-    checkAndAddPage(50); // Hauteur estimée pour les consommables
-    
-    // Section consommables
-    if (data.workLog.consumables && data.workLog.consumables.length > 0) {
-      yPos = drawConsumablesSection(pdf, data, margin, yPos, contentWidth);
-    }
-    
-    // Ligne de séparation fine
-    pdf.setDrawColor(220, 220, 220);
-    pdf.setLineWidth(0.2);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
-    // Vérifier l'espace avant de dessiner le bilan
-    checkAndAddPage(50); // Hauteur estimée pour le bilan
-    
-    // Section bilan - pour les fiches vierges, calculer en fonction du nombre de personnel
-    // Use data.hourlyRate and data.workLog.timeTracking separately
-    if (data.pdfOptions?.includeSummary && data.workLog.timeTracking?.totalHours) {
-      yPos = drawSummarySection(pdf, data.workLog, yPos, margin, {
-        normal: 10,
-        title: 14,
-        subtitle: 12
-      });
-    }
-    
-    // Ligne de séparation fine
-    pdf.setDrawColor(220, 220, 220);
-    pdf.setLineWidth(0.2);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    
-    // Vérifier l'espace avant de dessiner la section notes
-    checkAndAddPage(60); // Hauteur estimée pour les notes
-    
-    // Section notes et observations (hauteur adaptative)
-    if (data.workLog.notes) {
-      yPos = drawNotesSection(pdf, data, margin, yPos, contentWidth);
-    }
-    
-    // Pied de page sur chaque page
-    const totalPages = pdf.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(7);
-      pdf.setTextColor(150, 150, 150);
-      const currentDate = new Date();
-      pdf.text(`Document généré le ${formatDate(currentDate)} - Page ${i}/${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-    }
-    
-    // Génération du nom de fichier
-    const isBlankSheet = data.workLog.projectId && 
-      (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
-    const filePrefix = isBlankSheet ? 'Fiche_Vierge' : 'Fiche_Suivi';
-    const projectName = data.project?.name 
-      ? sanitizeText(data.project.name).replace(/[^a-z0-9]/gi, '_')
-      : 'chantier';
-    const dateStr = formatDate(data.workLog.date).replace(/\//g, '-');
-    const fileName = `${filePrefix}_${projectName}_${dateStr}.pdf`;
-    
-    pdf.save(fileName);
-    return fileName;
-  } catch (error) {
-    console.error('Erreur lors de la génération du PDF:', error);
-    throw error;
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: y,
+      margin: { left: margin, right: margin },
+      didParseCell: function (data) {
+        if (data.section === 'head') {
+          doc.setFont('helvetica', 'bold');
+        } else {
+          doc.setFont('helvetica', 'normal');
+        }
+      },
+    });
+
+    y = (doc as any).lastAutoTable.finalY + margin;
+    return y;
+  };
+
+  // Function to create financial summary section
+  const financialSummarySection = (doc: jsPDF, workLog: WorkLog, y: number, options: any) => {
+    const { margin } = options;
+    addSectionTitle('Financial Summary');
+    addKeyValuePair('Total Hours', String(workLog.totalHours || 0));
+    addKeyValuePair('Hourly Rate', formatCurrency(workLog.hourlyRate || 0));
+    addKeyValuePair('Signed Quote Amount', formatCurrency(workLog.signedQuoteAmount || 0));
+    addKeyValuePair('Is Quote Signed', String(workLog.isQuoteSigned || false));
+    return y;
+  };
+
+  // Add header
+  addHeader('Work Log Details');
+
+  // Define options
+  const options = { margin };
+
+  // Add info boxes section
+  y = infoBoxesSection(doc, workLog, y, options);
+
+  // Add details section
+  y = detailsSection(doc, workLog, y, options, 'Tasks', workLog.tasks || 'N/A');
+  y = detailsSection(doc, workLog, y, options, 'Notes', workLog.notes || 'N/A');
+  y = detailsSection(doc, workLog, y, options, 'Waste Management', workLog.wasteManagement || 'N/A');
+
+  // Add consumables table
+  if (workLog.consumables && workLog.consumables.length > 0) {
+    y = consumablesTable(doc, workLog, y, options);
   }
+
+  // Add financial summary section
+  y = financialSummarySection(doc, workLog, y, options);
+
+  // Save the PDF
+  doc.save(`worklog-${workLog.id}.pdf`);
 };

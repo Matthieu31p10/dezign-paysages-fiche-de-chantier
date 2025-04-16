@@ -1,13 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { LinkIcon } from 'lucide-react';
+import { LinkIcon, Search, X, FileSearch } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from '@/lib/utils';
 import { FormControl } from '@/components/ui/form';
 import { ProjectInfo } from '@/types/models';
 import { useProjects } from '@/context/ProjectsContext';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectLinkSectionProps {
   selectedProjectId: string | null;
@@ -23,74 +24,128 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
   projectInfos = []
 }) => {
   const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { getActiveProjects } = useProjects();
   
   // Utilisons les projets actifs du contexte si aucun projectInfos n'est fourni
   const availableProjects = projectInfos.length > 0 ? projectInfos : getActiveProjects();
   
+  // Filter projects based on search term
+  const filteredProjects = useCallback(() => {
+    if (!searchTerm) return availableProjects;
+    
+    return availableProjects.filter(project => 
+      project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [availableProjects, searchTerm]);
+  
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+  
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium flex items-center">
-        <LinkIcon className="mr-2 h-5 w-5 text-muted-foreground" />
+    <div className="space-y-4 border rounded-lg p-4 bg-blue-50">
+      <h2 className="text-lg font-medium flex items-center text-blue-700">
+        <LinkIcon className="mr-2 h-5 w-5" />
         Associer à un projet existant (optionnel)
       </h2>
       
-      <Popover open={openProjectsCombobox} onOpenChange={setOpenProjectsCombobox}>
-        <PopoverTrigger asChild>
-          <FormControl>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={openProjectsCombobox}
-              className={cn(
-                "w-full justify-between",
-                !selectedProjectId && "text-muted-foreground"
-              )}
-            >
-              {selectedProjectId ? 
-                availableProjects.find(project => project.id === selectedProjectId)?.name :
-                "Sélectionner un projet existant..."
-              }
-            </Button>
-          </FormControl>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Rechercher un projet..." />
-            <CommandList>
-              <CommandEmpty>Aucun projet trouvé.</CommandEmpty>
-              <CommandGroup>
-                {availableProjects.map(project => (
-                  <CommandItem
-                    key={project.id}
-                    value={project.id}
-                    onSelect={() => onProjectSelect(project.id)}
-                  >
-                    {project.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-          {selectedProjectId && (
-            <div className="p-2 border-t">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start text-destructive"
-                onClick={onClearProject}
-              >
-                Effacer la sélection
-              </Button>
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
+      <div className="flex gap-4 items-start">
+        <div className="flex-1">
+          <Popover open={openProjectsCombobox} onOpenChange={setOpenProjectsCombobox}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openProjectsCombobox}
+                  className={cn(
+                    "w-full justify-between bg-white",
+                    !selectedProjectId && "text-muted-foreground"
+                  )}
+                >
+                  {selectedProjectId ? (
+                    <span className="flex items-center">
+                      <FileSearch className="mr-2 h-4 w-4 text-blue-600" />
+                      {availableProjects.find(project => project.id === selectedProjectId)?.name}
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <Search className="mr-2 h-4 w-4" />
+                      Rechercher un projet existant...
+                    </span>
+                  )}
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0">
+              <Command>
+                <CommandInput 
+                  placeholder="Rechercher un projet par nom, client ou adresse..." 
+                  value={searchTerm} 
+                  onValueChange={handleSearchChange}
+                />
+                <CommandList>
+                  <CommandEmpty>Aucun projet trouvé.</CommandEmpty>
+                  <CommandGroup heading="Projets actifs">
+                    {filteredProjects().map(project => (
+                      <CommandItem
+                        key={project.id}
+                        value={project.id}
+                        onSelect={() => {
+                          onProjectSelect(project.id);
+                          setOpenProjectsCombobox(false);
+                          setSearchTerm('');
+                        }}
+                        className="flex flex-col items-start py-3"
+                      >
+                        <div className="font-medium">{project.name}</div>
+                        {project.clientName && (
+                          <div className="text-sm text-muted-foreground">
+                            Client: {project.clientName}
+                          </div>
+                        )}
+                        {project.address && (
+                          <div className="text-xs text-muted-foreground">
+                            Adresse: {project.address}
+                          </div>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
       
       {selectedProjectId && (
-        <div className="rounded-md bg-muted p-3 text-sm">
-          <p className="font-medium">Projet sélectionné: {availableProjects.find(p => p.id === selectedProjectId)?.name}</p>
-          <p className="text-muted-foreground">Les informations du client ont été préremplies.</p>
+        <div className="rounded-md bg-blue-100 p-3 text-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="font-medium">Projet sélectionné: {availableProjects.find(p => p.id === selectedProjectId)?.name}</p>
+              <p className="text-muted-foreground text-xs mt-1">Les informations du client ont été préremplies.</p>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-2 text-blue-700 hover:bg-blue-200 hover:text-blue-800"
+              onClick={onClearProject}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Annuler la liaison
+            </Button>
+          </div>
+          
+          {availableProjects.find(p => p.id === selectedProjectId)?.status && (
+            <Badge variant="outline" className="mt-2 bg-white">
+              Statut: {availableProjects.find(p => p.id === selectedProjectId)?.status}
+            </Badge>
+          )}
         </div>
       )}
     </div>

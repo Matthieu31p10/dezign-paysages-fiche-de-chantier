@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { BlankWorkSheetValues } from '../schema';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, User, Plus, Save } from 'lucide-react';
+import { Users, User, Plus, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface RecurringClient {
   id: string;
@@ -20,10 +21,14 @@ interface RecurringClient {
 const STORAGE_KEY = 'recurring-clients';
 
 const RecurringClientSection: React.FC = () => {
-  const { control, setValue } = useFormContext<BlankWorkSheetValues>();
+  const { control, setValue, watch } = useFormContext<BlankWorkSheetValues>();
   const [clients, setClients] = useState<RecurringClient[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const currentClientName = watch('clientName');
   
   // Load saved clients from localStorage
   useEffect(() => {
@@ -53,25 +58,46 @@ const RecurringClientSection: React.FC = () => {
       return;
     }
     
-    const newClient: RecurringClient = {
-      id: crypto.randomUUID(),
-      name: clientName,
-      address: address || '',
-      phone: phone || '',
-      email: email || '',
-    };
+    // Check if client already exists
+    const existingClientIndex = clients.findIndex(c => c.name.toLowerCase() === clientName.toLowerCase());
     
-    const updatedClients = [...clients, newClient];
+    let updatedClients: RecurringClient[];
+    let message: string;
+    
+    if (existingClientIndex >= 0) {
+      // Update existing client
+      updatedClients = [...clients];
+      updatedClients[existingClientIndex] = {
+        ...updatedClients[existingClientIndex],
+        address: address || updatedClients[existingClientIndex].address,
+        phone: phone || updatedClients[existingClientIndex].phone,
+        email: email || updatedClients[existingClientIndex].email,
+      };
+      message = `Les informations de ${clientName} ont été mises à jour`;
+      setSelectedClientId(updatedClients[existingClientIndex].id);
+    } else {
+      // Create new client
+      const newClient: RecurringClient = {
+        id: crypto.randomUUID(),
+        name: clientName,
+        address: address || '',
+        phone: phone || '',
+        email: email || '',
+      };
+      
+      updatedClients = [...clients, newClient];
+      message = `Les informations de ${clientName} ont été sauvegardées`;
+      setSelectedClientId(newClient.id);
+    }
+    
     setClients(updatedClients);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClients));
     
     toast({
       title: "Client enregistré",
-      description: `Les informations de ${clientName} ont été sauvegardées`,
+      description: message,
       variant: "default",
     });
-    
-    setSelectedClientId(newClient.id);
   };
   
   // Select a client from the list
@@ -96,6 +122,34 @@ const RecurringClientSection: React.FC = () => {
     }
   };
   
+  // Delete a client
+  const handleDeleteRequest = (clientId: string) => {
+    setClientToDelete(clientId);
+    setDeleteDialogOpen(true);
+  };
+  
+  const confirmDeleteClient = () => {
+    if (!clientToDelete) return;
+    
+    const updatedClients = clients.filter(c => c.id !== clientToDelete);
+    setClients(updatedClients);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClients));
+    
+    // If the deleted client was selected, clear the selection
+    if (selectedClientId === clientToDelete) {
+      setSelectedClientId('');
+    }
+    
+    toast({
+      title: "Client supprimé",
+      description: "Les informations du client ont été supprimées",
+      variant: "default",
+    });
+    
+    setDeleteDialogOpen(false);
+    setClientToDelete(null);
+  };
+  
   return (
     <div className="space-y-4 border rounded-lg p-4 bg-green-50">
       <div className="flex items-center justify-between">
@@ -110,6 +164,7 @@ const RecurringClientSection: React.FC = () => {
           size="sm"
           onClick={saveCurrentClient}
           className="bg-white hover:bg-green-100 text-green-700 border-green-200"
+          disabled={!currentClientName}
         >
           <Save className="h-4 w-4 mr-2" />
           Sauvegarder ce client
@@ -133,7 +188,7 @@ const RecurringClientSection: React.FC = () => {
           />
         </div>
         
-        <div className="w-1/3">
+        <div className="w-1/3 space-y-1">
           <label className="text-sm font-medium mb-2 block">Clients enregistrés</label>
           <Select value={selectedClientId} onValueChange={handleClientSelect}>
             <SelectTrigger className="bg-white">
@@ -148,6 +203,18 @@ const RecurringClientSection: React.FC = () => {
               ))}
             </SelectContent>
           </Select>
+          
+          {selectedClientId && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => handleDeleteRequest(selectedClientId)}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full justify-start mt-1"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-2" />
+              Supprimer ce client
+            </Button>
+          )}
         </div>
       </div>
       
@@ -194,6 +261,23 @@ const RecurringClientSection: React.FC = () => {
           )}
         />
       </div>
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce client ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes les informations du client seront définitivement supprimées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteClient} className="bg-destructive">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
