@@ -6,7 +6,6 @@ import ProjectLinkSection from './form/ProjectLinkSection';
 import ClientInfoSection from './form/ClientInfoSection';
 import InterventionDetailsSection from './form/InterventionDetailsSection';
 import AdditionalNotesSection from './form/AdditionalNotesSection';
-import TimeTrackingFormSection from './form/TimeTrackingFormSection';
 import FormActions from './form/FormActions';
 import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
 import { FormProvider } from 'react-hook-form';
@@ -18,6 +17,7 @@ import ClientSignatureSection from './form/ClientSignatureSection';
 import ConsumablesSection from './ConsumablesSection';
 import FinancialSummarySection from './form/FinancialSummarySection';
 import RecurringClientSection from './form/RecurringClientSection';
+import TimeTrackingSection from './TimeTrackingSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -74,9 +74,7 @@ const BlankWorkSheetForm = ({
           
           <InterventionDetailsSection />
           
-          <TimeTrackingFormSection 
-            onTimeChange={calculateTotalHours}
-          />
+          <TimeTrackingSection />
           
           <TasksSection 
             customTasks={settings?.customTasks || []}

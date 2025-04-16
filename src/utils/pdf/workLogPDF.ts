@@ -143,7 +143,11 @@ export const generateWorkLogPDF = async (data: PDFData): Promise<string> => {
     // Section bilan - pour les fiches vierges, calculer en fonction du nombre de personnel
     // Use data.hourlyRate and data.workLog.timeTracking separately
     if (data.pdfOptions?.includeSummary && data.workLog.timeTracking?.totalHours) {
-      yPos = drawSummarySection(pdf, data, margin, yPos, contentWidth);
+      yPos = drawSummarySection(pdf, data.workLog, yPos, {
+        normal: 10,
+        title: 14,
+        subtitle: 12
+      });
     }
     
     // Ligne de séparation fine

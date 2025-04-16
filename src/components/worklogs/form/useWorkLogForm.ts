@@ -77,6 +77,9 @@ export const useWorkLogFormState = ({
       if (project) {
         setSelectedProject(project);
         
+        // Set duration from project's visitDuration field
+        form.setValue('duration', project.visitDuration || 0);
+        
         // Update current year target
         setCurrentYearTarget(project.annualTotalHours || 0);
         
@@ -103,7 +106,7 @@ export const useWorkLogFormState = ({
       setPreviousYearsHours(0);
       setCurrentYearTarget(0);
     }
-  }, [selectedProjectId, projectInfos, existingWorkLogs]);
+  }, [selectedProjectId, projectInfos, existingWorkLogs, form]);
   
   // Calculate duration and total hours when time fields change
   useEffect(() => {

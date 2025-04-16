@@ -47,12 +47,13 @@ export const useBlankWorksheetForm = ({
       notes: initialData?.notes || '',
       clientSignature: initialData?.clientSignature || null,
       consumables: initialData?.consumables || [],
-      totalHours: initialData?.totalHours || 0,
-      hourlyRate: initialData?.hourlyRate || 0,
+      totalHours: initialData?.timeTracking?.totalHours || 0,
+      hourlyRate: initialData?.hourlyRate || 45, // Default hourly rate
       signedQuoteAmount: initialData?.signedQuoteAmount || 0,
       isQuoteSigned: initialData?.isQuoteSigned || false,
       linkedProjectId: initialData?.linkedProjectId || null,
-      teamFilter: initialData?.teamFilter || 'all'
+      teamFilter: initialData?.teamFilter || 'all',
+      invoiced: initialData?.invoiced || false
     }
   });
   
@@ -78,6 +79,10 @@ export const useBlankWorksheetForm = ({
       form.setValue('contactPhone', project.contact?.phone || '');
       form.setValue('contactEmail', project.contact?.email || '');
       form.setValue('linkedProjectId', project.id);
+      // Set hourly rate if it's available in the project data
+      if (project.hourlyRate) {
+        form.setValue('hourlyRate', project.hourlyRate);
+      }
     }
   };
   

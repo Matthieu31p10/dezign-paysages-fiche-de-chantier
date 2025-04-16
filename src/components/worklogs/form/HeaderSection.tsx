@@ -32,6 +32,7 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
   
   const dateValue = watch("date");
   const selectedPersonnel = watch("personnel") || []; // Add fallback empty array to prevent undefined
+  const duration = watch("duration");
   
   return (
     <>
@@ -141,8 +142,8 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
                 type="number" 
                 id="duration" 
                 step="0.5"
-                className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={field.value}
+                className="w-full flex h-10 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={field.value || 0}
                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 readOnly 
               />
