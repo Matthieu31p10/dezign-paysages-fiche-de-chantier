@@ -4,21 +4,19 @@ import * as z from 'zod';
 export const formSchema = z.object({
   projectId: z.string().min(1, { message: "Veuillez sélectionner un chantier." }),
   date: z.date({
-    required_error: "Une date est requise.",
-  }),
+    required_error: "Une date est recommandée.",
+  }).optional().default(() => new Date()),
   duration: z.number({
-    required_error: "La durée est requise.",
     invalid_type_error: "La durée doit être un nombre."
-  }).min(0, { message: "La durée doit être positive." }),
-  personnel: z.array(z.string()).min(1, { message: "Veuillez sélectionner au moins une personne." }),
-  departure: z.string().min(1, { message: "L'heure de départ est requise." }),
-  arrival: z.string().min(1, { message: "L'heure d'arrivée est requise." }),
-  end: z.string().min(1, { message: "L'heure de fin est requise." }),
-  breakTime: z.string().default("00:00"),
+  }).min(0, { message: "La durée doit être positive." }).optional().default(0),
+  personnel: z.array(z.string()).optional().default([]),
+  departure: z.string().optional().default(""),
+  arrival: z.string().optional().default(""),
+  end: z.string().optional().default(""),
+  breakTime: z.string().optional().default("00:00"),
   totalHours: z.number({
-    required_error: "Le total d'heures est requis.",
     invalid_type_error: "Le total d'heures doit être un nombre."
-  }).min(0, { message: "Le total d'heures doit être positive." }),
+  }).min(0, { message: "Le total d'heures doit être positive." }).optional().default(0),
   notes: z.string().optional(),
   waterConsumption: z.number().optional(),
   teamFilter: z.string().optional().default(""),

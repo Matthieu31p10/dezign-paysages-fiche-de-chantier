@@ -81,12 +81,12 @@ export const generateWorkLogPDF = (data: PDFData): string => {
     doc.text(`Date: ${formatDate(workLog.date)}`, x2 + 2, y + 5);
     // Fix the teamFilter property access since it doesn't exist on WorkLog type
     // Use linkedProjectId instead or another appropriate property
-    doc.text(`Team: ${workLog.linkedProjectId ? 'Project Linked' : 'N/A'}`, x2 + 2, y + 10);
+    doc.text(`Projet lié: ${workLog.linkedProjectId ? 'Oui' : 'Non'}`, x2 + 2, y + 10);
 
     // Box 3: Project ID
     const x3 = x2 + boxWidth + margin;
     doc.rect(x3, y, boxWidth, boxHeight);
-    doc.text(`Project ID: ${workLog.projectId || 'N/A'}`, x3 + 2, y + 5);
+    doc.text(`ID Projet: ${workLog.projectId || 'N/A'}`, x3 + 2, y + 5);
 
     return y + boxHeight + margin;
   };
@@ -108,8 +108,8 @@ export const generateWorkLogPDF = (data: PDFData): string => {
   // Function to create consumables table
   const consumablesTable = (doc: jsPDF, workLog: WorkLog, y: number, options: any) => {
     const { margin } = options;
-    addSectionTitle('Consumables Used');
-    const tableColumn = ['Product', 'Quantity', 'Unit Price', 'Total Price'];
+    addSectionTitle('Matériaux utilisés');
+    const tableColumn = ['Produit', 'Quantité', 'Prix unitaire', 'Prix total'];
     const tableRows: string[][] = [];
 
     workLog.consumables?.forEach(consumable => {
@@ -143,17 +143,17 @@ export const generateWorkLogPDF = (data: PDFData): string => {
   // Function to create financial summary section
   const financialSummarySection = (doc: jsPDF, workLog: WorkLog, y: number, options: any) => {
     const { margin } = options;
-    addSectionTitle('Financial Summary');
+    addSectionTitle('Résumé financier');
     // Use timeTracking.totalHours for consistency
-    addKeyValuePair('Total Hours', String(workLog.timeTracking?.totalHours || 0));
-    addKeyValuePair('Hourly Rate', formatCurrency(workLog.hourlyRate || 0));
-    addKeyValuePair('Signed Quote Amount', formatCurrency(workLog.signedQuoteAmount || 0));
-    addKeyValuePair('Is Quote Signed', String(workLog.isQuoteSigned || false));
+    addKeyValuePair('Heures totales', String(workLog.timeTracking?.totalHours || 0));
+    addKeyValuePair('Taux horaire', formatCurrency(workLog.hourlyRate || 0));
+    addKeyValuePair('Montant du devis signé', formatCurrency(workLog.signedQuoteAmount || 0));
+    addKeyValuePair('Devis signé', String(workLog.isQuoteSigned || false));
     return y;
   };
 
   // Add header
-  addHeader('Work Log Details');
+  addHeader('Détails de la fiche de suivi');
 
   // Define options
   const options = { margin };
@@ -162,9 +162,9 @@ export const generateWorkLogPDF = (data: PDFData): string => {
   y = infoBoxesSection(doc, workLog, y, options);
 
   // Add details section
-  y = detailsSection(doc, workLog, y, options, 'Tasks', workLog.tasks || 'N/A');
+  y = detailsSection(doc, workLog, y, options, 'Tâches', workLog.tasks || 'N/A');
   y = detailsSection(doc, workLog, y, options, 'Notes', workLog.notes || 'N/A');
-  y = detailsSection(doc, workLog, y, options, 'Waste Management', workLog.wasteManagement || 'N/A');
+  y = detailsSection(doc, workLog, y, options, 'Gestion des déchets', workLog.wasteManagement || 'N/A');
 
   // Add consumables table
   if (workLog.consumables && workLog.consumables.length > 0) {

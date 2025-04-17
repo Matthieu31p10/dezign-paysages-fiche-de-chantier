@@ -30,6 +30,11 @@ const WorkLogEdit = () => {
     return () => clearTimeout(timer);
   }, [id, workLog, workLogs]);
   
+  const handleReturn = () => {
+    // Naviguer vers la fiche de détail au lieu de la liste
+    navigate(`/worklogs/${id}`);
+  };
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -61,7 +66,7 @@ const WorkLogEdit = () => {
             variant="ghost" 
             size="sm" 
             className="h-8 px-2 mr-2"
-            onClick={() => navigate(`/worklogs/${id}`)}
+            onClick={handleReturn}
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
@@ -75,7 +80,7 @@ const WorkLogEdit = () => {
           initialData={workLog} 
           onSuccess={() => {
             toast.success("Fiche de suivi modifiée avec succès");
-            navigate(`/worklogs/${id}`);
+            handleReturn();
           }} 
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}

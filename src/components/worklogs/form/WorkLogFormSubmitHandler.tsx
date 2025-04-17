@@ -25,21 +25,15 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     try {
       console.log("Raw form data:", data);
       
-      // Validate required fields
-      if (!data.projectId || !data.date) {
-        toast.error("Veuillez sélectionner un projet et une date.");
+      // Validation moins stricte pour permettre des fiches incomplètes
+      // On vérifie seulement le projectId comme champ obligatoire
+      if (!data.projectId) {
+        toast.error("Veuillez sélectionner un projet.");
         return;
       }
 
-      // Ensure personnel is not empty
-      const safePersonnel = Array.isArray(data.personnel) && data.personnel.length > 0 
-        ? data.personnel 
-        : [];
-
-      if (safePersonnel.length === 0) {
-        toast.error("Veuillez sélectionner au moins un membre du personnel.");
-        return;
-      }
+      // Personnel peut être vide maintenant
+      const safePersonnel = Array.isArray(data.personnel) ? data.personnel : [];
 
       // Handle custom tasks with proper validation and defaults
       let safeCustomTasks = {};
@@ -63,14 +57,14 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // S'assurer que toutes les valeurs numériques sont traitées comme des nombres
       const payload = {
         projectId: data.projectId,
-        date: data.date.toISOString(), // Convert Date to string for WorkLog
+        date: data.date ? data.date.toISOString() : new Date().toISOString(), // Default à aujourd'hui si absent
         duration: Number(data.duration) || 0,
         personnel: safePersonnel,
         timeTracking: {
-          departure: data.departure || "08:00",
-          arrival: data.arrival || "09:00",
-          end: data.end || "17:00",
-          breakTime: data.breakTime || "00:00",
+          departure: data.departure || "",
+          arrival: data.arrival || "",
+          end: data.end || "",
+          breakTime: data.breakTime || "",
           totalHours: Number(data.totalHours) || 0,
         },
         tasksPerformed: {
@@ -127,17 +121,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit, (errors) => {
       console.error("Form validation errors:", errors);
-      // Show more specific error messages based on the validation errors
-      if (errors.projectId) {
-        toast.error("Veuillez sélectionner un projet.");
-      } else if (errors.personnel) {
-        toast.error("Veuillez sélectionner au moins un membre du personnel.");
-      } else if (errors.duration) {
-        toast.error(errors.duration.message || "Problème avec la durée. Veuillez vérifier.");
-      } else if (errors.customTasks) {
-        toast.error("Problème avec les tâches personnalisées. Veuillez réessayer.");
-      } else {
-        toast.error("Veuillez vérifier les champs du formulaire.");
+      
+      // Affichage des erreurs mais sans bloquer la soumission
+      if (Object.keys(errors).length > 0) {
+        toast.warning("Des champs sont incomplets mais la fiche peut être enregistrée.");
       }
     })} className="space-y-8">
       {children}
