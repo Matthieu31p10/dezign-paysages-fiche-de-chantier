@@ -13,8 +13,8 @@ const WorkLogNew = () => {
   const { workLogs } = useWorkLogs();
   
   const handleReturn = () => {
-    // Simplement naviguer vers la liste des fiches de suivi
-    navigate('/worklogs');
+    // Naviguer vers la liste des fiches de suivi sans perdre l'historique
+    navigate('/worklogs', { replace: false });
   };
   
   return (
@@ -24,17 +24,17 @@ const WorkLogNew = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 px-2 mr-2"
+            className="h-8 px-2 mr-2 text-green-700 hover:text-green-800 hover:bg-green-100"
             onClick={handleReturn}
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
           </Button>
-          <h1 className="text-2xl font-semibold">Nouvelle fiche de suivi</h1>
+          <h1 className="text-2xl font-semibold text-green-800">Nouvelle fiche de suivi</h1>
         </div>
       </div>
       
-      <Card className="p-6">
+      <Card className="p-6 border-green-200 shadow-md">
         <WorkLogForm 
           onSuccess={() => {
             console.log("Form submitted successfully, navigating to /worklogs");

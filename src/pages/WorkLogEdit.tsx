@@ -31,14 +31,14 @@ const WorkLogEdit = () => {
   }, [id, workLog, workLogs]);
   
   const handleReturn = () => {
-    // Naviguer vers la fiche de détail au lieu de la liste
-    navigate(`/worklogs/${id}`);
+    // Naviguer vers la fiche de détail sans perdre l'historique
+    navigate(`/worklogs/${id}`, { replace: false });
   };
   
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
       </div>
     );
   }
@@ -46,11 +46,11 @@ const WorkLogEdit = () => {
   if (!workLog) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <h2 className="text-xl font-medium mb-4">Fiche de suivi non trouvée</h2>
+        <h2 className="text-xl font-medium mb-4 text-green-800">Fiche de suivi non trouvée</h2>
         <p className="text-muted-foreground mb-6">
           La fiche de suivi que vous cherchez n'existe pas ou a été supprimée.
         </p>
-        <Button onClick={() => navigate('/worklogs')}>
+        <Button onClick={() => navigate('/worklogs')} className="bg-green-600 hover:bg-green-700">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à la liste
         </Button>
@@ -65,17 +65,17 @@ const WorkLogEdit = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 px-2 mr-2"
+            className="h-8 px-2 mr-2 text-green-700 hover:text-green-800 hover:bg-green-100"
             onClick={handleReturn}
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
           </Button>
-          <h1 className="text-2xl font-semibold">Modifier la fiche de suivi</h1>
+          <h1 className="text-2xl font-semibold text-green-800">Modifier la fiche de suivi</h1>
         </div>
       </div>
       
-      <Card className="p-6">
+      <Card className="p-6 border-green-200 shadow-md">
         <WorkLogForm 
           initialData={workLog} 
           onSuccess={() => {

@@ -20,9 +20,9 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   return (
     <TabsContent value="new" className="p-0 border-0 mt-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center">
-            <FilePlus className="w-5 h-5 mr-2 text-primary" />
+        <CardHeader className="bg-gradient-to-r from-green-50 to-white">
+          <CardTitle className="text-xl flex items-center text-green-800">
+            <FilePlus className="w-5 h-5 mr-2 text-green-600" />
             {editingWorkLogId ? "Modifier la fiche vierge" : "Nouvelle fiche vierge"}
           </CardTitle>
           <CardDescription>

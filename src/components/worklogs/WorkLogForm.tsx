@@ -61,36 +61,48 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         timeDeviationClass={timeDeviationClass}
       >
         <WorkLogFormSubmitHandler onSuccess={onSuccess}>
-          <HeaderSection 
-            teams={teams}
-            filteredProjects={filteredProjects}
-            handleTeamFilterChange={handleTeamFilterChange}
-            handlePersonnelChange={handlePersonnelChange}
-          />
+          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4">
+            <HeaderSection 
+              teams={teams}
+              filteredProjects={filteredProjects}
+              handleTeamFilterChange={handleTeamFilterChange}
+              handlePersonnelChange={handlePersonnelChange}
+            />
+          </div>
           
-          <Separator />
+          <Separator className="my-6 bg-green-200" />
           
-          <TimeTrackingSection 
-            previousYearsHours={previousYearsHours}
-            currentYearTarget={currentYearTarget}
-          />
+          <div className="bg-gradient-to-r from-white to-green-50 p-4 rounded-md mb-4">
+            <TimeTrackingSection 
+              previousYearsHours={previousYearsHours}
+              currentYearTarget={currentYearTarget}
+            />
+          </div>
           
-          <Separator />
+          <Separator className="my-6 bg-green-200" />
           
-          <TasksSection />
+          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4">
+            <TasksSection />
+          </div>
           
-          <Separator />
+          <Separator className="my-6 bg-green-200" />
           
           <WasteManagementSection />
           
-          <ProjectInfoSection />
+          <div className="mt-6 bg-white p-4 rounded-md border border-green-100">
+            <ProjectInfoSection />
+          </div>
           
-          <NotesSection />
+          <div className="mt-6 bg-gradient-to-r from-white to-green-50 p-4 rounded-md">
+            <NotesSection />
+          </div>
           
-          <ActionButtons 
-            onCancel={handleCancel}
-            isEditing={!!initialData}
-          />
+          <div className="mt-8">
+            <ActionButtons 
+              onCancel={handleCancel}
+              isEditing={!!initialData}
+            />
+          </div>
         </WorkLogFormSubmitHandler>
       </WorkLogFormProvider>
     </FormProvider>

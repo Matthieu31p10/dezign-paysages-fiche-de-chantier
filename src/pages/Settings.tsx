@@ -9,9 +9,11 @@ import AccessControl from '@/components/settings/AccessControl';
 import LoginSettings from '@/components/settings/LoginSettings';
 import UserList from '@/components/settings/UserList';
 import AddUserDialog from '@/components/settings/AddUserDialog';
-import { UserCog, Users, LogIn, Building, ShieldCheck, Database } from 'lucide-react';
+import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound } from 'lucide-react';
 import BackupRestoreSection from '@/components/settings/BackupRestoreSection';
 import { DialogTrigger } from '@/components/ui/dialog';
+import TeamsManagement from '@/components/settings/TeamsManagement';
+import PersonnelManagement from '@/components/settings/PersonnelManagement';
 
 const Settings = () => {
   const { auth, canUserAccess } = useAuth();
@@ -23,7 +25,7 @@ const Settings = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Paramètres</h1>
+          <h1 className="text-2xl font-semibold text-green-800">Paramètres</h1>
           <p className="text-muted-foreground">
             Gérez les paramètres de l'application
           </p>
@@ -31,10 +33,20 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="company">
-        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-4 lg:w-auto">
+        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-5 lg:w-auto">
           <TabsTrigger value="company" className="flex items-center gap-1.5">
             <Building className="h-4 w-4" />
             <span className="hidden sm:inline">Entreprise</span>
+          </TabsTrigger>
+          
+          <TabsTrigger value="teams" className="flex items-center gap-1.5">
+            <UsersRound className="h-4 w-4" />
+            <span className="hidden sm:inline">Équipes</span>
+          </TabsTrigger>
+          
+          <TabsTrigger value="personnel" className="flex items-center gap-1.5">
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">Personnel</span>
           </TabsTrigger>
           
           <TabsTrigger value="users" disabled={!canManageUsers} className="flex items-center gap-1.5">
@@ -63,6 +75,40 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <LogoSettings />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="teams" className="space-y-4">
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-green-50 to-white">
+              <CardTitle className="flex items-center text-green-800">
+                <UsersRound className="h-5 w-5 mr-2 text-green-600" />
+                Gestion des équipes
+              </CardTitle>
+              <CardDescription>
+                Gérez les équipes pour les fiches de suivi et fiches vierges
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TeamsManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="personnel" className="space-y-4">
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-green-50 to-white">
+              <CardTitle className="flex items-center text-green-800">
+                <User className="h-5 w-5 mr-2 text-green-600" />
+                Gestion du personnel
+              </CardTitle>
+              <CardDescription>
+                Gérez le personnel pour les fiches de suivi et fiches vierges
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PersonnelManagement />
             </CardContent>
           </Card>
         </TabsContent>
