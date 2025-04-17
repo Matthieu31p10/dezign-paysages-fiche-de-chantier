@@ -1,7 +1,7 @@
-
 import React from 'react';
+import { useWorkLogForm } from '../WorkLogFormContext';
 import TimeInput from './TimeInput';
-import { Clock, Calendar, Info } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 interface TimeInputsGridProps {
   previousYearsHours?: number;
@@ -12,44 +12,75 @@ const TimeInputsGrid: React.FC<TimeInputsGridProps> = ({
   previousYearsHours = 0,
   currentYearTarget = 0
 }) => {
-  // Calculate remaining hours for current year
-  const remainingHours = Math.max(0, currentYearTarget - previousYearsHours);
+  const { form, selectedProject, existingWorkLogs = [] } = useWorkLogForm();
+  const { control, watch } = form;
+  
+  const projectId = watch('projectId');
+  
+  // Calculate hours already done this year
+  const currentYear = new Date().getFullYear();
+  const currentYearWorkLogs = existingWorkLogs.filter(log => 
+    log.projectId === projectId && 
+    new Date(log.date).getFullYear() === currentYear
+  );
+  
+  const currentYearHours = currentYearWorkLogs.reduce((total, log) => {
+    const hours = log.timeTracking?.totalHours || 0;
+    return total + (typeof hours === 'string' ? parseFloat(hours) : hours);
+  }, 0);
+  
+  // Calculate remaining hours for the current year
+  const remainingHours = Math.max(0, currentYearTarget - currentYearHours);
   
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-        <TimeInput name="departure" label="Départ" />
-        <TimeInput name="arrival" label="Arrivée" />
-        <TimeInput name="end" label="Fin de chantier" />
-        <TimeInput name="breakTime" label="Pause (hh:mm)" />
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <TimeInput 
+        name="departure"
+        label="Départ"
+        icon="departure"
+        control={control}
+      />
       
-      {(previousYearsHours > 0 || currentYearTarget > 0) && (
-        <div className="border p-3 rounded-md bg-green-50 shadow-sm">
-          <h3 className="text-sm font-medium mb-2 flex items-center text-green-700">
-            <Clock className="h-4 w-4 mr-2" />
-            Les heures des années précédentes
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex items-center px-3 py-2 rounded border bg-white">
-              <div className="text-sm">
-                <span className="text-gray-600">Cumul des années précédentes:</span> 
-                <span className="ml-2 font-medium text-green-700">
-                  {previousYearsHours.toFixed(2)}h
-                </span>
-              </div>
+      <TimeInput 
+        name="arrival"
+        label="Arrivée"
+        icon="arrival"
+        control={control}
+      />
+      
+      <TimeInput 
+        name="end"
+        label="Fin de chantier"
+        icon="end"
+        control={control}
+      />
+      
+      <TimeInput 
+        name="breakTime"
+        label="Temps de pause (hh:mm)"
+        icon="break"
+        control={control}
+      />
+      
+      {selectedProject && (
+        <>
+          <div className="col-span-2 md:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2 bg-green-50 p-3 rounded-md border border-green-200">
+            <div className="space-y-1">
+              <Label className="text-sm text-green-700">Objectif annuel</Label>
+              <div className="text-lg font-semibold text-green-800">{currentYearTarget.toFixed(1)}h</div>
             </div>
             
-            <div className="flex items-center px-3 py-2 rounded border bg-white">
-              <div className="text-sm">
-                <span className="text-gray-600">Reste à effectuer cette année:</span> 
-                <span className="ml-2 font-medium text-green-700">
-                  {remainingHours.toFixed(2)}h
-                </span>
-              </div>
+            <div className="space-y-1">
+              <Label className="text-sm text-green-700">Heures effectuées cette année</Label>
+              <div className="text-lg font-semibold text-blue-700">{currentYearHours.toFixed(1)}h</div>
+            </div>
+            
+            <div className="space-y-1">
+              <Label className="text-sm text-green-700">Reste à effectuer cette année</Label>
+              <div className="text-lg font-semibold text-amber-600">{remainingHours.toFixed(1)}h</div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

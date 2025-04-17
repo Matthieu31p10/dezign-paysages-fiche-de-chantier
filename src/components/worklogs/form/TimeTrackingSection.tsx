@@ -19,7 +19,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
   previousYearsHours = 0,
   currentYearTarget = 0 
 }) => {
-  const { form, timeDeviation, timeDeviationClass } = useWorkLogForm();
+  const { form, timeDeviation, timeDeviationClass, selectedProject } = useWorkLogForm();
   const { control, watch } = form;
   
   const totalHours = watch('totalHours') || 0;
@@ -33,7 +33,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-medium flex items-center">
-          <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
+          <Clock className="mr-2 h-5 w-5 text-green-600" />
           Suivi du temps
         </h2>
       </div>
@@ -57,6 +57,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
                   readOnly
                   value={(field.value || 0).toFixed(2)}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="bg-gradient-to-r from-green-50 to-white border-green-200"
                 />
               </FormControl>
               <FormMessage />
@@ -64,23 +65,24 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
           )}
         />
         
-        <div className="space-y-2 p-3 border rounded-md bg-gray-50">
-          <Label className="text-sm">Heures équipe totales</Label>
-          <div className="text-xl font-bold">{totalTeamHours.toFixed(2)}h</div>
-          <div className="text-xs text-muted-foreground">
+        <div className="space-y-2 p-3 border rounded-md bg-gradient-to-r from-green-50 to-white border-green-200">
+          <Label className="text-sm text-green-700">Heures équipe totales</Label>
+          <div className="text-xl font-bold text-green-800">{totalTeamHours.toFixed(2)}h</div>
+          <div className="text-xs text-green-600">
             Pour {personnelCount} {personnelCount > 1 ? 'personnes' : 'personne'}
           </div>
         </div>
         
-        {timeDeviation && (
+        {selectedProject && (
           <TimeDeviation
-            deviation={timeDeviation}
-            deviationClass={timeDeviationClass}
+            deviation={timeDeviation || "N/A"}
+            deviationClass={timeDeviationClass || "text-gray-600"}
+            showInBlankSheets={true}
           />
         )}
       </div>
       
-      <Separator className="my-6" />
+      <Separator className="my-6 bg-green-200" />
     </div>
   );
 };

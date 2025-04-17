@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +21,6 @@ export const useWorkLogFormState = ({
   const navigate = useNavigate();
   const { settings } = useApp();
   
-  // Form initialization
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData ? {
@@ -51,7 +49,6 @@ export const useWorkLogFormState = ({
     }
   });
 
-  // Watch for changes in key fields
   const selectedProjectId = form.watch('projectId');
   const date = form.watch('date');
   const selectedPersonnel = form.watch('personnel');
@@ -60,30 +57,23 @@ export const useWorkLogFormState = ({
   const end = form.watch('end');
   const breakTime = form.watch('breakTime');
   
-  // State for filtered projects
   const [filteredProjects, setFilteredProjects] = useState<ProjectInfo[]>(projectInfos);
   const [selectedProject, setSelectedProject] = useState<ProjectInfo | null>(null);
   const [timeDeviation, setTimeDeviation] = useState<string | null>(null);
   const [timeDeviationClass, setTimeDeviationClass] = useState<string>('');
   
-  // Previous years information for the project
   const [previousYearsHours, setPreviousYearsHours] = useState<number>(0);
   const [currentYearTarget, setCurrentYearTarget] = useState<number>(0);
 
-  // Update the selected project when project ID changes
   useEffect(() => {
     if (selectedProjectId) {
       const project = projectInfos.find(p => p.id === selectedProjectId);
       if (project) {
         setSelectedProject(project);
         
-        // Set duration from project's visitDuration field
         form.setValue('duration', project.visitDuration || 0);
-        
-        // Update current year target
         setCurrentYearTarget(project.annualTotalHours || 0);
         
-        // Calculate previous years hours for this project
         const currentYear = new Date().getFullYear();
         const projectLogs = existingWorkLogs.filter(log => 
           log.projectId === project.id && 
@@ -96,43 +86,88 @@ export const useWorkLogFormState = ({
         }, 0);
         
         setPreviousYearsHours(totalPreviousHours);
+        
+        calculateProjectTimeDeviation(project);
       } else {
         setSelectedProject(null);
         setPreviousYearsHours(0);
         setCurrentYearTarget(0);
+        setTimeDeviation(null);
+        setTimeDeviationClass('');
       }
     } else {
       setSelectedProject(null);
       setPreviousYearsHours(0);
       setCurrentYearTarget(0);
+      setTimeDeviation(null);
+      setTimeDeviationClass('');
     }
   }, [selectedProjectId, projectInfos, existingWorkLogs, form]);
   
-  // Calculate duration and total hours when time fields change
+  const calculateProjectTimeDeviation = (project: ProjectInfo) => {
+    if (!project) return;
+    
+    const projectLogs = existingWorkLogs.filter(log => log.projectId === project.id);
+    const completedVisits = projectLogs.length;
+    
+    if (completedVisits === 0) {
+      setTimeDeviation("Pas d'historique");
+      setTimeDeviationClass('text-gray-600');
+      return;
+    }
+    
+    const totalHoursCompleted = projectLogs.reduce((total, log) => {
+      if (log.timeTracking && typeof log.timeTracking.totalHours === 'number') {
+        return total + log.timeTracking.totalHours;
+      }
+      return total;
+    }, 0);
+    
+    const averageHoursPerVisit = totalHoursCompleted / completedVisits;
+    
+    if (!project.visitDuration) {
+      setTimeDeviation("Durée non définie");
+      setTimeDeviationClass('text-gray-600');
+      return;
+    }
+    
+    const difference = project.visitDuration - averageHoursPerVisit;
+    
+    let deviationText = difference === 0 
+      ? "Pas d'écart" 
+      : `${difference > 0 ? '+' : ''}${difference.toFixed(1)}h`;
+    
+    let deviationClass = difference === 0 
+      ? 'text-gray-600' 
+      : (difference > 0 ? 'text-amber-600' : 'text-red-600');
+    
+    if (Math.abs(difference) <= (project.visitDuration * 0.1)) {
+      deviationClass = 'text-green-600';
+    }
+    
+    setTimeDeviation(deviationText);
+    setTimeDeviationClass(deviationClass);
+  };
+  
   useEffect(() => {
     if (departure && arrival && end) {
       try {
         const totalHours = calculateTotalHours(departure, arrival, end, breakTime);
         
-        // Update the form values
         form.setValue('totalHours', totalHours);
         
-        // Update the time deviation if a project is selected
         if (selectedProject) {
           const expectedDuration = selectedProject.visitDuration || 0;
           const deviation = totalHours - expectedDuration;
           
-          // Format the deviation with sign and decimal precision
           let deviationText = deviation === 0 
             ? "Pas d'écart" 
             : `${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}h`;
           
-          // Determine the css class based on the deviation
           let deviationClass = deviation === 0 
             ? 'text-gray-600' 
             : (deviation > 0 ? 'text-amber-600' : 'text-red-600');
           
-          // If the deviation is within an acceptable range (±10%), use a green color
           if (Math.abs(deviation) <= (expectedDuration * 0.1)) {
             deviationClass = 'text-green-600';
           }
@@ -148,7 +183,6 @@ export const useWorkLogFormState = ({
     }
   }, [departure, arrival, end, breakTime, selectedProject, form]);
   
-  // Filter projects based on team filter
   const handleTeamFilterChange = (teamId: string) => {
     form.setValue('teamFilter', teamId);
     
@@ -160,12 +194,10 @@ export const useWorkLogFormState = ({
     }
   };
   
-  // Personnel selection handler
   const handlePersonnelChange = (personnel: string[]) => {
     form.setValue('personnel', personnel);
   };
   
-  // Cancel handler
   const handleCancel = () => {
     navigate('/worklogs');
   };

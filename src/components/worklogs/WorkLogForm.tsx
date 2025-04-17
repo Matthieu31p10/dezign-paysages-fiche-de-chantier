@@ -61,7 +61,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         timeDeviationClass={timeDeviationClass}
       >
         <WorkLogFormSubmitHandler onSuccess={onSuccess}>
-          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4">
+          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4 border border-green-100 shadow-sm">
             <HeaderSection 
               teams={teams}
               filteredProjects={filteredProjects}
@@ -72,7 +72,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           
           <Separator className="my-6 bg-green-200" />
           
-          <div className="bg-gradient-to-r from-white to-green-50 p-4 rounded-md mb-4">
+          <div className="bg-gradient-to-r from-white to-green-50 p-4 rounded-md mb-4 border border-green-100 shadow-sm">
             <TimeTrackingSection 
               previousYearsHours={previousYearsHours}
               currentYearTarget={currentYearTarget}
@@ -81,7 +81,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           
           <Separator className="my-6 bg-green-200" />
           
-          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4">
+          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4 border border-green-100 shadow-sm">
             <TasksSection />
           </div>
           
@@ -89,11 +89,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           
           <WasteManagementSection />
           
-          <div className="mt-6 bg-white p-4 rounded-md border border-green-100">
+          <div className="mt-6 bg-white p-4 rounded-md border border-green-100 shadow-sm">
             <ProjectInfoSection />
           </div>
           
-          <div className="mt-6 bg-gradient-to-r from-white to-green-50 p-4 rounded-md">
+          <div className="mt-6 bg-gradient-to-r from-white to-green-50 p-4 rounded-md border border-green-100 shadow-sm">
             <NotesSection />
           </div>
           
