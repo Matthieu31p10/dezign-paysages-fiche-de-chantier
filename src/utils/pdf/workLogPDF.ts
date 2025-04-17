@@ -79,8 +79,9 @@ export const generateWorkLogPDF = (data: PDFData): string => {
     const x2 = margin + boxWidth + margin;
     doc.rect(x2, y, boxWidth, boxHeight);
     doc.text(`Date: ${formatDate(workLog.date)}`, x2 + 2, y + 5);
-    // Use an optional property access for teamFilter which might not exist
-    doc.text(`Team: ${workLog.teamFilter || 'N/A'}`, x2 + 2, y + 10);
+    // Fix the teamFilter property access since it doesn't exist on WorkLog type
+    // Use linkedProjectId instead or another appropriate property
+    doc.text(`Team: ${workLog.linkedProjectId ? 'Project Linked' : 'N/A'}`, x2 + 2, y + 10);
 
     // Box 3: Project ID
     const x3 = x2 + boxWidth + margin;
