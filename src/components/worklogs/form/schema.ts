@@ -6,7 +6,7 @@ export const formSchema = z.object({
   date: z.date({
     required_error: "Une date est recommandée.",
   }).optional().default(() => new Date()),
-  duration: z.number({
+  duration: z.coerce.number({
     invalid_type_error: "La durée doit être un nombre."
   }).min(0, { message: "La durée doit être positive." }).optional().default(0),
   personnel: z.array(z.string()).optional().default([]),
@@ -14,11 +14,11 @@ export const formSchema = z.object({
   arrival: z.string().optional().default(""),
   end: z.string().optional().default(""),
   breakTime: z.string().optional().default("00:00"),
-  totalHours: z.number({
+  totalHours: z.coerce.number({
     invalid_type_error: "Le total d'heures doit être un nombre."
   }).min(0, { message: "Le total d'heures doit être positive." }).optional().default(0),
   notes: z.string().optional(),
-  waterConsumption: z.number().optional(),
+  waterConsumption: z.coerce.number().optional(),
   teamFilter: z.string().optional().default(""),
   // Modifié pour accepter des booléens ou être indéfini/null
   customTasks: z.record(z.string(), z.boolean().optional()).optional().default({}),
