@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useWorkLogForm } from '../WorkLogFormContext';
 import TimeInput from './TimeInput';
@@ -38,28 +39,24 @@ const TimeInputsGrid: React.FC<TimeInputsGridProps> = ({
         name="departure"
         label="Départ"
         icon="departure"
-        control={control}
       />
       
       <TimeInput 
         name="arrival"
         label="Arrivée"
         icon="arrival"
-        control={control}
       />
       
       <TimeInput 
         name="end"
         label="Fin de chantier"
         icon="end"
-        control={control}
       />
       
       <TimeInput 
         name="breakTime"
         label="Temps de pause (hh:mm)"
         icon="break"
-        control={control}
       />
       
       {selectedProject && (
