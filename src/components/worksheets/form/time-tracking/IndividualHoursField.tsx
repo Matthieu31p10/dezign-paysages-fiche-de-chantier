@@ -10,6 +10,11 @@ interface IndividualHoursFieldProps {
 }
 
 export const IndividualHoursField = ({ control, totalHours }: IndividualHoursFieldProps) => {
+  // S'assurer que totalHours est bien un nombre
+  const hoursValue = typeof totalHours === 'number' 
+    ? totalHours.toFixed(2) 
+    : '0.00';
+
   return (
     <FormField
       control={control}
@@ -22,7 +27,7 @@ export const IndividualHoursField = ({ control, totalHours }: IndividualHoursFie
               type="number" 
               step="0.01"
               readOnly
-              value={totalHours.toFixed(2)}
+              value={hoursValue}
               onChange={(e) => field.onChange(parseFloat(e.target.value))}
               className="bg-muted h-9"
             />

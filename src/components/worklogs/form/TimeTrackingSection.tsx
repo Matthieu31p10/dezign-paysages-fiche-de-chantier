@@ -9,6 +9,7 @@ import { Clock } from 'lucide-react';
 import TimeInputsGrid from './time-tracking/TimeInputsGrid';
 import TimeDeviation from './time-tracking/TimeDeviation';
 import { useWorkLogForm } from './WorkLogFormContext';
+import { Card } from '@/components/ui/card';
 
 interface TimeTrackingSectionProps {
   previousYearsHours?: number;
@@ -22,11 +23,12 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
   const { form, timeDeviation, timeDeviationClass, selectedProject } = useWorkLogForm();
   const { control, watch } = form;
   
+  // Récupérer et sécuriser les valeurs
   const totalHours = watch('totalHours') || 0;
   const selectedPersonnel = watch('personnel') || [];
   const personnelCount = selectedPersonnel.length || 1;
   
-  // Calculate total team hours
+  // Calculer le total des heures d'équipe
   const totalTeamHours = totalHours * personnelCount;
   
   return (
@@ -49,14 +51,13 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
           name="totalHours"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm">Heures (auto)</FormLabel>
+              <FormLabel className="text-sm">Heures individuelles</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
                   step="0.01"
-                  readOnly
-                  value={(field.value || 0).toFixed(2)}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  value={typeof field.value === 'number' ? field.value.toFixed(2) : '0.00'}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                   className="bg-gradient-to-r from-green-50 to-white border-green-200"
                 />
               </FormControl>
@@ -65,13 +66,15 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
           )}
         />
         
-        <div className="space-y-2 p-3 border rounded-md bg-gradient-to-r from-green-50 to-white border-green-200">
+        <Card className="p-3 border rounded-md bg-gradient-to-r from-green-50 to-white border-green-200">
           <Label className="text-sm text-green-700">Heures équipe totales</Label>
-          <div className="text-xl font-bold text-green-800">{totalTeamHours.toFixed(2)}h</div>
+          <div className="text-xl font-bold text-green-800">
+            {typeof totalTeamHours === 'number' ? totalTeamHours.toFixed(2) : '0.00'}h
+          </div>
           <div className="text-xs text-green-600">
             Pour {personnelCount} {personnelCount > 1 ? 'personnes' : 'personne'}
           </div>
-        </div>
+        </Card>
         
         {selectedProject && (
           <TimeDeviation
