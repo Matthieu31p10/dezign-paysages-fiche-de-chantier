@@ -1,4 +1,3 @@
-
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
 import { formatStructuredNotes, validateConsumables, createWorkLogFromFormData } from './utils/formatWorksheetData';
@@ -49,7 +48,10 @@ export async function submitWorksheetForm({
       workLog.projectId = generateUniqueBlankSheetId(workLogs);
     }
     
-    // Add invoiced status
+    // Add financial information
+    workLog.hourlyRate = data.hourlyRate;
+    workLog.signedQuoteAmount = data.signedQuoteAmount;
+    workLog.isQuoteSigned = data.isQuoteSigned;
     workLog.invoiced = data.invoiced;
     
     // Save or update the workLog
