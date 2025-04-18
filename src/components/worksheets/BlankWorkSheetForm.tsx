@@ -27,6 +27,7 @@ import RecurringClientSection from './form/RecurringClientSection';
 import WorkLogFormSubmitHandler from './form/WorkLogFormSubmitHandler';
 import WorksheetSummary from './WorksheetSummary';
 import { useProjectLinkHook } from './form/useProjectLinkHook';
+import ProjectLinkSection from './form/ProjectLinkSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -35,7 +36,7 @@ interface BlankWorkSheetFormProps {
   existingWorkLogs?: WorkLog[];
 }
 
-const BlankWorkSheetForm = ({
+const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   initialData,
   onSuccess,
   projectInfos = [],
@@ -50,6 +51,7 @@ const BlankWorkSheetForm = ({
   // Project selection hooks
   const { 
     selectedProject,
+    selectedProjectId,
     handleProjectSelect,
     handleClearProject
   } = useProjectLinkHook({ form, projectInfos });
@@ -72,7 +74,7 @@ const BlankWorkSheetForm = ({
       <WorkLogFormSubmitHandler onSuccess={onSuccess}>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
-            <Tabs defaultValue={activeTab} className="w-full">
+            <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
               <TabsList className="w-full">
                 <TabsTrigger value="project" className="flex-1">
                   <FileBarChart className="w-4 h-4 mr-2" />
@@ -85,12 +87,12 @@ const BlankWorkSheetForm = ({
               </TabsList>
               
               <TabsContent value="project" className="mt-4">
-                {/* This will be implemented later */}
-                <div className="p-4 border rounded bg-slate-50">
-                  <p className="text-sm text-muted-foreground">
-                    Sélectionnez un projet existant pour lier cette fiche.
-                  </p>
-                </div>
+                <ProjectLinkSection
+                  selectedProjectId={selectedProjectId}
+                  onProjectSelect={handleProjectSelect}
+                  onClearProject={handleClearProject}
+                  projectInfos={projectInfos}
+                />
                 
                 {selectedProject && (
                   <Card className="p-4 mt-4 bg-slate-50">

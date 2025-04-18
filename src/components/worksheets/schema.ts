@@ -31,7 +31,7 @@ export const BlankWorkSheetSchema = z.object({
   clientSignature: z.string().nullable().optional(),
   consumables: z.array(ConsumableSchema).default([]),
   totalHours: z.number().default(0),
-  hourlyRate: z.number().default(0),
+  hourlyRate: z.number().default(45),
   signedQuoteAmount: z.number().default(0),
   isQuoteSigned: z.boolean().default(false),
   linkedProjectId: z.string().nullable().optional(),

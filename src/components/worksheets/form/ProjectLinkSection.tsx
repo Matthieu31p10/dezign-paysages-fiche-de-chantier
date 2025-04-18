@@ -7,7 +7,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from '@/lib/utils';
 import { FormControl } from '@/components/ui/form';
 import { ProjectInfo } from '@/types/models';
-import { useProjects } from '@/context/ProjectsContext';
 import { Badge } from '@/components/ui/badge';
 
 interface ProjectLinkSectionProps {
@@ -25,22 +24,17 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
 }) => {
   const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { getActiveProjects } = useProjects();
-  
-  // Utilisons les projets actifs du contexte si aucun projectInfos n'est fourni
-  const availableProjects = projectInfos.length > 0 ? projectInfos : getActiveProjects();
   
   // Filter projects based on search term
   const filteredProjects = useCallback(() => {
-    if (!searchTerm) return availableProjects;
+    if (!searchTerm) return projectInfos;
     
-    return availableProjects.filter(project => 
+    return projectInfos.filter(project => 
       project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.additionalInfo?.toLowerCase().includes(searchTerm.toLowerCase())
+      project.address?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [availableProjects, searchTerm]);
+  }, [projectInfos, searchTerm]);
   
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -70,7 +64,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
                   {selectedProjectId ? (
                     <span className="flex items-center">
                       <FileSearch className="mr-2 h-4 w-4 text-blue-600" />
-                      {availableProjects.find(project => project.id === selectedProjectId)?.name}
+                      {projectInfos.find(project => project.id === selectedProjectId)?.name}
                     </span>
                   ) : (
                     <span className="flex items-center">
@@ -127,7 +121,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
         <div className="rounded-md bg-blue-100 p-3 text-sm">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-medium">Projet sélectionné: {availableProjects.find(p => p.id === selectedProjectId)?.name}</p>
+              <p className="font-medium">Projet sélectionné: {projectInfos.find(p => p.id === selectedProjectId)?.name}</p>
               <p className="text-muted-foreground text-xs mt-1">Les informations du client ont été préremplies.</p>
             </div>
             <Button 
@@ -141,7 +135,6 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
             </Button>
           </div>
           
-          {/* We don't use the status field as it doesn't exist in ProjectInfo */}
           <Badge variant="outline" className="mt-2 bg-white">
             Projet associé
           </Badge>

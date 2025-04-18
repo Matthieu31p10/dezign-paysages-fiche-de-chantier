@@ -35,8 +35,8 @@ export const useProjectLinkHook = ({
       if (project) {
         form.setValue('clientName', project.clientName || '');
         form.setValue('address', project.address || '');
-        form.setValue('contactPhone', project.contactPhone || '');
-        form.setValue('contactEmail', project.contactEmail || '');
+        form.setValue('contactPhone', project.contactPhone || project.contact?.phone || '');
+        form.setValue('contactEmail', project.contactEmail || project.contact?.email || '');
       }
     }
   };
