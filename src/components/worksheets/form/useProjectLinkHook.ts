@@ -1,47 +1,56 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
-import { useProjects } from '@/context/ProjectsContext';
 import { ProjectInfo } from '@/types/models';
 
-export const useProjectLink = (form: UseFormReturn<BlankWorkSheetValues>) => {
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
-  const { getActiveProjects } = useProjects();
+interface UseProjectLinkHookProps {
+  form: UseFormReturn<BlankWorkSheetValues>;
+  projectInfos: ProjectInfo[];
+}
+
+export const useProjectLinkHook = ({ 
+  form, 
+  projectInfos 
+}: UseProjectLinkHookProps) => {
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    form.getValues().linkedProjectId || null
+  );
   
-  const activeProjects = getActiveProjects();
+  // Find the selected project
+  const selectedProject = selectedProjectId 
+    ? projectInfos.find(p => p.id === selectedProjectId) 
+    : null;
   
-  // Update form values when a project is selected
-  useEffect(() => {
-    if (selectedProject) {
-      const project = activeProjects.find(p => p.id === selectedProject);
+  // Handle project selection
+  const handleProjectSelect = (projectId: string | null) => {
+    setSelectedProjectId(projectId);
+    
+    // Update the form
+    form.setValue('linkedProjectId', projectId);
+    
+    // If a project is selected, also update client-related fields
+    if (projectId) {
+      const project = projectInfos.find(p => p.id === projectId);
       if (project) {
-        form.setValue('clientName', project.clientName || project.contact?.name || '');
+        form.setValue('clientName', project.clientName || '');
         form.setValue('address', project.address || '');
-        form.setValue('contactPhone', project.contactPhone || project.contact?.phone || '');
-        form.setValue('contactEmail', project.contactEmail || project.contact?.email || '');
-        form.setValue('linkedProjectId', project.id);
+        form.setValue('contactPhone', project.contactPhone || '');
+        form.setValue('contactEmail', project.contactEmail || '');
       }
     }
-  }, [selectedProject, activeProjects, form]);
-  
-  const handleProjectSelect = (projectId: string) => {
-    setSelectedProject(projectId);
-    setOpenProjectsCombobox(false);
   };
   
+  // Clear project selection
   const handleClearProject = () => {
-    setSelectedProject(null);
-    form.setValue('linkedProjectId', '');
+    setSelectedProjectId(null);
+    form.setValue('linkedProjectId', null);
   };
   
   return {
     selectedProject,
-    openProjectsCombobox,
-    activeProjects,
+    selectedProjectId,
     handleProjectSelect,
-    handleClearProject,
-    setOpenProjectsCombobox,
+    handleClearProject
   };
 };
