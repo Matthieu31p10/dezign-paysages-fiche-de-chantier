@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, BarChart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
+import BlankWorkSheetList from '@/components/worksheets/list/BlankWorkSheetList';
 import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
 import { generatePDF } from '@/utils/pdfGenerator';
@@ -23,9 +22,8 @@ const BlankWorkSheets = () => {
   );
   
   const handleCreateNew = () => {
-    // Create a unique ID for the blank sheet
-    const blankId = `DZFV${Date.now()}`;
-    navigate(`/worklogs/new?projectId=${blankId}&isBlankSheet=true`);
+    // We'll navigate directly to our blank worksheet form page instead
+    navigate('/blank-worksheets/new');
   };
   
   const handleEdit = (workLogId: string) => {

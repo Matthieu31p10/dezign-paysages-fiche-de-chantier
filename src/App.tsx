@@ -19,6 +19,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import BlankWorkSheets from './pages/BlankWorkSheets';
+import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import './App.css';
 
 function App() {
@@ -43,8 +44,9 @@ function App() {
               <Route path="worklogs/:id" element={<WorkLogDetail />} />
               <Route path="worklogs/edit/:id" element={<WorkLogEdit />} />
               
-              {/* Use a route with ProtectedRoute wrapper for the module */}
+              {/* Blank worksheets routes */}
               <Route path="blank-worksheets" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheets />} />} />
+              <Route path="blank-worksheets/new" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheetNew />} />} />
               
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />

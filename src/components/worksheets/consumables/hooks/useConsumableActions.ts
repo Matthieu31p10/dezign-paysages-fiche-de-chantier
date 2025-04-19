@@ -1,3 +1,4 @@
+
 import { ConsumableFormState, EmptyConsumable } from '../types';
 import { Consumable } from '@/types/models';
 import { toast } from 'sonner';
@@ -12,7 +13,7 @@ export const useConsumableActions = (
   setSavedConsumables: (consumables: Consumable[]) => void,
 ) => {
   const updateNewConsumable = (field: keyof ConsumableFormState, value: string | number) => {
-    setNewConsumable((prev: ConsumableFormState) => {
+    setNewConsumable((prev) => {
       const updated = { ...prev, [field]: value };
       
       if (field === 'quantity' || field === 'unitPrice') {
@@ -21,7 +22,7 @@ export const useConsumableActions = (
         updated.totalPrice = quantity * unitPrice;
       }
       
-      return updated as ConsumableFormState;
+      return updated;
     });
   };
 
