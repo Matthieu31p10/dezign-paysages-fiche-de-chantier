@@ -29,7 +29,10 @@ export const useProjectSelection = ({
         setSelectedProject(project);
         
         form.setValue('duration', project.visitDuration || 0);
-        setCurrentYearTarget(project.annualTotalHours || 0);
+        
+        // Ensure we have a valid number for currentYearTarget
+        const annualHours = typeof project.annualTotalHours === 'number' ? project.annualTotalHours : 0;
+        setCurrentYearTarget(annualHours);
         
         const currentYear = new Date().getFullYear();
         const projectLogs = existingWorkLogs.filter(log => 

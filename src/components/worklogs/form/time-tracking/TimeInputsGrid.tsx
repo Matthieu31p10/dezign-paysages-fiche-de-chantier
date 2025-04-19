@@ -64,7 +64,9 @@ const TimeInputsGrid: React.FC<TimeInputsGridProps> = ({
           <div className="col-span-2 md:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2 bg-green-50 p-3 rounded-md border border-green-200">
             <div className="space-y-1">
               <Label className="text-sm text-green-700">Objectif annuel</Label>
-              <div className="text-lg font-semibold text-green-800">{currentYearTarget.toFixed(1)}h</div>
+              <div className="text-lg font-semibold text-green-800">
+                {typeof currentYearTarget === 'number' ? currentYearTarget.toFixed(1) : '0.0'}h
+              </div>
             </div>
             
             <div className="space-y-1">
