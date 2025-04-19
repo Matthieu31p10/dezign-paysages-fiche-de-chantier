@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -11,14 +11,18 @@ import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarIcon } from 'lucide-react';
-import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
+import { CalendarIcon, Users } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useSettings } from '@/context/SettingsContext';
+import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 
 const InterventionDetailsSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const { teams } = useApp();
+  const { getPersonnel } = useSettings();
   const teamFilterValue = watch('teamFilter') || 'all';
+  const [personnelDialogOpen, setPersonnelDialogOpen] = useState(false);
+  const selectedPersonnel = watch('personnel') || [];
   
   const handleTeamFilterChange = (value: string) => {
     setValue('teamFilter', value);
@@ -27,6 +31,10 @@ const InterventionDetailsSection: React.FC = () => {
   const handlePersonnelChange = (selectedPersonnel: string[]) => {
     setValue('personnel', selectedPersonnel);
   };
+  
+  const availablePersonnel = getPersonnel()
+    .filter(p => p.active)
+    .map(p => p.name);
   
   return (
     <div className="space-y-4">
@@ -104,14 +112,43 @@ const InterventionDetailsSection: React.FC = () => {
               <FormItem>
                 <FormLabel>Personnel</FormLabel>
                 <FormControl>
-                  <PersonnelDialog 
-                    selectedPersonnel={field.value} 
-                    onChange={handlePersonnelChange}
-                  />
+                  <div>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      onClick={() => setPersonnelDialogOpen(true)}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      {selectedPersonnel.length > 0
+                        ? `${selectedPersonnel.length} personne(s) sélectionnée(s)`
+                        : "Sélectionner le personnel"}
+                    </Button>
+                    
+                    {selectedPersonnel.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {selectedPersonnel.map((name) => (
+                          <div
+                            key={name}
+                            className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full"
+                          >
+                            {name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
+          />
+          
+          <PersonnelDialog
+            isOpen={personnelDialogOpen}
+            onOpenChange={setPersonnelDialogOpen}
+            selectedPersonnel={selectedPersonnel}
+            onChange={handlePersonnelChange}
+            availablePersonnel={availablePersonnel}
           />
         </CardContent>
       </Card>

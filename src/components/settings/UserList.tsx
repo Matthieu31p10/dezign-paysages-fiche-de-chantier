@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Users, UserMinus, UserCog, Phone, Mail, Briefcase, Car } from 'lucide-react';
+import { User, Users, UserMinus, UserCog, Phone, Mail, Briefcase, Car, UserPlus } from 'lucide-react';
 import { UserRole, User as UserType } from '@/types/models';
 import AddUserDialog from './AddUserDialog';
 import EditUserDialog from './EditUserDialog';
@@ -48,10 +48,13 @@ const UserList = ({ isAdmin }: UserListProps) => {
           </CardDescription>
         </div>
         {isAdmin && (
-          <AddUserDialog 
-            isOpen={isAddUserDialogOpen} 
-            onOpenChange={setIsAddUserDialogOpen} 
-          />
+          <Button 
+            onClick={() => setIsAddUserDialogOpen(true)}
+            className="text-green-700 hover:text-green-800 hover:bg-green-100"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Ajouter
+          </Button>
         )}
       </CardHeader>
       <CardContent>
@@ -59,7 +62,7 @@ const UserList = ({ isAdmin }: UserListProps) => {
           {settings.users && settings.users.length > 0 ? (
             <div className="grid gap-4">
               {settings.users.map((user) => (
-                <div key={user.id} className="flex flex-col p-4 border rounded-md">
+                <div key={user.id} className="flex flex-col p-4 border rounded-md hover:shadow-sm transition-shadow">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="bg-primary/10 p-2 rounded-full">
@@ -135,6 +138,13 @@ const UserList = ({ isAdmin }: UserListProps) => {
           )}
         </div>
       </CardContent>
+      
+      {isAdmin && (
+        <AddUserDialog
+          isOpen={isAddUserDialogOpen}
+          onOpenChange={setIsAddUserDialogOpen}
+        />
+      )}
       
       {selectedUser && (
         <EditUserDialog

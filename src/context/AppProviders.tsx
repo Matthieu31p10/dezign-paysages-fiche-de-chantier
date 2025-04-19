@@ -1,26 +1,29 @@
 
 import React from 'react';
-import { ProjectsProvider } from './ProjectsContext';
-import { WorkLogsProvider } from './WorkLogsContext';
-import { TeamsProvider } from './TeamsContext';
-import { SettingsProvider } from './SettingsContext';
 import { AuthProvider } from './AuthContext';
 import { AppProvider } from './AppContext';
+import { TeamsProvider } from './TeamsContext';
+import { WorkLogsProvider } from './WorkLogsContext';
+import { ProjectsProvider } from './ProjectsContext';
+import { SettingsProvider } from './SettingsContext';
+import { MessagingProvider } from './MessagingContext';
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <SettingsProvider>
-      <AuthProvider>
-        <TeamsProvider>
-          <WorkLogsProvider>
+    <AuthProvider>
+      <AppProvider>
+        <SettingsProvider>
+          <TeamsProvider>
             <ProjectsProvider>
-              <AppProvider>
-                {children}
-              </AppProvider>
+              <WorkLogsProvider>
+                <MessagingProvider>
+                  {children}
+                </MessagingProvider>
+              </WorkLogsProvider>
             </ProjectsProvider>
-          </WorkLogsProvider>
-        </TeamsProvider>
-      </AuthProvider>
-    </SettingsProvider>
+          </TeamsProvider>
+        </SettingsProvider>
+      </AppProvider>
+    </AuthProvider>
   );
 };
