@@ -1,4 +1,3 @@
-
 import { ConsumableFormState, EmptyConsumable } from '../types';
 import { Consumable } from '@/types/models';
 import { toast } from 'sonner';
@@ -17,10 +16,12 @@ export const useConsumableActions = (
       const updated = { ...prev, [field]: value };
       
       if (field === 'quantity' || field === 'unitPrice') {
-        updated.totalPrice = updated.quantity * updated.unitPrice;
+        const quantity = field === 'quantity' ? Number(value) : Number(prev.quantity);
+        const unitPrice = field === 'unitPrice' ? Number(value) : Number(prev.unitPrice);
+        updated.totalPrice = quantity * unitPrice;
       }
       
-      return updated;
+      return updated as ConsumableFormState;
     });
   };
 
@@ -30,31 +31,19 @@ export const useConsumableActions = (
       return;
     }
 
-    const totalPrice = newConsumable.quantity * newConsumable.unitPrice;
-    
     const consumableToAdd: Consumable = {
-      supplier: newConsumable.supplier || '',
-      product: newConsumable.product || '',
-      unit: newConsumable.unit || '',
-      quantity: Number(newConsumable.quantity) || 0,
-      unitPrice: Number(newConsumable.unitPrice) || 0,
-      totalPrice: Number(totalPrice) || 0
+      supplier: newConsumable.supplier,
+      product: newConsumable.product,
+      unit: newConsumable.unit,
+      quantity: Number(newConsumable.quantity),
+      unitPrice: Number(newConsumable.unitPrice),
+      totalPrice: Number(newConsumable.totalPrice)
     };
     
-    const typedConsumables: Consumable[] = Array.isArray(consumables) ? 
-      consumables.map(item => ({
-        supplier: item.supplier || '',
-        product: item.product || '',
-        unit: item.unit || '',
-        quantity: Number(item.quantity) || 0,
-        unitPrice: Number(item.unitPrice) || 0,
-        totalPrice: Number(item.totalPrice) || 0
-      })) : [];
-    
-    const updatedConsumables: Consumable[] = [...typedConsumables, consumableToAdd];
+    const updatedConsumables: Consumable[] = [...consumables, consumableToAdd];
     setValue('consumables', updatedConsumables);
     
-    setNewConsumable({...EmptyConsumable});
+    setNewConsumable(EmptyConsumable);
   };
 
   const handleRemoveConsumable = (index: number) => {

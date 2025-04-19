@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -65,12 +64,13 @@ export interface CustomTask {
 }
 
 export interface Consumable {
-  supplier?: string;
-  product?: string;  
-  unit?: string;     
-  quantity: number;  
-  unitPrice: number;  
-  totalPrice: number;  
+  id?: string;
+  supplier: string;
+  product: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
 }
 
 export interface WorkLog {

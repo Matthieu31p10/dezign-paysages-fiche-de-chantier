@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Package } from 'lucide-react';
 import { Consumable } from '@/types/models';
-import { EmptyConsumable } from './consumables/types';
 import ConsumableForm from './consumables/ConsumableForm';
 import ConsumablesList from './consumables/ConsumablesList';
 import SavedConsumablesDialog from './consumables/SavedConsumablesDialog';
@@ -32,7 +30,7 @@ const ConsumablesSection: React.FC = () => {
   } = useConsumableActions(
     newConsumable,
     setNewConsumable,
-    consumables,
+    consumables as Consumable[],
     setValue,
     savedConsumables,
     setSavedConsumables
