@@ -10,6 +10,7 @@ import SavedConsumablesDialog from './consumables/SavedConsumablesDialog';
 import ConsumablesHeader from './consumables/components/ConsumablesHeader';
 import { useConsumablesState } from './consumables/hooks/useConsumablesState';
 import { useConsumableActions } from './consumables/hooks/useConsumableActions';
+import { toast } from 'sonner';
 
 const ConsumablesSection: React.FC = () => {
   const {
