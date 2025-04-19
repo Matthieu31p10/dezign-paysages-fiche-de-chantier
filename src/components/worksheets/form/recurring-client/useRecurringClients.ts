@@ -10,7 +10,7 @@ const STORAGE_KEY = 'recurring-clients';
 export const useRecurringClients = () => {
   const { control, setValue, watch } = useFormContext<BlankWorkSheetValues>();
   const [clients, setClients] = useState<RecurringClient[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState<string>('');
+  const [selectedClientId, setSelectedClientId] = useState<string>("new");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const { toast } = useToast();
@@ -91,7 +91,7 @@ export const useRecurringClients = () => {
   const handleClientSelect = (clientId: string) => {
     setSelectedClientId(clientId);
     
-    if (clientId === '') {
+    if (clientId === 'new') {
       // Clear the form
       setValue('clientName', '');
       setValue('address', '');
@@ -124,7 +124,7 @@ export const useRecurringClients = () => {
     
     // If the deleted client was selected, clear the selection
     if (selectedClientId === clientToDelete) {
-      setSelectedClientId('');
+      setSelectedClientId('new');
     }
     
     toast({

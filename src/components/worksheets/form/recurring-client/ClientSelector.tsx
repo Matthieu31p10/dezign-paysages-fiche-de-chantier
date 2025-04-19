@@ -26,7 +26,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({
           <SelectValue placeholder="Sélectionner un client" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">-- Nouveau client --</SelectItem>
+          <SelectItem value="new">-- Nouveau client --</SelectItem>
           {clients.map(client => (
             <SelectItem key={client.id} value={client.id}>
               {client.name}
@@ -35,7 +35,7 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({
         </SelectContent>
       </Select>
       
-      {selectedClientId && (
+      {selectedClientId && selectedClientId !== "new" && (
         <Button 
           variant="ghost" 
           size="sm" 
