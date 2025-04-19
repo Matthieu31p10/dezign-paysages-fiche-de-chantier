@@ -1,115 +1,58 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { WorkLog } from '@/types/models';
-import BlankSheetItem from './list/blank-sheet-item';
-import BlankSheetFilters from './list/BlankSheetFilters';
-import NoResults from './list/NoResults';
 import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { useProjects } from '@/context/ProjectsContext';
+import BlankSheetItem from './list/blank-sheet-item';
+import { groupWorkLogsByMonth } from '@/utils/date-helpers';
+import { sortMonths } from '../worklogs/list/utils';
 
-interface BlankWorkSheetListProps {
-  workLogs: WorkLog[];
+export interface BlankWorkSheetListProps {
+  sheets: WorkLog[];
   onCreateNew: () => void;
-  onEdit?: (id: string) => void;
-  onExportPDF?: (id: string) => void;
-  onPrint?: (id: string) => void;
+  onEdit: (workLogId: string) => void;
+  onExportPDF: (id: string) => Promise<void>;
+  onPrint: (id: string) => Promise<void>;
 }
 
-const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ 
-  workLogs, 
+const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
+  sheets,
   onCreateNew,
   onEdit,
   onExportPDF,
   onPrint
 }) => {
-  const [search, setSearch] = useState('');
-  const [invoicedFilter, setInvoicedFilter] = useState<string>('all');
-  const { getProjectById } = useProjects();
-  
-  // Filtre pour les fiches vierges seulement
-  const blankSheets = workLogs.filter(log => 
-    log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'))
-  );
-  
-  // Filtrage par terme de recherche et statut de facturation
-  const filteredSheets = blankSheets.filter(sheet => {
-    const matchesSearch = !search || 
-      (sheet.clientName && sheet.clientName.toLowerCase().includes(search.toLowerCase())) ||
-      (sheet.address && sheet.address.toLowerCase().includes(search.toLowerCase())) ||
-      (sheet.notes && sheet.notes.toLowerCase().includes(search.toLowerCase()));
-    
-    const matchesInvoiced = 
-      invoicedFilter === 'all' ||
-      (invoicedFilter === 'invoiced' && sheet.invoiced) ||
-      (invoicedFilter === 'not-invoiced' && !sheet.invoiced);
-    
-    return matchesSearch && matchesInvoiced;
-  });
-  
-  // Tri par date (plus récent en premier)
-  const sortedSheets = [...filteredSheets].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
-  
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-  };
-  
-  const handleInvoicedFilterChange = (value: string) => {
-    setInvoicedFilter(value);
-  };
-  
-  const handleClearFilters = () => {
-    setSearch('');
-    setInvoicedFilter('all');
-  };
-  
-  if (blankSheets.length === 0) {
+  // If there are no worksheets, show empty state
+  if (!sheets || sheets.length === 0) {
     return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
   }
   
-  const hasFilters = search !== '' || invoicedFilter !== 'all';
+  // Group worksheets by month
+  const sheetsByMonth = groupWorkLogsByMonth(sheets);
+  
+  // Sort months in reverse chronological order
+  const sortedMonths = sortMonths(Object.keys(sheetsByMonth), 'date-desc');
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Fiches vierges ({blankSheets.length})</h2>
-        <Button onClick={onCreateNew} size="sm">
-          <Plus className="h-4 w-4 mr-1.5" />
-          Nouvelle fiche vierge
-        </Button>
-      </div>
-      
-      <BlankSheetFilters
-        search={search}
-        onSearchChange={handleSearchChange}
-        invoicedFilter={invoicedFilter}
-        onInvoicedFilterChange={handleInvoicedFilterChange}
-        onClearFilters={handleClearFilters}
-      />
-      
-      {sortedSheets.length === 0 ? (
-        <NoResults 
-          hasFilters={Boolean(hasFilters)}
-          onClearFilters={handleClearFilters}
-          onCreateNew={onCreateNew}
-        />
-      ) : (
-        <div className="space-y-4">
-          {sortedSheets.map((sheet) => (
-            <BlankSheetItem 
-              key={sheet.id} 
-              sheet={sheet}
-              linkedProject={sheet.linkedProjectId ? getProjectById(sheet.linkedProjectId) : null}
-              onEdit={onEdit}
-              onExportPDF={onExportPDF}
-              onPrint={onPrint}
-            />
-          ))}
+    <div className="space-y-8 animate-fade-in">
+      {sortedMonths.map(month => (
+        <div key={month} className="space-y-4">
+          <h2 className="text-xl font-semibold text-green-800 border-b border-green-100 pb-2">
+            {month}
+          </h2>
+          
+          <div className="grid grid-cols-1 gap-4">
+            {sheetsByMonth[month].map(sheet => (
+              <BlankSheetItem
+                key={sheet.id}
+                sheet={sheet}
+                onEdit={() => onEdit(sheet.id)}
+                onExportPDF={() => onExportPDF(sheet.id)}
+                onPrint={() => onPrint(sheet.id)}
+              />
+            ))}
+          </div>
         </div>
-      )}
+      ))}
     </div>
   );
 };

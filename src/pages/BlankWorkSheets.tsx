@@ -1,137 +1,139 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkLogs } from '@/context/WorkLogsContext';
-import { Button } from '@/components/ui/button';
-import { Plus, FileText, BarChart } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import BlankWorkSheetList from '@/components/worksheets/list/BlankWorkSheetList';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
-import { generatePDF } from '@/utils/pdfGenerator';
-import { toast } from 'sonner';
+import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHeader';
+import BlankWorkSheetForm from '@/components/worksheets/form/BlankWorkSheetForm';
+import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
+import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkSheetTabContent';
+import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
+import { generatePDF } from '@/utils/pdf';
 
-const BlankWorkSheets = () => {
+const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
-  const { workLogs } = useWorkLogs();
-  const { projectInfos } = useApp();
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { workLogs = [] } = useApp();
+  const [activeTab, setActiveTab] = useState<string>("list");
+  const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
+  const [pdfOptionsOpen, setPdfOptionsOpen] = useState<boolean>(false);
+  const [selectedWorkLogId, setSelectedWorkLogId] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   
-  // Filter for blank sheets only
-  const blankSheets = workLogs.filter(log => 
-    log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'))
-  );
+  // Filter only blank worksheets (those without a project association)
+  const blankWorksheets = workLogs.filter(log => !log.projectId || log.projectId === 'blank');
   
   const handleCreateNew = () => {
-    // We'll navigate directly to our blank worksheet form page instead
-    navigate('/blank-worksheets/new');
+    setEditingWorkLogId(null);
+    setActiveTab("new");
   };
   
   const handleEdit = (workLogId: string) => {
-    navigate(`/worklogs/${workLogId}/edit`);
+    setEditingWorkLogId(workLogId);
+    setActiveTab("new");
+  };
+
+  const handleFormSuccess = () => {
+    setEditingWorkLogId(null);
+    setActiveTab("list");
   };
   
+  const getWorkLogById = (id: string) => {
+    const workLog = workLogs.find(log => log.id === id);
+    if (!workLog) {
+      throw new Error(`WorkLog with ID ${id} not found`);
+    }
+    return workLog;
+  };
+  
+  // Function to handle PDF export
   const handleExportPDF = async (id: string) => {
     try {
-      setIsGeneratingPDF(true);
-      const workLog = workLogs.find(log => log.id === id);
-      
-      if (!workLog) {
-        toast.error("Fiche non trouvée");
-        return;
-      }
-      
-      // Get associated project if linked
-      const project = workLog.linkedProjectId 
-        ? projectInfos.find(p => p.id === workLog.linkedProjectId) 
-        : null;
-      
-      await generatePDF(workLog);
-      toast.success("PDF généré avec succès");
+      setSelectedWorkLogId(id);
+      setPdfOptionsOpen(true);
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Erreur lors de la génération du PDF");
-    } finally {
-      setIsGeneratingPDF(false);
+      console.error('Error preparing PDF export:', error);
     }
   };
   
+  // Function to handle Print
   const handlePrint = async (id: string) => {
     try {
-      setIsGeneratingPDF(true);
-      const workLog = workLogs.find(log => log.id === id);
+      const workLog = getWorkLogById(id);
       
-      if (!workLog) {
-        toast.error("Fiche non trouvée");
-        return;
-      }
-      
-      // Get associated project if linked
-      const project = workLog.linkedProjectId 
-        ? projectInfos.find(p => p.id === workLog.linkedProjectId) 
-        : null;
-      
-      await generatePDF(workLog);
-      toast.success("Impression lancée");
+      setIsExporting(true);
+      await generatePDF({
+        workLog,
+        options: {
+          includeCompanyHeader: true,
+          includeClientInfo: true,
+          includeSignature: true
+        },
+        action: 'print'
+      });
+      setIsExporting(false);
     } catch (error) {
-      console.error("Error printing:", error);
-      toast.error("Erreur lors de l'impression");
-    } finally {
-      setIsGeneratingPDF(false);
+      console.error('Error printing worksheet:', error);
+      setIsExporting(false);
+    }
+  };
+  
+  // Function to generate PDF with selected options
+  const generateWorkSheetPDF = async (options: any) => {
+    if (!selectedWorkLogId) return;
+    
+    try {
+      const workLog = getWorkLogById(selectedWorkLogId);
+      
+      setIsExporting(true);
+      await generatePDF({
+        workLog,
+        options,
+        action: 'download'
+      });
+      
+      setPdfOptionsOpen(false);
+      setIsExporting(false);
+      setSelectedWorkLogId(null);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setIsExporting(false);
     }
   };
   
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Fiches vierges</h1>
-          <p className="text-muted-foreground">
-            Gérez vos fiches d'intervention hors contrat
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button onClick={handleCreateNew} variant="default">
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle fiche vierge
-          </Button>
-          
-          <Button onClick={() => navigate('/reports')} variant="outline">
-            <BarChart className="w-4 h-4 mr-2" />
-            Voir les statistiques
-          </Button>
-        </div>
-      </div>
+    <div className="animate-fade-in space-y-6">
+      <BlankWorkSheetHeader />
       
-      {blankSheets.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Aucune fiche vierge</CardTitle>
-            <CardDescription>
-              Vous n'avez pas encore créé de fiche vierge. Ces fiches sont utiles pour les interventions ponctuelles hors contrat.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <Button onClick={handleCreateNew} variant="outline" className="w-full sm:w-auto">
-              <FileText className="w-4 h-4 mr-2" />
-              Créer ma première fiche vierge
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <BlankWorkSheetList 
-              sheets={blankSheets} 
-              onCreateNew={handleCreateNew}
-              onEdit={handleEdit}
-              onExportPDF={handleExportPDF}
-              onPrint={handlePrint}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 max-w-md mb-8">
+          <TabsTrigger value="list">Liste des fiches</TabsTrigger>
+          <TabsTrigger value="new">Nouvelle fiche</TabsTrigger>
+        </TabsList>
+        
+        <BlankWorkSheetTabContent value="list">
+          <BlankWorkSheetList 
+            sheets={blankWorksheets}
+            onCreateNew={handleCreateNew}
+            onEdit={handleEdit}
+            onExportPDF={handleExportPDF}
+            onPrint={handlePrint}
+          />
+        </BlankWorkSheetTabContent>
+        
+        <BlankWorkSheetForm
+          editingWorkLogId={editingWorkLogId}
+          getWorkLogById={getWorkLogById}
+          handleFormSuccess={handleFormSuccess}
+        />
+      </Tabs>
+      
+      <BlankSheetPDFOptionsDialog
+        open={pdfOptionsOpen}
+        onOpenChange={setPdfOptionsOpen}
+        onExport={generateWorkSheetPDF}
+        isLoading={isExporting}
+      />
     </div>
   );
 };
