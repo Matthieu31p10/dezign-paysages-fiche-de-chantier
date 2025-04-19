@@ -6,14 +6,14 @@ import { SAVED_CONSUMABLES_KEY } from '../types';
 
 export const useConsumableActions = (
   newConsumable: ConsumableFormState,
-  setNewConsumable: (consumable: ConsumableFormState) => void,
+  setNewConsumable: (consumable: ConsumableFormState | ((prev: ConsumableFormState) => ConsumableFormState)) => void,
   consumables: Consumable[],
   setValue: (name: string, value: any) => void,
   savedConsumables: Consumable[],
   setSavedConsumables: (consumables: Consumable[]) => void,
 ) => {
   const updateNewConsumable = (field: keyof ConsumableFormState, value: string | number) => {
-    setNewConsumable((prev) => {
+    setNewConsumable((prev: ConsumableFormState) => {
       const updated = { ...prev, [field]: value };
       
       if (field === 'quantity' || field === 'unitPrice') {

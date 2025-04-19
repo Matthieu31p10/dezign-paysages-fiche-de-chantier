@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkLogs } from '@/context/WorkLogsContext';
@@ -122,7 +123,7 @@ const BlankWorkSheets = () => {
         <Card>
           <CardContent className="pt-6">
             <BlankWorkSheetList 
-              workLogs={blankSheets} 
+              sheets={blankSheets} 
               onCreateNew={handleCreateNew}
               onEdit={handleEdit}
               onExportPDF={handleExportPDF}
