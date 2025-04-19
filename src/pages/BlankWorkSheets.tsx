@@ -65,7 +65,7 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       await generatePDF({
         workLog,
-        action: 'print',
+        action: 'print',  // This matches our updated PDFData interface
         config: {
           includeCompanyHeader: true,
           includeClientInfo: true,
@@ -89,7 +89,7 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       await generatePDF({
         workLog,
-        action: 'download',
+        action: 'download',  // This matches our updated PDFData interface
         config: options
       });
       

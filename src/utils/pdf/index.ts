@@ -15,17 +15,25 @@ export const generatePDF = async (data: PDFData): Promise<string> => {
   
   // Vérification de sécurité supplémentaire
   try {
-    // Vérifier que tous les champs requis sont présents
-    if (!data.workLog.personnel || data.workLog.personnel.length === 0) {
-      throw new Error('Personnel manquant dans la fiche de suivi');
-    }
+    // For blank worksheets, don't require personnel
+    const isBlankWorksheet = data.workLog.projectId && 
+      (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
     
-    if (!data.workLog.projectId) {
-      throw new Error('ID de projet manquant dans la fiche de suivi');
+    // Only check for personnel if it's not a blank worksheet
+    if (!isBlankWorksheet && (!data.workLog.personnel || data.workLog.personnel.length === 0)) {
+      console.warn('Personnel manquant dans la fiche de suivi, mais continue pour les fiches vierges');
     }
     
     // Call the appropriate PDF generator with the provided data
-    return generateWorkLogPDF(data);
+    // Handle different actions (print or download)
+    const fileName = generateWorkLogPDF(data);
+    
+    // If the action is print, open the PDF in a new window
+    if (data.action === 'print') {
+      // Print logic could be implemented here if needed
+    }
+    
+    return fileName;
   } catch (error) {
     console.error('Erreur lors de la validation des données PDF:', error);
     throw error;

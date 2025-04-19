@@ -34,4 +34,6 @@ export interface PDFData {
   vatRate?: number;
   signedQuote?: boolean;
   quoteValue?: number;
+  action?: 'download' | 'print';  // Add the action property here
+  config?: any;  // Add config property to handle additional configuration
 }
