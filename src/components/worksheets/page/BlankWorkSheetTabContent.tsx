@@ -1,35 +1,18 @@
 
 import React from 'react';
-import { List, Plus } from 'lucide-react';
+import { TabsContent } from '@/components/ui/tabs';
 
 interface BlankWorkSheetTabContentProps {
   value: string;
-  isEditing?: boolean;
+  children: React.ReactNode;
 }
 
-const BlankWorkSheetTabContent: React.FC<BlankWorkSheetTabContentProps> = ({ 
-  value, 
-  isEditing = false 
-}) => {
-  if (value === 'list') {
-    return (
-      <>
-        <List className="w-4 h-4 mr-2" />
-        Liste des fiches
-      </>
-    );
-  }
-  
-  if (value === 'new') {
-    return (
-      <>
-        <Plus className="w-4 h-4 mr-2" />
-        {isEditing ? "Modifier la fiche" : "Nouvelle fiche"}
-      </>
-    );
-  }
-  
-  return null;
+const BlankWorkSheetTabContent: React.FC<BlankWorkSheetTabContentProps> = ({ value, children }) => {
+  return (
+    <TabsContent value={value} className="pt-6">
+      {children}
+    </TabsContent>
+  );
 };
 
 export default BlankWorkSheetTabContent;

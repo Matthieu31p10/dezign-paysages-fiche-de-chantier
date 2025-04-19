@@ -61,7 +61,10 @@ export const useWorkLogFormState = ({
     existingWorkLogs
   });
 
-  const { handlePersonnelChange, selectedPersonnel } = useWorkLogPersonnel({ form });
+  const { handlePersonnelChange } = useWorkLogPersonnel({ 
+    form,
+    initialSelectedPersonnel: initialData?.personnel
+  });
   
   const { handleCancel } = useWorkLogNavigation();
   

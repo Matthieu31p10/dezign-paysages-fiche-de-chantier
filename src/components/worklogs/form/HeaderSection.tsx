@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWorkLogForm } from './WorkLogFormContext';
 import { Team } from '@/types/models';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
@@ -31,7 +31,6 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
   const { form, selectedProject } = useWorkLogForm();
   const { control, watch, setValue } = form;
   
-  const personnelDialogOpen = watch('personnelDialogOpen') || false;
   const selectedPersonnel = watch('personnel') || [];
   const teamFilter = watch('teamFilter') || 'all';
   
@@ -163,23 +162,9 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
             <FormItem>
               <FormLabel>Personnel</FormLabel>
               <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                  onClick={() => setValue('personnelDialogOpen', true)}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  {selectedPersonnel.length > 0
-                    ? `${selectedPersonnel.length} personne(s) sélectionnée(s)`
-                    : "Sélectionner le personnel"}
-                </Button>
-                
                 <PersonnelDialog
-                  open={personnelDialogOpen}
-                  onOpenChange={(open) => setValue('personnelDialogOpen', open)}
-                  selected={selectedPersonnel}
-                  onSelect={handlePersonnelChange}
+                  selectedPersonnel={selectedPersonnel}
+                  onChange={handlePersonnelChange}
                 />
               </div>
             </FormItem>

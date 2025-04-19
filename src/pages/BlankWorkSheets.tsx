@@ -8,6 +8,7 @@ import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHea
 import BlankWorkSheetForm from '@/components/worksheets/form/BlankWorkSheetForm';
 import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
 import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkSheetTabContent';
+import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
 import { generatePDF } from '@/utils/pdf';
 
@@ -64,12 +65,12 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       await generatePDF({
         workLog,
-        options: {
+        action: 'print',
+        config: {
           includeCompanyHeader: true,
           includeClientInfo: true,
           includeSignature: true
-        },
-        action: 'print'
+        }
       });
       setIsExporting(false);
     } catch (error) {
@@ -88,8 +89,8 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       await generatePDF({
         workLog,
-        options,
-        action: 'download'
+        action: 'download',
+        config: options
       });
       
       setPdfOptionsOpen(false);
@@ -103,7 +104,7 @@ const BlankWorkSheets: React.FC = () => {
   
   return (
     <div className="animate-fade-in space-y-6">
-      <BlankWorkSheetHeader />
+      <BlankWorkSheetHeader onCreateNew={handleCreateNew} />
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 max-w-md mb-8">
@@ -128,12 +129,14 @@ const BlankWorkSheets: React.FC = () => {
         />
       </Tabs>
       
-      <BlankSheetPDFOptionsDialog
-        open={pdfOptionsOpen}
-        onOpenChange={setPdfOptionsOpen}
-        onExport={generateWorkSheetPDF}
-        isLoading={isExporting}
-      />
+      <AlertDialog open={pdfOptionsOpen} onOpenChange={setPdfOptionsOpen}>
+        <AlertDialogTrigger className="hidden" />
+        <BlankSheetPDFOptionsDialog
+          onOpenChange={setPdfOptionsOpen}
+          onExport={generateWorkSheetPDF}
+          isLoading={isExporting}
+        />
+      </AlertDialog>
     </div>
   );
 };

@@ -2,14 +2,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FilePlus, ArrowLeft, FileBarChart } from 'lucide-react';
-import { NavigateFunction } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface BlankWorkSheetHeaderProps {
   onCreateNew: () => void;
-  navigate: NavigateFunction;
 }
 
-const BlankWorkSheetHeader: React.FC<BlankWorkSheetHeaderProps> = ({ onCreateNew, navigate }) => {
+const BlankWorkSheetHeader: React.FC<BlankWorkSheetHeaderProps> = ({ onCreateNew }) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
