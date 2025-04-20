@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -6,9 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { BlankWorkSheetValues } from './schema';
 import { Clock, Users, Calculator } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 
 const TimeTrackingSection: React.FC = () => {
-  const { control, watch } = useFormContext<BlankWorkSheetValues>();
+  const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
+  const { teams } = useApp();
   
   // Get the current values for calculations
   const totalHours = watch('totalHours') || 0;
@@ -19,6 +21,10 @@ const TimeTrackingSection: React.FC = () => {
   // Calculate total team hours and cost
   const totalTeamHours = totalHours * personnelCount;
   const laborCost = totalTeamHours * hourlyRate;
+
+  const handlePersonnelChange = (selectedPersonnel: string[]) => {
+    setValue('personnel', selectedPersonnel, { shouldValidate: true });
+  };
   
   return (
     <div className="space-y-4">
@@ -152,6 +158,30 @@ const TimeTrackingSection: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <Card>
+        <CardContent className="pt-4">
+          <h3 className="text-sm font-medium mb-4 flex items-center">
+            <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+            Personnel Présent
+          </h3>
+          <FormField
+            control={control}
+            name="personnel"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <PersonnelDialog
+                    selectedPersonnel={personnel}
+                    onChange={handlePersonnelChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </CardContent>
+      </Card>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
         <FormField
