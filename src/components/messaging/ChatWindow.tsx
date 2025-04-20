@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useMessaging } from '@/context/MessagingContext';
@@ -17,7 +16,8 @@ interface ChatWindowProps {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ selectedUser, onBack }) => {
-  const { currentUser } = useApp();
+  const { auth } = useApp();
+  const currentUser = auth.currentUser;
   const { sendMessage, getConversation, getMessages, markConversationAsRead, deleteMessage } = useMessaging();
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);

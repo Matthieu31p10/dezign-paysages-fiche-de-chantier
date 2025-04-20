@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Message, Conversation } from '@/types/messaging';
 import { User } from '@/types/models';
@@ -23,7 +22,8 @@ interface MessagingContextType {
 const MessagingContext = createContext<MessagingContextType | undefined>(undefined);
 
 export const MessagingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { currentUser, settings } = useApp();
+  const { auth } = useApp();
+  const currentUser = auth.currentUser;
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
 

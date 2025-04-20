@@ -13,8 +13,8 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   children, 
   defaultTab = "general" 
 }) => {
-  const { currentUser } = useApp();
-  const isAdmin = currentUser?.role === 'admin';
+  const { auth } = useApp();
+  const isAdmin = auth.currentUser?.role === 'admin';
   
   return (
     <div className="container mx-auto p-4 space-y-8 animate-fade-in">

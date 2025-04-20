@@ -59,7 +59,6 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
     
     try {
       addUser({
-        id: crypto.randomUUID(),
         username: formData.username,
         password: formData.password,
         name: formData.name,
@@ -68,7 +67,6 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
         position: formData.position,
         drivingLicense: formData.drivingLicense,
         role: formData.role,
-        createdAt: new Date(),
       });
       
       toast.success('Utilisateur ajouté avec succès');

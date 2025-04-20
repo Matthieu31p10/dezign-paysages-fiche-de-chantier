@@ -15,7 +15,8 @@ interface MessageListProps {
 }
 
 const MessageList: React.FC<MessageListProps> = ({ onSelectUser }) => {
-  const { settings, currentUser } = useApp();
+  const { settings, auth } = useApp();
+  const currentUser = auth.currentUser;
   const { conversations, getMessages } = useMessaging();
   const [searchTerm, setSearchTerm] = useState('');
   const [displayedUsers, setDisplayedUsers] = useState<User[]>([]);

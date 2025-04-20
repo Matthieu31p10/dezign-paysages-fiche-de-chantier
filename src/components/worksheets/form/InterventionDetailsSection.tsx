@@ -16,6 +16,15 @@ import { useApp } from '@/context/AppContext';
 import { useSettings } from '@/context/SettingsContext';
 import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 
+// Define the props expected by PersonnelDialog to match what's implemented
+interface CustomPersonnelDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedPersonnel: string[];
+  onChange: (selectedPersonnel: string[]) => void;
+  availablePersonnel: string[];
+}
+
 const InterventionDetailsSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const { teams } = useApp();
@@ -144,7 +153,7 @@ const InterventionDetailsSection: React.FC = () => {
           />
           
           <PersonnelDialog
-            isOpen={personnelDialogOpen}
+            open={personnelDialogOpen}
             onOpenChange={setPersonnelDialogOpen}
             selectedPersonnel={selectedPersonnel}
             onChange={handlePersonnelChange}

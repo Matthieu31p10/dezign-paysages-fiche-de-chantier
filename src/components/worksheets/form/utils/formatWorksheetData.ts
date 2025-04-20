@@ -6,6 +6,9 @@ import { Consumable, WorkLog } from '@/types/models';
  * Formats client and worksheet metadata into a structured notes format
  */
 export const formatStructuredNotes = (data: BlankWorkSheetValues): string => {
+  // Use optional chaining for vatRate or default to empty string
+  const vatRateValue = data.vatRate || '20';
+  
   return `
 CLIENT: ${data.clientName || ''}
 ADRESSE: ${data.address || ''}
@@ -13,7 +16,7 @@ TÉLÉPHONE: ${data.contactPhone || ''}
 EMAIL: ${data.contactEmail || ''}
 ID PROJET: ${data.linkedProjectId || ''}
 TAUX HORAIRE: ${data.hourlyRate || 0}
-TVA: ${data.vatRate || '20'}
+TVA: ${vatRateValue}
 DEVIS SIGNÉ: ${data.isQuoteSigned ? 'oui' : 'non'}
 VALEUR DEVIS: ${data.signedQuoteAmount || 0}
 HEURE D'ENREGISTREMENT: ${new Date().toISOString()}

@@ -30,7 +30,6 @@ export const useWorksheetLoader = ({
     
     // Set common fields
     form.reset({
-      id: workLog.id,
       clientName: workLog.clientName || '',
       address: workLog.address || '',
       contactPhone: workLog.contactPhone || '',
