@@ -12,13 +12,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { CalendarIcon } from 'lucide-react';
-import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 import { useApp } from '@/context/AppContext';
+import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 
 const InterventionDetailsSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
   const { teams } = useApp();
   const teamFilterValue = watch('teamFilter') || 'all';
+  const selectedPersonnel = watch('personnel') || [];
   
   const handleTeamFilterChange = (value: string) => {
     setValue('teamFilter', value);
@@ -105,7 +106,7 @@ const InterventionDetailsSection: React.FC = () => {
                 <FormLabel>Personnel</FormLabel>
                 <FormControl>
                   <PersonnelDialog 
-                    selectedPersonnel={field.value} 
+                    selectedPersonnel={selectedPersonnel}
                     onChange={handlePersonnelChange}
                   />
                 </FormControl>

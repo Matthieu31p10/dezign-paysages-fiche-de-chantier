@@ -12,22 +12,22 @@ const ConsumableSchema = z.object({
   totalPrice: z.number().default(0),
 });
 
-// Define the blank work sheet schema
+// Define the blank work sheet schema with more permissive validation
 export const BlankWorkSheetSchema = z.object({
   id: z.string().optional(),
-  clientName: z.string().optional(),
-  address: z.string().optional(),
-  contactPhone: z.string().optional(),
-  contactEmail: z.string().optional(),
+  clientName: z.string().optional().default(''),
+  address: z.string().optional().default(''),
+  contactPhone: z.string().optional().default(''),
+  contactEmail: z.string().optional().default(''),
   date: z.date(),
   personnel: z.array(z.string()).default([]),
-  departure: z.string().optional(),
-  arrival: z.string().optional(),
-  end: z.string().optional(),
-  breakTime: z.string().optional(),
-  tasks: z.string().optional(),
+  departure: z.string().optional().default(''),
+  arrival: z.string().optional().default(''),
+  end: z.string().optional().default(''),
+  breakTime: z.string().optional().default(''),
+  tasks: z.string().optional().default(''),
   wasteManagement: z.string().default('none'),
-  notes: z.string().optional(),
+  notes: z.string().optional().default(''),
   clientSignature: z.string().nullable().optional(),
   consumables: z.array(ConsumableSchema).default([]),
   totalHours: z.number().default(0),
