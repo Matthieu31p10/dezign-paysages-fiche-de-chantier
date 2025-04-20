@@ -19,39 +19,13 @@ import Unauthorized from '@/pages/Unauthorized';
 import NotFound from '@/pages/NotFound';
 import Home from '@/pages/Home';
 import Messages from '@/pages/Messages';
-import { useAuth } from '@/context/AuthContext';
-import HeaderAction from '@/components/messaging/HeaderAction';
-import { useEffect } from 'react';
-
-// Import UI customization from settings
+import { useApp } from '@/context/AppContext';
 import { useSettings } from '@/context/SettingsContext';
 
 function App() {
-  const { isAuthenticated } = useAuth();
+  const { auth } = useApp();
   const { settings } = useSettings();
-
-  // Add HeaderAction to the app
-  useEffect(() => {
-    const headerActionContainer = document.getElementById('header-action-container');
-    if (headerActionContainer && isAuthenticated) {
-      // Create a new div for our action
-      const actionDiv = document.createElement('div');
-      actionDiv.id = 'message-indicator-container';
-      headerActionContainer.appendChild(actionDiv);
-      
-      // Render our HeaderAction into this div
-      const root = ReactDOM.createRoot(actionDiv);
-      root.render(<HeaderAction />);
-      
-      // Clean up on unmount
-      return () => {
-        const container = document.getElementById('message-indicator-container');
-        if (container) {
-          container.remove();
-        }
-      };
-    }
-  }, [isAuthenticated]);
+  const isAuthenticated = auth.isAuthenticated;
 
   return (
     <>
@@ -62,7 +36,7 @@ function App() {
         <Route element={<Layout />}>
           <Route index element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />} />
           
-          <Route path="/" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'user']} />}>
+          <Route path="/" element={<ProtectedRoute requiredRole="user" />}>
             <Route path="projects" element={<Projects />} />
             <Route path="projects/new" element={<ProjectNew />} />
             <Route path="projects/:id/edit" element={<ProjectEdit />} />
@@ -79,7 +53,7 @@ function App() {
             <Route path="messages" element={<Messages />} />
           </Route>
           
-          <Route path="settings" element={<ProtectedRoute allowedRoles={['admin', 'manager']} />}>
+          <Route path="settings" element={<ProtectedRoute requiredRole="admin" />}>
             <Route index element={<Settings />} />
           </Route>
           

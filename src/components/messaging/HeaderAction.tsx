@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import MessageIndicator from './MessageIndicator';
 
 export const HeaderAction = () => {
-  const { isAuthenticated } = useAuth();
+  const { auth } = useApp();
   
-  if (!isAuthenticated) {
+  if (!auth.isAuthenticated) {
     return null;
   }
   
