@@ -3,9 +3,11 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calculator, Users } from 'lucide-react';
+import { Euro, Users, Clock } from 'lucide-react';
 import { Control } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
+import { formatNumber } from '@/utils/helpers';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TimeCalculationsProps {
   control: Control<BlankWorkSheetValues>;
@@ -24,61 +26,69 @@ export const TimeCalculations: React.FC<TimeCalculationsProps> = ({
   hourlyRate,
   laborCost
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-      <FormField
-        control={control}
-        name="totalHours"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Total des heures (calculé)</FormLabel>
-            <FormControl>
-              <Input 
-                type="number" 
-                step="0.01"
-                readOnly
-                value={(field.value || 0).toFixed(2)}
-                onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                className="bg-gray-50"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      <FormField
-        control={control}
-        name="hourlyRate"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Taux horaire (€)</FormLabel>
-            <FormControl>
-              <Input 
-                type="number" 
-                step="0.01"
-                value={field.value || 0}
-                onChange={(e) => field.onChange(parseFloat(e.target.value))}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      <Card className="border-0 shadow-sm bg-green-50">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-green-800 mb-1">
-            <Users className="h-4 w-4" />
-            <span>Équipe: {personnelCount} {personnelCount > 1 ? 'personnes' : 'personne'}</span>
+    <Card>
+      <CardContent className="pt-4">
+        <h3 className="text-sm font-medium mb-4">Calculs</h3>
+        
+        <div className={`grid grid-cols-1 ${isMobile ? '' : 'sm:grid-cols-2 md:grid-cols-4'} gap-4`}>
+          <div className="flex flex-col space-y-1">
+            <span className="text-xs text-muted-foreground flex items-center">
+              <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
+              Heures totales (individu)
+            </span>
+            <span className="text-lg font-medium">{formatNumber(totalHours)} h</span>
           </div>
-          <div className="text-2xl font-bold text-green-800">{totalTeamHours.toFixed(2)}h</div>
-          <div className="text-sm text-green-700 mt-1 flex items-center gap-1">
-            <Calculator className="h-3.5 w-3.5" />
-            <span>Coût: {laborCost.toFixed(2)}€</span>
+          
+          <div className="flex flex-col space-y-1">
+            <span className="text-xs text-muted-foreground flex items-center">
+              <Users className="w-3 h-3 mr-1 text-muted-foreground" />
+              Personnel présent
+            </span>
+            <span className="text-lg font-medium">{personnelCount} personne{personnelCount > 1 ? 's' : ''}</span>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          
+          <div className="flex flex-col space-y-1">
+            <span className="text-xs text-muted-foreground flex items-center">
+              <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
+              Heures totales (équipe)
+            </span>
+            <span className="text-lg font-medium">{formatNumber(totalTeamHours)} h</span>
+          </div>
+          
+          <FormField
+            control={control}
+            name="hourlyRate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-muted-foreground flex items-center">
+                  <Euro className="w-3 h-3 mr-1 text-muted-foreground" />
+                  Taux horaire (€)
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    className="w-full"
+                    value={field.value || 0}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Coût main d'œuvre</span>
+            <span className="text-lg font-bold text-primary">{formatNumber(laborCost)} €</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

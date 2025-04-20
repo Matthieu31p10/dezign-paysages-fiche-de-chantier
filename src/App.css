@@ -1,8 +1,19 @@
+
 #root {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+}
+
+@media (max-width: 768px) {
+  #root {
+    padding: 0.5rem;
+  }
+}
+
+@media (min-width: 769px) {
+  #root {
+    padding: 1.5rem;
+  }
 }
 
 .logo {
@@ -39,4 +50,71 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Responsive Improvements */
+.responsive-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.mobile-full-width {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .hide-on-mobile {
+    display: none;
+  }
+  
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .mobile-spacing {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Custom Animations */
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+  button, 
+  [role="button"],
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input, 
+  select, 
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom */
+    padding: 0.75rem;
+  }
 }

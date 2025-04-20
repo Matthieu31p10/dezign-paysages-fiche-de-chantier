@@ -14,6 +14,7 @@ interface ProjectDetailHeaderProps {
   setIsEditDialogOpen: (isOpen: boolean) => void;
   onDeleteClick: () => void;
   isEditDialogOpen: boolean;
+  isMobile?: boolean;
 }
 
 const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
@@ -21,12 +22,13 @@ const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
   teamName,
   setIsEditDialogOpen,
   onDeleteClick,
-  isEditDialogOpen
+  isEditDialogOpen,
+  isMobile = false
 }) => {
   const navigate = useNavigate();
   
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className={`flex flex-col ${isMobile ? 'space-y-3' : 'md:flex-row md:items-center'} justify-between gap-4`}>
       <div>
         <div className="flex items-center gap-2">
           <Button 
@@ -49,7 +51,7 @@ const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
         </p>
       </div>
       
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex ${isMobile ? 'flex-wrap' : ''} gap-2`}>
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
@@ -68,7 +70,7 @@ const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
           </AlertDialogTrigger>
         </AlertDialog>
         
-        <Button size="sm" onClick={() => navigate(`/worklogs/new?projectId=${project.id}`)}>
+        <Button size="sm" className={isMobile ? "w-full mt-2" : ""} onClick={() => navigate(`/worklogs/new?projectId=${project.id}`)}>
           <Calendar className="w-4 h-4 mr-2" />
           Nouvelle fiche de suivi
         </Button>

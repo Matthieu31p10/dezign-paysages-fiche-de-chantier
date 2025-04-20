@@ -10,18 +10,20 @@ import { ProjectInfo, WorkLog } from '@/types/models';
 interface ProjectWorkLogsTabProps {
   project: ProjectInfo;
   workLogs: WorkLog[];
+  isMobile?: boolean;
 }
 
-const ProjectWorkLogsTab: React.FC<ProjectWorkLogsTabProps> = ({ project, workLogs }) => {
+const ProjectWorkLogsTab: React.FC<ProjectWorkLogsTabProps> = ({ project, workLogs, isMobile = false }) => {
   const navigate = useNavigate();
   
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div className={`flex flex-col ${isMobile ? '' : 'md:flex-row md:items-center'} justify-between gap-2`}>
           <CardTitle className="text-lg">Fiches de suivi</CardTitle>
           <Button 
             size="sm" 
+            className={isMobile ? "w-full" : ""}
             onClick={() => navigate(`/worklogs/new?projectId=${project.id}`)}
           >
             <Calendar className="w-4 h-4 mr-2" />

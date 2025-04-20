@@ -1,34 +1,27 @@
 
 import React from 'react';
-import CancelButton from './actions/CancelButton';
-import SubmitButton from './actions/SubmitButton';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Save, X } from 'lucide-react';
 import FormActionsContainer from './actions/FormActionsContainer';
+import SubmitButton from './actions/SubmitButton';
+import CancelButton from './actions/CancelButton';
 
 interface FormActionsProps {
   isSubmitting: boolean;
-  handleCancel: () => void;
-  isEditing?: boolean;
-  onSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  onCancel: () => void;
 }
 
 const FormActions: React.FC<FormActionsProps> = ({
   isSubmitting,
-  handleCancel,
-  isEditing = false,
-  onSubmit
+  onCancel
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <FormActionsContainer>
-      <CancelButton 
-        onClick={handleCancel} 
-        disabled={isSubmitting} 
-      />
-      
-      <SubmitButton 
-        isSubmitting={isSubmitting}
-        isEditing={isEditing}
-        onClick={onSubmit}
-      />
+      <SubmitButton isSubmitting={isSubmitting} />
+      <CancelButton onCancel={onCancel} />
     </FormActionsContainer>
   );
 };

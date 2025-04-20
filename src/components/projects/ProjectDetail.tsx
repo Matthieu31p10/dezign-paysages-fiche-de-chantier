@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog } from '@/components/ui/dialog';
 import { AlertDialog } from '@/components/ui/alert-dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Import refactored components
 import ProjectDetailHeader from './detail/ProjectDetailHeader';
@@ -19,6 +20,7 @@ const ProjectDetail = () => {
   const navigate = useNavigate();
   const { getProjectById, deleteProjectInfo, teams, workLogs } = useApp();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const project = getProjectById(id!);
   
@@ -48,10 +50,11 @@ const ProjectDetail = () => {
         setIsEditDialogOpen={setIsEditDialogOpen}
         onDeleteClick={handleDeleteProject}
         isEditDialogOpen={isEditDialogOpen}
+        isMobile={isMobile}
       />
       
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
           <TabsTrigger value="details">Informations</TabsTrigger>
           <TabsTrigger value="worklogs">Fiches de suivi ({projectWorkLogs.length})</TabsTrigger>
         </TabsList>
@@ -61,7 +64,7 @@ const ProjectDetail = () => {
         </TabsContent>
         
         <TabsContent value="worklogs" className="pt-4">
-          <ProjectWorkLogsTab project={project} workLogs={projectWorkLogs} />
+          <ProjectWorkLogsTab project={project} workLogs={projectWorkLogs} isMobile={isMobile} />
         </TabsContent>
       </Tabs>
       

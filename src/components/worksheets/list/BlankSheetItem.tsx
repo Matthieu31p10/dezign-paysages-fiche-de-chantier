@@ -1,122 +1,59 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { WorkLog } from '@/types/models';
-import { formatDate } from '@/utils/helpers';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { FileBarChart, Clock, User, FileText } from 'lucide-react';
-import { useWorkLogs } from '@/context/WorkLogsContext';
-import { extractRegistrationTime } from '@/utils/date-helpers';
+import { Card } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
+import BlankSheetHeader from './blank-sheet-item/BlankSheetHeader';
+import BlankSheetContent from './blank-sheet-item/BlankSheetContent';
+import BlankSheetStats from './blank-sheet-item/BlankSheetStats';
+import BlankSheetActions from './blank-sheet-item/BlankSheetActions';
+import { WorkLog, ProjectInfo } from '@/types/models';
 
 interface BlankSheetItemProps {
-  worklog: WorkLog;
+  sheet: WorkLog;
+  linkedProject: ProjectInfo | null;
+  onEdit: (id: string) => void;
+  onExportPDF: (id: string) => void;
+  onPrint: (id: string) => void;
 }
 
-const BlankSheetItem: React.FC<BlankSheetItemProps> = ({ worklog }) => {
-  const navigate = useNavigate();
-  const { updateWorkLog } = useWorkLogs();
-  
-  const handleClick = () => {
-    navigate(`/worklogs/${worklog.id}`);
-  };
-  
-  const handleInvoiceToggle = (checked: boolean) => {
-    updateWorkLog(worklog.id, { invoiced: checked });
-  };
-  
-  // Format the creation time from the notes or createdAt date
-  const registrationTime = worklog.createdAt 
-    ? (typeof worklog.createdAt === 'string' 
-      ? worklog.createdAt 
-      : worklog.createdAt.toISOString()) 
-    : extractRegistrationTime(worklog.notes || '');
-  
-  // Calculate duration hours
-  const totalHours = worklog.timeTracking?.totalHours || 0;
-  const personnelCount = worklog.personnel?.length || 1;
+const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
+  sheet,
+  linkedProject,
+  onEdit,
+  onExportPDF,
+  onPrint
+}) => {
+  const isMobile = useIsMobile();
   
   return (
-    <div
-      className="border rounded-lg p-4 bg-white hover:shadow transition-shadow cursor-pointer"
-      onClick={handleClick}
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="bg-brand-50 text-brand-700 font-mono">
-              <FileText className="w-3.5 h-3.5 mr-1.5" />
-              {worklog.projectId}
-            </Badge>
-            {registrationTime && (
-              <span className="text-xs text-muted-foreground">
-                Enregistré le {formatDate(registrationTime)}
-              </span>
-            )}
-          </div>
+    <Card className="border hover:shadow-md transition-all duration-200 hover:border-primary/20">
+      <div className={`p-4 ${isMobile ? 'space-y-4' : 'flex items-start'}`}>
+        <div className={`${isMobile ? 'w-full' : 'flex-grow pr-4'}`}>
+          <BlankSheetHeader 
+            sheet={sheet} 
+            linkedProject={linkedProject}
+          />
           
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-brand-50 text-brand-700">
-              {formatDate(worklog.date)}
-            </Badge>
-            {worklog.clientName && (
-              <span className="font-medium">
-                {worklog.clientName}
-              </span>
-            )}
-          </div>
+          <BlankSheetContent 
+            sheet={sheet}
+            isMobile={isMobile} 
+          />
           
-          {worklog.address && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {worklog.address}
-            </p>
-          )}
-          
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-            <div className="flex items-center text-sm">
-              <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-              {totalHours.toFixed(2)} heures
-            </div>
-            
-            <div className="flex items-center text-sm">
-              <User className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-              {personnelCount} personnes
-            </div>
-          </div>
+          <BlankSheetStats 
+            sheet={sheet}
+            isMobile={isMobile} 
+          />
         </div>
         
-        <div className="flex items-center gap-2 mt-2 sm:mt-0" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id={`invoiced-${worklog.id}`}
-              checked={worklog.invoiced || false}
-              onCheckedChange={handleInvoiceToggle}
-              className="h-4 w-4 data-[state=checked]:bg-green-600"
-            />
-            <Label 
-              htmlFor={`invoiced-${worklog.id}`}
-              className="text-xs cursor-pointer select-none"
-            >
-              Facturée
-            </Label>
-          </div>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/worklogs/${worklog.id}/edit`);
-            }}
-          >
-            Modifier
-          </Button>
-        </div>
+        <BlankSheetActions 
+          sheet={sheet}
+          onEdit={onEdit}
+          onExportPDF={onExportPDF}
+          onPrint={onPrint}
+          isMobile={isMobile}
+        />
       </div>
-    </div>
+    </Card>
   );
 };
 

@@ -8,9 +8,11 @@ import { BlankWorkSheetValues } from './schema';
 import { TimeInputs } from './time-tracking/TimeInputs';
 import { TimeCalculations } from './time-tracking/TimeCalculations';
 import { PersonnelSection } from './time-tracking/PersonnelSection';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const TimeTrackingSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
+  const isMobile = useIsMobile();
   
   // Get the current values for calculations
   const totalHours = watch('totalHours') || 0;
@@ -50,7 +52,7 @@ const TimeTrackingSection: React.FC = () => {
         onPersonnelChange={handlePersonnelChange}
       />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+      <div className={`grid grid-cols-1 ${isMobile ? '' : 'sm:grid-cols-2'} gap-4 mt-2`}>
         <FormField
           control={control}
           name="signedQuoteAmount"
@@ -63,6 +65,7 @@ const TimeTrackingSection: React.FC = () => {
                   step="0.01"
                   value={field.value || 0}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="w-full"
                 />
               </FormControl>
               <FormMessage />
@@ -74,7 +77,7 @@ const TimeTrackingSection: React.FC = () => {
           control={control}
           name="isQuoteSigned"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+            <FormItem className="flex flex-row items-start md:items-center justify-between space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
               <div className="space-y-1 leading-none">
                 <FormLabel>Devis signé</FormLabel>
                 <p className="text-sm text-muted-foreground">
@@ -98,7 +101,7 @@ const TimeTrackingSection: React.FC = () => {
         control={control}
         name="invoiced"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+          <FormItem className="flex flex-row items-start md:items-center justify-between space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
             <div className="space-y-1 leading-none">
               <FormLabel>Facturé</FormLabel>
               <p className="text-sm text-muted-foreground">

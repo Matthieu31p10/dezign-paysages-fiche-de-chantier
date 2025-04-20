@@ -5,6 +5,7 @@ import { groupWorkLogsByMonth } from '@/utils/date-helpers';
 import WorkLogMonthGroup from './list/WorkLogMonthGroup';
 import EmptyState from './list/EmptyState';
 import { sortMonths } from './list/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WorkLogListProps {
   workLogs: WorkLog[];
@@ -17,6 +18,8 @@ const WorkLogList: React.FC<WorkLogListProps> = ({
   projectId,
   emptyMessage = "Aucune fiche de suivi" 
 }) => {
+  const isMobile = useIsMobile();
+  
   // Show empty state if no logs
   if (workLogs.length === 0) {
     return <EmptyState message={emptyMessage} projectId={projectId} />;
@@ -41,13 +44,14 @@ const WorkLogList: React.FC<WorkLogListProps> = ({
   }, [workLogsByMonth]);
   
   return (
-    <div className="space-y-8">
+    <div className={`space-y-${isMobile ? '4' : '8'}`}>
       {months.map((month) => (
         <WorkLogMonthGroup 
           key={month} 
           month={month} 
           workLogs={workLogsByMonth[month]}
           projectId={projectId}
+          isMobile={isMobile}
         />
       ))}
     </div>
