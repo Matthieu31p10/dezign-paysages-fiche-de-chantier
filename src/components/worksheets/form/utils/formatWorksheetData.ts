@@ -84,7 +84,9 @@ export const createWorkLogFromFormData = (
     hourlyRate: data.hourlyRate || 0,
     linkedProjectId: data.linkedProjectId || undefined,
     signedQuoteAmount: data.signedQuoteAmount || 0,
-    isQuoteSigned: data.isQuoteSigned || false
+    isQuoteSigned: data.isQuoteSigned || false,
+    vatRate: data.vatRate || '20',
+    invoiced: data.invoiced || false
   };
 };
 

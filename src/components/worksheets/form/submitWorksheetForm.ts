@@ -1,3 +1,4 @@
+
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
 import { formatStructuredNotes, validateConsumables, createWorkLogFromFormData } from './utils/formatWorksheetData';
@@ -52,7 +53,8 @@ export async function submitWorksheetForm({
     workLog.hourlyRate = data.hourlyRate;
     workLog.signedQuoteAmount = data.signedQuoteAmount;
     workLog.isQuoteSigned = data.isQuoteSigned;
-    workLog.invoiced = data.invoiced;
+    workLog.invoiced = data.invoiced || false;
+    workLog.vatRate = data.vatRate || '20';
     
     // Save or update the workLog
     if (existingWorkLogId) {

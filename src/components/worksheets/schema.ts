@@ -25,6 +25,10 @@ export const blankWorkSheetSchema = z.object({
   linkedProjectId: z.string().nullable().optional(),
   teamFilter: z.string().optional(),
   vatRate: z.string().optional(),
+  invoiced: z.boolean().optional(),
 });
+
+// Export the schema with proper capitalization for consistency
+export const BlankWorkSheetSchema = blankWorkSheetSchema;
 
 export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;

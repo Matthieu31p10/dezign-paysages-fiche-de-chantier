@@ -1,6 +1,6 @@
 
 import { useForm } from 'react-hook-form';
-import { BlankWorkSheetValues, BlankWorkSheetSchema } from '../schema';
+import { BlankWorkSheetValues, blankWorkSheetSchema } from '../schema';
 import { useEffect, useState } from 'react';
 import { useTimeCalculation } from './hooks/useTimeCalculation';
 import { useWorksheetLoader } from './hooks/useWorksheetLoader';
@@ -30,7 +30,7 @@ export const useBlankWorksheetForm = ({
   
   // Initialize the form with default values and validation
   const form = useForm<BlankWorkSheetValues>({
-    resolver: zodResolver(BlankWorkSheetSchema),
+    resolver: zodResolver(blankWorkSheetSchema),
     defaultValues: {
       clientName: initialData?.clientName || '',
       address: initialData?.address || '',
@@ -53,6 +53,7 @@ export const useBlankWorksheetForm = ({
       isQuoteSigned: initialData?.isQuoteSigned || false,
       linkedProjectId: initialData?.linkedProjectId || null,
       teamFilter: initialData?.teamFilter || 'all',
+      vatRate: initialData?.vatRate || '20',
       invoiced: initialData?.invoiced || false
     }
   });

@@ -1,6 +1,6 @@
 
 import { UseFormReturn } from 'react-hook-form';
-import { BlankWorkSheetValues, BlankWorkSheetSchema } from '../../schema';
+import { BlankWorkSheetValues, blankWorkSheetSchema } from '../../schema';
 import { WorkLog } from '@/types/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -16,7 +16,7 @@ export const useFormInitialization = ({
   initialData 
 }: UseFormInitializationProps): UseFormReturn<BlankWorkSheetValues> => {
   return useForm<BlankWorkSheetValues>({
-    resolver: zodResolver(BlankWorkSheetSchema),
+    resolver: zodResolver(blankWorkSheetSchema),
     defaultValues: {
       clientName: initialData?.clientName || '',
       address: initialData?.address || '',
@@ -39,6 +39,7 @@ export const useFormInitialization = ({
       isQuoteSigned: initialData?.isQuoteSigned || false,
       linkedProjectId: initialData?.linkedProjectId || null,
       teamFilter: 'all',
+      vatRate: '20',
       invoiced: initialData?.invoiced || false
     }
   });
