@@ -1,6 +1,6 @@
 
 import { BlankWorkSheetValues } from '../schema';
-import { WorkLog } from '@/types/models';
+import { Consumable, WorkLog } from '@/types/models';
 import { formatStructuredNotes, validateConsumables, createWorkLogFromFormData } from './utils/formatWorksheetData';
 import { generateUniqueBlankSheetId } from './utils/generateUniqueIds';
 

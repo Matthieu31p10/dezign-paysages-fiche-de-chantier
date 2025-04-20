@@ -28,7 +28,7 @@ export const blankWorkSheetSchema = z.object({
   invoiced: z.boolean().optional(),
 });
 
-// Export the schema with proper capitalization for consistency
-export const BlankWorkSheetSchema = blankWorkSheetSchema;
+// Export le schema avec le nom correct
+export { blankWorkSheetSchema as BlankWorkSheetSchema };
 
 export type BlankWorkSheetValues = z.infer<typeof blankWorkSheetSchema>;

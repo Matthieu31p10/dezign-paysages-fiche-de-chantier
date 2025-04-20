@@ -11,19 +11,21 @@ import { MessagingProvider } from './MessagingContext';
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <AuthProvider>
-      <AppProvider>
-        <SettingsProvider>
-          <TeamsProvider>
-            <ProjectsProvider>
-              <WorkLogsProvider>
+      <SettingsProvider>
+        <TeamsProvider>
+          <ProjectsProvider>
+            <WorkLogsProvider>
+              <AppProvider>
                 <MessagingProvider>
                   {children}
                 </MessagingProvider>
-              </WorkLogsProvider>
-            </ProjectsProvider>
-          </TeamsProvider>
-        </SettingsProvider>
-      </AppProvider>
+              </AppProvider>
+            </WorkLogsProvider>
+          </ProjectsProvider>
+        </TeamsProvider>
+      </SettingsProvider>
     </AuthProvider>
   );
 };
+
+export default AppProviders;

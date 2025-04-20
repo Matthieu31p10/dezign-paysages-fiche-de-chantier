@@ -61,11 +61,12 @@ const InterventionDetailsSection: React.FC<InterventionDetailsSectionProps> = ({
         </div>
       </CardContent>
       
+      {/* Mise à jour des props pour correspondre à l'interface de PersonnelDialog */}
       <PersonnelDialog 
-        isOpen={personnelDialogOpen}
+        open={personnelDialogOpen}
         onOpenChange={setPersonnelDialogOpen}
         selectedPersonnel={selectedPersonnel}
-        onChange={handlePersonnelChange}
+        onPersonnelChange={handlePersonnelChange}
         availablePersonnel={availablePersonnel}
       />
     </Card>

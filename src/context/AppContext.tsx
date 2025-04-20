@@ -54,7 +54,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Auth context
     ...auth,
     
-    // Add currentUser property
+    // Add currentUser property for easy access across the app
     currentUser: auth.auth.currentUser,
   };
 

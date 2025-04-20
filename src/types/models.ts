@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -117,34 +118,5 @@ export interface WorkLog {
   linkedProjectId?: string;
   signedQuoteAmount?: number;
   isQuoteSigned?: boolean;
-}
-
-export interface Team {
-  id: string;
-  name: string;
-}
-
-export interface CompanyInfo {
-  name: string;
-  address: string;
-  managerName: string;
-  phone: string;
-  email: string;
-}
-
-export interface Personnel {
-  id: string;
-  name: string;
-  position?: string;
-  active: boolean;
-}
-
-export interface AppSettings {
-  companyName?: string; // Added the companyName property
-  companyLogo?: string;
-  loginBackgroundImage?: string;
-  companyInfo?: CompanyInfo;
-  users?: User[];
-  personnel?: Personnel[];
-  customTasks?: CustomTask[];
+  vatRate?: string;
 }

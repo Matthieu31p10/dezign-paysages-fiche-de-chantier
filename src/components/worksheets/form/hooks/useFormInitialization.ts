@@ -39,7 +39,7 @@ export const useFormInitialization = ({
       isQuoteSigned: initialData?.isQuoteSigned || false,
       linkedProjectId: initialData?.linkedProjectId || null,
       teamFilter: 'all',
-      vatRate: '20',
+      vatRate: initialData?.vatRate || '20',
       invoiced: initialData?.invoiced || false
     }
   });
