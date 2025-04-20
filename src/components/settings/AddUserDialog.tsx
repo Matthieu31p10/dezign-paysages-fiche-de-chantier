@@ -40,7 +40,9 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onOpenChange }) =
       phone: formData.phone,
       position: formData.position,
       drivingLicense: formData.drivingLicense,
-      role: 'user' as const
+      role: 'user' as const,
+      password: 'password123', // Adding default password
+      createdAt: new Date() // Adding current date for createdAt
     };
 
     const updatedUsers = [...(settings.users || []), newUser];
