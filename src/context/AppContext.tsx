@@ -12,7 +12,7 @@ import {
   SettingsContextType, 
   AuthContextType 
 } from './types';
-import { WorkLog, User } from '@/types/models';
+import { WorkLog } from '@/types/models';
 
 // Create a type that combines all the context types
 export type AppContextType = ProjectsContextType & 
@@ -22,7 +22,6 @@ export type AppContextType = ProjectsContextType &
   AuthContextType & {
     // Add any additional app-wide methods or state here
     workLogs: WorkLog[];
-    currentUser: User | null;
   };
 
 // Create the context
@@ -53,9 +52,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // Auth context
     ...auth,
-    
-    // Add currentUser property for easy access across the app
-    currentUser: auth.auth.currentUser,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

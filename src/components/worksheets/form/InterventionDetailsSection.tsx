@@ -1,75 +1,121 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { CalendarIcon } from 'lucide-react';
 import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
-import { Users } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 
-interface InterventionDetailsSectionProps {
-  availablePersonnel?: string[];
-}
-
-const InterventionDetailsSection: React.FC<InterventionDetailsSectionProps> = ({
-  availablePersonnel = []
-}) => {
+const InterventionDetailsSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
-  const [personnelDialogOpen, setPersonnelDialogOpen] = useState(false);
-  const selectedPersonnel = watch('personnel') || [];
+  const { teams } = useApp();
+  const teamFilterValue = watch('teamFilter') || 'all';
   
-  const handlePersonnelChange = (selected: string[]) => {
-    setValue('personnel', selected);
+  const handleTeamFilterChange = (value: string) => {
+    setValue('teamFilter', value);
+  };
+  
+  const handlePersonnelChange = (selectedPersonnel: string[]) => {
+    setValue('personnel', selectedPersonnel);
   };
   
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-medium">Détails de l'intervention</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-sm font-medium">Personnel</label>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={() => setPersonnelDialogOpen(true)}
-              className="text-xs h-7 py-0 px-2"
-            >
-              <Users className="h-3.5 w-3.5 mr-1" />
-              Sélectionner
-            </Button>
-          </div>
-          
-          {selectedPersonnel.length > 0 ? (
-            <div className="border rounded-md p-2 bg-slate-50">
-              <ul className="grid grid-cols-2 gap-2">
-                {selectedPersonnel.map((person) => (
-                  <li key={person} className="text-sm bg-white px-2 py-1 rounded border">
-                    {person}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground border rounded-md p-3 bg-slate-50">
-              Aucun personnel sélectionné
-            </div>
-          )}
-        </div>
-      </CardContent>
+    <div className="space-y-4">
+      <h2 className="text-lg font-medium flex items-center">
+        <CalendarIcon className="mr-2 h-5 w-5 text-muted-foreground" />
+        Détails de l'intervention
+      </h2>
       
-      {/* Mise à jour des props pour correspondre à l'interface de PersonnelDialog */}
-      <PersonnelDialog 
-        open={personnelDialogOpen}
-        onOpenChange={setPersonnelDialogOpen}
-        selectedPersonnel={selectedPersonnel}
-        onPersonnelChange={handlePersonnelChange}
-        availablePersonnel={availablePersonnel}
-      />
-    </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Date</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "d MMMM yyyy", { locale: fr })
+                      ) : (
+                        <span>Sélectionner une date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div>
+          <FormLabel>Équipe</FormLabel>
+          <Select value={teamFilterValue} onValueChange={handleTeamFilterChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une équipe (optionnel)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les équipes</SelectItem>
+              {teams.map((team) => (
+                <SelectItem key={team.id} value={team.id}>
+                  {team.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <Card>
+        <CardContent className="pt-4">
+          <FormField
+            control={control}
+            name="personnel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Personnel</FormLabel>
+                <FormControl>
+                  <PersonnelDialog 
+                    selectedPersonnel={field.value} 
+                    onChange={handlePersonnelChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
