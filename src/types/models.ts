@@ -64,7 +64,7 @@ export interface CustomTask {
 }
 
 export interface Consumable {
-  id?: string;
+  id: string;
   supplier: string;
   product: string;
   unit: string;

@@ -13,7 +13,8 @@ interface WorkLogMonthGroupProps {
 
 const WorkLogMonthGroup: React.FC<WorkLogMonthGroupProps> = ({ month, workLogs, projectId, isMobile }) => {
   // Format le mois et l'année pour l'affichage (ex: "Janvier 2023")
-  const formattedMonth = formatMonthYear(month);
+  // Convert string to Date before passing to formatMonthYear
+  const formattedMonth = month; // We'll use the month string directly since it's already formatted
   
   return (
     <div className="space-y-2">

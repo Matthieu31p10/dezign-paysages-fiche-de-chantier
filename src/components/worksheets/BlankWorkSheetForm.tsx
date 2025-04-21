@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useApp } from '@/context/AppContext';
@@ -30,7 +29,7 @@ import WorksheetSummary from './WorksheetSummary';
 import { useProjectLinkHook } from './form/useProjectLinkHook';
 import ProjectLinkSection from './form/ProjectLinkSection';
 import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
-import PersonnelSection from './time-tracking/PersonnelSection';
+import { PersonnelSection } from './time-tracking/PersonnelSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -49,7 +48,6 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   const { workLogs } = useWorkLogs();
   const [activeTab, setActiveTab] = useState(initialData?.linkedProjectId ? 'project' : 'adhoc');
   
-  // Utiliser le hook useBlankWorksheetForm pour gérer le formulaire
   const {
     form,
     selectedProjectId,
@@ -104,7 +102,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               </TabsContent>
             </Tabs>
             
-            <PersonnelSection />
+            <PersonnelSection 
+              control={form.control}
+              selectedPersonnel={form.watch('personnel') || []}
+              onPersonnelChange={(personnel) => form.setValue('personnel', personnel)}
+            />
             
             <TimeTrackingSection />
             

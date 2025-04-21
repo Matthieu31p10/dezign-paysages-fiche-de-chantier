@@ -1,4 +1,3 @@
-
 // Format pour l'affichage des montants
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('fr-FR', {
@@ -40,7 +39,21 @@ export const formatPercent = (value: number): string => {
 export const formatPercentage = formatPercent;
 
 // Format pour l'affichage du mois et de l'année
-export const formatMonthYear = (date: Date): string => {
+export const formatMonthYear = (date: Date | string): string => {
+  if (typeof date === 'string') {
+    // If already a formatted string, return it
+    if (!date.includes('-') && !date.includes('/')) {
+      return date;
+    }
+    // Otherwise, try to convert it to a Date
+    try {
+      return new Date(date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    } catch (e) {
+      console.error('Error parsing date string:', date);
+      return date;
+    }
+  }
+  
   return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 };
 
