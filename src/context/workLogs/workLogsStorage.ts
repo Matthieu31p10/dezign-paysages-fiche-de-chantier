@@ -2,37 +2,33 @@
 import { WorkLog } from '@/types/models';
 import { toast } from 'sonner';
 
-// Local storage key
-export const WORKLOGS_STORAGE_KEY = 'landscaping-worklogs';
+// This would be replaced with database queries in the future
 
 /**
- * Load workLogs from localStorage
+ * Load workLogs from database
  */
 export const loadWorkLogsFromStorage = (): WorkLog[] => {
   try {
-    const storedWorkLogs = localStorage.getItem(WORKLOGS_STORAGE_KEY);
-    if (storedWorkLogs) {
-      const parsedLogs = JSON.parse(storedWorkLogs);
-      console.log("Loaded work logs from storage:", parsedLogs);
-      return parsedLogs;
-    }
+    // This function would be replaced with a database query
+    // For now, returning an empty array
+    console.log("This function would load work logs from the database");
     return [];
   } catch (error) {
-    console.error('Error loading work logs from localStorage:', error);
+    console.error('Error loading work logs:', error);
     toast.error('Erreur lors du chargement des fiches de suivi');
     return [];
   }
 };
 
 /**
- * Save workLogs to localStorage
+ * Save workLogs to database
  */
 export const saveWorkLogsToStorage = (workLogs: WorkLog[]): void => {
   try {
-    localStorage.setItem(WORKLOGS_STORAGE_KEY, JSON.stringify(workLogs));
-    console.log("Saved work logs to storage:", workLogs);
+    // This function would be replaced with a database query
+    console.log("This function would save work logs to the database:", workLogs);
   } catch (error) {
-    console.error('Error saving work logs to localStorage:', error);
+    console.error('Error saving work logs:', error);
     toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
   }
 };

@@ -1,8 +1,6 @@
 
 import { Consumable } from '@/types/models';
 
-export const SAVED_CONSUMABLES_KEY = 'saved_consumables';
-
 export type ConsumableFormState = {
   supplier: string;
   product: string;

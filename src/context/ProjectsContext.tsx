@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { ProjectsContextType } from './types';
 import { toast } from 'sonner';
@@ -7,41 +7,13 @@ import { useWorkLogs } from './WorkLogsContext';
 
 const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined);
 
-// Local storage key
-const PROJECTS_STORAGE_KEY = 'landscaping-projects';
-const SELECTED_PROJECT_KEY = 'landscaping-selected-project';
-
 export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projectInfos, setProjectInfos] = useState<ProjectInfo[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const { deleteWorkLogsByProjectId, archiveWorkLogsByProjectId } = useWorkLogs();
 
-  // Load data from localStorage on initial render
-  useEffect(() => {
-    try {
-      const storedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
-      const storedSelectedProject = localStorage.getItem(SELECTED_PROJECT_KEY);
-
-      if (storedProjects) setProjectInfos(JSON.parse(storedProjects));
-      if (storedSelectedProject) setSelectedProjectId(storedSelectedProject);
-    } catch (error) {
-      console.error('Error loading projects from localStorage:', error);
-      toast.error('Erreur lors du chargement des projets');
-    }
-  }, []);
-
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projectInfos));
-  }, [projectInfos]);
-
-  useEffect(() => {
-    if (selectedProjectId) {
-      localStorage.setItem(SELECTED_PROJECT_KEY, selectedProjectId);
-    } else {
-      localStorage.removeItem(SELECTED_PROJECT_KEY);
-    }
-  }, [selectedProjectId]);
+  // In the future, load data from database on initial render
+  // This would be implemented with a React Query hook
 
   const addProjectInfo = (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
     const newProjectInfo: ProjectInfo = {
@@ -50,6 +22,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       createdAt: new Date(),
     };
     setProjectInfos((prev) => [...prev, newProjectInfo]);
+    // In the future, save to database
     toast.success('Fiche chantier créée');
     return newProjectInfo;
   };
@@ -63,12 +36,14 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       archiveWorkLogsByProjectId(projectInfo.id, !!projectInfo.isArchived);
     }
     
+    // In the future, update in database
     toast.success('Fiche chantier mise à jour');
   };
 
   const deleteProjectInfo = (id: string) => {
     setProjectInfos((prev) => prev.filter((p) => p.id !== id));
     deleteWorkLogsByProjectId(id);
+    // In the future, delete from database
     toast.success('Fiche chantier supprimée');
     if (selectedProjectId === id) {
       setSelectedProjectId(null);

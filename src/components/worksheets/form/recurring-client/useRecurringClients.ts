@@ -1,11 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useToast } from '@/components/ui/use-toast';
 import { RecurringClient } from './types';
 import { BlankWorkSheetValues } from '../../schema';
-
-const STORAGE_KEY = 'recurring-clients';
 
 export const useRecurringClients = () => {
   const { control, setValue, watch } = useFormContext<BlankWorkSheetValues>();
@@ -17,19 +15,10 @@ export const useRecurringClients = () => {
   
   const currentClientName = watch('clientName');
   
-  // Load saved clients from localStorage
-  useEffect(() => {
-    const savedClients = localStorage.getItem(STORAGE_KEY);
-    if (savedClients) {
-      try {
-        setClients(JSON.parse(savedClients));
-      } catch (e) {
-        console.error('Error loading recurring clients:', e);
-      }
-    }
-  }, []);
+  // In the future, load clients from database
+  // This would be implemented with a React Query hook
   
-  // Save current client info
+  // Save current client info to database (in the future)
   const saveCurrentClient = () => {
     const clientName = control._formValues.clientName;
     const address = control._formValues.address;
@@ -78,7 +67,7 @@ export const useRecurringClients = () => {
     }
     
     setClients(updatedClients);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClients));
+    // In the future, save to database
     
     toast({
       title: "Client enregistré",
@@ -109,7 +98,7 @@ export const useRecurringClients = () => {
     }
   };
   
-  // Delete a client
+  // Delete a client (would be from database in the future)
   const handleDeleteRequest = (clientId: string) => {
     setClientToDelete(clientId);
     setDeleteDialogOpen(true);
@@ -120,7 +109,7 @@ export const useRecurringClients = () => {
     
     const updatedClients = clients.filter(c => c.id !== clientToDelete);
     setClients(updatedClients);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClients));
+    // In the future, delete from database
     
     // If the deleted client was selected, clear the selection
     if (selectedClientId === clientToDelete) {

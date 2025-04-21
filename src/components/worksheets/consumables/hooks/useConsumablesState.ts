@@ -1,10 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
 import { Consumable } from '@/types/models';
-import { ConsumableFormState, EmptyConsumable, SAVED_CONSUMABLES_KEY } from '../types';
-import { toast } from 'sonner';
+import { ConsumableFormState, EmptyConsumable } from '../types';
 
 export const useConsumablesState = () => {
   const { watch, setValue } = useFormContext<BlankWorkSheetValues>();
@@ -14,28 +13,8 @@ export const useConsumablesState = () => {
   
   const consumables = watch('consumables') || [];
   
-  // Load saved consumables from localStorage
-  useEffect(() => {
-    const savedItems = localStorage.getItem(SAVED_CONSUMABLES_KEY);
-    if (savedItems) {
-      try {
-        const parsedItems = JSON.parse(savedItems);
-        const typedItems: Consumable[] = parsedItems.map((item: any): Consumable => ({
-          id: item.id || crypto.randomUUID(),
-          supplier: item.supplier || '',
-          product: item.product || '',
-          unit: item.unit || '',
-          quantity: Number(item.quantity) || 0,
-          unitPrice: Number(item.unitPrice) || 0,
-          totalPrice: Number(item.totalPrice) || 0
-        }));
-        setSavedConsumables(typedItems);
-      } catch (e) {
-        console.error('Error loading saved consumables', e);
-        localStorage.removeItem(SAVED_CONSUMABLES_KEY);
-      }
-    }
-  }, []);
+  // In the future, we'll fetch saved consumables from the database here
+  // This would be implemented with a React Query hook or similar
 
   return {
     newConsumable,

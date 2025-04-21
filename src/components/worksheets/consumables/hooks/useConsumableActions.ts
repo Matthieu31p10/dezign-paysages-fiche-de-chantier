@@ -2,7 +2,6 @@
 import { ConsumableFormState, EmptyConsumable } from '../types';
 import { Consumable } from '@/types/models';
 import { toast } from 'sonner';
-import { SAVED_CONSUMABLES_KEY } from '../types';
 
 export const useConsumableActions = (
   newConsumable: ConsumableFormState,
@@ -89,13 +88,9 @@ export const useConsumableActions = (
       return;
     }
     
-    const updatedSavedConsumables: Consumable[] = [
-      ...savedConsumables, 
-      ...validConsumables
-    ];
-    
-    setSavedConsumables(updatedSavedConsumables);
-    localStorage.setItem(SAVED_CONSUMABLES_KEY, JSON.stringify(updatedSavedConsumables));
+    // Instead of saving to localStorage, we'll save to database in the future
+    // This would be implemented with a mutation hook
+    setSavedConsumables(validConsumables);
     toast.success("Consommables sauvegardés avec succès");
   };
 

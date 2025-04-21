@@ -1,0 +1,141 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  password      String
+  role          String    // 'admin' | 'manager' | 'user'
+  name          String?
+  email         String?
+  phone         String?
+  position      String?
+  drivingLicense String?
+  createdAt     DateTime  @default(now())
+  permissions   Json?     // Stored as JSON for custom permissions
+}
+
+model Personnel {
+  id       String  @id @default(uuid())
+  name     String
+  position String?
+  active   Boolean @default(true)
+}
+
+model Team {
+  id        String    @id @default(uuid())
+  name      String
+  projects  Project[]
+}
+
+model CustomTask {
+  id   String @id @default(uuid())
+  name String
+}
+
+model Project {
+  id               String    @id @default(uuid())
+  name             String
+  clientName       String?
+  address          String
+  contactPhone     String?
+  contactEmail     String?
+  contactName      String?
+  contractDetails  String
+  contractDocUrl   String?
+  irrigation       String?   // 'irrigation' | 'none' | 'disabled'
+  mowerType        String?   // 'large' | 'small' | 'both'
+  annualVisits     Int
+  annualTotalHours Int
+  visitDuration    Int
+  additionalInfo   String
+  team             Team      @relation(fields: [teamId], references: [id])
+  teamId           String
+  projectType      String    // 'residence' | 'particular' | 'enterprise' | ''
+  startDate        DateTime?
+  endDate          DateTime?
+  isArchived       Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  workLogs         WorkLog[]
+  documents        Document[]
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  name       String
+  type       String
+  url        String
+  uploadDate DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  String
+}
+
+model Consumable {
+  id          String   @id @default(uuid())
+  supplier    String
+  product     String
+  unit        String
+  quantity    Float
+  unitPrice   Float
+  totalPrice  Float
+  workLogId   String?
+  workLog     WorkLog? @relation(fields: [workLogId], references: [id])
+  savedForReuse Boolean @default(false)
+}
+
+model WorkLog {
+  id              String       @id @default(uuid())
+  projectId       String
+  project         Project      @relation(fields: [projectId], references: [id])
+  date            DateTime
+  personnel       String[]
+  departure       String?
+  arrival         String?
+  end             String?
+  breakTime       String?
+  totalHours      Float
+  tasks           String?
+  wasteManagement String?
+  notes           String?
+  clientSignature String?
+  consumables     Consumable[]
+  waterConsumption Float?
+  createdAt       DateTime     @default(now())
+  invoiced        Boolean      @default(false)
+  isArchived      Boolean      @default(false)
+  hourlyRate      Float?
+  clientName      String?
+  address         String?
+  contactPhone    String?
+  contactEmail    String?
+  linkedProjectId String?
+  signedQuoteAmount Float?
+  isQuoteSigned   Boolean      @default(false)
+  vatRate         String?
+}
+
+model RecurringClient {
+  id      String @id @default(uuid())
+  name    String
+  address String?
+  phone   String?
+  email   String?
+}
+
+model AppSettings {
+  id               String  @id @default(1)
+  companyName      String?
+  companyLogo      String?
+  loginBackground  String?
+  companyInfo      Json?   // Stored as JSON
+}
