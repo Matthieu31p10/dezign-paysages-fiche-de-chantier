@@ -24,7 +24,7 @@ const BlankSheetStats: React.FC<BlankSheetStatsProps> = ({ sheet }) => {
       )}
       
       {sheet.isQuoteSigned !== undefined && (
-        <Badge variant={sheet.isQuoteSigned ? "success" : "secondary"} className="text-xs">
+        <Badge variant={sheet.isQuoteSigned ? "secondary" : "outline"} className="text-xs">
           {sheet.isQuoteSigned ? (
             <>
               <CheckCircle2 className="h-3 w-3 mr-1" />

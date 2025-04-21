@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { WorkLog } from '@/types/models';
+import { WorkLog, ProjectInfo } from '@/types/models';
 import { formatCurrency } from '@/utils/format-utils';
 
 interface BlankSheetContentProps {
   sheet: WorkLog;
+  linkedProject?: ProjectInfo | null;
 }
 
-const BlankSheetContent: React.FC<BlankSheetContentProps> = ({ sheet }) => {
+const BlankSheetContent: React.FC<BlankSheetContentProps> = ({ sheet, linkedProject }) => {
   const totalHours = sheet.timeTracking?.totalHours || 0;
   const personnelCount = sheet.personnel?.length || 1;
   const totalTeamHours = totalHours * personnelCount;

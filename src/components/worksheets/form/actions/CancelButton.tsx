@@ -5,14 +5,23 @@ import { X } from 'lucide-react';
 
 interface CancelButtonProps {
   onClick: () => void;
+  onCancel?: () => void;
 }
 
-const CancelButton: React.FC<CancelButtonProps> = ({ onClick }) => {
+const CancelButton: React.FC<CancelButtonProps> = ({ onClick, onCancel }) => {
+  const handleClick = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      onClick();
+    }
+  };
+
   return (
     <Button 
       type="button" 
       variant="outline" 
-      onClick={onClick}
+      onClick={handleClick}
       className="flex items-center gap-1"
     >
       <X className="h-4 w-4" />

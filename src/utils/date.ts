@@ -1,8 +1,8 @@
 
 import { getCurrentYear, getCurrentMonth, getMonthName } from './date-helpers';
-import { formatDate as formatDateUtil, formatTime as formatTimeUtil } from './format-utils';
+import { formatMonthYear } from './format-utils';
 
-// Re-export functions from date-helpers and format-utils
+// Re-export functions from date-helpers
 export {
   getCurrentYear,
   getCurrentMonth,
@@ -15,16 +15,16 @@ export const formatDate = (date: string | Date): string => {
   
   // If it's already a string, use it directly
   if (typeof date === 'string') {
-    return formatDateUtil(date);
+    return new Date(date).toLocaleDateString('fr-FR');
   }
   
-  // If it's a Date object, convert to ISO string first
-  return formatDateUtil(date.toISOString());
+  // If it's a Date object, format directly
+  return date.toLocaleDateString('fr-FR');
 };
 
-// Create a wrapper for formatTime to avoid naming conflicts
+// Create a wrapper for formatTime
 export const formatTime = (time: string): string => {
-  return formatTimeUtil(time);
+  return time;
 };
 
 // Format a date range (handling Date objects)

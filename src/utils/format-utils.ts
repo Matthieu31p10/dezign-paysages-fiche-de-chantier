@@ -49,3 +49,45 @@ export const formatPercent = (value: number): string => {
     maximumFractionDigits: 1
   }).format(value / 100);
 };
+
+/**
+ * Formate une date au format court (ex: "01/01/2023")
+ */
+export const formatDate = (dateStr: string): string => {
+  try {
+    const date = new Date(dateStr);
+    return format(date, 'dd/MM/yyyy', { locale: fr });
+  } catch (error) {
+    console.error('Erreur de formatage de date:', error);
+    return dateStr;
+  }
+};
+
+/**
+ * Formate une heure (ex: "12:30")
+ */
+export const formatTime = (timeStr: string): string => {
+  return timeStr;
+};
+
+/**
+ * Formate un nombre
+ */
+export const formatNumber = (value: number): string => {
+  if (isNaN(value)) return '0';
+  
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(value);
+};
+
+/**
+ * Formate un prix (synonyme de formatCurrency)
+ */
+export const formatPrice = formatCurrency;
+
+/**
+ * Formate un pourcentage (synonyme de formatPercent)
+ */
+export const formatPercentage = formatPercent;

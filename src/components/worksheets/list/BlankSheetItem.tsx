@@ -43,27 +43,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
           />
           
           <BlankSheetStats 
-            hourlyRate={sheet.hourlyRate || 0}
-            hasHourlyRate={!!(sheet.hourlyRate && sheet.hourlyRate > 0)}
-            totalHours={sheet.timeTracking?.totalHours || 0}
-            personnelCount={sheet.personnel?.length || 1}
-            totalCost={(sheet.timeTracking?.totalHours || 0) * (sheet.hourlyRate || 0) * (sheet.personnel?.length || 1)}
-            quoteValue={sheet.signedQuoteAmount || 0}
-            hasQuoteValue={!!(sheet.signedQuoteAmount && sheet.signedQuoteAmount > 0)}
-            signedQuote={!!sheet.isQuoteSigned}
-            hasSignature={!!sheet.clientSignature}
-            formatNumberValue={(value) => {
-              if (typeof value === 'string') {
-                return parseFloat(value).toLocaleString('fr-FR', { 
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 2 
-                });
-              }
-              return value.toLocaleString('fr-FR', { 
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2 
-              });
-            }}
+            sheet={sheet}
           />
         </div>
         
