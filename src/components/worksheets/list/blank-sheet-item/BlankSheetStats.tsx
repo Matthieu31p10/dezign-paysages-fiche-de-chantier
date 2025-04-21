@@ -1,73 +1,49 @@
 
 import React from 'react';
-import { Clock, Euro, FileCheck, FileSignature } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Clipboard, CheckCircle2, XCircle } from 'lucide-react';
+import { WorkLog } from '@/types/models';
 
 interface BlankSheetStatsProps {
-  hourlyRate: number;
-  hasHourlyRate: boolean;
-  totalHours: number;
-  personnelCount: number;
-  totalCost: number;
-  quoteValue: number;
-  hasQuoteValue: boolean;
-  signedQuote: boolean;
-  hasSignature: boolean;
-  formatNumberValue: (value: string | number) => string;
+  sheet: WorkLog;
 }
 
-const BlankSheetStats: React.FC<BlankSheetStatsProps> = ({
-  hourlyRate,
-  hasHourlyRate,
-  totalHours,
-  personnelCount,
-  totalCost,
-  quoteValue,
-  hasQuoteValue,
-  signedQuote,
-  hasSignature,
-  formatNumberValue
-}) => {
+const BlankSheetStats: React.FC<BlankSheetStatsProps> = ({ sheet }) => {
   return (
-    <div className="grid grid-cols-2 gap-3 mt-3">
-      <div className="flex items-center text-sm">
-        <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-        <span>
-          <span className="font-medium">{formatNumberValue(totalHours)}</span> heures
-          {personnelCount > 1 && ` × ${personnelCount}`}
-        </span>
-      </div>
-      
-      {hasHourlyRate && (
-        <div className="flex items-center text-sm">
-          <Euro className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-          <span>
-            <span className="font-medium">{hourlyRate}</span> €/h
-            {totalCost > 0 && ` (${Math.round(totalCost)} € total)`}
-          </span>
-        </div>
+    <div className="mt-3 flex flex-wrap gap-2">
+      {sheet.wasteManagement && sheet.wasteManagement !== 'none' && (
+        <Badge variant="outline" className="text-xs">
+          {sheet.wasteManagement.includes('big_bag') && 'Big-bag'}
+          {sheet.wasteManagement.includes('half_dumpster') && '½ Benne'}
+          {sheet.wasteManagement.includes('dumpster') && 'Benne'}
+          {sheet.wasteManagement.includes('small_container') && 'Petit container'}
+          {sheet.wasteManagement.includes('large_container') && 'Grand container'}
+          {' - '}
+          {sheet.wasteManagement.split('_')[1] || '1'} unité(s)
+        </Badge>
       )}
       
-      {hasQuoteValue && (
-        <div className="flex items-center text-sm">
-          <FileCheck className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-          <span>
-            Devis: <span className="font-medium">{Math.round(quoteValue)}</span> €
-          </span>
-        </div>
+      {sheet.isQuoteSigned !== undefined && (
+        <Badge variant={sheet.isQuoteSigned ? "success" : "secondary"} className="text-xs">
+          {sheet.isQuoteSigned ? (
+            <>
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              Devis signé
+            </>
+          ) : (
+            <>
+              <XCircle className="h-3 w-3 mr-1" />
+              Devis non signé
+            </>
+          )}
+        </Badge>
       )}
       
-      {signedQuote && (
-        <div className="flex items-center text-sm">
-          <FileSignature className="w-3.5 h-3.5 mr-1.5 text-green-500" />
-          <span className="text-green-600">Devis signé</span>
-        </div>
-      )}
-      
-      {hasSignature && (
-        <div className="flex items-center text-sm">
-          <FileSignature className="w-3.5 h-3.5 mr-1.5 text-green-500" />
-          <span className="text-green-600">Signature client</span>
-        </div>
+      {sheet.tasks && (
+        <Badge variant="outline" className="text-xs">
+          <Clipboard className="h-3 w-3 mr-1" />
+          {sheet.tasks.length > 30 ? `${sheet.tasks.substring(0, 30)}...` : sheet.tasks}
+        </Badge>
       )}
     </div>
   );

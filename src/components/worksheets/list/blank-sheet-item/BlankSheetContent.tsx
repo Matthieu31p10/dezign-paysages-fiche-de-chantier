@@ -1,73 +1,48 @@
 
 import React from 'react';
-import { WorkLog, ProjectInfo } from '@/types/models';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Phone, Mail, Link2, CheckCircle2, AlertTriangle, Clock, Euro } from 'lucide-react';
-import { formatDate } from '@/utils/date';
-import BlankSheetStats from './BlankSheetStats';
+import { WorkLog } from '@/types/models';
+import { formatCurrency } from '@/utils/format-utils';
 
 interface BlankSheetContentProps {
   sheet: WorkLog;
-  linkedProject?: ProjectInfo | null;
 }
 
-const BlankSheetContent: React.FC<BlankSheetContentProps> = ({
-  sheet,
-  linkedProject
-}) => {
-  if (!sheet) return null;
-  
-  // Formatage des valeurs numériques
-  const formatNumberValue = (value: string | number): string => {
-    if (typeof value === 'string') {
-      return parseFloat(value).toLocaleString('fr-FR', { 
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2 
-      });
-    }
-    return value.toLocaleString('fr-FR', { 
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2 
-    });
-  };
-  
-  // Extraction des informations de contact
-  const clientName = sheet.clientName || '';
-  const address = sheet.address || '';
-  const contactPhone = sheet.contactPhone || '';
-  const contactEmail = sheet.contactEmail || '';
+const BlankSheetContent: React.FC<BlankSheetContentProps> = ({ sheet }) => {
+  const totalHours = sheet.timeTracking?.totalHours || 0;
+  const personnelCount = sheet.personnel?.length || 1;
+  const totalTeamHours = totalHours * personnelCount;
   
   return (
-    <div className="space-y-2 mt-2">
-      {address && (
-        <div className="flex items-center text-sm">
-          <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-          <span>{address}</span>
+    <div className="mt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+        <div>
+          <p className="text-xs text-muted-foreground">Heures équipe</p>
+          <p className="font-medium">{totalTeamHours.toFixed(2)}h</p>
         </div>
-      )}
-      
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        {contactPhone && (
-          <div className="flex items-center">
-            <Phone className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-            <span>{contactPhone}</span>
+        
+        <div>
+          <p className="text-xs text-muted-foreground">Personnel</p>
+          <p className="font-medium">{personnelCount} personne{personnelCount > 1 ? 's' : ''}</p>
+        </div>
+        
+        {sheet.hourlyRate && (
+          <div>
+            <p className="text-xs text-muted-foreground">Taux horaire</p>
+            <p className="font-medium">{formatCurrency(sheet.hourlyRate)}/h</p>
           </div>
         )}
         
-        {contactEmail && (
-          <div className="flex items-center">
-            <Mail className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-            <span>{contactEmail}</span>
-          </div>
-        )}
-        
-        {linkedProject && (
-          <div className="flex items-center">
-            <Link2 className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-            <span>Projet lié: {linkedProject.name}</span>
+        {sheet.signedQuoteAmount > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground">Devis signé</p>
+            <p className="font-medium">{formatCurrency(sheet.signedQuoteAmount)}</p>
           </div>
         )}
       </div>
+      
+      {sheet.address && (
+        <p className="text-sm text-muted-foreground truncate mt-1">{sheet.address}</p>
+      )}
     </div>
   );
 };

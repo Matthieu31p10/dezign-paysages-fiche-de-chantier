@@ -1,6 +1,7 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -11,16 +12,15 @@ import { toast } from 'sonner';
 const WorkLogEdit = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { workLogs, projectInfos } = useApp();
+  const { projectInfos } = useApp();
+  const { workLogs, getWorkLogById } = useWorkLogs();
   const [isLoading, setIsLoading] = useState(true);
   
   // Find the workLog by ID
-  const workLog = id ? workLogs.find(log => log.id === id) : undefined;
+  const workLog = id ? getWorkLogById(id) : undefined;
   
   useEffect(() => {
     console.log("WorkLogEdit - Loading workLog:", id);
-    console.log("Available workLogs:", workLogs);
-    console.log("Found workLog:", workLog);
     
     // Small delay to ensure data is available
     const timer = setTimeout(() => {
@@ -28,7 +28,7 @@ const WorkLogEdit = () => {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [id, workLog, workLogs]);
+  }, [id, workLog]);
   
   const handleReturn = () => {
     // Naviguer vers la fiche de détail sans perdre l'historique

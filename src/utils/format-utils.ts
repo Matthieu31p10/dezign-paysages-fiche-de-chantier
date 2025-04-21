@@ -1,60 +1,51 @@
 
-// Format date to string in French format
-export const formatDate = (dateString: string): string => {
-  if (!dateString) return '';
-  
-  const date = new Date(dateString);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  });
-};
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-// Format price to string with Euro symbol
-export const formatPrice = (price: number | string): string => {
-  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  return `${numPrice.toFixed(2)} €`;
-};
-
-// Format number with thousands separator
-export const formatNumber = (num: number): string => {
-  return num.toLocaleString('fr-FR');
-};
-
-// Format percentage to string with % symbol
-export const formatPercentage = (percentage: number): string => {
-  return `${percentage.toFixed(1)}%`;
-};
-
-// Format time from 24h format (e.g. "14:30") to display format (e.g. "14h30")
-export const formatTime = (time: string): string => {
-  if (!time) return '';
-  
-  // Handle ISO date strings
-  if (time.includes('T')) {
-    const date = new Date(time);
-    return `${date.getHours()}h${date.getMinutes().toString().padStart(2, '0')}`;
+/**
+ * Formate une date au format "mois année" (ex: "janvier 2023")
+ */
+export const formatMonthYear = (dateStr: string): string => {
+  try {
+    // Traitez différentes formes de dates (YYYY-MM ou Date)
+    let date;
+    if (dateStr.includes('-')) {
+      const [year, month] = dateStr.split('-').map(Number);
+      date = new Date(year, month - 1, 1);
+    } else {
+      date = new Date(dateStr);
+    }
+    
+    return format(date, 'MMMM yyyy', { locale: fr });
+  } catch (error) {
+    console.error('Erreur de formatage de date:', error);
+    return dateStr;
   }
-  
-  // Handle HH:MM format
-  const [hours, minutes] = time.split(':');
-  return `${hours}h${minutes}`;
 };
 
-// Format month and year (input format: "YYYY-MM" or "MM YYYY")
-export const formatMonthYear = (monthYearString: string): string => {
-  // Check the format (either "YYYY-MM" or "Month YYYY")
-  if (monthYearString.includes('-')) {
-    // Format is "YYYY-MM"
-    const [year, month] = monthYearString.split('-').map(Number);
-    const monthNames = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-    ];
-    return `${monthNames[month - 1]} ${year}`;
-  } else {
-    // Format is already "Month YYYY"
-    return monthYearString;
-  }
+/**
+ * Formate un nombre en devise (euros)
+ */
+export const formatCurrency = (amount: number): string => {
+  if (isNaN(amount)) return '0,00 €';
+  
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount);
+};
+
+/**
+ * Formate un pourcentage
+ */
+export const formatPercent = (value: number): string => {
+  if (isNaN(value)) return '0%';
+  
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'percent',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1
+  }).format(value / 100);
 };

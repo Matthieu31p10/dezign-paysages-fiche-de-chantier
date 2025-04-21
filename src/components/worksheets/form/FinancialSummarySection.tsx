@@ -1,124 +1,97 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Euro } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EuroIcon, BadgeCheck, AlertTriangle } from 'lucide-react';
+import { formatCurrency } from '@/utils/format-utils';
 import { BlankWorkSheetValues } from '../schema';
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 
-const FinancialSummarySection = () => {
-  const { watch, control } = useFormContext<BlankWorkSheetValues>();
+const FinancialSummarySection: React.FC = () => {
+  const { watch } = useFormContext<BlankWorkSheetValues>();
   
-  // Get current values
-  const hourlyRate = watch('hourlyRate') || 0;
+  // Get all the values we need for calculations
   const totalHours = watch('totalHours') || 0;
   const personnel = watch('personnel') || [];
   const personnelCount = personnel.length || 1;
+  const hourlyRate = watch('hourlyRate') || 0;
   const consumables = watch('consumables') || [];
+  const signedQuoteAmount = watch('signedQuoteAmount') || 0;
   const isQuoteSigned = watch('isQuoteSigned') || false;
   
   // Calculate totals
   const totalTeamHours = totalHours * personnelCount;
   const laborCost = totalTeamHours * hourlyRate;
-  const consumablesTotalCost = consumables.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-  const totalCost = laborCost + consumablesTotalCost;
+  const totalConsumables = consumables.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  const totalEstimate = laborCost + totalConsumables;
+  
+  // Calculate difference if quote is signed
+  const difference = signedQuoteAmount > 0 ? signedQuoteAmount - totalEstimate : 0;
+  const isPositiveDifference = difference >= 0;
   
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Euro className="h-4 w-4" />
-          Bilan financier
+    <Card className="border-green-200 shadow-sm bg-gradient-to-r from-green-50 to-white">
+      <CardHeader className="pb-2 border-b border-green-100">
+        <CardTitle className="text-lg flex items-center text-green-800">
+          <EuroIcon className="h-5 w-5 mr-2 text-green-600" />
+          Bilan Financier
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Hourly Rate Field */}
-        <FormField
-          control={control}
-          name="hourlyRate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Taux horaire (€/h)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
-                  onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                  step="0.01"
-                  min="0"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        
-        {/* Signed Quote Field */}
-        <FormField
-          control={control}
-          name="isQuoteSigned"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <FormLabel>Devis signé</FormLabel>
-                <FormDescription>
-                  Cette intervention fait-elle l'objet d'un devis signé?
-                </FormDescription>
+      <CardContent className="pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-green-700">Détails des coûts</h3>
+            
+            <div className="grid grid-cols-2 gap-1 bg-white p-3 rounded-md border border-green-100">
+              <span className="text-sm">Main d'œuvre:</span>
+              <span className="text-sm font-medium text-right">{formatCurrency(laborCost)}</span>
+              
+              <span className="text-sm">Fournitures:</span>
+              <span className="text-sm font-medium text-right">{formatCurrency(totalConsumables)}</span>
+              
+              <span className="text-sm font-medium border-t border-green-100 pt-1 mt-1">TOTAL ESTIMÉ:</span>
+              <span className="text-sm font-bold text-right border-t border-green-100 pt-1 mt-1">{formatCurrency(totalEstimate)}</span>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-green-700">Devis client</h3>
+            
+            <div className="bg-white p-3 rounded-md border border-green-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm">Montant du devis:</span>
+                <span className="text-sm font-medium">{formatCurrency(signedQuoteAmount)}</span>
               </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        
-        {/* Quote Amount (conditional display) */}
-        {isQuoteSigned && (
-          <FormField
-            control={control}
-            name="signedQuoteAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Montant du devis signé (€ HT)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
-                    onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                    step="0.01"
-                    min="0"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        )}
-        
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div>
-            <p className="text-sm font-medium">Main d'œuvre</p>
-            <p className="text-lg font-bold">{laborCost.toFixed(2)}€</p>
-            <p className="text-xs text-muted-foreground">
-              {totalTeamHours.toFixed(2)}h × {hourlyRate.toFixed(2)}€/h
-            </p>
-          </div>
-          
-          <div>
-            <p className="text-sm font-medium">Fournitures</p>
-            <p className="text-lg font-bold">{consumablesTotalCost.toFixed(2)}€</p>
-            <p className="text-xs text-muted-foreground">
-              {consumables.length} articles
-            </p>
-          </div>
-          
-          <div className="col-span-2 border-t pt-3 mt-2">
-            <div className="flex justify-between items-center">
-              <p className="text-sm font-medium">Coût total</p>
-              <p className="text-xl font-bold">{totalCost.toFixed(2)}€</p>
+              
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm">Statut:</span>
+                {isQuoteSigned ? (
+                  <span className="text-sm font-medium flex items-center text-green-600">
+                    <BadgeCheck className="h-4 w-4 mr-1" />
+                    Signé
+                  </span>
+                ) : (
+                  <span className="text-sm font-medium flex items-center text-amber-600">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    Non signé
+                  </span>
+                )}
+              </div>
+              
+              {signedQuoteAmount > 0 && (
+                <div className="mt-4 pt-2 border-t border-green-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Différence:</span>
+                    <span className={`text-sm font-bold ${isPositiveDifference ? 'text-green-600' : 'text-red-600'}`}>
+                      {isPositiveDifference ? '+' : ''}{formatCurrency(difference)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {isPositiveDifference 
+                      ? 'Le devis couvre l\'ensemble des frais.' 
+                      : 'Le coût estimé dépasse le montant du devis.'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

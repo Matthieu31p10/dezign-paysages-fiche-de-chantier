@@ -15,12 +15,12 @@ export const TeamHoursDisplay = ({ totalTeamHours, personnelCount }: TeamHoursDi
 
   return (
     <div className="space-y-1 mb-1">
-      <FormLabel className="text-sm">Total équipe ({personnelCount} pers.)</FormLabel>
+      <FormLabel className="text-sm text-green-700">Total équipe ({personnelCount} pers.)</FormLabel>
       <Input 
         type="number" 
         readOnly
         value={hoursValue}
-        className="bg-muted h-9"
+        className="bg-green-50 border-green-200 h-9 font-medium text-green-800"
       />
       <FormMessage />
     </div>

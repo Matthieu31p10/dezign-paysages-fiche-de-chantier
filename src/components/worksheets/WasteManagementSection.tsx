@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2 } from 'lucide-react';
 
 const WasteManagementSection: React.FC = () => {
@@ -34,77 +36,79 @@ const WasteManagementSection: React.FC = () => {
     }
   };
 
+  // Options de type de déchets
+  const wasteOptions = [
+    { id: 'big_bag', label: 'Big-bag' },
+    { id: 'half_dumpster', label: '½ Benne' },
+    { id: 'dumpster', label: 'Benne' },
+    { id: 'small_container', label: 'Petit container' },
+    { id: 'large_container', label: 'Grand container' }
+  ];
+
   return (
-    <div className="space-y-3">
-      <h2 className="text-base font-medium flex items-center">
-        <Trash2 className="w-4 h-4 mr-2 text-muted-foreground" />
+    <div className="space-y-4 rounded-md p-4 bg-gradient-to-r from-green-50 to-white border border-green-200">
+      <h2 className="text-base font-medium flex items-center text-green-800">
+        <Trash2 className="w-4 h-4 mr-2 text-green-600" />
         Gestion des déchets
       </h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <FormField
-          control={form.control}
-          name="wasteType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm">Type de collecte</FormLabel>
-              <FormControl>
-                <Select 
-                  value={wasteType}
-                  onValueChange={(value) => {
-                    setWasteType(value);
-                    updateWasteManagement(value, quantity);
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-2">
+          <FormLabel className="text-sm text-green-700">Type de collecte</FormLabel>
+          <div className="flex flex-wrap gap-2">
+            {wasteOptions.map((option) => (
+              <div key={option.id} className="flex items-center space-x-2">
+                <Checkbox 
+                  id={`waste-${option.id}`}
+                  checked={wasteType === option.id}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setWasteType(option.id);
+                      updateWasteManagement(option.id, quantity);
+                    } else if (wasteType === option.id) {
+                      setWasteType('none');
+                      updateWasteManagement('none', '0');
+                    }
                   }}
+                />
+                <label 
+                  htmlFor={`waste-${option.id}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner une option" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Aucun</SelectItem>
-                    <SelectItem value="big_bag">Big-bag</SelectItem>
-                    <SelectItem value="half_dumpster">½ Benne</SelectItem>
-                    <SelectItem value="dumpster">Benne</SelectItem>
-                    <SelectItem value="small_container">Petit container</SelectItem>
-                    <SelectItem value="large_container">Grand container</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {wasteType !== 'none' && (
-          <FormField
-            control={form.control}
-            name="wasteQuantity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm">Quantité</FormLabel>
-                <FormControl>
-                  <Select 
-                    value={quantity}
-                    onValueChange={(value) => {
-                      setQuantity(value);
-                      updateWasteManagement(wasteType, value);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Quantité" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="4">4</SelectItem>
-                      <SelectItem value="5">5</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="wasteQuantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm text-green-700">Quantité</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={quantity}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setQuantity(value);
+                        updateWasteManagement(wasteType, value);
+                      }}
+                      className="border-green-300 focus:border-green-500"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -14,7 +15,7 @@ import { useFormActions } from './form/hooks/useFormActions';
 import { useWorksheetLoader } from './form/hooks/useWorksheetLoader';
 
 // Import sections
-import TimeTrackingFormSection from './form/TimeTrackingFormSection';
+import TimeTrackingSection from './TimeTrackingSection';
 import TasksSection from './TasksSection';
 import NotesSection from './form/AdditionalNotesSection';
 import WasteManagementSection from './WasteManagementSection';
@@ -28,6 +29,7 @@ import WorkLogFormSubmitHandler from './form/WorkLogFormSubmitHandler';
 import WorksheetSummary from './WorksheetSummary';
 import { useProjectLinkHook } from './form/useProjectLinkHook';
 import ProjectLinkSection from './form/ProjectLinkSection';
+import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -43,30 +45,24 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   existingWorkLogs = []
 }: BlankWorkSheetFormProps) => {
   const { teams } = useApp();
-  const [activeTab, setActiveTab] = useState('adhoc'); // Default to 'adhoc' for client form
+  const { workLogs } = useWorkLogs();
+  const [activeTab, setActiveTab] = useState(initialData?.linkedProjectId ? 'project' : 'adhoc');
   
-  // Initialize form
-  const form = useFormInitialization({ initialData });
-  
-  // Project selection hooks
-  const { 
-    selectedProject,
-    selectedProjectId,
-    handleProjectSelect,
-    handleClearProject
-  } = useProjectLinkHook({ form, projectInfos });
-  
-  // Form actions (submit, cancel)
+  // Utiliser le hook useBlankWorksheetForm pour gérer le formulaire
   const {
+    form,
+    selectedProjectId,
+    selectedProject,
+    handleProjectSelect,
+    handleClearProject,
     isSubmitting,
     handleSubmit,
     handleCancel
-  } = useFormActions({
-    form,
-    workLogId: initialData?.id,
+  } = useBlankWorksheetForm({
+    initialData,
     onSuccess,
-    workLogs: existingWorkLogs,
-    handleClearProject
+    workLogs: existingWorkLogs || workLogs,
+    projectInfos
   });
   
   return (
@@ -107,7 +103,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               </TabsContent>
             </Tabs>
             
-            <TimeTrackingFormSection />
+            <TimeTrackingSection />
             
             <TasksSection 
               customTasks={[]} // We'll implement this later
@@ -127,6 +123,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
               isEditing={!!initialData}
+              handleCancel={handleCancel}
             />
           </div>
           

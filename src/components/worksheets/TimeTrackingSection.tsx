@@ -9,6 +9,7 @@ import { TimeInputs } from './time-tracking/TimeInputs';
 import { TimeCalculations } from './time-tracking/TimeCalculations';
 import { PersonnelSection } from './time-tracking/PersonnelSection';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Card } from '@/components/ui/card';
 
 const TimeTrackingSection: React.FC = () => {
   const { control, watch, setValue } = useFormContext<BlankWorkSheetValues>();
@@ -30,8 +31,8 @@ const TimeTrackingSection: React.FC = () => {
   
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-medium flex items-center">
-        <Clock className="w-5 h-5 mr-2 text-muted-foreground" />
+      <h2 className="text-lg font-medium flex items-center text-green-800">
+        <Clock className="w-5 h-5 mr-2 text-green-600" />
         Suivi du temps
       </h2>
       
@@ -52,20 +53,20 @@ const TimeTrackingSection: React.FC = () => {
         onPersonnelChange={handlePersonnelChange}
       />
       
-      <div className={`grid grid-cols-1 ${isMobile ? '' : 'sm:grid-cols-2'} gap-4 mt-2`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 bg-gradient-to-r from-green-50 to-white p-4 rounded-md border border-green-200">
         <FormField
           control={control}
           name="signedQuoteAmount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Montant du devis (€)</FormLabel>
+              <FormLabel className="font-medium text-green-700">Montant du devis (€)</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
                   step="0.01"
                   value={field.value || 0}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="w-full"
+                  className="border-green-200 focus:border-green-500"
                 />
               </FormControl>
               <FormMessage />
@@ -77,10 +78,10 @@ const TimeTrackingSection: React.FC = () => {
           control={control}
           name="isQuoteSigned"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start md:items-center justify-between space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+            <FormItem className="flex flex-row items-start md:items-center justify-between space-x-3 space-y-0 rounded-md border border-green-200 p-4 shadow-sm">
               <div className="space-y-1 leading-none">
-                <FormLabel>Devis signé</FormLabel>
-                <p className="text-sm text-muted-foreground">
+                <FormLabel className="font-medium text-green-700">Devis signé</FormLabel>
+                <p className="text-sm text-green-600">
                   Cochez si le devis a été signé par le client
                 </p>
               </div>
@@ -89,7 +90,7 @@ const TimeTrackingSection: React.FC = () => {
                   type="checkbox"
                   checked={field.value}
                   onChange={field.onChange}
-                  className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
+                  className="h-4 w-4 text-green-500 border-green-300 focus:ring-green-500"
                 />
               </FormControl>
             </FormItem>
@@ -97,28 +98,30 @@ const TimeTrackingSection: React.FC = () => {
         />
       </div>
       
-      <FormField
-        control={control}
-        name="invoiced"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-start md:items-center justify-between space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
-            <div className="space-y-1 leading-none">
-              <FormLabel>Facturé</FormLabel>
-              <p className="text-sm text-muted-foreground">
-                Cochez si cette intervention a été facturée
-              </p>
-            </div>
-            <FormControl>
-              <input
-                type="checkbox"
-                checked={field.value || false}
-                onChange={field.onChange}
-                className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
+      <Card className="p-4 border-green-200 bg-gradient-to-r from-green-50 to-white">
+        <FormField
+          control={control}
+          name="invoiced"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start md:items-center justify-between space-x-3 space-y-0">
+              <div className="space-y-1 leading-none">
+                <FormLabel className="font-medium text-green-700">Facturé</FormLabel>
+                <p className="text-sm text-green-600">
+                  Cochez si cette intervention a été facturée
+                </p>
+              </div>
+              <FormControl>
+                <input
+                  type="checkbox"
+                  checked={field.value || false}
+                  onChange={field.onChange}
+                  className="h-4 w-4 text-green-500 border-green-300 focus:ring-green-500"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </Card>
     </div>
   );
 };

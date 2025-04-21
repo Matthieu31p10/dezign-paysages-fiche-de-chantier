@@ -1,10 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Edit, Printer, FileDown, MoreHorizontal } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Pencil, Printer, FileDown } from 'lucide-react';
 import { WorkLog } from '@/types/models';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BlankSheetActionsProps {
   sheet: WorkLog;
@@ -19,82 +17,44 @@ const BlankSheetActions: React.FC<BlankSheetActionsProps> = ({
   onExportPDF,
   onPrint
 }) => {
-  const isMobile = useIsMobile();
-
-  const handleEdit = () => {
-    if (onEdit) onEdit(sheet.id);
-  };
-  
-  const handleExportPDF = () => {
-    if (onExportPDF) onExportPDF(sheet.id);
-  };
-  
-  const handlePrint = () => {
-    if (onPrint) onPrint(sheet.id);
-  };
-  
   return (
-    <>
-      {!isMobile && (
-        <div className="flex items-center gap-2">
-          <Button 
-            onClick={handleEdit} 
-            variant="ghost" 
-            size="sm"
-            className="whitespace-nowrap"
-          >
-            <Edit className="w-4 h-4 mr-1.5" />
-            Modifier
-          </Button>
-          
-          <Button 
-            onClick={handleExportPDF} 
-            variant="ghost" 
-            size="sm"
-            className="whitespace-nowrap"
-          >
-            <FileDown className="w-4 h-4 mr-1.5" />
-            PDF
-          </Button>
-          
-          <Button 
-            onClick={handlePrint} 
-            variant="ghost" 
-            size="sm"
-            className="whitespace-nowrap"
-          >
-            <Printer className="w-4 h-4 mr-1.5" />
-            Imprimer
-          </Button>
-        </div>
+    <div className="flex flex-wrap gap-2">
+      {onEdit && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onEdit(sheet.id)}
+          className="text-green-600 border-green-200 hover:bg-green-50"
+        >
+          <Pencil className="h-4 w-4" />
+          <span className="hidden sm:inline ml-1">Modifier</span>
+        </Button>
       )}
       
-      {isMobile && (
-        <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                Modifier
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportPDF}>
-                <FileDown className="h-4 w-4 mr-2" />
-                Exporter PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-2" />
-                Imprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      {onExportPDF && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onExportPDF(sheet.id)}
+          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+        >
+          <FileDown className="h-4 w-4" />
+          <span className="hidden sm:inline ml-1">PDF</span>
+        </Button>
       )}
-    </>
+      
+      {onPrint && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onPrint(sheet.id)}
+          className="text-gray-600 border-gray-200 hover:bg-gray-50"
+        >
+          <Printer className="h-4 w-4" />
+          <span className="hidden sm:inline ml-1">Imprimer</span>
+        </Button>
+      )}
+    </div>
   );
 };
 
