@@ -21,6 +21,7 @@ export const useConsumablesState = () => {
       try {
         const parsedItems = JSON.parse(savedItems);
         const typedItems: Consumable[] = parsedItems.map((item: any): Consumable => ({
+          id: item.id || crypto.randomUUID(),
           supplier: item.supplier || '',
           product: item.product || '',
           unit: item.unit || '',

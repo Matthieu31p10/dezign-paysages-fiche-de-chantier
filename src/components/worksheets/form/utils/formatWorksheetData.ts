@@ -26,6 +26,7 @@ DESCRIPTION: ${data.notes || ''}
  */
 export const validateConsumables = (consumables: any[] = []): Consumable[] => {
   return consumables.map(item => ({
+    id: item.id || crypto.randomUUID(),
     supplier: item.supplier || '',
     product: item.product || '',
     unit: item.unit || '',

@@ -33,6 +33,7 @@ export const useConsumableActions = (
     }
 
     const consumableToAdd: Consumable = {
+      id: crypto.randomUUID(),
       supplier: newConsumable.supplier,
       product: newConsumable.product,
       unit: newConsumable.unit,
@@ -50,6 +51,7 @@ export const useConsumableActions = (
   const handleRemoveConsumable = (index: number) => {
     const typedConsumables: Consumable[] = Array.isArray(consumables) ? 
       consumables.map(item => ({
+        id: item.id || crypto.randomUUID(),
         supplier: item.supplier || '',
         product: item.product || '',
         unit: item.unit || '',
@@ -71,6 +73,7 @@ export const useConsumableActions = (
     
     const typedConsumables: Consumable[] = Array.isArray(consumables) ? 
       consumables.map(item => ({
+        id: item.id || crypto.randomUUID(),
         supplier: item.supplier || '',
         product: item.product || '',
         unit: item.unit || '',

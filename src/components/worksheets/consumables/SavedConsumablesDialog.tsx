@@ -62,9 +62,14 @@ const SavedConsumablesDialog: React.FC<SavedConsumablesDialogProps> = ({
     
     // Calculate total price
     const totalPrice = editingConsumable.quantity * editingConsumable.unitPrice;
-    const updatedConsumable = { 
-      ...editingConsumable,
-      totalPrice 
+    const updatedConsumable: Consumable = { 
+      id: savedConsumables[selectedConsumableIndex].id,
+      supplier: editingConsumable.supplier,
+      product: editingConsumable.product,
+      unit: editingConsumable.unit,
+      quantity: editingConsumable.quantity,
+      unitPrice: editingConsumable.unitPrice,
+      totalPrice
     };
     
     onUpdate(selectedConsumableIndex, updatedConsumable);
