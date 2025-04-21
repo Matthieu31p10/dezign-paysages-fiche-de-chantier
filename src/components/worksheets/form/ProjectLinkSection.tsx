@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { LinkIcon, Search, X, FileSearch } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { FormControl } from '@/components/ui/form';
 import { ProjectInfo } from '@/types/models';
 import { Badge } from '@/components/ui/badge';
+import { useProjects } from '@/context/ProjectsContext';
 
 interface ProjectLinkSectionProps {
   selectedProjectId: string | null;
@@ -24,21 +25,29 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
 }) => {
   const [openProjectsCombobox, setOpenProjectsCombobox] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { projectInfos: contextProjects } = useProjects();
+  
+  // Utiliser les projets du contexte pour inclure tous les projets
+  const allProjects = contextProjects.length > 0 ? contextProjects : projectInfos;
   
   // Filter projects based on search term
   const filteredProjects = useCallback(() => {
-    if (!searchTerm) return projectInfos;
+    if (!searchTerm) return allProjects;
     
-    return projectInfos.filter(project => 
+    return allProjects.filter(project => 
       project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.address?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [projectInfos, searchTerm]);
+  }, [allProjects, searchTerm]);
   
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
   };
+  
+  useEffect(() => {
+    console.log("Projets disponibles:", allProjects.length);
+  }, [allProjects]);
   
   return (
     <div className="space-y-4 border rounded-lg p-4 bg-blue-50">
@@ -64,7 +73,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
                   {selectedProjectId ? (
                     <span className="flex items-center">
                       <FileSearch className="mr-2 h-4 w-4 text-blue-600" />
-                      {projectInfos.find(project => project.id === selectedProjectId)?.name}
+                      {allProjects.find(project => project.id === selectedProjectId)?.name}
                     </span>
                   ) : (
                     <span className="flex items-center">
@@ -121,7 +130,7 @@ const ProjectLinkSection: React.FC<ProjectLinkSectionProps> = ({
         <div className="rounded-md bg-blue-100 p-3 text-sm">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-medium">Projet sélectionné: {projectInfos.find(p => p.id === selectedProjectId)?.name}</p>
+              <p className="font-medium">Projet sélectionné: {allProjects.find(p => p.id === selectedProjectId)?.name}</p>
               <p className="text-muted-foreground text-xs mt-1">Les informations du client ont été préremplies.</p>
             </div>
             <Button 

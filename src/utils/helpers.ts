@@ -2,11 +2,13 @@
 // Export essentials from other utility files
 export { 
   formatDate, 
-  formatCurrency as formatPrice, 
+  formatCurrency, 
   formatNumber, 
-  formatPercent as formatPercentage, 
+  formatPercent, 
+  formatPercentage,
   formatTime,
-  formatMonthYear 
+  formatMonthYear,
+  formatPrice
 } from './format-utils';
 
 export { 

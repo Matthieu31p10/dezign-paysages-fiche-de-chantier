@@ -30,6 +30,7 @@ import WorksheetSummary from './WorksheetSummary';
 import { useProjectLinkHook } from './form/useProjectLinkHook';
 import ProjectLinkSection from './form/ProjectLinkSection';
 import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
+import PersonnelSection from './time-tracking/PersonnelSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -67,7 +68,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   
   return (
     <FormProvider {...form}>
-      <WorkLogFormSubmitHandler onSuccess={onSuccess}>
+      <WorkLogFormSubmitHandler onSuccess={onSuccess} existingWorkLogId={initialData?.id}>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
             <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
@@ -103,6 +104,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               </TabsContent>
             </Tabs>
             
+            <PersonnelSection />
+            
             <TimeTrackingSection />
             
             <TasksSection 
@@ -113,7 +116,9 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
             
             <ConsumablesSection />
             
-            <FinancialSummarySection />
+            <Card className="p-4 border-green-200 bg-green-50">
+              <FinancialSummarySection />
+            </Card>
             
             <NotesSection />
             
@@ -123,7 +128,6 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
               isEditing={!!initialData}
-              handleCancel={handleCancel}
             />
           </div>
           
