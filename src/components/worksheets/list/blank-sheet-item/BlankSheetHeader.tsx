@@ -3,13 +3,12 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { FileBarChart, Tag, Calendar, Clock } from 'lucide-react';
 import { formatDate } from '@/utils/date';
-import { WorkLog } from '@/types/models';
 
 interface BlankSheetHeaderProps {
   clientName?: string;
   projectId?: string;
   date: string | Date;
-  registrationTime: string | null;
+  registrationTime: string | Date | null;
   invoiced?: boolean;
 }
 
@@ -40,7 +39,7 @@ const BlankSheetHeader: React.FC<BlankSheetHeaderProps> = ({
       {registrationTime && (
         <Badge variant="outline" className="flex items-center gap-1 text-xs">
           <Clock className="h-3 w-3" />
-          {new Date(registrationTime).toLocaleTimeString('fr-FR', { 
+          {new Date(typeof registrationTime === 'string' ? registrationTime : registrationTime.toString()).toLocaleTimeString('fr-FR', { 
             hour: '2-digit',
             minute: '2-digit'
           })}

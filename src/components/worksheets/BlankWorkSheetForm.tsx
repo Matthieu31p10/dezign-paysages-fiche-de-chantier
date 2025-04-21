@@ -125,7 +125,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
             
             <FormActions 
               isSubmitting={isSubmitting}
-              handleCancel={handleCancel}
+              onCancel={handleCancel}
               isEditing={!!initialData}
             />
           </div>

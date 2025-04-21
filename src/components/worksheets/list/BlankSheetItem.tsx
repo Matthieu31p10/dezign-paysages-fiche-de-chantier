@@ -30,18 +30,40 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
       <div className={`p-4 ${isMobile ? 'space-y-4' : 'flex items-start'}`}>
         <div className={`${isMobile ? 'w-full' : 'flex-grow pr-4'}`}>
           <BlankSheetHeader 
-            sheet={sheet} 
-            linkedProject={linkedProject}
+            date={sheet.date}
+            clientName={sheet.clientName}
+            projectId={sheet.projectId}
+            registrationTime={sheet.createdAt}
+            invoiced={sheet.invoiced}
           />
           
           <BlankSheetContent 
             sheet={sheet}
-            isMobile={isMobile} 
+            linkedProject={linkedProject}
           />
           
           <BlankSheetStats 
-            sheet={sheet}
-            isMobile={isMobile} 
+            hourlyRate={sheet.hourlyRate || 0}
+            hasHourlyRate={!!(sheet.hourlyRate && sheet.hourlyRate > 0)}
+            totalHours={sheet.timeTracking?.totalHours || 0}
+            personnelCount={sheet.personnel?.length || 1}
+            totalCost={(sheet.timeTracking?.totalHours || 0) * (sheet.hourlyRate || 0) * (sheet.personnel?.length || 1)}
+            quoteValue={sheet.signedQuoteAmount || 0}
+            hasQuoteValue={!!(sheet.signedQuoteAmount && sheet.signedQuoteAmount > 0)}
+            signedQuote={!!sheet.isQuoteSigned}
+            hasSignature={!!sheet.clientSignature}
+            formatNumberValue={(value) => {
+              if (typeof value === 'string') {
+                return parseFloat(value).toLocaleString('fr-FR', { 
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2 
+                });
+              }
+              return value.toLocaleString('fr-FR', { 
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2 
+              });
+            }}
           />
         </div>
         
@@ -50,7 +72,6 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
           onEdit={onEdit}
           onExportPDF={onExportPDF}
           onPrint={onPrint}
-          isMobile={isMobile}
         />
       </div>
     </Card>
