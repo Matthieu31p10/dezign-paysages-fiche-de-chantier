@@ -1,7 +1,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-// Évite plusieurs instances en mode développement avec hot-reload
+// Prevent multiple instances in development with hot-reload
 let prisma: PrismaClient;
 
 if (process.env.NODE_ENV === 'production') {
