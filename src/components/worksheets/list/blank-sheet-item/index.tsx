@@ -31,8 +31,26 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   
   if (!sheetData) return null;
   
+  const handleEdit = () => {
+    if (onEdit && sheetData.id) {
+      onEdit(sheetData.id);
+    }
+  };
+  
+  const handleExportPDF = () => {
+    if (onExportPDF && sheetData.id) {
+      onExportPDF(sheetData.id);
+    }
+  };
+  
+  const handlePrint = () => {
+    if (onPrint && sheetData.id) {
+      onPrint(sheetData.id);
+    }
+  };
+  
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card className="p-4 hover:shadow-md transition-shadow animate-fade-in">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <BlankSheetHeader 
@@ -56,9 +74,9 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
         <div className="flex items-center gap-2 md:ml-auto">
           <BlankSheetActions 
             sheet={sheetData}
-            onEdit={onEdit}
-            onExportPDF={onExportPDF}
-            onPrint={onPrint}
+            onEdit={handleEdit}
+            onExportPDF={handleExportPDF}
+            onPrint={handlePrint}
           />
         </div>
       </div>

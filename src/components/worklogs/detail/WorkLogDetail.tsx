@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
@@ -11,10 +11,15 @@ import CustomTasksCard from './CustomTasksCard';
 import NotesSection from './NotesSection';
 import DeleteWorkLogDialog from './DeleteWorkLogDialog';
 import HeaderActions from './HeaderActions';
+import { Loader2 } from 'lucide-react';
+
+// Lazy load components for better performance
+const LazyNotesSection = React.lazy(() => import('./NotesSection'));
+const LazyCustomTasksCard = React.lazy(() => import('./CustomTasksCard'));
 
 const WorkLogDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings } = useApp();
+  const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings, isLoading } = useApp();
   
   // Sécurité: vérifier si id existe
   if (!id) {
@@ -35,6 +40,15 @@ const WorkLogDetail = () => {
     deleteWorkLog,
     settings
   );
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Chargement...</span>
+      </div>
+    );
+  }
   
   // Early return if no workLog is found - AFTER all hooks are called
   if (!workLog) {
@@ -62,15 +76,35 @@ const WorkLogDetail = () => {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-6">
-                <NotesSection />
-              </CardContent>
-            </Card>
+            <Suspense fallback={
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex justify-center items-center h-32">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            }>
+              <Card>
+                <CardContent className="pt-6">
+                  <LazyNotesSection />
+                </CardContent>
+              </Card>
+            </Suspense>
           </div>
           
           <div className="space-y-6">
-            <CustomTasksCard />
+            <Suspense fallback={
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex justify-center items-center h-32">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            }>
+              <LazyCustomTasksCard />
+            </Suspense>
           </div>
         </div>
       </div>

@@ -10,7 +10,9 @@ if (process.env.NODE_ENV === 'production') {
   // @ts-ignore: attach to global for dev only
   if (!global.prisma) {
     // @ts-ignore
-    global.prisma = new PrismaClient();
+    global.prisma = new PrismaClient({
+      log: ['query', 'info', 'warn', 'error'],
+    });
   }
   // @ts-ignore
   prisma = global.prisma;

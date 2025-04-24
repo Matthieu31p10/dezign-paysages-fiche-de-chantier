@@ -1,90 +1,86 @@
 
 import { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useWatch } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
 
 export const useTimeCalculation = (form: UseFormReturn<BlankWorkSheetValues>) => {
-  // Watch for changes in time-related fields
+  const { watch, setValue } = form;
+  
+  // Use useWatch for better performance instead of watch
+  const departure = useWatch({
+    control: form.control,
+    name: 'departure',
+  });
+  
+  const arrival = useWatch({
+    control: form.control,
+    name: 'arrival',
+  });
+  
+  const end = useWatch({
+    control: form.control,
+    name: 'end',
+  });
+  
+  const breakTime = useWatch({
+    control: form.control,
+    name: 'breakTime',
+  });
+  
+  const personnel = useWatch({
+    control: form.control,
+    name: 'personnel',
+  });
+
+  // Calculate total hours
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      // Only calculate when time-related fields change
-      if (
-        name === 'departure' ||
-        name === 'arrival' ||
-        name === 'end' ||
-        name === 'breakTime'
-      ) {
-        calculateTotalHours(value);
+    if (departure && arrival && end) {
+      try {
+        // Parse times
+        const [departureHours, departureMinutes] = departure.split(':').map(Number);
+        const [arrivalHours, arrivalMinutes] = arrival.split(':').map(Number);
+        const [endHours, endMinutes] = end.split(':').map(Number);
+        
+        // Convert to minutes
+        const departureInMinutes = departureHours * 60 + departureMinutes;
+        const arrivalInMinutes = arrivalHours * 60 + arrivalMinutes;
+        const endInMinutes = endHours * 60 + endMinutes;
+        
+        // Calculate break time
+        let breakTimeMinutes = 0;
+        if (breakTime) {
+          const [breakHours, breakMinutes] = breakTime.split(':').map(Number);
+          breakTimeMinutes = breakHours * 60 + breakMinutes;
+        }
+        
+        // Calculate total time
+        let totalMinutes = (endInMinutes - arrivalInMinutes) + (arrivalInMinutes - departureInMinutes) - breakTimeMinutes;
+        
+        // Handle overnight shifts
+        if (totalMinutes < 0) {
+          totalMinutes += 24 * 60;
+        }
+        
+        // Convert back to hours
+        const totalHours = totalMinutes / 60;
+        
+        // Update total hours field
+        setValue('totalHours', Math.round(totalHours * 100) / 100);
+      } catch (error) {
+        console.error('Error calculating hours:', error);
       }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  // Calculate total hours function
-  const calculateTotalHours = (values: any) => {
-    const { departure, arrival, end, breakTime } = values;
-
-    // Make sure we have all the required values
-    if (!departure || !arrival || !end) {
-      form.setValue('totalHours', 0);
-      return;
     }
-
-    try {
-      // Parse the time strings into Date objects
-      const departureTime = parseTimeString(departure);
-      const arrivalTime = parseTimeString(arrival);
-      const endTime = parseTimeString(end);
-      const breakDuration = parseFloat(breakTime || '0');
-
-      // Calculate total minutes spent on site
-      let totalMinutes = 0;
-
-      // Calculate travel time to site
-      const travelToSiteMinutes = getMinutesDifference(departureTime, arrivalTime);
-
-      // Calculate time spent on site (end - arrival - break)
-      const onSiteMinutes = getMinutesDifference(arrivalTime, endTime) - (breakDuration * 60);
-
-      // Total time is travel + on-site time
-      totalMinutes = onSiteMinutes;
-
-      // Convert to hours with 2 decimal precision
-      const totalHours = Math.max(0, parseFloat((totalMinutes / 60).toFixed(2)));
-      
-      // Update the form
-      form.setValue('totalHours', totalHours);
-
-    } catch (error) {
-      console.error('Error calculating time:', error);
-      form.setValue('totalHours', 0);
-    }
-  };
-
-  return {
-    calculateTotalHours
-  };
-};
-
-// Helper function to parse time strings (HH:MM format)
-const parseTimeString = (timeStr: string): Date => {
-  if (!timeStr || !timeStr.includes(':')) {
-    throw new Error('Invalid time format');
-  }
-
-  const [hours, minutes] = timeStr.split(':').map(num => parseInt(num, 10));
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date;
-};
-
-// Helper function to get minutes difference between two Date objects
-const getMinutesDifference = (start: Date, end: Date): number => {
-  // If end is before start (e.g., overnight work), add 24 hours
-  let diff = end.getTime() - start.getTime();
-  if (diff < 0) {
-    diff += 24 * 60 * 60 * 1000;
-  }
-  return diff / (1000 * 60);
+  }, [departure, arrival, end, breakTime, setValue]);
+  
+  // Calculate team hours when personnel or totalHours change
+  useEffect(() => {
+    const totalHours = watch('totalHours');
+    const personnelCount = personnel?.length || 1;
+    
+    // Calculate total team hours
+    const totalTeamHours = totalHours * personnelCount;
+    
+    // Could be used if needed in the form
+    // setValue('totalTeamHours', totalTeamHours);
+  }, [watch, setValue, personnel]);
 };

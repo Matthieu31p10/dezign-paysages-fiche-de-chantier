@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { useProjects } from './ProjectsContext';
 import { useWorkLogs } from './WorkLogsContext';
 import { useTeams } from './TeamsContext';
@@ -22,6 +22,7 @@ export type AppContextType = ProjectsContextType &
   AuthContextType & {
     // Add any additional app-wide methods or state here
     workLogs: WorkLog[];
+    isLoading: boolean;
   };
 
 // Create the context
@@ -35,8 +36,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const settings = useSettings();
   const auth = useAuth();
 
+  // Check if any context is loading
+  const isLoading = useMemo(() => {
+    return (
+      workLogsContext.isLoading || 
+      (projects as any).isLoading || 
+      false
+    );
+  }, [workLogsContext.isLoading, (projects as any).isLoading]);
+
   // Combine all contexts
-  const value: AppContextType = {
+  const value = useMemo<AppContextType>(() => ({
     // Projects context
     ...projects,
     
@@ -52,7 +62,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // Auth context
     ...auth,
-  };
+    
+    // Global app state
+    isLoading
+  }), [projects, workLogsContext, teams, settings, auth, isLoading]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
