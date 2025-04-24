@@ -12,6 +12,7 @@ export const generateTemporaryId = (): string => {
  * Format: DZFV (Date Zeroes Far Verified) + timestamp
  */
 export const generateUniqueBlankSheetId = (existingWorkLogs: WorkLog[]): string => {
+  // Generate base ID with DZFV prefix and timestamp
   const baseId = 'DZFV' + Date.now().toString();
   
   // Check if the ID is already used

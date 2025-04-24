@@ -1,3 +1,4 @@
+
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
 import { formatStructuredNotes, validateConsumables, createWorkLogFromFormData } from './utils/formatWorksheetData';
@@ -13,10 +14,6 @@ interface SubmitWorksheetFormProps {
   workLogs?: WorkLog[];
 }
 
-/**
- * Main function to handle worksheet form submission
- * Processes form data, creates a WorkLog object, and saves it
- */
 export async function submitWorksheetForm({
   data,
   addWorkLog,

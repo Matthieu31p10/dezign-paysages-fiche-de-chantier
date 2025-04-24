@@ -1,4 +1,3 @@
-
 import { PDFData } from '../types';
 import { formatDate } from '../../date';
 import { drawInfoBox } from '../pdfHelpers';
