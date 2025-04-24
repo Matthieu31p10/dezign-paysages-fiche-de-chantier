@@ -1,5 +1,5 @@
 
-import { WorkLog } from '@/types/models';
+import { WorkLog, Consumable } from '@/types/models';
 import prisma from '@/utils/prismaClient';
 import { toast } from 'sonner';
 
@@ -19,7 +19,6 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
     // });
     
     // For now, return an empty array until database is connected
-    // This should be replaced with actual database calls
     return [];
   } catch (error) {
     console.error('Error loading work logs:', error);
@@ -40,81 +39,9 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
     // for (const workLog of workLogs) {
     //   await prisma.workLog.upsert({
     //     where: { id: workLog.id },
-    //     update: {
-    //       date: new Date(workLog.date),
-    //       projectId: workLog.projectId,
-    //       personnel: workLog.personnel,
-    //       departure: workLog.timeTracking?.departure || null,
-    //       arrival: workLog.timeTracking?.arrival || null,
-    //       end: workLog.timeTracking?.end || null,
-    //       breakTime: workLog.timeTracking?.breakTime || null,
-    //       totalHours: workLog.timeTracking?.totalHours || 0,
-    //       tasks: workLog.tasks || null,
-    //       wasteManagement: workLog.wasteManagement || null,
-    //       notes: workLog.notes || null,
-    //       clientSignature: workLog.clientSignature || null,
-    //       invoiced: workLog.invoiced || false,
-    //       isArchived: workLog.isArchived || false,
-    //       hourlyRate: workLog.hourlyRate || null,
-    //       clientName: workLog.clientName || null,
-    //       address: workLog.address || null,
-    //       contactPhone: workLog.contactPhone || null,
-    //       contactEmail: workLog.contactEmail || null,
-    //       linkedProjectId: workLog.linkedProjectId || null,
-    //       signedQuoteAmount: workLog.signedQuoteAmount || null,
-    //       isQuoteSigned: workLog.isQuoteSigned || false,
-    //       // Gérer les consommables séparément
-    //     },
-    //     create: {
-    //       id: workLog.id,
-    //       date: new Date(workLog.date),
-    //       projectId: workLog.projectId,
-    //       personnel: workLog.personnel,
-    //       departure: workLog.timeTracking?.departure || null,
-    //       arrival: workLog.timeTracking?.arrival || null,
-    //       end: workLog.timeTracking?.end || null,
-    //       breakTime: workLog.timeTracking?.breakTime || null,
-    //       totalHours: workLog.timeTracking?.totalHours || 0,
-    //       tasks: workLog.tasks || null,
-    //       wasteManagement: workLog.wasteManagement || null,
-    //       notes: workLog.notes || null,
-    //       clientSignature: workLog.clientSignature || null,
-    //       invoiced: workLog.invoiced || false,
-    //       isArchived: workLog.isArchived || false,
-    //       hourlyRate: workLog.hourlyRate || null,
-    //       clientName: workLog.clientName || null,
-    //       address: workLog.address || null,
-    //       contactPhone: workLog.contactPhone || null,
-    //       contactEmail: workLog.contactEmail || null,
-    //       linkedProjectId: workLog.linkedProjectId || null,
-    //       signedQuoteAmount: workLog.signedQuoteAmount || null,
-    //       isQuoteSigned: workLog.isQuoteSigned || false,
-    //     }
+    //     update: { ... },
+    //     create: { ... }
     //   });
-    //
-    //   // Handle consumables
-    //   if (workLog.consumables && workLog.consumables.length > 0) {
-    //     // First delete existing consumables to avoid duplicates
-    //     await prisma.consumable.deleteMany({
-    //       where: { workLogId: workLog.id }
-    //     });
-    //
-    //     // Then create new consumables
-    //     for (const consumable of workLog.consumables) {
-    //       await prisma.consumable.create({
-    //         data: {
-    //           id: consumable.id,
-    //           supplier: consumable.supplier,
-    //           product: consumable.product,
-    //           unit: consumable.unit,
-    //           quantity: consumable.quantity,
-    //           unitPrice: consumable.unitPrice,
-    //           totalPrice: consumable.totalPrice,
-    //           workLogId: workLog.id
-    //         }
-    //       });
-    //     }
-    //   }
     // }
     
   } catch (error) {
@@ -126,7 +53,7 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
 /**
  * Load saved consumables from database
  */
-export const loadSavedConsumables = async () => {
+export const loadSavedConsumables = async (): Promise<Consumable[]> => {
   try {
     console.log("Loading saved consumables from the database");
     
@@ -149,7 +76,7 @@ export const loadSavedConsumables = async () => {
 /**
  * Save a consumable for reuse
  */
-export const saveConsumableForReuse = async (consumable: any) => {
+export const saveConsumableForReuse = async (consumable: Consumable): Promise<void> => {
   try {
     console.log("Saving consumable for reuse:", consumable);
     

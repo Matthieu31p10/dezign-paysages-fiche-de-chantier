@@ -19,6 +19,7 @@ import {
 interface ExtendedWorkLogsContextType extends WorkLogsContextType {
   deleteWorkLogsByProjectId: (projectId: string) => void;
   archiveWorkLogsByProjectId: (projectId: string, archive: boolean) => void;
+  isLoading: boolean; // Add isLoading to the context type
 }
 
 const WorkLogsContext = createContext<ExtendedWorkLogsContextType | undefined>(undefined);
@@ -29,13 +30,21 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Load data from localStorage on initial mount
   useEffect(() => {
-    try {
-      setIsLoading(true);
-      const loadedWorkLogs = loadWorkLogsFromStorage();
-      setWorkLogs(loadedWorkLogs);
-    } finally {
-      setIsLoading(false);
-    }
+    const fetchWorkLogs = async () => {
+      try {
+        setIsLoading(true);
+        const loadedWorkLogs = await loadWorkLogsFromStorage();
+        setWorkLogs(loadedWorkLogs); // Now correctly sets state with the resolved value
+      } catch (error) {
+        console.error("Error loading work logs:", error);
+        toast.error("Erreur lors du chargement des fiches de suivi");
+        setWorkLogs([]); // Set to empty array on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchWorkLogs();
   }, []);
 
   // Save data to localStorage whenever it changes
@@ -173,6 +182,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     getLastVisitDate: (projectId) => getLastVisitDate(workLogs, projectId),
     deleteWorkLogsByProjectId,
     archiveWorkLogsByProjectId,
+    isLoading, // Add the isLoading state to the context value
   };
 
   return (
