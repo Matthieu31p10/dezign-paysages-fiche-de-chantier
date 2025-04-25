@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { WorkLog } from '@/types/models';
 import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import BlankSheetItem from './list/blank-sheet-item';
 import { groupWorkLogsByMonth } from '@/utils/date-helpers';
 import { sortMonths } from '../worklogs/list/utils';
 import { isBlankWorksheet } from './form/utils/generateUniqueIds';
+import BlankSheetFilters from './BlankSheetFilters';
 
 export interface BlankWorkSheetListProps {
   sheets: WorkLog[];
@@ -22,22 +23,61 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   onExportPDF,
   onPrint
 }) => {
-  // Filter to only include blank worksheets
-  const blankSheets = sheets.filter(sheet => isBlankWorksheet(sheet.projectId));
+  const [search, setSearch] = useState('');
+  const [invoicedFilter, setInvoicedFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
   
-  // If there are no worksheets, show empty state
-  if (!blankSheets || blankSheets.length === 0) {
-    return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
+  // Filter to only include blank worksheets and apply filters
+  const filteredSheets = sheets.filter(sheet => {
+    // First filter for blank worksheets
+    const isBlank = isBlankWorksheet(sheet.projectId);
+    if (!isBlank) return false;
+    
+    // Then apply search filter if needed
+    const matchesSearch = !search || (
+      (sheet.clientName?.toLowerCase().includes(search.toLowerCase())) ||
+      (sheet.projectId?.toLowerCase().includes(search.toLowerCase())) ||
+      (sheet.notes?.toLowerCase().includes(search.toLowerCase()))
+    );
+    
+    // Then apply invoiced filter
+    const matchesInvoiced = invoicedFilter === 'all' || 
+      (invoicedFilter === 'invoiced' && sheet.invoiced) ||
+      (invoicedFilter === 'not-invoiced' && !sheet.invoiced);
+    
+    return matchesSearch && matchesInvoiced;
+  });
+  
+  // If there are no worksheets after filtering, show empty state
+  if (!filteredSheets || filteredSheets.length === 0) {
+    return search || invoicedFilter !== 'all' ? (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Aucune fiche ne correspond à vos critères de recherche.</p>
+      </div>
+    ) : (
+      <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />
+    );
   }
   
   // Group worksheets by month
-  const sheetsByMonth = groupWorkLogsByMonth(blankSheets);
+  const sheetsByMonth = groupWorkLogsByMonth(filteredSheets);
   
   // Sort months in reverse chronological order
   const sortedMonths = sortMonths(Object.keys(sheetsByMonth), 'date-desc');
   
   return (
     <div className="space-y-8 animate-fade-in">
+      <BlankSheetFilters
+        search={search}
+        onSearchChange={(e) => setSearch(e.target.value)}
+        invoicedFilter={invoicedFilter}
+        onInvoicedFilterChange={setInvoicedFilter}
+        hasFilters={search !== '' || invoicedFilter !== 'all'}
+        onClearFilters={() => {
+          setSearch('');
+          setInvoicedFilter('all');
+        }}
+      />
+      
       {sortedMonths.map(month => (
         <div key={month} className="space-y-4">
           <h2 className="text-xl font-semibold text-green-800 border-b border-green-100 pb-2">
