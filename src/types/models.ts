@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -117,6 +118,7 @@ export interface WorkLog {
   linkedProjectId?: string;
   signedQuoteAmount?: number;
   isQuoteSigned?: boolean;
+  isBlankWorksheet?: boolean;  // Added the missing property
 }
 
 export interface Team {

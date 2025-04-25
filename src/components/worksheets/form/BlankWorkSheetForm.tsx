@@ -11,12 +11,14 @@ interface BlankWorkSheetFormProps {
   editingWorkLogId: string | null;
   getWorkLogById: (id: string) => WorkLog;
   handleFormSuccess: () => void;
+  isBlankWorksheet?: boolean;
 }
 
 const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   editingWorkLogId,
   getWorkLogById,
-  handleFormSuccess
+  handleFormSuccess,
+  isBlankWorksheet = true
 }) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [workLogData, setWorkLogData] = React.useState<WorkLog | undefined>(undefined);
@@ -63,6 +65,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               initialData={workLogData}
               onSuccess={handleFormSuccess}
               key={editingWorkLogId || 'new'} // Key to force complete reload when editing
+              editingWorkLogId={editingWorkLogId}
+              isBlankWorksheet={isBlankWorksheet}
             />
           )}
         </CardContent>

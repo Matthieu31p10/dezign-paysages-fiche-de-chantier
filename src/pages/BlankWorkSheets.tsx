@@ -15,7 +15,7 @@ import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUni
 
 const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
-  const { workLogs = [] } = useApp();
+  const { workLogs = [], projectInfos = [] } = useApp();
   const [activeTab, setActiveTab] = useState<string>("list");
   const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
   const [pdfOptionsOpen, setPdfOptionsOpen] = useState<boolean>(false);
@@ -103,6 +103,9 @@ const BlankWorkSheets: React.FC = () => {
     }
   };
   
+  // Get the initial data for editing
+  const initialData = editingWorkLogId ? getWorkLogById(editingWorkLogId) : undefined;
+  
   return (
     <div className="animate-fade-in space-y-6">
       <BlankWorkSheetHeader onCreateNew={handleCreateNew} />
@@ -125,9 +128,12 @@ const BlankWorkSheets: React.FC = () => {
         
         <BlankWorkSheetTabContent value="new">
           <BlankWorkSheetForm
+            initialData={initialData}
             editingWorkLogId={editingWorkLogId}
             onSuccess={handleFormSuccess}
             isBlankWorksheet={true}
+            projectInfos={projectInfos}
+            existingWorkLogs={workLogs}
           />
         </BlankWorkSheetTabContent>
       </Tabs>

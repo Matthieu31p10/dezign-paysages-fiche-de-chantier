@@ -36,13 +36,17 @@ interface BlankWorkSheetFormProps {
   onSuccess?: () => void;
   projectInfos?: ProjectInfo[];
   existingWorkLogs?: WorkLog[];
+  isBlankWorksheet?: boolean;
+  editingWorkLogId?: string | null;
 }
 
 const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   initialData,
   onSuccess,
   projectInfos = [],
-  existingWorkLogs = []
+  existingWorkLogs = [],
+  isBlankWorksheet = false,
+  editingWorkLogId = null
 }: BlankWorkSheetFormProps) => {
   const { teams } = useApp();
   const { workLogs } = useWorkLogs();
@@ -66,7 +70,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   
   return (
     <FormProvider {...form}>
-      <WorkLogFormSubmitHandler onSuccess={onSuccess} existingWorkLogId={initialData?.id}>
+      <WorkLogFormSubmitHandler 
+        onSuccess={onSuccess} 
+        existingWorkLogId={initialData?.id || editingWorkLogId}
+        isBlankWorksheet={isBlankWorksheet}
+      >
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
             <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
