@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { BlankWorkSheetValues } from '../schema';
+import { FormValues } from './schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { WorkLog, Consumable } from '@/types/models';
 import { createWorkLogFromFormData } from './utils/formatWorksheetData';
-import { generateSequentialWorkLogId, generateUniqueBlankSheetId, isBlankWorksheet } from '../../worksheets/form/utils/generateUniqueIds';
+import { generateSequentialWorkLogId, generateUniqueBlankSheetId } from '../../worksheets/form/utils/generateUniqueIds';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -21,10 +21,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   existingWorkLogId,
   isBlankWorksheet = false
 }) => {
-  const methods = useFormContext<BlankWorkSheetValues>();
+  const methods = useFormContext<FormValues>();
   const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
   
-  const handleFormSubmit = async (formData: BlankWorkSheetValues) => {
+  const handleFormSubmit = async (formData: FormValues) => {
     try {
       console.log('Form submitted:', formData);
       
@@ -34,9 +34,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         supplier: item.supplier || '',
         product: item.product || '',
         unit: item.unit || '',
-        quantity: item.quantity || 0,
-        unitPrice: item.unitPrice || 0,
-        totalPrice: item.totalPrice || 0
+        quantity: Number(item.quantity || 0),
+        unitPrice: Number(item.unitPrice || 0),
+        totalPrice: Number(item.totalPrice || 0)
       }));
       
       // Create a WorkLog object from form data

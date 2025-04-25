@@ -61,20 +61,26 @@ export const useWorkLogOperations = (
   };
 
   const deleteWorkLog = (id: string): void => {
-    setWorkLogs((prev) => {
-      const exists = prev.some(w => w.id === id);
-      if (!exists) {
-        console.error(`WorkLog with ID ${id} not found for deletion`);
-      }
-      return prev.filter((w) => w.id !== id);
-    });
-    console.log("WorkLog deleted successfully:", id);
+    setWorkLogs((prev) => prev.filter((w) => w.id !== id));
+  };
+
+  // Adding the missing methods
+  const deleteWorkLogsByProjectId = (projectId: string): void => {
+    setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
+  };
+
+  const archiveWorkLogsByProjectId = (projectId: string, archived: boolean): void => {
+    setWorkLogs((prev) => 
+      prev.map((w) => w.projectId === projectId ? { ...w, isArchived: archived } : w)
+    );
   };
 
   return {
     addWorkLog,
     updateWorkLog,
     deleteWorkLog,
+    deleteWorkLogsByProjectId,
+    archiveWorkLogsByProjectId,
     getWorkLogById: (id: string) => getWorkLogById(workLogs, id),
     getWorkLogsByProjectId: (projectId: string) => getWorkLogsByProjectId(workLogs, projectId),
     getTotalDuration: (projectId: string) => getTotalDuration(workLogs, projectId),
