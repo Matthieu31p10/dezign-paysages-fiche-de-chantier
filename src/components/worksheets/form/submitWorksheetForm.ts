@@ -2,7 +2,7 @@
 import { BlankWorkSheetValues } from '../schema';
 import { WorkLog } from '@/types/models';
 import { formatStructuredNotes, validateConsumables, createWorkLogFromFormData } from './utils/formatWorksheetData';
-import { generateUniqueBlankSheetId } from './utils/generateUniqueIds';
+import { generateUniqueBlankSheetId, isBlankWorksheet } from './utils/generateUniqueIds';
 
 interface SubmitWorksheetFormProps {
   data: BlankWorkSheetValues;
@@ -12,6 +12,7 @@ interface SubmitWorksheetFormProps {
   onSuccess?: () => void;
   setIsSubmitting: (isSubmitting: boolean) => void;
   workLogs?: WorkLog[];
+  isBlankWorksheet?: boolean;
 }
 
 export async function submitWorksheetForm({
@@ -21,7 +22,8 @@ export async function submitWorksheetForm({
   existingWorkLogId,
   onSuccess,
   setIsSubmitting,
-  workLogs = []
+  workLogs = [],
+  isBlankWorksheet = false
 }: SubmitWorksheetFormProps) {
   setIsSubmitting(true);
   
@@ -39,10 +41,13 @@ export async function submitWorksheetForm({
       validatedConsumables
     );
     
-    // Pour les nouvelles fiches vierges, générer un ID DZFV séquentiel
-    if (!existingWorkLogId && (!workLog.projectId || workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('temp-'))) {
-      // Remplacer l'ID temporaire par un ID séquentiel DZFV
+    // For new blank worksheets, generate a DZFV sequential ID
+    if (!existingWorkLogId && (isBlankWorksheet || (!workLog.projectId || workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('temp-')))) {
+      // Replace temporary ID with a sequential DZFV ID
       workLog.projectId = generateUniqueBlankSheetId(workLogs);
+      
+      // Set a flag to identify this as a blank worksheet
+      workLog.isBlankWorksheet = true;
     }
     
     // Add financial information

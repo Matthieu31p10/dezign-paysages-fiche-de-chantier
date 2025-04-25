@@ -1,4 +1,3 @@
-
 import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask } from '@/types/models';
 
 export interface ProjectsContextType {
@@ -15,7 +14,7 @@ export interface ProjectsContextType {
 
 export type WorkLogsContextType = {
   workLogs: WorkLog[];
-  isLoading: boolean; // Add isLoading to the type
+  isLoading: boolean;
   addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
   updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => Promise<void>;
   deleteWorkLog: (id: string) => void;
@@ -44,8 +43,8 @@ export interface SettingsContextType {
   getPersonnel: () => Personnel[];
   togglePersonnelActive: (id: string, isActive: boolean) => void;
   getCustomTasks: () => CustomTask[];
-  users?: User[]; // Add users property
-  updateUserPermissions?: (userId: string, permissions: Record<string, boolean>) => void; // Add updateUserPermissions method
+  users?: User[];
+  updateUserPermissions?: (userId: string, permissions: Record<string, boolean>) => void;
 }
 
 export interface AuthContextType {
@@ -57,6 +56,6 @@ export interface AuthContextType {
   deleteUser: (id: string) => void;
   getCurrentUser: () => User | null;
   canUserAccess: (requiredRole: UserRole) => boolean;
-  users?: User[]; // Add users property
-  updateUserPermissions?: (userId: string, permissions: Record<string, boolean>) => void; // Add updateUserPermissions method
+  users?: User[];
+  updateUserPermissions?: (userId: string, permissions: Record<string, boolean>) => void;
 }

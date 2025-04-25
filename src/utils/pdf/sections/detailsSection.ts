@@ -1,6 +1,8 @@
+
 import { PDFData } from '../types';
 import { formatDate } from '../../date';
 import { drawInfoBox } from '../pdfHelpers';
+import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUniqueIds';
 
 export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos: number, pageWidth: number, contentWidth: number): number => {
   // Titre du document et date - aligné à droite
@@ -11,18 +13,16 @@ export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos
   if (data.pdfOptions?.includeContactInfo && data.project) {
     pdf.text(data.project.name, pageWidth - margin, yPos, { align: 'right' });
   } else {
-    // Changer "Fiche de suivi" par "Fiche Vierge" pour les fiches vierges
-    const isBlankSheet = data.workLog?.projectId && 
-      (data.workLog?.projectId.startsWith('blank-') || data.workLog?.projectId.startsWith('DZFV'));
-    pdf.text(isBlankSheet ? "Fiche Vierge" : "Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
+    // Use isBlankWorksheet function for consistency
+    const sheetIsBlank = data.workLog?.projectId && isBlankWorksheet(data.workLog?.projectId);
+    pdf.text(sheetIsBlank ? "Fiche Vierge" : "Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
   }
   
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
-  // Changer "Fiche de suivi" par "Fiche Vierge" pour les fiches vierges
-  const isBlankSheet = data.workLog?.projectId && 
-    (data.workLog?.projectId.startsWith('blank-') || data.workLog?.projectId.startsWith('DZFV'));
-  pdf.text(`${isBlankSheet ? 'Fiche Vierge' : 'Fiche de suivi'} du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
+  // Use isBlankWorksheet function for consistency
+  const sheetIsBlank = data.workLog?.projectId && isBlankWorksheet(data.workLog?.projectId);
+  pdf.text(`${sheetIsBlank ? 'Fiche Vierge' : 'Fiche de suivi'} du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
   
   // Ligne de séparation
   yPos += 10; // Réduire l'espace
@@ -66,10 +66,9 @@ export const drawDetailsSection = (pdf: any, data: PDFData, margin: number, yPos
   pdf.setFont('helvetica', 'bold');
   
   // Pour les fiches vierges, afficher le total équipe (heures × nombre de personnel)
-  const isBlankWorksheet = data.workLog?.projectId && 
-    (data.workLog.projectId.startsWith('blank-') || data.workLog.projectId.startsWith('DZFV'));
+  const isBlankSheet = isBlankWorksheet(data.workLog?.projectId);
   
-  if (isBlankWorksheet) {
+  if (isBlankSheet) {
     pdf.text("Temps total équipe", col3X, yPos);
     
     pdf.setFont('helvetica', 'normal');

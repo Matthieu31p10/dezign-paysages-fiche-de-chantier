@@ -42,6 +42,7 @@ const BlankWorkSheetNew = () => {
           }} 
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
+          isBlankWorksheet={true}
         />
       </Card>
     </div>

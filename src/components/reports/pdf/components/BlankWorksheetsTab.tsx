@@ -8,6 +8,7 @@ import PDFOptionsPanel from './PDFOptionsPanel';
 import GeneratePDFDialog from './GeneratePDFDialog';
 import { useApp } from '@/context/AppContext';
 import { extractClientName } from '@/utils/notes-extraction';
+import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUniqueIds';
 
 interface BlankWorksheetsTabProps {
   selectedWorkLogId: string;
@@ -26,9 +27,8 @@ const BlankWorksheetsTab = ({
 }: BlankWorksheetsTabProps) => {
   const { workLogs } = useApp();
   
-  const blankWorksheets = workLogs.filter(log => {
-    return (log.projectId?.startsWith('blank-') || log.projectId?.startsWith('DZFV'));
-  });
+  // Use our consistent isBlankWorksheet function
+  const blankWorksheets = workLogs.filter(log => isBlankWorksheet(log.projectId));
   
   return (
     <div className="space-y-4">

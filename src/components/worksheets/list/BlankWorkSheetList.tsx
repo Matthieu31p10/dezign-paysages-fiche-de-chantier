@@ -8,6 +8,7 @@ import { Search, FileText } from 'lucide-react';
 import BlankSheetItem from './blank-sheet-item';
 import { useProjects } from '@/context/ProjectsContext';
 import { ProjectInfo } from '@/types/models';
+import { isBlankWorksheet } from '../form/utils/generateUniqueIds';
 
 interface BlankWorkSheetListProps {
   sheets?: WorkLog[];
@@ -34,8 +35,11 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   // Safety check for data
   const validSheets = Array.isArray(sheets) ? sheets : [];
   
+  // Filter to only include blank worksheets
+  const blankSheets = validSheets.filter(sheet => isBlankWorksheet(sheet.projectId));
+  
   const getFilteredSheets = () => {
-    return validSheets.filter(sheet => {
+    return blankSheets.filter(sheet => {
       // Filter by search term
       const matchesSearch = !search ? true : (
         (sheet.projectId?.toLowerCase().includes(search.toLowerCase()) || false) ||

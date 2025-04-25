@@ -6,17 +6,20 @@ import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { WorkLog, Consumable } from '@/types/models';
 import { createWorkLogFromFormData } from './utils/formatWorksheetData';
+import { generateUniqueBlankSheetId, isBlankWorksheet } from './utils/generateUniqueIds';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
   onSuccess?: () => void;
   existingWorkLogId?: string | null;
+  isBlankWorksheet?: boolean;
 }
 
 const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({ 
   children, 
   onSuccess,
-  existingWorkLogId
+  existingWorkLogId,
+  isBlankWorksheet = false
 }) => {
   const methods = useFormContext<BlankWorkSheetValues>();
   const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
@@ -45,6 +48,12 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         validatedConsumables
       );
       
+      // For blank worksheets, ensure we use the DZFV ID format
+      if (isBlankWorksheet && !existingWorkLogId) {
+        workLogData.projectId = generateUniqueBlankSheetId(workLogs);
+        workLogData.isBlankWorksheet = true;
+      }
+      
       // Vérifier si c'est une mise à jour ou une création
       if (existingWorkLogId) {
         await updateWorkLog(workLogData);
@@ -52,7 +61,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         await addWorkLog(workLogData);
       }
       
-      toast.success("Fiche de suivi enregistrée avec succès");
+      toast.success("Fiche enregistrée avec succès");
       
       if (onSuccess) {
         onSuccess();

@@ -1,16 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
 import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHeader';
-import BlankWorkSheetForm from '@/components/worksheets/form/BlankWorkSheetForm';
+import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
 import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkSheetTabContent';
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
 import { generatePDF } from '@/utils/pdf';
+import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUniqueIds';
 
 const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
@@ -21,8 +22,8 @@ const BlankWorkSheets: React.FC = () => {
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   
-  // Filter only blank worksheets (those without a project association)
-  const blankWorksheets = workLogs.filter(log => !log.projectId || log.projectId === 'blank');
+  // Filter only blank worksheets using our consistent helper function
+  const blankWorksheets = workLogs.filter(log => isBlankWorksheet(log.projectId));
   
   const handleCreateNew = () => {
     setEditingWorkLogId(null);
@@ -122,11 +123,13 @@ const BlankWorkSheets: React.FC = () => {
           />
         </BlankWorkSheetTabContent>
         
-        <BlankWorkSheetForm
-          editingWorkLogId={editingWorkLogId}
-          getWorkLogById={getWorkLogById}
-          handleFormSuccess={handleFormSuccess}
-        />
+        <BlankWorkSheetTabContent value="new">
+          <BlankWorkSheetForm
+            editingWorkLogId={editingWorkLogId}
+            onSuccess={handleFormSuccess}
+            isBlankWorksheet={true}
+          />
+        </BlankWorkSheetTabContent>
       </Tabs>
       
       <AlertDialog open={pdfOptionsOpen} onOpenChange={setPdfOptionsOpen}>

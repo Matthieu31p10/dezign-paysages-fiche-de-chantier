@@ -5,6 +5,7 @@ import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import BlankSheetItem from './list/blank-sheet-item';
 import { groupWorkLogsByMonth } from '@/utils/date-helpers';
 import { sortMonths } from '../worklogs/list/utils';
+import { isBlankWorksheet } from './form/utils/generateUniqueIds';
 
 export interface BlankWorkSheetListProps {
   sheets: WorkLog[];
@@ -21,13 +22,16 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   onExportPDF,
   onPrint
 }) => {
+  // Filter to only include blank worksheets
+  const blankSheets = sheets.filter(sheet => isBlankWorksheet(sheet.projectId));
+  
   // If there are no worksheets, show empty state
-  if (!sheets || sheets.length === 0) {
+  if (!blankSheets || blankSheets.length === 0) {
     return <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />;
   }
   
   // Group worksheets by month
-  const sheetsByMonth = groupWorkLogsByMonth(sheets);
+  const sheetsByMonth = groupWorkLogsByMonth(blankSheets);
   
   // Sort months in reverse chronological order
   const sortedMonths = sortMonths(Object.keys(sheetsByMonth), 'date-desc');

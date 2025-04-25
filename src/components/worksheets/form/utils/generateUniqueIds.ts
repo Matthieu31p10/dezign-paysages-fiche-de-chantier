@@ -1,3 +1,4 @@
+
 import { WorkLog } from '@/types/models';
 
 /**
@@ -36,9 +37,11 @@ export const generateUniqueBlankSheetId = (existingWorkLogs: WorkLog[]): string 
 };
 
 /**
- * Vérifie si un projectId correspond à une fiche vierge
+ * Checks if a projectId corresponds to a blank worksheet
+ * This is the single source of truth for identifying blank worksheets
  */
 export const isBlankWorksheet = (projectId?: string): boolean => {
   if (!projectId) return false;
-  return projectId.startsWith('DZFV') || projectId.startsWith('blank-');
+  return projectId.startsWith('DZFV');
 };
+
