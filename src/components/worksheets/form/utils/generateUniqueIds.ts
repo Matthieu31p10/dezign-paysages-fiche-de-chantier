@@ -37,6 +37,31 @@ export const generateUniqueBlankSheetId = (existingWorkLogs: WorkLog[]): string 
 };
 
 /**
+ * Generates a sequential ID for regular work logs
+ * Format: DZFS + 5 digit sequential number
+ */
+export const generateSequentialWorkLogId = (existingWorkLogs: WorkLog[]): string => {
+  // Filter out non-DZFS IDs and get the highest number
+  const existingNumbers = existingWorkLogs
+    .filter(log => log.projectId?.startsWith('DZFS'))
+    .map(log => {
+      const num = parseInt(log.projectId?.substring(4) || '0', 10);
+      return isNaN(num) ? 0 : num;
+    });
+
+  // Get the highest number or start at 0
+  const highestNumber = existingNumbers.length > 0 
+    ? Math.max(...existingNumbers) 
+    : 0;
+
+  // Generate the next number in sequence
+  const nextNumber = highestNumber + 1;
+  
+  // Format with leading zeros to ensure 5 digits
+  return `DZFS${String(nextNumber).padStart(5, '0')}`;
+};
+
+/**
  * Checks if a projectId corresponds to a blank worksheet
  * This is the single source of truth for identifying blank worksheets
  */

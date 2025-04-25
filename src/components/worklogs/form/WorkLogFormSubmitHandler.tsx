@@ -1,132 +1,84 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useFormContext } from 'react-hook-form';
+import { BlankWorkSheetValues } from '../schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
-import { useWorkLogForm } from './WorkLogFormContext';
-import { FormValues } from './schema';
-import { WorkLog } from '@/types/models';
+import { WorkLog, Consumable } from '@/types/models';
+import { createWorkLogFromFormData } from './utils/formatWorksheetData';
+import { generateSequentialWorkLogId, generateUniqueBlankSheetId, isBlankWorksheet } from '../../worksheets/form/utils/generateUniqueIds';
 
 interface WorkLogFormSubmitHandlerProps {
-  onSuccess?: () => void;
   children: React.ReactNode;
+  onSuccess?: () => void;
+  existingWorkLogId?: string | null;
+  isBlankWorksheet?: boolean;
 }
 
 const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({ 
+  children, 
   onSuccess,
-  children
+  existingWorkLogId,
+  isBlankWorksheet = false
 }) => {
-  const { form, initialData } = useWorkLogForm();
-  const { handleSubmit } = form;
-  const { addWorkLog, updateWorkLog } = useWorkLogs();
-  const navigate = useNavigate();
+  const methods = useFormContext<BlankWorkSheetValues>();
+  const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
   
-  const onSubmit = async (data: FormValues) => {
+  const handleFormSubmit = async (formData: BlankWorkSheetValues) => {
     try {
-      console.log("Raw form data:", data);
+      console.log('Form submitted:', formData);
       
-      // Validation moins stricte pour permettre des fiches incomplètes
-      // On vérifie seulement le projectId comme champ obligatoire
-      if (!data.projectId) {
-        toast.error("Veuillez sélectionner un projet.");
-        return;
+      // Ensure consumables conform to required Consumable type
+      const validatedConsumables: Consumable[] = (formData.consumables || []).map(item => ({
+        id: item.id || crypto.randomUUID(),
+        supplier: item.supplier || '',
+        product: item.product || '',
+        unit: item.unit || '',
+        quantity: item.quantity || 0,
+        unitPrice: item.unitPrice || 0,
+        totalPrice: item.totalPrice || 0
+      }));
+      
+      // Create a WorkLog object from form data
+      const workLogData = createWorkLogFromFormData(
+        formData,
+        existingWorkLogId,
+        workLogs,
+        formData.notes || '',
+        validatedConsumables
+      );
+      
+      // Generate appropriate ID based on worksheet type
+      if (!existingWorkLogId) {
+        if (isBlankWorksheet) {
+          workLogData.projectId = generateUniqueBlankSheetId(workLogs);
+          workLogData.isBlankWorksheet = true;
+        } else {
+          workLogData.projectId = generateSequentialWorkLogId(workLogs);
+          workLogData.isBlankWorksheet = false;
+        }
       }
-
-      // Personnel peut être vide maintenant
-      const safePersonnel = Array.isArray(data.personnel) ? data.personnel : [];
-
-      // Handle custom tasks with proper validation and defaults
-      let safeCustomTasks = {};
-      if (data.customTasks) {
-        // Filter out any undefined values to prevent validation issues
-        Object.keys(data.customTasks).forEach(key => {
-          if (typeof data.customTasks?.[key] === 'boolean') {
-            safeCustomTasks[key] = data.customTasks[key];
-          } else {
-            // Default to false for any invalid values
-            safeCustomTasks[key] = false;
-          }
-        });
-      }
-
-      // Ensure tasksProgress is a valid object
-      const safeTasksProgress = data.tasksProgress && typeof data.tasksProgress === 'object' 
-        ? data.tasksProgress 
-        : {};
-
-      // S'assurer que toutes les valeurs numériques sont traitées comme des nombres
-      const payload = {
-        projectId: data.projectId,
-        date: data.date ? data.date.toISOString() : new Date().toISOString(), // Default à aujourd'hui si absent
-        duration: Number(data.duration) || 0,
-        personnel: safePersonnel,
-        timeTracking: {
-          departure: data.departure || "",
-          arrival: data.arrival || "",
-          end: data.end || "",
-          breakTime: data.breakTime || "",
-          totalHours: Number(data.totalHours) || 0,
-        },
-        tasksPerformed: {
-          watering: data.watering || 'none',
-          customTasks: safeCustomTasks,
-          tasksProgress: safeTasksProgress,
-          pruning: { 
-            done: false,
-            progress: 0
-          },
-          mowing: false,
-          brushcutting: false,
-          blower: false,
-          manualWeeding: false,
-          whiteVinegar: false
-        },
-        notes: data.notes ? data.notes.substring(0, 2000) : "",
-        waterConsumption: Number(data.waterConsumption) || undefined,
-        wasteManagement: data.wasteManagement || 'none',
-      };
       
-      console.log("Payload for submission:", payload);
-      
-      let result;
-      if (initialData) {
-        // Pour une mise à jour, on passe l'id et les données partielles
-        updateWorkLog(initialData.id, payload);
-        console.log("Worklog updated successfully");
-        toast.success("Fiche de suivi mise à jour avec succès!");
+      // Save or update the work log
+      if (existingWorkLogId) {
+        await updateWorkLog(workLogData);
       } else {
-        // Pour une nouvelle fiche, on crée un nouvel objet complet
-        const newWorkLog: WorkLog = {
-          ...payload,
-          id: crypto.randomUUID(),
-          createdAt: new Date()
-        };
-        result = await addWorkLog(newWorkLog);
-        console.log("Worklog created successfully:", result);
-        toast.success("Fiche de suivi créée avec succès!");
+        await addWorkLog(workLogData);
       }
       
-      // Navigation
+      toast.success("Fiche enregistrée avec succès");
+      
       if (onSuccess) {
         onSuccess();
-      } else {
-        navigate('/worklogs');
       }
     } catch (error) {
-      console.error("Error saving work log:", error);
-      toast.error("Erreur lors de la sauvegarde de la fiche de suivi.");
+      console.error('Error submitting form:', error);
+      toast.error("Erreur lors de l'enregistrement de la fiche");
     }
   };
   
   return (
-    <form onSubmit={handleSubmit(onSubmit, (errors) => {
-      console.error("Form validation errors:", errors);
-      
-      // Affichage des erreurs mais sans bloquer la soumission
-      if (Object.keys(errors).length > 0) {
-        toast.warning("Des champs sont incomplets mais la fiche peut être enregistrée.");
-      }
-    })} className="space-y-8">
+    <form onSubmit={methods.handleSubmit(handleFormSubmit)}>
       {children}
     </form>
   );
