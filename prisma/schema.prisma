@@ -9,7 +9,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -123,10 +122,6 @@ model WorkLog {
   signedQuoteAmount Float?
   isQuoteSigned   Boolean      @default(false)
   vatRate         String?
-  isBlankWorksheet Boolean     @default(false)
-  watering        String?      // 'none' | 'on' | 'off'
-  customTasks     Json?        // Stored as JSON
-  tasksProgress   Json?        // Stored as JSON
 }
 
 model RecurringClient {
