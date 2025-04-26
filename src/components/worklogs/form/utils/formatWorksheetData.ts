@@ -14,6 +14,11 @@ export const createWorkLogFromFormData = (
 ): WorkLog => {
   const id = existingWorkLogId || crypto.randomUUID();
   
+  // Ensure numeric values are properly converted
+  const duration = typeof data.duration === 'string' ? parseFloat(data.duration) || 0 : data.duration;
+  const totalHours = typeof data.totalHours === 'string' ? parseFloat(data.totalHours) || 0 : data.totalHours || 0;
+  const waterConsumption = typeof data.waterConsumption === 'string' ? parseFloat(data.waterConsumption) || 0 : data.waterConsumption;
+  
   return {
     id,
     projectId: data.projectId || '',
@@ -24,10 +29,10 @@ export const createWorkLogFromFormData = (
       arrival: data.arrival || '',
       end: data.end || '',
       breakTime: data.breakTime || '',
-      totalHours: data.totalHours || 0
+      totalHours
     },
-    duration: data.duration,
-    waterConsumption: data.waterConsumption,
+    duration,
+    waterConsumption,
     wasteManagement: data.wasteManagement,
     notes,
     consumables,

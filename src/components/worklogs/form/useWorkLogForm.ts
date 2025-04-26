@@ -40,6 +40,8 @@ export const useWorkLogFormState = ({
       consumables: initialData.consumables || [],
       invoiced: initialData.invoiced || false,
     } : {
+      date: new Date(),
+      personnel: [],
       teamFilter: "",
       watering: 'none',
       customTasks: {},
@@ -47,6 +49,8 @@ export const useWorkLogFormState = ({
       wasteManagement: 'none',
       consumables: [],
       invoiced: false,
+      duration: 0,
+      totalHours: 0
     }
   });
 
