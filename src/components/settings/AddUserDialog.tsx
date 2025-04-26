@@ -21,13 +21,14 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onOpenChange }) =
     email: '',
     phone: '',
     position: '',
-    drivingLicense: ''
+    drivingLicense: '',
+    password: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.lastName || !formData.email) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       toast.error("Veuillez remplir les champs obligatoires");
       return;
     }
@@ -41,8 +42,8 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onOpenChange }) =
       position: formData.position,
       drivingLicense: formData.drivingLicense,
       role: 'user' as const,
-      password: 'password123', // Adding default password
-      createdAt: new Date() // Adding current date for createdAt
+      password: formData.password,
+      createdAt: new Date()
     };
 
     const updatedUsers = [...(settings.users || []), newUser];
@@ -56,7 +57,8 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onOpenChange }) =
       email: '',
       phone: '',
       position: '',
-      drivingLicense: ''
+      drivingLicense: '',
+      password: ''
     });
   };
 
@@ -100,6 +102,18 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onOpenChange }) =
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               placeholder="email@exemple.com"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Mot de passe *</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Mot de passe"
               required
             />
           </div>
