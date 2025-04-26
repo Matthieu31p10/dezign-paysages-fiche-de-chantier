@@ -31,6 +31,7 @@ export const createWorkLogFromFormData = (
     wasteManagement: data.wasteManagement,
     notes,
     consumables,
+    invoiced: data.invoiced || false,
     tasksPerformed: {
       watering: data.watering,
       customTasks: data.customTasks,

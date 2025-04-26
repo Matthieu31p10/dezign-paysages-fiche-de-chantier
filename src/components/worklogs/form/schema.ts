@@ -19,6 +19,17 @@ export const formSchema = z.object({
   tasksProgress: z.record(z.number()).optional(),
   wasteManagement: z.enum(['none', 'keep', 'remove']).optional(),
   invoiced: z.boolean().optional().default(false),
+  consumables: z.array(
+    z.object({
+      id: z.string().optional(),
+      supplier: z.string(),
+      product: z.string(),
+      unit: z.string(),
+      quantity: z.number(),
+      unitPrice: z.number(),
+      totalPrice: z.number()
+    })
+  ).optional().default([]),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

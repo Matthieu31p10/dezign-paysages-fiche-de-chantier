@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { FormValues, formSchema } from './schema';
 import { WorkLog, ProjectInfo } from '@/types/models';
@@ -37,13 +36,17 @@ export const useWorkLogFormState = ({
       watering: initialData.tasksPerformed?.watering || 'none',
       customTasks: initialData.tasksPerformed?.customTasks || {},
       tasksProgress: initialData.tasksPerformed?.tasksProgress || {},
-      wasteManagement: initialData.wasteManagement || 'none',
+      wasteManagement: (initialData.wasteManagement as 'none' | 'keep' | 'remove') || 'none',
+      consumables: initialData.consumables || [],
+      invoiced: initialData.invoiced || false,
     } : {
       teamFilter: "",
       watering: 'none',
       customTasks: {},
       tasksProgress: {},
       wasteManagement: 'none',
+      consumables: [],
+      invoiced: false,
     }
   });
 
