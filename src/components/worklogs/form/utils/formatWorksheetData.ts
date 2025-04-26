@@ -19,9 +19,14 @@ export const createWorkLogFromFormData = (
   const totalHours = typeof data.totalHours === 'string' ? parseFloat(data.totalHours) || 0 : (data.totalHours || 0);
   const waterConsumption = typeof data.waterConsumption === 'string' ? parseFloat(data.waterConsumption) || 0 : (data.waterConsumption || 0);
   
+  // Verify that projectId is not undefined
+  if (!data.projectId) {
+    console.warn('ProjectId is missing in form data. Using a default value.');
+  }
+  
   return {
     id,
-    projectId: data.projectId || '',
+    projectId: data.projectId || 'default-project',
     date: data.date.toISOString(),
     personnel: data.personnel || [],
     timeTracking: {

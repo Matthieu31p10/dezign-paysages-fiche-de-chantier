@@ -24,15 +24,15 @@ export const useWorkLogFormState = ({
     defaultValues: initialData ? {
       projectId: initialData.projectId,
       date: new Date(initialData.date),
-      duration: initialData.duration || 0,
+      duration: initialData.duration !== undefined ? initialData.duration : 0,
       personnel: initialData.personnel || [],
       departure: initialData.timeTracking?.departure || '',
       arrival: initialData.timeTracking?.arrival || '',
       end: initialData.timeTracking?.end || '',
       breakTime: initialData.timeTracking?.breakTime || '',
-      totalHours: initialData.timeTracking?.totalHours || 0,
+      totalHours: initialData.timeTracking?.totalHours !== undefined ? initialData.timeTracking.totalHours : 0,
       notes: initialData.notes || '',
-      waterConsumption: initialData.waterConsumption || 0,
+      waterConsumption: initialData.waterConsumption !== undefined ? initialData.waterConsumption : 0,
       teamFilter: "",
       watering: initialData.tasksPerformed?.watering || 'none',
       customTasks: initialData.tasksPerformed?.customTasks || {},
@@ -52,7 +52,8 @@ export const useWorkLogFormState = ({
       invoiced: false,
       duration: 0,
       totalHours: 0,
-      waterConsumption: 0
+      waterConsumption: 0,
+      projectId: '', // Définir une valeur par défaut vide mais non undefined
     }
   });
 

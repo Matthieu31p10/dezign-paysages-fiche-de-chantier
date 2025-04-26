@@ -28,6 +28,15 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     try {
       console.log('Form submitted:', formData);
       
+      // Ensure numeric values are properly converted
+      const duration = typeof formData.duration === 'string' 
+        ? parseFloat(formData.duration) || 0 
+        : (formData.duration || 0);
+        
+      const waterConsumption = typeof formData.waterConsumption === 'string' 
+        ? parseFloat(formData.waterConsumption) || 0 
+        : (formData.waterConsumption || 0);
+      
       // Ensure consumables conform to required Consumable type
       const validatedConsumables: Consumable[] = (formData.consumables || []).map(item => ({
         id: item.id || crypto.randomUUID(),
@@ -41,7 +50,11 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       // Créer un objet WorkLog à partir des données de formulaire
       const workLogData = createWorkLogFromFormData(
-        formData,
+        {
+          ...formData,
+          duration, // Ensure numeric values
+          waterConsumption // Ensure numeric values
+        },
         existingWorkLogId,
         workLogs,
         formData.notes || '',
@@ -68,7 +81,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error("Erreur lors de l'enregistrement de la fiche");
+      toast.error("Erreur lors de l'enregistrement de la fiche: " + (error instanceof Error ? error.message : "Erreur inconnue"));
     }
   };
   

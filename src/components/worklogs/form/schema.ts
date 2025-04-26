@@ -2,17 +2,17 @@
 import { z } from 'zod';
 
 export const formSchema = z.object({
-  projectId: z.string().optional(),
+  projectId: z.string().optional().default(''),
   date: z.date(),
   personnel: z.array(z.string()),
-  duration: z.number().optional().or(z.string().transform(val => Number(val) || 0)),
+  duration: z.coerce.number().optional().default(0),
   notes: z.string().optional(),
   departure: z.string().optional(),
   arrival: z.string().optional(),
   end: z.string().optional(),
   breakTime: z.string().optional(),
-  totalHours: z.number().optional().or(z.string().transform(val => Number(val) || 0)),
-  waterConsumption: z.number().optional().or(z.string().transform(val => Number(val) || 0)),
+  totalHours: z.coerce.number().optional().default(0),
+  waterConsumption: z.coerce.number().optional().default(0),
   teamFilter: z.string().optional(),
   watering: z.enum(['none', 'on', 'off']).optional(),
   customTasks: z.record(z.boolean()).optional(),
@@ -25,9 +25,9 @@ export const formSchema = z.object({
       supplier: z.string(),
       product: z.string(),
       unit: z.string(),
-      quantity: z.number(),
-      unitPrice: z.number(),
-      totalPrice: z.number()
+      quantity: z.coerce.number(),
+      unitPrice: z.coerce.number(),
+      totalPrice: z.coerce.number()
     })
   ).optional().default([]),
 });
