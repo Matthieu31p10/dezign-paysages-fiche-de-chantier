@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { BlankWorkSheetValues } from '@/components/worksheets/schema';
+import { FormValues } from './schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { WorkLog, Consumable } from '@/types/models';
@@ -21,10 +21,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   existingWorkLogId,
   isBlankWorksheet = false
 }) => {
-  const methods = useFormContext<any>();
+  const methods = useFormContext<FormValues>();
   const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
   
-  const handleFormSubmit = async (formData: any) => {
+  const handleFormSubmit = async (formData: FormValues) => {
     try {
       console.log('Form submitted:', formData);
       
@@ -57,11 +57,11 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // Vérifier si c'est une mise à jour ou une création
       if (existingWorkLogId) {
         await updateWorkLog(workLogData);
+        toast.success("Fiche mise à jour avec succès");
       } else {
         await addWorkLog(workLogData);
+        toast.success("Fiche enregistrée avec succès");
       }
-      
-      toast.success("Fiche enregistrée avec succès");
       
       if (onSuccess) {
         onSuccess();

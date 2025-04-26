@@ -15,9 +15,9 @@ export const createWorkLogFromFormData = (
   const id = existingWorkLogId || crypto.randomUUID();
   
   // Ensure numeric values are properly converted
-  const duration = typeof data.duration === 'string' ? parseFloat(data.duration) || 0 : data.duration;
-  const totalHours = typeof data.totalHours === 'string' ? parseFloat(data.totalHours) || 0 : data.totalHours || 0;
-  const waterConsumption = typeof data.waterConsumption === 'string' ? parseFloat(data.waterConsumption) || 0 : data.waterConsumption;
+  const duration = typeof data.duration === 'string' ? parseFloat(data.duration) || 0 : (data.duration || 0);
+  const totalHours = typeof data.totalHours === 'string' ? parseFloat(data.totalHours) || 0 : (data.totalHours || 0);
+  const waterConsumption = typeof data.waterConsumption === 'string' ? parseFloat(data.waterConsumption) || 0 : (data.waterConsumption || 0);
   
   return {
     id,
@@ -33,14 +33,14 @@ export const createWorkLogFromFormData = (
     },
     duration,
     waterConsumption,
-    wasteManagement: data.wasteManagement,
+    wasteManagement: data.wasteManagement || 'none',
     notes,
     consumables,
     invoiced: data.invoiced || false,
     tasksPerformed: {
-      watering: data.watering,
-      customTasks: data.customTasks,
-      tasksProgress: data.tasksProgress
+      watering: data.watering || 'none',
+      customTasks: data.customTasks || {},
+      tasksProgress: data.tasksProgress || {}
     }
   };
 };

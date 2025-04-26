@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { FormValues, formSchema } from './schema';
 import { WorkLog, ProjectInfo } from '@/types/models';
@@ -50,7 +51,8 @@ export const useWorkLogFormState = ({
       consumables: [],
       invoiced: false,
       duration: 0,
-      totalHours: 0
+      totalHours: 0,
+      waterConsumption: 0
     }
   });
 
