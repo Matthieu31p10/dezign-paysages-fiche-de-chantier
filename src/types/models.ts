@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -76,7 +77,7 @@ export interface Consumable {
 export interface WorkLog {
   id: string;
   projectId: string;
-  date: string;  // Make sure this is string, not Date
+  date: string;  // String format for date storage
   personnel: string[];
   timeTracking: {
     departure?: string;
@@ -91,7 +92,7 @@ export interface WorkLog {
   tasks?: string;
   notes?: string;
   consumables?: Consumable[];
-  createdAt?: Date; // Updated to Date to match the implementation
+  createdAt: Date; // Explicitly typed as Date object
   invoiced?: boolean;
   isArchived?: boolean;
   clientSignature?: string;
@@ -117,7 +118,7 @@ export interface WorkLog {
   linkedProjectId?: string;
   signedQuoteAmount?: number;
   isQuoteSigned?: boolean;
-  isBlankWorksheet?: boolean;  // Added the missing property
+  isBlankWorksheet?: boolean;
 }
 
 export interface Team {

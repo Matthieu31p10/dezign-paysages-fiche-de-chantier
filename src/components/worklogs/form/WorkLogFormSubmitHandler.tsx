@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { WorkLog, Consumable } from '@/types/models';
 import { createWorkLogFromFormData } from './utils/formatWorksheetData';
-import { generateUniqueBlankSheetId, isBlankWorksheet } from '../../worksheets/form/utils/generateUniqueIds';
+import { generateUniqueBlankSheetId } from '../../worksheets/form/utils/generateUniqueIds';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -71,7 +71,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         await updateWorkLog(workLogData);
         toast.success("Fiche mise à jour avec succès");
       } else {
-        await addWorkLog(workLogData);
+        console.log('Adding worklog:', workLogData);
+        const result = await addWorkLog(workLogData);
+        console.log('Add result:', result);
         toast.success("Fiche enregistrée avec succès");
       }
       

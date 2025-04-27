@@ -39,7 +39,7 @@ const WorkLogs = () => {
             value={selectedProjectId}
             onValueChange={setSelectedProjectId}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-white border-green-200">
               <SelectValue placeholder="Tous les chantiers" />
             </SelectTrigger>
             <SelectContent>
@@ -59,7 +59,7 @@ const WorkLogs = () => {
             value={selectedTeamId}
             onValueChange={setSelectedTeamId}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-white border-green-200">
               <SelectValue placeholder="Toutes les équipes" />
             </SelectTrigger>
             <SelectContent>
@@ -79,7 +79,7 @@ const WorkLogs = () => {
             value={selectedMonth.toString()}
             onValueChange={(value) => setSelectedMonth(value === 'all' ? 'all' : Number(value))}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-white border-green-200">
               <SelectValue placeholder="Tous les mois" />
             </SelectTrigger>
             <SelectContent>
@@ -101,11 +101,11 @@ const WorkLogs = () => {
         </div>
       </div>
       
-      <Card>
-        <CardHeader className="pb-3">
+      <Card className="border-green-200 shadow-md overflow-hidden">
+        <CardHeader className="pb-3 bg-gradient-to-r from-green-50 to-white">
           <CardTitle className="flex items-center">
             <span>Fiches de suivi</span>
-            <span className="ml-2 bg-primary/10 text-primary text-sm rounded-full px-2 py-0.5">
+            <span className="ml-2 bg-green-100 text-green-800 text-sm rounded-full px-2 py-0.5">
               {filteredLogs.length}
             </span>
           </CardTitle>

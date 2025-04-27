@@ -17,6 +17,11 @@ const WorkLogNew = () => {
     navigate('/worklogs', { replace: false });
   };
   
+  const handleSuccess = () => {
+    console.log("Form submitted successfully, navigating to /worklogs");
+    navigate('/worklogs');
+  };
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -36,10 +41,7 @@ const WorkLogNew = () => {
       
       <Card className="p-6 border-green-200 shadow-md">
         <WorkLogForm 
-          onSuccess={() => {
-            console.log("Form submitted successfully, navigating to /worklogs");
-            navigate('/worklogs');
-          }} 
+          onSuccess={handleSuccess}
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
         />

@@ -27,7 +27,7 @@ export const useWorkLogOperations = (
     const newWorkLog: WorkLog = {
       ...workLog,
       id: workLog.id || crypto.randomUUID(),
-      createdAt: new Date(), // Changed from string to Date object
+      createdAt: new Date(), // Ensure createdAt is a Date object
     };
     
     console.log('Adding new WorkLog:', newWorkLog);
