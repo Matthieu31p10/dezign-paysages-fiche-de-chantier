@@ -38,15 +38,6 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         return;
       }
       
-      // Ensure numeric values are properly converted
-      const duration = typeof formData.duration === 'string' 
-        ? parseFloat(formData.duration) || 0 
-        : (formData.duration || 0);
-        
-      const waterConsumption = typeof formData.waterConsumption === 'string' 
-        ? parseFloat(formData.waterConsumption) || 0 
-        : (formData.waterConsumption || 0);
-      
       // Ensure consumables conform to required Consumable type
       const validatedConsumables: Consumable[] = (formData.consumables || []).map(item => ({
         id: item.id || crypto.randomUUID(),
@@ -60,11 +51,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       // Créer un objet WorkLog à partir des données de formulaire
       const workLogData = createWorkLogFromFormData(
-        {
-          ...formData,
-          duration,
-          waterConsumption
-        },
+        formData,
         existingWorkLogId,
         workLogs,
         formData.notes || '',
@@ -76,6 +63,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         workLogData.projectId = generateUniqueBlankSheetId(workLogs);
         workLogData.isBlankWorksheet = true;
       }
+      
+      console.log('WorkLog data before submission:', workLogData);
       
       // Vérifier si c'est une mise à jour ou une création
       if (existingWorkLogId) {

@@ -30,6 +30,8 @@ export const useWorkLogOperations = (
       createdAt: new Date(), // Changed from string to Date object
     };
     
+    console.log('Adding new WorkLog:', newWorkLog);
+    
     setWorkLogs((prev) => [...prev, newWorkLog]);
     console.log("WorkLog added successfully:", newWorkLog);
     return newWorkLog;

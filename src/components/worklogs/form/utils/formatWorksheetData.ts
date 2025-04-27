@@ -22,7 +22,7 @@ export const createWorkLogFromFormData = (
   return {
     id,
     projectId: data.projectId || '',
-    date: data.date.toISOString(),
+    date: data.date instanceof Date ? data.date.toISOString() : new Date().toISOString(),
     personnel: data.personnel || [],
     timeTracking: {
       departure: data.departure || '',
@@ -41,6 +41,7 @@ export const createWorkLogFromFormData = (
       watering: data.watering || 'none',
       customTasks: data.customTasks || {},
       tasksProgress: data.tasksProgress || {}
-    }
+    },
+    createdAt: new Date()  // Explicitly adding createdAt as Date
   };
 };
