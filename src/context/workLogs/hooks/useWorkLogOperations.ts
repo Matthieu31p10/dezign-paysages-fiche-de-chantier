@@ -27,7 +27,7 @@ export const useWorkLogOperations = (
     const newWorkLog: WorkLog = {
       ...workLog,
       id: workLog.id || crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(), // Changed from string to Date object
     };
     
     setWorkLogs((prev) => [...prev, newWorkLog]);

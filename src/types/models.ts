@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -92,7 +91,7 @@ export interface WorkLog {
   tasks?: string;
   notes?: string;
   consumables?: Consumable[];
-  createdAt?: Date;
+  createdAt?: Date; // Updated to Date to match the implementation
   invoiced?: boolean;
   isArchived?: boolean;
   clientSignature?: string;
