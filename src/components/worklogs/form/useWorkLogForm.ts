@@ -41,6 +41,7 @@ export const useWorkLogFormState = ({
       consumables: initialData.consumables || [],
       invoiced: initialData.invoiced || false,
     } : {
+      projectId: '',
       date: new Date(),
       personnel: [],
       teamFilter: "",
@@ -53,7 +54,6 @@ export const useWorkLogFormState = ({
       duration: 0,
       totalHours: 0,
       waterConsumption: 0,
-      projectId: '', // Définir une valeur par défaut vide mais non undefined
     }
   });
 

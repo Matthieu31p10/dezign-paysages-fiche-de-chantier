@@ -28,6 +28,16 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     try {
       console.log('Form submitted:', formData);
       
+      if (!formData.projectId && !isBlankWorksheet) {
+        toast.error("Veuillez sélectionner un projet");
+        return;
+      }
+      
+      if (!formData.personnel || formData.personnel.length === 0) {
+        toast.error("Veuillez sélectionner au moins une personne");
+        return;
+      }
+      
       // Ensure numeric values are properly converted
       const duration = typeof formData.duration === 'string' 
         ? parseFloat(formData.duration) || 0 
@@ -40,7 +50,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // Ensure consumables conform to required Consumable type
       const validatedConsumables: Consumable[] = (formData.consumables || []).map(item => ({
         id: item.id || crypto.randomUUID(),
-        supplier: item.supplier || '',  // Ensure required field has default value
+        supplier: item.supplier || '',
         product: item.product || '',
         unit: item.unit || '',
         quantity: Number(item.quantity) || 0,
@@ -52,8 +62,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       const workLogData = createWorkLogFromFormData(
         {
           ...formData,
-          duration, // Ensure numeric values
-          waterConsumption // Ensure numeric values
+          duration,
+          waterConsumption
         },
         existingWorkLogId,
         workLogs,

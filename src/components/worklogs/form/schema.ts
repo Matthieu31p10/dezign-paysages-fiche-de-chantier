@@ -2,7 +2,7 @@
 import { z } from 'zod';
 
 export const formSchema = z.object({
-  projectId: z.string().optional().default(''),
+  projectId: z.string().optional(),
   date: z.date(),
   personnel: z.array(z.string()),
   duration: z.coerce.number().optional().default(0),

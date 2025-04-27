@@ -14,15 +14,20 @@ export const useWorkLogOperations = (
   setWorkLogs: Dispatch<SetStateAction<WorkLog[]>>
 ) => {
   const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
-    if (!workLog.projectId || !workLog.date || !workLog.personnel || workLog.personnel.length === 0) {
-      console.error("Invalid worklog data:", workLog);
-      throw new Error('Données invalides pour la fiche de suivi');
+    if (!workLog.personnel || workLog.personnel.length === 0) {
+      console.error("Invalid worklog data (missing personnel):", workLog);
+      throw new Error('Personnel requis pour la fiche de suivi');
+    }
+    
+    if (!workLog.date) {
+      console.error("Invalid worklog data (missing date):", workLog);
+      throw new Error('Date requise pour la fiche de suivi');
     }
     
     const newWorkLog: WorkLog = {
       ...workLog,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
+      id: workLog.id || crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
     };
     
     setWorkLogs((prev) => [...prev, newWorkLog]);
