@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 const WorkLogNew = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const WorkLogNew = () => {
   
   const handleSuccess = () => {
     console.log("Form submitted successfully, navigating to /worklogs");
+    toast.success("Fiche de suivi créée avec succès");
     navigate('/worklogs');
   };
   

@@ -1,4 +1,3 @@
-
 import { WorkLog } from '@/types/models';
 import { 
   getWorkLogById, 
@@ -25,14 +24,12 @@ export const useWorkLogOperations = (
     }
     
     // S'assurer que createdAt est bien un objet Date
-    if (!(workLog.createdAt instanceof Date)) {
-      workLog.createdAt = new Date();
-    }
+    const createdAt = workLog.createdAt instanceof Date ? workLog.createdAt : new Date();
     
     const newWorkLog: WorkLog = {
       ...workLog,
       id: workLog.id || crypto.randomUUID(),
-      createdAt: workLog.createdAt, // Utiliser la date créée précédemment ou une nouvelle
+      createdAt,
     };
     
     console.log('Adding new WorkLog:', newWorkLog);
@@ -57,9 +54,9 @@ export const useWorkLogOperations = (
           if (w.id === id) {
             // Ensure createdAt remains a Date object
             const updatedWorkLog = { ...w, ...partialWorkLog };
-            if (!(updatedWorkLog.createdAt instanceof Date)) {
-              updatedWorkLog.createdAt = new Date(updatedWorkLog.createdAt);
-            }
+            updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
+              ? updatedWorkLog.createdAt 
+              : new Date(updatedWorkLog.createdAt);
             return updatedWorkLog;
           }
           return w;
@@ -76,11 +73,12 @@ export const useWorkLogOperations = (
         }
         
         // Ensure createdAt is a Date object
-        if (!(workLog.createdAt instanceof Date)) {
-          workLog.createdAt = new Date(workLog.createdAt);
-        }
+        const updatedWorkLog = { ...workLog };
+        updatedWorkLog.createdAt = workLog.createdAt instanceof Date 
+          ? workLog.createdAt 
+          : new Date(workLog.createdAt);
         
-        return prev.map((w) => w.id === workLog.id ? workLog : w);
+        return prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w);
       }
       
       return prev;
