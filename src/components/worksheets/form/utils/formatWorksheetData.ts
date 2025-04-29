@@ -82,7 +82,8 @@ export const createWorkLogFromFormData = (
     hourlyRate: data.hourlyRate || 0,
     linkedProjectId: data.linkedProjectId || undefined,
     signedQuoteAmount: data.signedQuoteAmount || 0,
-    isQuoteSigned: data.isQuoteSigned || false
+    isQuoteSigned: data.isQuoteSigned || false,
+    createdAt: new Date() // Add the missing createdAt property required by the WorkLog type
   };
 };
 
