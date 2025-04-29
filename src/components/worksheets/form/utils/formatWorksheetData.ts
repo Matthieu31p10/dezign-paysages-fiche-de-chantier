@@ -51,9 +51,9 @@ export const createWorkLogFromFormData = (
   // Generate or maintain the project ID
   let projectId;
   if (existingWorkLogId) {
-    projectId = existingWorkLogId.startsWith('DZFV') 
-      ? existingWorkLogId 
-      : `DZFV${Date.now()}`;
+    // Si c'est une mise à jour, on conserve le projectId existant
+    const existingWorkLog = workLogs.find(w => w.id === existingWorkLogId);
+    projectId = existingWorkLog?.projectId || `DZFV${Date.now()}`;
   } else {
     projectId = generateUniqueBlankSheetId(workLogs);
   }
@@ -83,7 +83,8 @@ export const createWorkLogFromFormData = (
     linkedProjectId: data.linkedProjectId || undefined,
     signedQuoteAmount: data.signedQuoteAmount || 0,
     isQuoteSigned: data.isQuoteSigned || false,
-    createdAt: new Date() // Add the missing createdAt property required by the WorkLog type
+    isBlankWorksheet: true,
+    createdAt: new Date() // S'assurer que createdAt est un objet Date
   };
 };
 

@@ -24,10 +24,15 @@ export const useWorkLogOperations = (
       throw new Error('Date requise pour la fiche de suivi');
     }
     
+    // S'assurer que createdAt est bien un objet Date
+    if (!(workLog.createdAt instanceof Date)) {
+      workLog.createdAt = new Date();
+    }
+    
     const newWorkLog: WorkLog = {
       ...workLog,
       id: workLog.id || crypto.randomUUID(),
-      createdAt: new Date(), // Ensure createdAt is a Date object
+      createdAt: workLog.createdAt, // Utiliser la date créée précédemment ou une nouvelle
     };
     
     console.log('Adding new WorkLog:', newWorkLog);
@@ -48,7 +53,17 @@ export const useWorkLogOperations = (
           throw new Error(`Fiche de suivi avec ID ${id} introuvable`);
         }
         
-        return prev.map((w) => w.id === id ? { ...w, ...partialWorkLog } : w);
+        return prev.map((w) => {
+          if (w.id === id) {
+            // Ensure createdAt remains a Date object
+            const updatedWorkLog = { ...w, ...partialWorkLog };
+            if (!(updatedWorkLog.createdAt instanceof Date)) {
+              updatedWorkLog.createdAt = new Date(updatedWorkLog.createdAt);
+            }
+            return updatedWorkLog;
+          }
+          return w;
+        });
       }
       
       if (typeof idOrWorkLog !== 'string') {
@@ -58,6 +73,11 @@ export const useWorkLogOperations = (
         if (!exists) {
           console.error(`WorkLog with ID ${workLog.id} not found for update`);
           throw new Error(`Fiche de suivi avec ID ${workLog.id} introuvable`);
+        }
+        
+        // Ensure createdAt is a Date object
+        if (!(workLog.createdAt instanceof Date)) {
+          workLog.createdAt = new Date(workLog.createdAt);
         }
         
         return prev.map((w) => w.id === workLog.id ? workLog : w);

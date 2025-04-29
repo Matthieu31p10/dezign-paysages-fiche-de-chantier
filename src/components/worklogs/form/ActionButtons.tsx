@@ -15,22 +15,22 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
   const isSubmitting = formState.isSubmitting;
   
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between gap-4 mt-6">
       <Button 
         type="button" 
         variant="outline" 
         onClick={onCancel}
         disabled={isSubmitting}
-        className="flex items-center"
+        className="flex items-center px-6 border-gray-300 hover:bg-gray-100 hover:text-gray-800"
       >
-        <X className="w-4 h-4 mr-1" />
+        <X className="w-4 h-4 mr-2" />
         Annuler
       </Button>
       
       <Button 
         type="submit"
         disabled={isSubmitting}
-        className="min-w-32 bg-green-600 hover:bg-green-700"
+        className="min-w-32 bg-green-600 hover:bg-green-700 text-white px-6"
       >
         {isSubmitting ? (
           <>

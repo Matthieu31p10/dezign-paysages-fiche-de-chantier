@@ -39,7 +39,7 @@ const WorkLogNew = () => {
         </div>
       </div>
       
-      <Card className="p-6 border-green-200 shadow-md">
+      <Card className="p-6 border-green-200 shadow-md bg-gradient-to-br from-white to-green-50">
         <WorkLogForm 
           onSuccess={handleSuccess}
           projectInfos={projectInfos}

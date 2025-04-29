@@ -64,6 +64,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         workLogData.isBlankWorksheet = true;
       }
       
+      // S'assurer que createdAt est un objet Date
+      workLogData.createdAt = new Date();
+      
       console.log('WorkLog data before submission:', workLogData);
       
       // Vérifier si c'est une mise à jour ou une création

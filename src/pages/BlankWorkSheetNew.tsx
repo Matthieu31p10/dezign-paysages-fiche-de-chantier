@@ -7,6 +7,7 @@ import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Card } from '@/components/ui/card';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
+import { toast } from 'sonner';
 
 const BlankWorkSheetNew = () => {
   const navigate = useNavigate();
@@ -17,6 +18,12 @@ const BlankWorkSheetNew = () => {
     navigate('/blank-worksheets', { replace: false });
   };
   
+  const handleSuccess = () => {
+    toast.success("Fiche vierge créée avec succès");
+    console.log("Blank worksheet form submitted successfully, navigating to /blank-worksheets");
+    navigate('/blank-worksheets');
+  };
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -24,22 +31,19 @@ const BlankWorkSheetNew = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 px-2 mr-2 text-green-700 hover:text-green-800 hover:bg-green-100"
+            className="h-8 px-2 mr-2 text-blue-700 hover:text-blue-800 hover:bg-blue-100"
             onClick={handleReturn}
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
           </Button>
-          <h1 className="text-2xl font-semibold text-green-800">Nouvelle fiche vierge</h1>
+          <h1 className="text-2xl font-semibold text-blue-800">Nouvelle fiche vierge</h1>
         </div>
       </div>
       
-      <Card className="p-6 border-green-200 shadow-md">
+      <Card className="p-6 border-blue-200 shadow-md bg-gradient-to-br from-white to-blue-50">
         <BlankWorkSheetForm 
-          onSuccess={() => {
-            console.log("Blank worksheet form submitted successfully, navigating to /blank-worksheets");
-            navigate('/blank-worksheets');
-          }} 
+          onSuccess={handleSuccess}
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
           isBlankWorksheet={true}
