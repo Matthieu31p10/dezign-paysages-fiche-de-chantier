@@ -30,6 +30,16 @@ export const formSchema = z.object({
       totalPrice: z.coerce.number()
     })
   ).optional().default([]),
+  // Add additional properties that can be used for blank worksheets
+  clientName: z.string().optional(),
+  address: z.string().optional(),
+  contactPhone: z.string().optional(),
+  contactEmail: z.string().optional(),
+  hourlyRate: z.coerce.number().optional(),
+  signedQuoteAmount: z.coerce.number().optional(),
+  isQuoteSigned: z.boolean().optional(),
+  linkedProjectId: z.string().optional(),
+  vatRate: z.string().optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

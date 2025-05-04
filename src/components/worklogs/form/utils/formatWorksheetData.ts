@@ -45,7 +45,16 @@ export const validateConsumables = (consumables: any[] = []): Consumable[] => {
  * Creates a WorkLog object from form data
  */
 export const createWorkLogFromFormData = (
-  data: FormValues, 
+  data: FormValues & {
+    clientName?: string;
+    hourlyRate?: number;
+    signedQuoteAmount?: number;
+    isQuoteSigned?: boolean;
+    address?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    linkedProjectId?: string;
+  }, 
   existingWorkLogId: string | null | undefined,
   workLogs: WorkLog[] = [],
   notes: string,
@@ -91,9 +100,25 @@ export const createWorkLogFromFormData = (
     isBlankWorksheet: false // Par défaut, c'est une fiche de suivi standard
   };
   
-  // Champs supplémentaires pour les fiches vierges
+  // Champs supplémentaires pour les fiches vierges ou qui peuvent contenir ces champs
   if (data.clientName) {
     workLog.clientName = data.clientName;
+  }
+  
+  if (data.address) {
+    workLog.address = data.address;
+  }
+  
+  if (data.contactPhone) {
+    workLog.contactPhone = data.contactPhone;
+  }
+  
+  if (data.contactEmail) {
+    workLog.contactEmail = data.contactEmail;
+  }
+  
+  if (data.linkedProjectId) {
+    workLog.linkedProjectId = data.linkedProjectId;
   }
   
   if (data.hourlyRate !== undefined) {
