@@ -22,13 +22,15 @@ interface WorkLogFormProps {
   onSuccess?: () => void;
   projectInfos: ProjectInfo[];
   existingWorkLogs: WorkLog[];
+  isBlankWorksheet?: boolean;
 }
 
 const WorkLogForm: React.FC<WorkLogFormProps> = ({ 
   initialData, 
   onSuccess, 
   projectInfos, 
-  existingWorkLogs 
+  existingWorkLogs,
+  isBlankWorksheet = false
 }) => {
   const { teams } = useApp();
   
@@ -60,7 +62,11 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         timeDeviation={timeDeviation}
         timeDeviationClass={timeDeviationClass}
       >
-        <WorkLogFormSubmitHandler onSuccess={onSuccess}>
+        <WorkLogFormSubmitHandler 
+          onSuccess={onSuccess} 
+          existingWorkLogId={initialData?.id}
+          isBlankWorksheet={isBlankWorksheet}
+        >
           <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4 border border-green-100 shadow-sm">
             <HeaderSection 
               teams={teams}
@@ -101,6 +107,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
             <ActionButtons 
               onCancel={handleCancel}
               isEditing={!!initialData}
+              isBlankWorksheet={isBlankWorksheet}
             />
           </div>
         </WorkLogFormSubmitHandler>

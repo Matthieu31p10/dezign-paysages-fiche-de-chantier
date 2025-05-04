@@ -31,6 +31,7 @@ export const useWorkLogOperations = (
       ...workLog,
       id: workLog.id || crypto.randomUUID(),
       createdAt,
+      isBlankWorksheet: workLog.isBlankWorksheet || false
     };
     
     console.log('Adding new WorkLog to state:', newWorkLog);
@@ -58,6 +59,10 @@ export const useWorkLogOperations = (
             updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
               ? updatedWorkLog.createdAt 
               : new Date(updatedWorkLog.createdAt);
+            
+            // Preserve the isBlankWorksheet flag
+            updatedWorkLog.isBlankWorksheet = w.isBlankWorksheet;
+            
             return updatedWorkLog;
           }
           return w;
@@ -78,6 +83,15 @@ export const useWorkLogOperations = (
         updatedWorkLog.createdAt = workLog.createdAt instanceof Date 
           ? workLog.createdAt 
           : new Date(workLog.createdAt);
+        
+        // Preserve the isBlankWorksheet flag if it already exists
+        const originalWorkLog = prev.find(w => w.id === workLog.id);
+        if (originalWorkLog) {
+          updatedWorkLog.isBlankWorksheet = 
+            updatedWorkLog.isBlankWorksheet !== undefined 
+              ? updatedWorkLog.isBlankWorksheet 
+              : originalWorkLog.isBlankWorksheet;
+        }
         
         return prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w);
       }
@@ -101,6 +115,16 @@ export const useWorkLogOperations = (
     );
   };
 
+  // Méthode pour filtrer les fiches vierges
+  const getBlankWorksheets = (): WorkLog[] => {
+    return workLogs.filter(workLog => workLog.isBlankWorksheet === true);
+  };
+  
+  // Méthode pour filtrer les fiches de suivi (non vierges)
+  const getRegularWorkLogs = (): WorkLog[] => {
+    return workLogs.filter(workLog => workLog.isBlankWorksheet !== true);
+  };
+
   return {
     addWorkLog,
     updateWorkLog,
@@ -112,5 +136,7 @@ export const useWorkLogOperations = (
     getTotalDuration: (projectId: string) => getTotalDuration(workLogs, projectId),
     getTotalVisits: (projectId: string) => getTotalVisits(workLogs, projectId),
     getLastVisitDate: (projectId: string) => getLastVisitDate(workLogs, projectId),
+    getBlankWorksheets,
+    getRegularWorkLogs
   };
 };

@@ -51,6 +51,7 @@ const WorkLogNew = () => {
           onSuccess={handleSuccess}
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
+          isBlankWorksheet={false}
         />
       </Card>
     </div>

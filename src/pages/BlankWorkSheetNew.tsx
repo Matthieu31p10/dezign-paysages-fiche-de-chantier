@@ -21,7 +21,7 @@ const BlankWorkSheetNew = () => {
   const handleSuccess = () => {
     toast.success("Fiche vierge créée avec succès");
     console.log("Blank worksheet form submitted successfully, navigating to /blank-worksheets");
-    navigate('/blank-worksheets');
+    navigate('/blank-worksheets', { replace: true });
   };
   
   return (

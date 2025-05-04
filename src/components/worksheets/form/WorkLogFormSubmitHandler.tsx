@@ -19,7 +19,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   children, 
   onSuccess,
   existingWorkLogId,
-  isBlankWorksheet = false
+  isBlankWorksheet = true
 }) => {
   const methods = useFormContext<BlankWorkSheetValues>();
   const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
@@ -46,10 +46,13 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         validatedConsumables
       );
       
-      // For new blank worksheets, ensure we use the DZFV sequential ID
+      // For new blank worksheets, ensure we use a specific format for projectId
       if (!existingWorkLogId) {
-        workLog.isBlankWorksheet = true;
+        workLog.projectId = generateUniqueBlankSheetId(workLogs);
       }
+      
+      // Marquer explicitement comme fiche vierge
+      workLog.isBlankWorksheet = true;
       
       // Always ensure createdAt is a Date object
       workLog.createdAt = new Date();
@@ -59,7 +62,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // Vérifier si c'est une mise à jour ou une création
       if (existingWorkLogId) {
         await updateWorkLog(workLog);
-        toast.success("Fiche mise à jour avec succès");
+        toast.success("Fiche vierge mise à jour avec succès");
       } else {
         const result = await addWorkLog(workLog);
         console.log('Add result:', result);
@@ -68,11 +71,12 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       // Call the success callback if provided
       if (onSuccess) {
+        console.log('Calling onSuccess callback for blank worksheet');
         onSuccess();
       }
     } catch (error) {
       console.error("Erreur lors de la soumission du formulaire:", error);
-      toast.error("Erreur lors de l'enregistrement de la fiche: " + (error instanceof Error ? error.message : "Erreur inconnue"));
+      toast.error("Erreur lors de l'enregistrement de la fiche vierge: " + (error instanceof Error ? error.message : "Erreur inconnue"));
     }
   };
   

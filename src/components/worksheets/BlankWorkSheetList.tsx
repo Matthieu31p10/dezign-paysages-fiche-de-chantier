@@ -5,7 +5,6 @@ import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import BlankSheetItem from './list/blank-sheet-item';
 import { groupWorkLogsByMonth } from '@/utils/date-helpers';
 import { sortMonths } from '../worklogs/list/utils';
-import { isBlankWorksheet } from './form/utils/generateUniqueIds';
 import BlankSheetFilters from './BlankSheetFilters';
 
 export interface BlankWorkSheetListProps {
@@ -26,10 +25,10 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
   
-  // Filter to only include blank worksheets and apply filters
+  // Filter to only include blank worksheets
   const filteredSheets = sheets.filter(sheet => {
-    // First filter for blank worksheets
-    const isBlank = isBlankWorksheet(sheet.projectId);
+    // First check if it's marked as a blank worksheet
+    const isBlank = sheet.isBlankWorksheet === true;
     if (!isBlank) return false;
     
     // Then apply search filter if needed
@@ -70,7 +69,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
         search={search}
         onSearchChange={(e) => setSearch(e.target.value)}
         invoicedFilter={invoicedFilter}
-        onInvoicedFilterChange={setInvoicedFilter}
+        onInvoicedFilterChange={setInvoiceFilter}
         hasFilters={search !== '' || invoicedFilter !== 'all'}
         onClearFilters={() => {
           setSearch('');

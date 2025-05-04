@@ -20,17 +20,22 @@ const WorkLogList: React.FC<WorkLogListProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
+  // Filtrer pour n'afficher que les fiches de suivi (pas les fiches vierges)
+  const regularWorkLogs = useMemo(() => {
+    return workLogs.filter(log => log.isBlankWorksheet !== true);
+  }, [workLogs]);
+  
   // Show empty state if no logs
-  if (workLogs.length === 0) {
+  if (regularWorkLogs.length === 0) {
     return <EmptyState message={emptyMessage} projectId={projectId} />;
   }
   
   // Trier d'abord par date (plus récent en premier)
   const sortedWorkLogs = useMemo(() => {
-    return [...workLogs].sort((a, b) => {
+    return [...regularWorkLogs].sort((a, b) => {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
-  }, [workLogs]);
+  }, [regularWorkLogs]);
   
   // Grouper les fiches par mois
   const workLogsByMonth = useMemo(() => {

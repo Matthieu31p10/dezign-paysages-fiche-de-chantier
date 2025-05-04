@@ -42,6 +42,7 @@ export const createWorkLogFromFormData = (
       customTasks: data.customTasks || {},
       tasksProgress: data.tasksProgress || {}
     },
-    createdAt: new Date() // Assurez-vous que createdAt est toujours un objet Date
+    createdAt: new Date(),
+    isBlankWorksheet: false // Par défaut, c'est une fiche de suivi standard
   };
 };

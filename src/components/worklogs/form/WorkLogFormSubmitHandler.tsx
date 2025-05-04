@@ -27,6 +27,12 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     try {
       console.log('Form submitted with data:', formData);
       
+      // Vérifier que le projet est sélectionné pour les fiches de suivi
+      if (!formData.projectId && !isBlankWorksheet) {
+        toast.error("Veuillez sélectionner un projet");
+        return;
+      }
+      
       if (!formData.personnel || formData.personnel.length === 0) {
         toast.error("Veuillez sélectionner au moins une personne");
         return;
@@ -52,6 +58,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         validatedConsumables
       );
       
+      // Marquer explicitement si c'est une fiche vierge
+      workLogData.isBlankWorksheet = isBlankWorksheet;
+      
       // Always ensure createdAt is a Date object
       workLogData.createdAt = new Date();
       
@@ -65,7 +74,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         console.log('Adding worklog:', workLogData);
         const result = await addWorkLog(workLogData);
         console.log('Add result:', result);
-        toast.success("Fiche enregistrée avec succès");
+        toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);
       }
       
       if (onSuccess) {
