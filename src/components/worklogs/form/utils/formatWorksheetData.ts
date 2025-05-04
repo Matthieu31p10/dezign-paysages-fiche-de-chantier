@@ -42,6 +42,6 @@ export const createWorkLogFromFormData = (
       customTasks: data.customTasks || {},
       tasksProgress: data.tasksProgress || {}
     },
-    createdAt: new Date() // Assurez-vous que createdAt est inclus et est un objet Date
+    createdAt: new Date() // Assurez-vous que createdAt est toujours un objet Date
   };
 };

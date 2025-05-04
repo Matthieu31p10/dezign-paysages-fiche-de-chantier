@@ -7,11 +7,16 @@ import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { useEffect } from 'react';
 
 const WorkLogNew = () => {
   const navigate = useNavigate();
   const { projectInfos } = useApp();
   const { workLogs } = useWorkLogs();
+  
+  useEffect(() => {
+    console.log("WorkLogNew component mounted");
+  }, []);
   
   const handleReturn = () => {
     // Naviguer vers la liste des fiches de suivi sans perdre l'historique
@@ -21,7 +26,7 @@ const WorkLogNew = () => {
   const handleSuccess = () => {
     console.log("Form submitted successfully, navigating to /worklogs");
     toast.success("Fiche de suivi créée avec succès");
-    navigate('/worklogs');
+    navigate('/worklogs', { replace: true });
   };
   
   return (

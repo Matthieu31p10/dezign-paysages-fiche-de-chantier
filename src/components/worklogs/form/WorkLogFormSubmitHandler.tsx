@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { WorkLog, Consumable } from '@/types/models';
 import { createWorkLogFromFormData } from './utils/formatWorksheetData';
-import { generateUniqueBlankSheetId } from '../../worksheets/form/utils/generateUniqueIds';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -26,12 +25,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   
   const handleFormSubmit = async (formData: FormValues) => {
     try {
-      console.log('Form submitted:', formData);
-      
-      if (!formData.projectId && !isBlankWorksheet) {
-        toast.error("Veuillez sélectionner un projet");
-        return;
-      }
+      console.log('Form submitted with data:', formData);
       
       if (!formData.personnel || formData.personnel.length === 0) {
         toast.error("Veuillez sélectionner au moins une personne");
@@ -58,13 +52,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         validatedConsumables
       );
       
-      // For blank worksheets, ensure we use the DZFV ID format
-      if (isBlankWorksheet && !existingWorkLogId) {
-        workLogData.projectId = generateUniqueBlankSheetId(workLogs);
-        workLogData.isBlankWorksheet = true;
-      }
-      
-      // S'assurer que createdAt est un objet Date
+      // Always ensure createdAt is a Date object
       workLogData.createdAt = new Date();
       
       console.log('WorkLog data before submission:', workLogData);
@@ -81,6 +69,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       }
       
       if (onSuccess) {
+        console.log('Calling onSuccess callback');
         onSuccess();
       }
     } catch (error) {

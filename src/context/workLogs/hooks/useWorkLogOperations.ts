@@ -1,3 +1,4 @@
+
 import { WorkLog } from '@/types/models';
 import { 
   getWorkLogById, 
@@ -32,7 +33,7 @@ export const useWorkLogOperations = (
       createdAt,
     };
     
-    console.log('Adding new WorkLog:', newWorkLog);
+    console.log('Adding new WorkLog to state:', newWorkLog);
     
     setWorkLogs((prev) => [...prev, newWorkLog]);
     console.log("WorkLog added successfully:", newWorkLog);
