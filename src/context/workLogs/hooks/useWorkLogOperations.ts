@@ -16,12 +16,12 @@ export const useWorkLogOperations = (
   const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
     if (!workLog.personnel || workLog.personnel.length === 0) {
       console.error("Invalid worklog data (missing personnel):", workLog);
-      throw new Error('Personnel requis pour la fiche de suivi');
+      throw new Error('Personnel requis pour la fiche');
     }
     
     if (!workLog.date) {
       console.error("Invalid worklog data (missing date):", workLog);
-      throw new Error('Date requise pour la fiche de suivi');
+      throw new Error('Date requise pour la fiche');
     }
     
     // S'assurer que createdAt est bien un objet Date
@@ -36,78 +36,93 @@ export const useWorkLogOperations = (
     
     console.log('Adding new WorkLog to state:', newWorkLog);
     
-    setWorkLogs((prev) => [...prev, newWorkLog]);
-    console.log("WorkLog added successfully:", newWorkLog);
-    return newWorkLog;
+    try {
+      setWorkLogs((prev) => [...prev, newWorkLog]);
+      console.log("WorkLog added successfully:", newWorkLog);
+      return newWorkLog;
+    } catch (error) {
+      console.error("Error adding WorkLog:", error);
+      throw new Error("Erreur lors de l'ajout de la fiche");
+    }
   };
 
   const updateWorkLog = async (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>): Promise<void> => {
-    setWorkLogs((prev) => {
-      if (typeof idOrWorkLog === 'string' && partialWorkLog) {
-        const id = idOrWorkLog;
-        const exists = prev.some(w => w.id === id);
-        
-        if (!exists) {
-          console.error(`WorkLog with ID ${id} not found for update`);
-          throw new Error(`Fiche de suivi avec ID ${id} introuvable`);
-        }
-        
-        return prev.map((w) => {
-          if (w.id === id) {
-            // Ensure createdAt remains a Date object
-            const updatedWorkLog = { ...w, ...partialWorkLog };
-            updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
-              ? updatedWorkLog.createdAt 
-              : new Date(updatedWorkLog.createdAt);
-            
-            // Preserve the isBlankWorksheet flag
-            updatedWorkLog.isBlankWorksheet = 
-              partialWorkLog.isBlankWorksheet !== undefined 
-                ? partialWorkLog.isBlankWorksheet 
-                : w.isBlankWorksheet;
-            
-            return updatedWorkLog;
+    try {
+      setWorkLogs((prev) => {
+        if (typeof idOrWorkLog === 'string' && partialWorkLog) {
+          const id = idOrWorkLog;
+          const exists = prev.some(w => w.id === id);
+          
+          if (!exists) {
+            console.error(`WorkLog with ID ${id} not found for update`);
+            throw new Error(`Fiche avec ID ${id} introuvable`);
           }
-          return w;
-        });
-      }
-      
-      if (typeof idOrWorkLog !== 'string') {
-        const workLog = idOrWorkLog;
-        const exists = prev.some(w => w.id === workLog.id);
-        
-        if (!exists) {
-          console.error(`WorkLog with ID ${workLog.id} not found for update`);
-          throw new Error(`Fiche de suivi avec ID ${workLog.id} introuvable`);
+          
+          return prev.map((w) => {
+            if (w.id === id) {
+              // Ensure createdAt remains a Date object
+              const updatedWorkLog = { ...w, ...partialWorkLog };
+              updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
+                ? updatedWorkLog.createdAt 
+                : new Date(updatedWorkLog.createdAt);
+              
+              // Preserve the isBlankWorksheet flag
+              updatedWorkLog.isBlankWorksheet = 
+                partialWorkLog.isBlankWorksheet !== undefined 
+                  ? partialWorkLog.isBlankWorksheet 
+                  : w.isBlankWorksheet;
+              
+              return updatedWorkLog;
+            }
+            return w;
+          });
         }
         
-        // Ensure createdAt is a Date object
-        const updatedWorkLog = { ...workLog };
-        updatedWorkLog.createdAt = workLog.createdAt instanceof Date 
-          ? workLog.createdAt 
-          : new Date(workLog.createdAt);
-        
-        // Preserve the isBlankWorksheet flag if it already exists
-        const originalWorkLog = prev.find(w => w.id === workLog.id);
-        if (originalWorkLog) {
-          updatedWorkLog.isBlankWorksheet = 
-            updatedWorkLog.isBlankWorksheet !== undefined 
-              ? updatedWorkLog.isBlankWorksheet 
-              : originalWorkLog.isBlankWorksheet;
+        if (typeof idOrWorkLog !== 'string') {
+          const workLog = idOrWorkLog;
+          const exists = prev.some(w => w.id === workLog.id);
+          
+          if (!exists) {
+            console.error(`WorkLog with ID ${workLog.id} not found for update`);
+            throw new Error(`Fiche avec ID ${workLog.id} introuvable`);
+          }
+          
+          // Ensure createdAt is a Date object
+          const updatedWorkLog = { ...workLog };
+          updatedWorkLog.createdAt = workLog.createdAt instanceof Date 
+            ? workLog.createdAt 
+            : new Date(workLog.createdAt);
+          
+          // Preserve the isBlankWorksheet flag if it already exists
+          const originalWorkLog = prev.find(w => w.id === workLog.id);
+          if (originalWorkLog) {
+            updatedWorkLog.isBlankWorksheet = 
+              updatedWorkLog.isBlankWorksheet !== undefined 
+                ? updatedWorkLog.isBlankWorksheet 
+                : originalWorkLog.isBlankWorksheet;
+          }
+          
+          return prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w);
         }
         
-        return prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w);
-      }
-      
-      return prev;
-    });
+        return prev;
+      });
+    } catch (error) {
+      console.error("Error updating WorkLog:", error);
+      throw error;
+    }
   };
 
   const deleteWorkLog = (id: string): void => {
-    setWorkLogs((prev) => prev.filter((w) => w.id !== id));
+    try {
+      setWorkLogs((prev) => prev.filter((w) => w.id !== id));
+    } catch (error) {
+      console.error("Error deleting WorkLog:", error);
+      throw error;
+    }
   };
 
-  // Adding the missing methods
+  // Additional methods
   const deleteWorkLogsByProjectId = (projectId: string): void => {
     setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
   };

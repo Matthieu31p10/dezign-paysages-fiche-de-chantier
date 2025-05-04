@@ -14,13 +14,22 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const operations = useWorkLogOperations(workLogs, setWorkLogs);
 
-  // Load data from localStorage on initial mount
+  // Charger les données de localStorage au montage initial
   useEffect(() => {
     const fetchWorkLogs = async () => {
       try {
         setIsLoading(true);
         const loadedWorkLogs = await loadWorkLogsFromStorage();
-        setWorkLogs(loadedWorkLogs);
+        
+        // S'assurer que createdAt est un objet Date
+        const formattedWorkLogs = loadedWorkLogs.map(log => {
+          if (!(log.createdAt instanceof Date)) {
+            log.createdAt = new Date(log.createdAt);
+          }
+          return log;
+        });
+        
+        setWorkLogs(formattedWorkLogs);
       } catch (error) {
         console.error("Error loading work logs:", error);
         toast.error("Erreur lors du chargement des fiches de suivi");
@@ -33,10 +42,15 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetchWorkLogs();
   }, []);
 
-  // Save data to localStorage whenever it changes
+  // Enregistrer les données dans localStorage quand elles changent
   useEffect(() => {
     if (!isLoading) {
-      saveWorkLogsToStorage(workLogs);
+      try {
+        console.log('Saving work logs to the database:', workLogs);
+        saveWorkLogsToStorage(workLogs);
+      } catch (error) {
+        console.error("Error saving work logs:", error);
+      }
     }
   }, [workLogs, isLoading]);
 

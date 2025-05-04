@@ -1,15 +1,15 @@
 
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 
-const WorkLogEdit = () => {
+const WorkLogEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { projectInfos } = useApp();
@@ -58,6 +58,8 @@ const WorkLogEdit = () => {
     );
   }
   
+  const isBlankWorksheet = workLog.isBlankWorksheet || false;
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -71,7 +73,9 @@ const WorkLogEdit = () => {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
           </Button>
-          <h1 className="text-2xl font-semibold text-green-800">Modifier la fiche de suivi</h1>
+          <h1 className="text-2xl font-semibold text-green-800">
+            Modifier la fiche {isBlankWorksheet ? 'vierge' : 'de suivi'}
+          </h1>
         </div>
       </div>
       
@@ -79,11 +83,12 @@ const WorkLogEdit = () => {
         <WorkLogForm 
           initialData={workLog} 
           onSuccess={() => {
-            toast.success("Fiche de suivi modifiée avec succès");
+            toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} modifiée avec succès`);
             handleReturn();
           }} 
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
+          isBlankWorksheet={isBlankWorksheet}
         />
       </Card>
     </div>

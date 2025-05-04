@@ -1,4 +1,5 @@
 
+import React, { useEffect } from 'react';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,8 @@ import { useApp } from '@/context/AppContext';
 import { useWorkLogs } from '@/context/WorkLogsContext';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 
-const WorkLogNew = () => {
+const WorkLogNew: React.FC = () => {
   const navigate = useNavigate();
   const { projectInfos } = useApp();
   const { workLogs } = useWorkLogs();

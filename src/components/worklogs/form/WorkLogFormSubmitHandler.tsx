@@ -88,7 +88,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   };
   
   return (
-    <form onSubmit={methods.handleSubmit(handleFormSubmit)}>
+    <form onSubmit={methods.handleSubmit(handleFormSubmit)} className="w-full">
       {children}
     </form>
   );

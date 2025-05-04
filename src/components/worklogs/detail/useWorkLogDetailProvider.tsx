@@ -6,6 +6,7 @@ import { PDFOptions } from './WorkLogDetailContext';
 import { useWorkLogCalculations } from './utils/useWorkLogCalculations';
 import { usePDFExport } from './utils/usePDFExport';
 import { useWorkLogActions } from './utils/useWorkLogActions';
+import { toast } from 'sonner';
 
 export const useWorkLogDetailProvider = (
   workLog?: WorkLog,
@@ -38,10 +39,12 @@ export const useWorkLogDetailProvider = (
     setIsDeleteDialogOpen(false);
     try {
       deleteWorkLog(workLog.id);
+      toast.success(`Fiche ${workLog.isBlankWorksheet ? 'vierge' : 'de suivi'} supprimée avec succès`);
       // Rediriger vers la liste appropriée en fonction du type de fiche
       navigate(workLog.isBlankWorksheet ? '/blank-worksheets' : '/worklogs');
     } catch (error) {
       console.error("Error deleting work log:", error);
+      toast.error(`Erreur lors de la suppression de la fiche ${workLog.isBlankWorksheet ? 'vierge' : 'de suivi'}`);
     }
   };
   
@@ -59,8 +62,10 @@ export const useWorkLogDetailProvider = (
       updateWorkLog(workLog.id, {
         notes: sanitizedNotes
       });
+      toast.success("Notes enregistrées avec succès");
     } catch (error) {
       console.error("Error saving notes:", error);
+      toast.error("Erreur lors de l'enregistrement des notes");
     }
   };
   

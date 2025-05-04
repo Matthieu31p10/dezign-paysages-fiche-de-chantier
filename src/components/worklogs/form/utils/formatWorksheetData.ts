@@ -3,6 +3,45 @@ import { FormValues } from '../schema';
 import { Consumable, WorkLog } from '@/types/models';
 
 /**
+ * Formate les notes structurées à partir des données du formulaire
+ */
+export const formatStructuredNotes = (data: any): string => {
+  // Vérification que data existe
+  if (!data) return '';
+  
+  return `
+CLIENT: ${data.clientName || ''}
+ADRESSE: ${data.address || ''}
+TÉLÉPHONE: ${data.contactPhone || ''}
+EMAIL: ${data.contactEmail || ''}
+ID PROJET: ${data.linkedProjectId || ''}
+TAUX HORAIRE: ${data.hourlyRate || 0}
+TVA: ${data.vatRate || ''}
+DEVIS SIGNÉ: ${data.isQuoteSigned ? 'oui' : 'non'}
+VALEUR DEVIS: ${data.signedQuoteAmount || 0}
+HEURE D'ENREGISTREMENT: ${new Date().toISOString()}
+DESCRIPTION: ${data.notes || ''}
+`;
+};
+
+/**
+ * Valide et formate les consommables
+ */
+export const validateConsumables = (consumables: any[] = []): Consumable[] => {
+  if (!Array.isArray(consumables)) return [];
+  
+  return consumables.map(item => ({
+    id: item.id || crypto.randomUUID(),
+    supplier: item.supplier || '',
+    product: item.product || '',
+    unit: item.unit || '',
+    quantity: Number(item.quantity) || 0,
+    unitPrice: Number(item.unitPrice) || 0,
+    totalPrice: Number(item.totalPrice) || 0
+  }));
+};
+
+/**
  * Creates a WorkLog object from form data
  */
 export const createWorkLogFromFormData = (
@@ -23,8 +62,9 @@ export const createWorkLogFromFormData = (
   const date = data.date instanceof Date 
     ? data.date.toISOString() 
     : (typeof data.date === 'string' ? new Date(data.date).toISOString() : new Date().toISOString());
-  
-  return {
+
+  // Créer l'objet WorkLog
+  const workLog: WorkLog = {
     id,
     projectId: data.projectId || '',
     date,
@@ -50,4 +90,23 @@ export const createWorkLogFromFormData = (
     createdAt: new Date(),
     isBlankWorksheet: false // Par défaut, c'est une fiche de suivi standard
   };
+  
+  // Champs supplémentaires pour les fiches vierges
+  if (data.clientName) {
+    workLog.clientName = data.clientName;
+  }
+  
+  if (data.hourlyRate !== undefined) {
+    workLog.hourlyRate = data.hourlyRate;
+  }
+  
+  if (data.signedQuoteAmount !== undefined) {
+    workLog.signedQuoteAmount = data.signedQuoteAmount;
+  }
+  
+  if (data.isQuoteSigned !== undefined) {
+    workLog.isQuoteSigned = data.isQuoteSigned;
+  }
+  
+  return workLog;
 };
