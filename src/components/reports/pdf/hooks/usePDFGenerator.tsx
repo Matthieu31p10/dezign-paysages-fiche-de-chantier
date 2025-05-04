@@ -30,12 +30,18 @@ export const usePDFGenerator = () => {
   
   // Auto-génération si les paramètres d'URL sont présents
   useEffect(() => {
-    if (generateType && generateId) {
-      if (generateType === 'blank' && selectedBlankWorkLogId === generateId) {
-        handleGenerateWorkLogPDF(true);
-      } else if (generateType === 'regular' && selectedWorkLogId === generateId) {
-        handleGenerateWorkLogPDF(false);
+    const autoGenerateFromURL = async () => {
+      if (generateType && generateId) {
+        if (generateType === 'blank' && selectedBlankWorkLogId === generateId) {
+          await handleGenerateWorkLogPDF(true);
+        } else if (generateType === 'regular' && selectedWorkLogId === generateId) {
+          await handleGenerateWorkLogPDF(false);
+        }
       }
+    };
+    
+    if (selectedBlankWorkLogId || selectedWorkLogId) {
+      autoGenerateFromURL();
     }
   }, [selectedBlankWorkLogId, selectedWorkLogId, generateType, generateId]);
   
@@ -47,27 +53,27 @@ export const usePDFGenerator = () => {
   };
   
   const handleGenerateWorkLogPDF = async (isBlank: boolean = false) => {
-    const selectedId = isBlank ? selectedBlankWorkLogId : selectedWorkLogId;
-    
-    if (!selectedId) {
-      toast.error(`Veuillez sélectionner une fiche ${isBlank ? 'vierge' : 'de suivi'}`);
-      return;
-    }
-    
-    const workLog = workLogs.find(log => log.id === selectedId);
-    if (!workLog) {
-      toast.error('Fiche non trouvée');
-      return;
-    }
-    
-    // Ne pas exiger du personnel pour les fiches vierges
-    if (!isBlank && (!workLog.personnel || workLog.personnel.length === 0)) {
-      toast.warning('Cette fiche n\'a pas de personnel assigné');
-    }
-    
-    const project = pdfOptions.includeContactInfo ? getProjectById(workLog.projectId) : undefined;
-    
     try {
+      const selectedId = isBlank ? selectedBlankWorkLogId : selectedWorkLogId;
+      
+      if (!selectedId) {
+        toast.error(`Veuillez sélectionner une fiche ${isBlank ? 'vierge' : 'de suivi'}`);
+        return;
+      }
+      
+      const workLog = workLogs.find(log => log.id === selectedId);
+      if (!workLog) {
+        toast.error('Fiche non trouvée');
+        return;
+      }
+      
+      // Ne pas exiger du personnel pour les fiches vierges
+      if (!isBlank && (!workLog.personnel || workLog.personnel.length === 0)) {
+        toast.warning('Cette fiche n\'a pas de personnel assigné');
+      }
+      
+      const project = pdfOptions.includeContactInfo ? getProjectById(workLog.projectId) : undefined;
+      
       const pdfData = {
         workLog,
         project,
@@ -84,8 +90,8 @@ export const usePDFGenerator = () => {
         description: `Fichier: ${fileName}`
       });
     } catch (error) {
+      console.error("Erreur lors de la génération du PDF:", error);
       toast.error('Erreur lors de la génération du PDF');
-      console.error(error);
     }
   };
 

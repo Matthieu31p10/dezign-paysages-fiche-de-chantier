@@ -38,7 +38,8 @@ export const useWorkLogDetailProvider = (
     setIsDeleteDialogOpen(false);
     try {
       deleteWorkLog(workLog.id);
-      navigate('/worklogs');
+      // Rediriger vers la liste appropriée en fonction du type de fiche
+      navigate(workLog.isBlankWorksheet ? '/blank-worksheets' : '/worklogs');
     } catch (error) {
       console.error("Error deleting work log:", error);
     }
@@ -81,6 +82,9 @@ export const useWorkLogDetailProvider = (
     
     // From PDF export
     handleExportToPDF: pdfUtils.handleExportToPDF,
-    handleSendEmail: pdfUtils.handleSendEmail
+    handleSendEmail: pdfUtils.handleSendEmail,
+    
+    // Expose whether this is a blank worksheet
+    isBlankWorksheet: workLog?.isBlankWorksheet || false
   };
 };

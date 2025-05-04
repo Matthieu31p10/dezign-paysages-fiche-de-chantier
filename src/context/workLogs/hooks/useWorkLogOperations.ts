@@ -61,7 +61,10 @@ export const useWorkLogOperations = (
               : new Date(updatedWorkLog.createdAt);
             
             // Preserve the isBlankWorksheet flag
-            updatedWorkLog.isBlankWorksheet = w.isBlankWorksheet;
+            updatedWorkLog.isBlankWorksheet = 
+              partialWorkLog.isBlankWorksheet !== undefined 
+                ? partialWorkLog.isBlankWorksheet 
+                : w.isBlankWorksheet;
             
             return updatedWorkLog;
           }

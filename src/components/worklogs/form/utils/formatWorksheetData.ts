@@ -19,10 +19,15 @@ export const createWorkLogFromFormData = (
   const totalHours = typeof data.totalHours === 'string' ? parseFloat(data.totalHours) || 0 : (data.totalHours || 0);
   const waterConsumption = typeof data.waterConsumption === 'string' ? parseFloat(data.waterConsumption) || 0 : (data.waterConsumption || 0);
   
+  // Ensure date is properly handled
+  const date = data.date instanceof Date 
+    ? data.date.toISOString() 
+    : (typeof data.date === 'string' ? new Date(data.date).toISOString() : new Date().toISOString());
+  
   return {
     id,
     projectId: data.projectId || '',
-    date: data.date instanceof Date ? data.date.toISOString() : new Date().toISOString(),
+    date,
     personnel: data.personnel || [],
     timeTracking: {
       departure: data.departure || '',
