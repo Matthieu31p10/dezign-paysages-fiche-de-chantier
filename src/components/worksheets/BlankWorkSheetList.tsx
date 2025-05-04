@@ -69,7 +69,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
         search={search}
         onSearchChange={(e) => setSearch(e.target.value)}
         invoicedFilter={invoicedFilter}
-        onInvoicedFilterChange={setInvoiceFilter}
+        onInvoicedFilterChange={setInvoicedFilter}
         hasFilters={search !== '' || invoicedFilter !== 'all'}
         onClearFilters={() => {
           setSearch('');

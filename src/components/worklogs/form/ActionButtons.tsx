@@ -7,9 +7,10 @@ import { Loader2, Save, X } from 'lucide-react';
 interface ActionButtonsProps {
   onCancel: () => void;
   isEditing: boolean;
+  isBlankWorksheet?: boolean;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing, isBlankWorksheet = false }) => {
   const { form } = useWorkLogForm();
   const { formState } = form;
   const isSubmitting = formState.isSubmitting;
@@ -30,7 +31,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
       <Button 
         type="submit"
         disabled={isSubmitting}
-        className="min-w-32 bg-green-600 hover:bg-green-700 text-white px-6"
+        className={`min-w-32 ${isBlankWorksheet ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6`}
       >
         {isSubmitting ? (
           <>
@@ -40,7 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing }) =>
         ) : (
           <>
             <Save className="mr-2 h-4 w-4" />
-            {isEditing ? "Mettre à jour la fiche" : "Créer la fiche"}
+            {isEditing ? "Mettre à jour la fiche" : `Créer la fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'}`}
           </>
         )}
       </Button>
