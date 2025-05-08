@@ -60,14 +60,16 @@ export const createWorkLogFromFormData = (
   
   // Ensure date is properly handled
   const date = data.date instanceof Date 
-    ? data.date.toISOString() 
-    : (typeof data.date === 'string' ? new Date(data.date).toISOString() : new Date().toISOString());
+    ? data.date 
+    : (typeof data.date === 'string' ? new Date(data.date) : new Date());
+  
+  console.log('Creating WorkLog with data:', { id, projectId: data.projectId, date });
 
   // Créer l'objet WorkLog
   const workLog: WorkLog = {
     id,
     projectId: data.projectId || '',
-    date,
+    date: date.toISOString(),
     personnel: data.personnel || [],
     timeTracking: {
       departure: data.departure || '',

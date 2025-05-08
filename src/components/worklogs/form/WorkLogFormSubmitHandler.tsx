@@ -64,6 +64,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         await updateWorkLog(workLogData);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} mise à jour avec succès`);
       } else {
+        console.log('Adding new worklog:', workLogData);
         const result = await addWorkLog(workLogData);
         console.log('Added worklog result:', result);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);

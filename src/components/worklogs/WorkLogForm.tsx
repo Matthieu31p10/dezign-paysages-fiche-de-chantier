@@ -51,6 +51,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     existingWorkLogs
   });
   
+  console.log("WorkLogForm initialized with isBlankWorksheet:", isBlankWorksheet);
+  
   return (
     <FormProvider {...form}>
       <WorkLogFormProvider
