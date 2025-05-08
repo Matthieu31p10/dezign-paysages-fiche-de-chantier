@@ -24,6 +24,7 @@ const WorkLogNew: React.FC = () => {
   };
   
   const handleSuccess = () => {
+    console.log("Form submission successful, redirecting to worklogs page");
     toast.success("Fiche de suivi créée avec succès");
     navigate('/worklogs', { replace: true });
   };

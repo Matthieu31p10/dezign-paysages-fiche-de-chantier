@@ -2,26 +2,26 @@
 import React from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { Card } from '@/components/ui/card';
-import { useIsMobile } from '@/hooks/use-mobile';
-import BlankSheetHeader from './BlankSheetHeader';
 import BlankSheetContent from './BlankSheetContent';
-import BlankSheetStats from './BlankSheetStats';
 import BlankSheetActions from './BlankSheetActions';
+import BlankSheetHeader from './BlankSheetHeader';
+import BlankSheetStats from './BlankSheetStats';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useWorkLogs } from '@/context/WorkLogsContext';
-import { Badge } from '@/components/ui/badge';
-import { formatDateToFr } from '@/utils/date-utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-interface BlankSheetItemProps {
-  sheet: WorkLog;
-  linkedProject: ProjectInfo | null;
-  onEdit: (id: string) => void;
-  onExportPDF: (id: string) => void;
-  onPrint: (id: string) => void;
+export interface BlankSheetItemProps {
+  sheet?: WorkLog;
+  worklog?: WorkLog;
+  linkedProject?: ProjectInfo | null;
+  onEdit?: (id: string) => void;
+  onExportPDF?: (id: string) => void;
+  onPrint?: (id: string) => void;
 }
 
 const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   sheet,
+  worklog,
   linkedProject,
   onEdit,
   onExportPDF,
@@ -30,97 +30,77 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const { updateWorkLog } = useWorkLogs();
   const isMobile = useIsMobile();
   
-  // Gérer le changement du statut de facturation
+  // Use either sheet or worklog prop (for backwards compatibility)
+  const sheetData = sheet || worklog;
+  
+  if (!sheetData) return null;
+  
   const handleInvoicedChange = async (checked: boolean) => {
-    if (sheet && sheet.id) {
+    if (sheetData.id) {
       await updateWorkLog({
-        ...sheet,
+        ...sheetData,
         invoiced: checked
       });
     }
   };
   
-  // Handler functions
-  const handleEdit = () => onEdit(sheet.id);
-  const handleExportPDF = () => onExportPDF(sheet.id);
-  const handlePrint = () => onPrint(sheet.id);
+  const handleEdit = () => {
+    if (onEdit && sheetData.id) {
+      onEdit(sheetData.id);
+    }
+  };
   
-  // Format invoice amount for display
-  const invoiceAmount = sheet.hourlyRate && sheet.timeTracking?.totalHours 
-    ? (sheet.hourlyRate * sheet.timeTracking.totalHours).toFixed(2) 
-    : "0.00";
+  const handleExportPDF = () => {
+    if (onExportPDF && sheetData.id) {
+      onExportPDF(sheetData.id);
+    }
+  };
+  
+  const handlePrint = () => {
+    if (onPrint && sheetData.id) {
+      onPrint(sheetData.id);
+    }
+  };
   
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow animate-fade-in border border-blue-100">
+    <Card className="p-4 hover:shadow-md transition-shadow animate-fade-in">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                checked={sheet.invoiced || false}
-                onCheckedChange={handleInvoicedChange}
-                id={`invoiced-${sheet.id}`}
-              />
-              <label 
-                htmlFor={`invoiced-${sheet.id}`}
-                className="text-sm font-medium leading-none cursor-pointer"
-              >
-                Facturée
-              </label>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-blue-50">
-                Fiche vierge
-              </Badge>
-              {sheet.invoiced && (
-                <Badge className="bg-green-600">
-                  Facturée
-                </Badge>
-              )}
-            </div>
+          <div className="flex items-center gap-4 mb-4">
+            <Checkbox
+              checked={sheetData.invoiced || false}
+              onCheckedChange={handleInvoicedChange}
+              id={`invoiced-${sheetData.id}`}
+            />
+            <label 
+              htmlFor={`invoiced-${sheetData.id}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Facturée
+            </label>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <BlankSheetHeader 
-                date={sheet.date}
-                clientName={sheet.clientName}
-                projectId={sheet.projectId}
-                registrationTime={sheet.createdAt}
-                invoiced={sheet.invoiced}
-              />
-            </div>
-            
-            <div className="text-right md:border-l md:pl-4">
-              <div className="text-gray-600 text-sm">Total facturable</div>
-              <div className="text-lg font-semibold text-blue-800">
-                {invoiceAmount} €
-              </div>
-              <div className="text-gray-500 text-xs">
-                {sheet.timeTracking?.totalHours || 0} h × {sheet.hourlyRate || 0} €/h
-              </div>
-              {sheet.signedQuoteAmount > 0 && (
-                <div className="mt-1 text-sm">
-                  <span className="text-gray-600">Montant devis:</span> {sheet.signedQuoteAmount} €
-                </div>
-              )}
-            </div>
-          </div>
+          <BlankSheetHeader 
+            sheet={sheetData}
+            clientName={sheetData.clientName}
+            projectId={sheetData.projectId}
+            date={sheetData.date}
+            registrationTime={sheetData.createdAt}
+            invoiced={sheetData.invoiced}
+          />
           
           <BlankSheetContent 
-            sheet={sheet}
-            linkedProject={linkedProject}
+            sheet={sheetData}
           />
           
           <BlankSheetStats 
-            sheet={sheet}
+            sheet={sheetData}
           />
         </div>
         
-        <div className="flex items-start justify-end mt-2">
+        <div className="flex items-center gap-2 md:ml-auto">
           <BlankSheetActions 
-            sheet={sheet}
+            sheet={sheetData}
             onEdit={handleEdit}
             onExportPDF={handleExportPDF}
             onPrint={handlePrint}

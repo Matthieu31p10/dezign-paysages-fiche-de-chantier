@@ -43,7 +43,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         formatStructuredNotes(formData) : 
         formData.notes || '';
       
-      const validatedConsumables = validateConsumables(formData.consumables);
+      const validatedConsumables = validateConsumables(formData.consumables || []);
       
       // Création de l'objet WorkLog
       const workLogData = createWorkLogFromFormData(
@@ -64,7 +64,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         await updateWorkLog(workLogData);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} mise à jour avec succès`);
       } else {
-        await addWorkLog(workLogData);
+        const result = await addWorkLog(workLogData);
+        console.log('Added worklog result:', result);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);
       }
       
