@@ -39,7 +39,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   }, [validSheets]);
   
   // Fonction de filtrage améliorée
-  const getFilteredSheets = useMemo(() => {
+  const filteredSheets = useMemo(() => {
     return blankSheets.filter(sheet => {
       // Recherche multichamp (projet, notes, personnel, client)
       const searchLower = search.toLowerCase().trim();
