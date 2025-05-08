@@ -1,17 +1,34 @@
 
 import { z } from 'zod';
 
+// Schéma de base pour les consommables
+const consumableSchema = z.object({
+  id: z.string().optional(),
+  supplier: z.string(),
+  product: z.string(),
+  unit: z.string(),
+  quantity: z.coerce.number(),
+  unitPrice: z.coerce.number(),
+  totalPrice: z.coerce.number()
+});
+
+// Schéma complet pour le formulaire WorkLog
 export const formSchema = z.object({
+  // Champs communs
   projectId: z.string().optional(),
   date: z.date(),
-  personnel: z.array(z.string()),
+  personnel: z.array(z.string()).min(1, "Sélectionnez au moins une personne"),
   duration: z.coerce.number().optional().default(0),
   notes: z.string().optional(),
+  
+  // Suivi du temps
   departure: z.string().optional(),
   arrival: z.string().optional(),
   end: z.string().optional(),
   breakTime: z.string().optional(),
   totalHours: z.coerce.number().optional().default(0),
+  
+  // Tâches et consommations
   waterConsumption: z.coerce.number().optional().default(0),
   teamFilter: z.string().optional(),
   watering: z.enum(['none', 'on', 'off']).optional(),
@@ -19,18 +36,9 @@ export const formSchema = z.object({
   tasksProgress: z.record(z.number()).optional(),
   wasteManagement: z.enum(['none', 'keep', 'remove']).optional(),
   invoiced: z.boolean().optional().default(false),
-  consumables: z.array(
-    z.object({
-      id: z.string().optional(),
-      supplier: z.string(),
-      product: z.string(),
-      unit: z.string(),
-      quantity: z.coerce.number(),
-      unitPrice: z.coerce.number(),
-      totalPrice: z.coerce.number()
-    })
-  ).optional().default([]),
-  // Add additional properties that can be used for blank worksheets
+  consumables: z.array(consumableSchema).optional().default([]),
+  
+  // Champs pour les fiches vierges (blank worksheets)
   clientName: z.string().optional(),
   address: z.string().optional(),
   contactPhone: z.string().optional(),

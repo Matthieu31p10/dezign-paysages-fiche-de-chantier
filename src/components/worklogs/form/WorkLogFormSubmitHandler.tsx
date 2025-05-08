@@ -4,8 +4,8 @@ import { useFormContext } from 'react-hook-form';
 import { FormValues } from './schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
-import { WorkLog, Consumable } from '@/types/models';
-import { createWorkLogFromFormData } from './utils/formatWorksheetData';
+import { WorkLog } from '@/types/models';
+import { createWorkLogFromFormData, formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -27,8 +27,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     try {
       console.log('Form submitted with data:', formData);
       
-      // Vérifier que le projet est sélectionné pour les fiches de suivi
-      if (!formData.projectId && !isBlankWorksheet) {
+      // Validation de base
+      if (!isBlankWorksheet && !formData.projectId) {
         toast.error("Veuillez sélectionner un projet");
         return;
       }
@@ -38,42 +38,33 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         return;
       }
       
-      // Ensure consumables conform to required Consumable type
-      const validatedConsumables: Consumable[] = (formData.consumables || []).map(item => ({
-        id: item.id || crypto.randomUUID(),
-        supplier: item.supplier || '',
-        product: item.product || '',
-        unit: item.unit || '',
-        quantity: Number(item.quantity) || 0,
-        unitPrice: Number(item.unitPrice) || 0,
-        totalPrice: Number(item.totalPrice) || 0
-      }));
+      // Préparation des données
+      const structuredNotes = isBlankWorksheet ? 
+        formatStructuredNotes(formData) : 
+        formData.notes || '';
       
-      // Créer un objet WorkLog à partir des données de formulaire
+      const validatedConsumables = validateConsumables(formData.consumables);
+      
+      // Création de l'objet WorkLog
       const workLogData = createWorkLogFromFormData(
         formData,
         existingWorkLogId,
         workLogs,
-        formData.notes || '',
+        structuredNotes,
         validatedConsumables
       );
       
-      // Marquer explicitement si c'est une fiche vierge
+      // Définir explicitement si c'est une fiche vierge
       workLogData.isBlankWorksheet = isBlankWorksheet;
-      
-      // Always ensure createdAt is a Date object
-      workLogData.createdAt = new Date();
       
       console.log('WorkLog data before submission:', workLogData);
       
-      // Vérifier si c'est une mise à jour ou une création
+      // Soumission des données
       if (existingWorkLogId) {
         await updateWorkLog(workLogData);
-        toast.success("Fiche mise à jour avec succès");
+        toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} mise à jour avec succès`);
       } else {
-        console.log('Adding worklog:', workLogData);
-        const result = await addWorkLog(workLogData);
-        console.log('Add result:', result);
+        await addWorkLog(workLogData);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);
       }
       
@@ -83,7 +74,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error("Erreur lors de l'enregistrement de la fiche: " + (error instanceof Error ? error.message : "Erreur inconnue"));
+      toast.error(`Erreur lors de l'enregistrement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
   

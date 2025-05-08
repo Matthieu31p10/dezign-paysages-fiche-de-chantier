@@ -9,7 +9,7 @@ interface FormActionsProps {
   isSubmitting: boolean;
   onCancel: () => void;
   isEditing?: boolean;
-  handleCancel?: () => void; // Ajout de cette prop pour correspondre à ce qui est passé
+  handleCancel?: () => void;
   isBlankWorksheet?: boolean;
 }
 
@@ -25,9 +25,14 @@ const FormActions: React.FC<FormActionsProps> = ({
   // Utiliser handleCancel s'il est fourni, sinon utiliser onCancel
   const handleCancelClick = handleCancel || onCancel;
   
+  // Différence de style visuel entre les fiches vierges et les fiches de suivi
   const buttonColor = isBlankWorksheet 
-    ? 'bg-blue-600 hover:bg-blue-700' 
-    : 'bg-green-600 hover:bg-green-700';
+    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+    : 'bg-green-600 hover:bg-green-700 text-white';
+  
+  const buttonText = isEditing 
+    ? `Mettre à jour la fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'}` 
+    : `Créer la fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'}`;
   
   return (
     <FormActionsContainer>
@@ -45,7 +50,7 @@ const FormActions: React.FC<FormActionsProps> = ({
       <Button 
         type="submit"
         disabled={isSubmitting}
-        className={`min-w-32 ${buttonColor} text-white px-6`}
+        className={`min-w-32 ${buttonColor} px-6`}
       >
         {isSubmitting ? (
           <>
@@ -55,7 +60,7 @@ const FormActions: React.FC<FormActionsProps> = ({
         ) : (
           <>
             <Save className="mr-2 h-4 w-4" />
-            {isEditing ? "Mettre à jour" : `Créer la fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'}`}
+            {buttonText}
           </>
         )}
       </Button>

@@ -20,9 +20,9 @@ const WorkLogList: React.FC<WorkLogListProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // Filtrer pour n'afficher que les fiches de suivi (pas les fiches vierges)
+  // Filtrer pour n'afficher que les fiches de suivi standard (pas les fiches vierges)
   const regularWorkLogs = useMemo(() => {
-    return workLogs.filter(log => log.isBlankWorksheet !== true);
+    return workLogs.filter(log => !log.isBlankWorksheet);
   }, [workLogs]);
   
   // Show empty state if no logs
@@ -49,7 +49,7 @@ const WorkLogList: React.FC<WorkLogListProps> = ({
   }, [workLogsByMonth]);
   
   return (
-    <div className={`space-y-${isMobile ? '4' : '8'}`}>
+    <div className={`space-y-${isMobile ? '4' : '8'} animate-fade-in`}>
       {months.map((month) => (
         <WorkLogMonthGroup 
           key={month} 

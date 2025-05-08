@@ -16,15 +16,14 @@ const WorkLogNew: React.FC = () => {
   
   useEffect(() => {
     console.log("WorkLogNew component mounted");
+    document.title = "Nouvelle fiche de suivi - Vertos Chantiers";
   }, []);
   
   const handleReturn = () => {
-    // Naviguer vers la liste des fiches de suivi sans perdre l'historique
     navigate('/worklogs', { replace: false });
   };
   
   const handleSuccess = () => {
-    console.log("Form submitted successfully, navigating to /worklogs");
     toast.success("Fiche de suivi créée avec succès");
     navigate('/worklogs', { replace: true });
   };

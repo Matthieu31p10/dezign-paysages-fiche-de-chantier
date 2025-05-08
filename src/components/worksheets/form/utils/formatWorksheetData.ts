@@ -25,6 +25,8 @@ DESCRIPTION: ${data.notes || ''}
  * Validates and normalizes consumable data
  */
 export const validateConsumables = (consumables: any[] = []): Consumable[] => {
+  if (!Array.isArray(consumables)) return [];
+  
   return consumables.map(item => ({
     id: item.id || crypto.randomUUID(),
     supplier: item.supplier || '',
@@ -35,6 +37,9 @@ export const validateConsumables = (consumables: any[] = []): Consumable[] => {
     totalPrice: Number(item.totalPrice || 0)
   }));
 };
+
+// Import from generateUniqueIds.ts pour éviter les dépendances circulaires
+import { generateUniqueBlankSheetId, generateTemporaryId } from './generateUniqueIds';
 
 /**
  * Creates a WorkLog object from form data
@@ -51,13 +56,15 @@ export const createWorkLogFromFormData = (
   // Generate or maintain the project ID
   let projectId;
   if (existingWorkLogId) {
-    // Si c'est une mise à jour, on conserve le projectId existant
+    // Pour les mises à jour, conserver l'ID existant
     const existingWorkLog = workLogs.find(w => w.id === existingWorkLogId);
     projectId = existingWorkLog?.projectId || `DZFV${Date.now()}`;
   } else {
+    // Pour les nouvelles fiches, générer un ID unique
     projectId = generateUniqueBlankSheetId(workLogs);
   }
   
+  // Création de l'objet WorkLog avec validation des données
   return {
     id,
     projectId,
@@ -68,7 +75,7 @@ export const createWorkLogFromFormData = (
       arrival: data.arrival || '',
       end: data.end || '',
       breakTime: data.breakTime || '',
-      totalHours: data.totalHours || 0
+      totalHours: Number(data.totalHours || 0)
     },
     notes: structuredNotes,
     tasks: data.tasks || '',
@@ -79,14 +86,12 @@ export const createWorkLogFromFormData = (
     address: data.address || '',
     contactPhone: data.contactPhone || '',
     contactEmail: data.contactEmail || '',
-    hourlyRate: data.hourlyRate || 0,
+    hourlyRate: Number(data.hourlyRate || 0),
     linkedProjectId: data.linkedProjectId || undefined,
-    signedQuoteAmount: data.signedQuoteAmount || 0,
-    isQuoteSigned: data.isQuoteSigned || false,
+    signedQuoteAmount: Number(data.signedQuoteAmount || 0),
+    isQuoteSigned: Boolean(data.isQuoteSigned || false),
     isBlankWorksheet: true,
-    createdAt: new Date() // S'assurer que createdAt est un objet Date
+    createdAt: new Date(), // S'assurer que createdAt est un objet Date
+    invoiced: Boolean(data.invoiced || false)
   };
 };
-
-// Import from generateUniqueIds.ts to avoid circular dependencies
-import { generateUniqueBlankSheetId, generateTemporaryId } from './generateUniqueIds';

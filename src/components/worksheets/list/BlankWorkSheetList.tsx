@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { WorkLog } from '@/types/models';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, FileText } from 'lucide-react';
 import BlankSheetItem from './blank-sheet-item';
 import { useProjects } from '@/context/ProjectsContext';
-import { ProjectInfo } from '@/types/models';
 import { isBlankWorksheet } from '../form/utils/generateUniqueIds';
 
 interface BlankWorkSheetListProps {
@@ -28,7 +27,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   onPrint = () => {}
 }) => {
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterInvoiced, setFilterInvoiced] = useState<string>('all');
   const { getProjectById } = useProjects();
   
@@ -36,27 +34,30 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   const validSheets = Array.isArray(sheets) ? sheets : [];
   
   // Filter to only include blank worksheets
-  const blankSheets = validSheets.filter(sheet => isBlankWorksheet(sheet.projectId));
+  const blankSheets = useMemo(() => {
+    return validSheets.filter(sheet => sheet.isBlankWorksheet === true);
+  }, [validSheets]);
   
-  const getFilteredSheets = () => {
+  // Fonction de filtrage améliorée
+  const getFilteredSheets = useMemo(() => {
     return blankSheets.filter(sheet => {
-      // Filter by search term
-      const matchesSearch = !search ? true : (
-        (sheet.projectId?.toLowerCase().includes(search.toLowerCase()) || false) ||
-        (sheet.notes?.toLowerCase().includes(search.toLowerCase()) || false) ||
-        (sheet.personnel?.some(person => person.toLowerCase().includes(search.toLowerCase())) || false)
+      // Recherche multichamp (projet, notes, personnel, client)
+      const searchLower = search.toLowerCase().trim();
+      const matchesSearch = !searchLower ? true : (
+        (sheet.projectId?.toLowerCase().includes(searchLower) || false) ||
+        (sheet.notes?.toLowerCase().includes(searchLower) || false) ||
+        (sheet.personnel?.some(person => person.toLowerCase().includes(searchLower)) || false) ||
+        (sheet.clientName?.toLowerCase().includes(searchLower) || false)
       );
       
-      // Filter by invoiced status
+      // Filtre par statut de facturation
       const matchesInvoiced = filterInvoiced === 'all' || 
-        (filterInvoiced === 'invoiced' && sheet.invoiced) ||
-        (filterInvoiced === 'not-invoiced' && !sheet.invoiced);
+        (filterInvoiced === 'invoiced' && sheet.invoiced === true) ||
+        (filterInvoiced === 'not-invoiced' && sheet.invoiced !== true);
       
       return matchesSearch && matchesInvoiced;
     });
-  };
-  
-  const filteredSheets = getFilteredSheets();
+  }, [blankSheets, search, filterInvoiced]);
   
   const handleSelectSheet = (id: string) => {
     if (onSelectSheet) onSelectSheet(id);
@@ -75,12 +76,12 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   };
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative w-full sm:w-auto flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher une fiche..."
+            placeholder="Rechercher une fiche par client, personnel, projet..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -109,7 +110,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Aucune fiche trouvée</h3>
               <p className="text-muted-foreground">
-                Aucune fiche ne correspond à vos critères de recherche.
+                {search || filterInvoiced !== 'all' 
+                  ? "Aucune fiche ne correspond à vos critères de recherche." 
+                  : "Vous n'avez pas encore créé de fiches vierges."}
               </p>
             </div>
           </CardContent>
