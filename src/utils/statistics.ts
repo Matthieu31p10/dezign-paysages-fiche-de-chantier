@@ -5,7 +5,11 @@ import { WorkLog, CustomTask } from '@/types/models';
 export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
   if (workLogs.length === 0) return 0;
   
-  const totalHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+  const totalHours = workLogs.reduce((sum, log) => {
+    const hours = log.timeTracking?.totalHours || 0;
+    return sum + hours;
+  }, 0);
+  
   return Math.round((totalHours / workLogs.length) * 100) / 100;
 };
 
@@ -166,16 +170,18 @@ export const calculateTaskStatistics = (workLogs: WorkLog[], customTasks: Custom
   
   // Count tasks
   workLogs.forEach(log => {
-    if (log.tasksPerformed.mowing) taskCounts.mowing++;
-    if (log.tasksPerformed.brushcutting) taskCounts.brushcutting++;
-    if (log.tasksPerformed.blower) taskCounts.blower++;
-    if (log.tasksPerformed.manualWeeding) taskCounts.manualWeeding++;
-    if (log.tasksPerformed.whiteVinegar) taskCounts.whiteVinegar++;
-    if (log.tasksPerformed.pruning.done) taskCounts.pruning++;
+    const tasksPerformed = log.tasksPerformed || {};
+    
+    if (tasksPerformed.mowing) taskCounts.mowing++;
+    if (tasksPerformed.brushcutting) taskCounts.brushcutting++;
+    if (tasksPerformed.blower) taskCounts.blower++;
+    if (tasksPerformed.manualWeeding) taskCounts.manualWeeding++;
+    if (tasksPerformed.whiteVinegar) taskCounts.whiteVinegar++;
+    if (tasksPerformed.pruning?.done) taskCounts.pruning++;
     
     // Count custom tasks
-    if (log.tasksPerformed.customTasks) {
-      Object.entries(log.tasksPerformed.customTasks).forEach(([id, isDone]) => {
+    if (tasksPerformed.customTasks) {
+      Object.entries(tasksPerformed.customTasks).forEach(([id, isDone]) => {
         if (isDone && taskCounts.customTasks[id]) {
           taskCounts.customTasks[id].count++;
         }

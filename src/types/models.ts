@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -105,6 +106,21 @@ export interface WorkLog {
   isQuoteSigned?: boolean;
   vatRate?: string;
   isBlankWorksheet?: boolean;
+  // Add the tasksPerformed property
+  tasksPerformed?: {
+    mowing?: boolean;
+    brushcutting?: boolean;
+    blower?: boolean;
+    manualWeeding?: boolean;
+    whiteVinegar?: boolean;
+    pruning?: {
+      done: boolean;
+      details?: string;
+    };
+    watering?: 'none' | 'on' | 'off';
+    customTasks?: Record<string, boolean>;
+    tasksProgress?: Record<string, number>;
+  };
 }
 
 export interface Team {

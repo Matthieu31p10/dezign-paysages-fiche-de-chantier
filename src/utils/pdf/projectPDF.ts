@@ -51,9 +51,11 @@ export const generateProjectPDF = async (project: ProjectInfo, workLogs: WorkLog
       const headers = ['Date', 'Durée', 'Personnel', 'Tâches principales'];
       const rows = workLogs.map(log => {
         const tasks = [];
-        if (log.tasksPerformed.mowing) tasks.push('Tonte');
-        if (log.tasksPerformed.brushcutting) tasks.push('Débroussaillage');
-        if (log.tasksPerformed.pruning.done) tasks.push('Taille');
+        const tasksPerformed = log.tasksPerformed || {};
+        
+        if (tasksPerformed.mowing) tasks.push('Tonte');
+        if (tasksPerformed.brushcutting) tasks.push('Débroussaillage');
+        if (tasksPerformed.pruning?.done) tasks.push('Taille');
         
         return [
           formatDate(log.date),
