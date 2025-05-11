@@ -39,12 +39,11 @@ export const useWorkLogOperations = (
     console.log('Adding new WorkLog to state:', newWorkLog);
     
     try {
-      // Mettre à jour l'état local
-      const updatedWorkLogs = [...workLogs, newWorkLog];
-      setWorkLogs(updatedWorkLogs);
-      
-      // Sauvegarder dans Supabase
+      // Sauvegarder dans Supabase d'abord
       await saveWorkLogsToStorage([newWorkLog]);
+      
+      // Puis mettre à jour l'état local
+      setWorkLogs(prev => [...prev, newWorkLog]);
       
       console.log("WorkLog added successfully:", newWorkLog);
       return newWorkLog;
@@ -56,6 +55,7 @@ export const useWorkLogOperations = (
 
   const updateWorkLog = async (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>): Promise<void> => {
     try {
+      let updatedWorkLog: WorkLog;
       let updatedWorkLogs: WorkLog[] = [];
       
       if (typeof idOrWorkLog === 'string' && partialWorkLog) {
@@ -70,44 +70,39 @@ export const useWorkLogOperations = (
         updatedWorkLogs = workLogs.map((w) => {
           if (w.id === id) {
             // Ensure createdAt remains a Date object
-            const updatedWorkLog = { ...w, ...partialWorkLog };
-            updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
-              ? updatedWorkLog.createdAt 
-              : new Date(updatedWorkLog.createdAt);
-            return updatedWorkLog;
+            const updated = { ...w, ...partialWorkLog };
+            updated.createdAt = updated.createdAt instanceof Date 
+              ? updated.createdAt 
+              : new Date(updated.createdAt);
+            updatedWorkLog = updated;
+            return updated;
           }
           return w;
         });
       } else if (typeof idOrWorkLog === 'object') {
-        const workLog = idOrWorkLog;
-        const exists = workLogs.some(w => w.id === workLog.id);
+        updatedWorkLog = idOrWorkLog;
+        const exists = workLogs.some(w => w.id === updatedWorkLog.id);
         
         if (!exists) {
-          console.error(`WorkLog with ID ${workLog.id} not found for update`);
-          throw new Error(`Fiche avec ID ${workLog.id} introuvable`);
+          console.error(`WorkLog with ID ${updatedWorkLog.id} not found for update`);
+          throw new Error(`Fiche avec ID ${updatedWorkLog.id} introuvable`);
         }
         
         // Ensure createdAt is a Date object
-        workLog.createdAt = workLog.createdAt instanceof Date 
-          ? workLog.createdAt 
-          : new Date(workLog.createdAt);
+        updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
+          ? updatedWorkLog.createdAt 
+          : new Date(updatedWorkLog.createdAt);
         
-        updatedWorkLogs = workLogs.map((w) => (w.id === workLog.id ? workLog : w));
+        updatedWorkLogs = workLogs.map((w) => (w.id === updatedWorkLog.id ? updatedWorkLog : w));
       } else {
         throw new Error("Format invalide pour la mise à jour de la fiche");
       }
       
-      // Mettre à jour l'état local
+      // Sauvegarder dans Supabase d'abord
+      await saveWorkLogsToStorage([updatedWorkLog!]);
+      
+      // Puis mettre à jour l'état local
       setWorkLogs(updatedWorkLogs);
-      
-      // Trouver l'élément mis à jour pour le sauvegarder dans Supabase
-      const workLogToUpdate = typeof idOrWorkLog === 'string' 
-        ? updatedWorkLogs.find(w => w.id === idOrWorkLog) 
-        : idOrWorkLog;
-      
-      if (workLogToUpdate) {
-        await saveWorkLogsToStorage([workLogToUpdate]);
-      }
       
     } catch (error) {
       console.error("Error updating WorkLog:", error);
@@ -123,11 +118,11 @@ export const useWorkLogOperations = (
         throw new Error(`Fiche avec ID ${id} introuvable`);
       }
       
-      // Mettre à jour l'état local
-      setWorkLogs((prev) => prev.filter((w) => w.id !== id));
-      
-      // Supprimer de Supabase
+      // Supprimer de Supabase d'abord
       await deleteWorkLogFromStorage(id);
+      
+      // Puis mettre à jour l'état local
+      setWorkLogs((prev) => prev.filter((w) => w.id !== id));
       
       toast.success('Fiche supprimée avec succès');
     } catch (error) {
@@ -144,13 +139,13 @@ export const useWorkLogOperations = (
       
       if (logsToDelete.length === 0) return;
       
-      // Mettre à jour l'état local
-      setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
-      
       // Supprimer chaque fiche de Supabase
       for (const log of logsToDelete) {
         await deleteWorkLogFromStorage(log.id);
       }
+      
+      // Puis mettre à jour l'état local
+      setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
       
       toast.success(`${logsToDelete.length} fiches supprimées avec succès`);
     } catch (error) {
@@ -161,6 +156,10 @@ export const useWorkLogOperations = (
 
   const archiveWorkLogsByProjectId = async (projectId: string, archived: boolean) => {
     try {
+      const logsToUpdate = workLogs.filter(w => w.projectId === projectId);
+      
+      if (logsToUpdate.length === 0) return;
+      
       const updatedWorkLogs = workLogs.map((w) => {
         if (w.projectId === projectId) {
           return { ...w, isArchived: archived };
@@ -168,16 +167,15 @@ export const useWorkLogOperations = (
         return w;
       });
       
-      // Mettre à jour l'état local
+      // Mettre à jour chaque fiche dans Supabase
+      for (const log of logsToUpdate) {
+        await saveWorkLogsToStorage([{ ...log, isArchived: archived }]);
+      }
+      
+      // Puis mettre à jour l'état local
       setWorkLogs(updatedWorkLogs);
       
-      // Filtrer les fiches modifiées
-      const modifiedLogs = updatedWorkLogs.filter(w => w.projectId === projectId);
-      
-      // Mettre à jour Supabase
-      await saveWorkLogsToStorage(modifiedLogs);
-      
-      toast.success(`${modifiedLogs.length} fiches ${archived ? 'archivées' : 'désarchivées'} avec succès`);
+      toast.success(`${logsToUpdate.length} fiches ${archived ? 'archivées' : 'désarchivées'} avec succès`);
     } catch (error) {
       console.error("Error archiving WorkLogs:", error);
       toast.error(`Erreur lors de l'archivage: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);

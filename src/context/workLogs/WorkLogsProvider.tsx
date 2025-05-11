@@ -46,17 +46,8 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetchWorkLogs();
   }, []);
 
-  // Enregistrer les données dans Supabase quand elles changent
-  useEffect(() => {
-    if (!isLoading) {
-      try {
-        console.log('Saving work logs to Supabase:', workLogs);
-        saveWorkLogsToStorage(workLogs);
-      } catch (error) {
-        console.error("Error saving work logs:", error);
-      }
-    }
-  }, [workLogs, isLoading]);
+  // Pas nécessaire de sauvegarder automatiquement dans Supabase quand les données changent
+  // car nous sauvegardons explicitement après chaque opération d'ajout/mise à jour/suppression
 
   return (
     <WorkLogsContext.Provider value={{ workLogs, isLoading, ...operations }}>
