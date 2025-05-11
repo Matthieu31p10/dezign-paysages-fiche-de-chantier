@@ -8,6 +8,8 @@ import {
   getLastVisitDate 
 } from '../workLogsOperations';
 import { Dispatch, SetStateAction } from 'react';
+import { saveWorkLogsToStorage, deleteWorkLogFromStorage } from '../workLogsStorage';
+import { toast } from 'sonner';
 
 export const useWorkLogOperations = (
   workLogs: WorkLog[],
@@ -37,7 +39,13 @@ export const useWorkLogOperations = (
     console.log('Adding new WorkLog to state:', newWorkLog);
     
     try {
-      setWorkLogs((prev) => [...prev, newWorkLog]);
+      // Mettre à jour l'état local
+      const updatedWorkLogs = [...workLogs, newWorkLog];
+      setWorkLogs(updatedWorkLogs);
+      
+      // Sauvegarder dans Supabase
+      await saveWorkLogsToStorage([newWorkLog]);
+      
       console.log("WorkLog added successfully:", newWorkLog);
       return newWorkLog;
     } catch (error) {
@@ -48,101 +56,135 @@ export const useWorkLogOperations = (
 
   const updateWorkLog = async (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>): Promise<void> => {
     try {
-      setWorkLogs((prev) => {
-        if (typeof idOrWorkLog === 'string' && partialWorkLog) {
-          const id = idOrWorkLog;
-          const exists = prev.some(w => w.id === id);
-          
-          if (!exists) {
-            console.error(`WorkLog with ID ${id} not found for update`);
-            throw new Error(`Fiche avec ID ${id} introuvable`);
-          }
-          
-          return prev.map((w) => {
-            if (w.id === id) {
-              // Ensure createdAt remains a Date object
-              const updatedWorkLog = { ...w, ...partialWorkLog };
-              updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
-                ? updatedWorkLog.createdAt 
-                : new Date(updatedWorkLog.createdAt);
-              
-              // Preserve the isBlankWorksheet flag
-              updatedWorkLog.isBlankWorksheet = 
-                partialWorkLog.isBlankWorksheet !== undefined 
-                  ? partialWorkLog.isBlankWorksheet 
-                  : w.isBlankWorksheet;
-              
-              return updatedWorkLog;
-            }
-            return w;
-          });
+      let updatedWorkLogs: WorkLog[] = [];
+      
+      if (typeof idOrWorkLog === 'string' && partialWorkLog) {
+        const id = idOrWorkLog;
+        const exists = workLogs.some(w => w.id === id);
+        
+        if (!exists) {
+          console.error(`WorkLog with ID ${id} not found for update`);
+          throw new Error(`Fiche avec ID ${id} introuvable`);
         }
         
-        if (typeof idOrWorkLog !== 'string') {
-          const workLog = idOrWorkLog;
-          const exists = prev.some(w => w.id === workLog.id);
-          
-          if (!exists) {
-            console.error(`WorkLog with ID ${workLog.id} not found for update`);
-            throw new Error(`Fiche avec ID ${workLog.id} introuvable`);
+        updatedWorkLogs = workLogs.map((w) => {
+          if (w.id === id) {
+            // Ensure createdAt remains a Date object
+            const updatedWorkLog = { ...w, ...partialWorkLog };
+            updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
+              ? updatedWorkLog.createdAt 
+              : new Date(updatedWorkLog.createdAt);
+            return updatedWorkLog;
           }
-          
-          // Ensure createdAt is a Date object
-          const updatedWorkLog = { ...workLog };
-          updatedWorkLog.createdAt = workLog.createdAt instanceof Date 
-            ? workLog.createdAt 
-            : new Date(workLog.createdAt);
-          
-          // Preserve the isBlankWorksheet flag if it already exists
-          const originalWorkLog = prev.find(w => w.id === workLog.id);
-          if (originalWorkLog) {
-            updatedWorkLog.isBlankWorksheet = 
-              updatedWorkLog.isBlankWorksheet !== undefined 
-                ? updatedWorkLog.isBlankWorksheet 
-                : originalWorkLog.isBlankWorksheet;
-          }
-          
-          return prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w);
+          return w;
+        });
+      } else if (typeof idOrWorkLog === 'object') {
+        const workLog = idOrWorkLog;
+        const exists = workLogs.some(w => w.id === workLog.id);
+        
+        if (!exists) {
+          console.error(`WorkLog with ID ${workLog.id} not found for update`);
+          throw new Error(`Fiche avec ID ${workLog.id} introuvable`);
         }
         
-        return prev;
-      });
+        // Ensure createdAt is a Date object
+        workLog.createdAt = workLog.createdAt instanceof Date 
+          ? workLog.createdAt 
+          : new Date(workLog.createdAt);
+        
+        updatedWorkLogs = workLogs.map((w) => (w.id === workLog.id ? workLog : w));
+      } else {
+        throw new Error("Format invalide pour la mise à jour de la fiche");
+      }
+      
+      // Mettre à jour l'état local
+      setWorkLogs(updatedWorkLogs);
+      
+      // Trouver l'élément mis à jour pour le sauvegarder dans Supabase
+      const workLogToUpdate = typeof idOrWorkLog === 'string' 
+        ? updatedWorkLogs.find(w => w.id === idOrWorkLog) 
+        : idOrWorkLog;
+      
+      if (workLogToUpdate) {
+        await saveWorkLogsToStorage([workLogToUpdate]);
+      }
+      
     } catch (error) {
       console.error("Error updating WorkLog:", error);
+      toast.error(`Erreur lors de la mise à jour: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       throw error;
     }
   };
 
-  const deleteWorkLog = (id: string): void => {
+  const deleteWorkLog = async (id: string) => {
     try {
+      // Vérifier si la fiche existe
+      if (!workLogs.some(w => w.id === id)) {
+        throw new Error(`Fiche avec ID ${id} introuvable`);
+      }
+      
+      // Mettre à jour l'état local
       setWorkLogs((prev) => prev.filter((w) => w.id !== id));
+      
+      // Supprimer de Supabase
+      await deleteWorkLogFromStorage(id);
+      
+      toast.success('Fiche supprimée avec succès');
     } catch (error) {
       console.error("Error deleting WorkLog:", error);
+      toast.error(`Erreur lors de la suppression: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       throw error;
     }
   };
 
-  // Additional methods
-  const deleteWorkLogsByProjectId = (projectId: string): void => {
-    setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
+  const deleteWorkLogsByProjectId = async (projectId: string) => {
+    try {
+      // Filtrer les fiches par projet
+      const logsToDelete = workLogs.filter(w => w.projectId === projectId);
+      
+      if (logsToDelete.length === 0) return;
+      
+      // Mettre à jour l'état local
+      setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
+      
+      // Supprimer chaque fiche de Supabase
+      for (const log of logsToDelete) {
+        await deleteWorkLogFromStorage(log.id);
+      }
+      
+      toast.success(`${logsToDelete.length} fiches supprimées avec succès`);
+    } catch (error) {
+      console.error("Error deleting WorkLogs by ProjectId:", error);
+      toast.error(`Erreur lors de la suppression: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   };
 
-  const archiveWorkLogsByProjectId = (projectId: string, archived: boolean): void => {
-    setWorkLogs((prev) => 
-      prev.map((w) => w.projectId === projectId ? { ...w, isArchived: archived } : w)
-    );
+  const archiveWorkLogsByProjectId = async (projectId: string, archived: boolean) => {
+    try {
+      const updatedWorkLogs = workLogs.map((w) => {
+        if (w.projectId === projectId) {
+          return { ...w, isArchived: archived };
+        }
+        return w;
+      });
+      
+      // Mettre à jour l'état local
+      setWorkLogs(updatedWorkLogs);
+      
+      // Filtrer les fiches modifiées
+      const modifiedLogs = updatedWorkLogs.filter(w => w.projectId === projectId);
+      
+      // Mettre à jour Supabase
+      await saveWorkLogsToStorage(modifiedLogs);
+      
+      toast.success(`${modifiedLogs.length} fiches ${archived ? 'archivées' : 'désarchivées'} avec succès`);
+    } catch (error) {
+      console.error("Error archiving WorkLogs:", error);
+      toast.error(`Erreur lors de l'archivage: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   };
 
-  // Méthode pour filtrer les fiches vierges
-  const getBlankWorksheets = (): WorkLog[] => {
-    return workLogs.filter(workLog => workLog.isBlankWorksheet === true);
-  };
-  
-  // Méthode pour filtrer les fiches de suivi (non vierges)
-  const getRegularWorkLogs = (): WorkLog[] => {
-    return workLogs.filter(workLog => workLog.isBlankWorksheet !== true);
-  };
-
+  // Réutilisation des fonctions d'opérations existantes
   return {
     addWorkLog,
     updateWorkLog,
@@ -154,7 +196,5 @@ export const useWorkLogOperations = (
     getTotalDuration: (projectId: string) => getTotalDuration(workLogs, projectId),
     getTotalVisits: (projectId: string) => getTotalVisits(workLogs, projectId),
     getLastVisitDate: (projectId: string) => getLastVisitDate(workLogs, projectId),
-    getBlankWorksheets,
-    getRegularWorkLogs
   };
 };

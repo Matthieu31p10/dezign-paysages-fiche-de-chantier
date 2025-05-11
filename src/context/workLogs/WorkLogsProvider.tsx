@@ -3,7 +3,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { WorkLog } from '@/types/models';
 import { WorkLogsContextType } from '../types';
 import { toast } from 'sonner';
-import { loadWorkLogsFromStorage, saveWorkLogsToStorage } from './workLogsStorage';
+import { 
+  loadWorkLogsFromStorage, 
+  saveWorkLogsToStorage,
+  deleteWorkLogFromStorage 
+} from './workLogsStorage';
 import { useWorkLogOperations } from './hooks/useWorkLogOperations';
 
 const WorkLogsContext = createContext<WorkLogsContextType | undefined>(undefined);
@@ -14,7 +18,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const operations = useWorkLogOperations(workLogs, setWorkLogs);
 
-  // Charger les données de localStorage au montage initial
+  // Charger les données de Supabase au montage initial
   useEffect(() => {
     const fetchWorkLogs = async () => {
       try {
@@ -42,11 +46,11 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetchWorkLogs();
   }, []);
 
-  // Enregistrer les données dans localStorage quand elles changent
+  // Enregistrer les données dans Supabase quand elles changent
   useEffect(() => {
     if (!isLoading) {
       try {
-        console.log('Saving work logs to the database:', workLogs);
+        console.log('Saving work logs to Supabase:', workLogs);
         saveWorkLogsToStorage(workLogs);
       } catch (error) {
         console.error("Error saving work logs:", error);

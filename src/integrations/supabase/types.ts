@@ -9,7 +9,344 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      consumables: {
+        Row: {
+          id: string
+          product: string
+          quantity: number
+          saved_for_reuse: boolean | null
+          supplier: string
+          total_price: number
+          unit: string
+          unit_price: number
+          work_log_id: string | null
+        }
+        Insert: {
+          id?: string
+          product: string
+          quantity: number
+          saved_for_reuse?: boolean | null
+          supplier: string
+          total_price: number
+          unit: string
+          unit_price: number
+          work_log_id?: string | null
+        }
+        Update: {
+          id?: string
+          product?: string
+          quantity?: number
+          saved_for_reuse?: boolean | null
+          supplier?: string
+          total_price?: number
+          unit?: string
+          unit_price?: number
+          work_log_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consumables_work_log_id_fkey"
+            columns: ["work_log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_tasks: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      personnel: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          name: string
+          position: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name: string
+          position?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          position?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          additional_info: string | null
+          address: string
+          annual_total_hours: number | null
+          annual_visits: number | null
+          client_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contract_details: string | null
+          contract_document_url: string | null
+          created_at: string | null
+          end_date: string | null
+          id: string
+          irrigation: string | null
+          is_archived: boolean | null
+          mower_type: string | null
+          name: string
+          project_type: string | null
+          start_date: string | null
+          team_id: string | null
+          visit_duration: number | null
+        }
+        Insert: {
+          additional_info?: string | null
+          address: string
+          annual_total_hours?: number | null
+          annual_visits?: number | null
+          client_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contract_details?: string | null
+          contract_document_url?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          irrigation?: string | null
+          is_archived?: boolean | null
+          mower_type?: string | null
+          name: string
+          project_type?: string | null
+          start_date?: string | null
+          team_id?: string | null
+          visit_duration?: number | null
+        }
+        Update: {
+          additional_info?: string | null
+          address?: string
+          annual_total_hours?: number | null
+          annual_visits?: number | null
+          client_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contract_details?: string | null
+          contract_document_url?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          irrigation?: string | null
+          is_archived?: boolean | null
+          mower_type?: string | null
+          name?: string
+          project_type?: string | null
+          start_date?: string | null
+          team_id?: string | null
+          visit_duration?: number | null
+        }
+        Relationships: []
+      }
+      saved_consumables: {
+        Row: {
+          created_at: string | null
+          id: string
+          product: string
+          quantity: number
+          saved_for_reuse: boolean | null
+          supplier: string
+          total_price: number
+          unit: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product: string
+          quantity: number
+          saved_for_reuse?: boolean | null
+          supplier: string
+          total_price: number
+          unit: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product?: string
+          quantity?: number
+          saved_for_reuse?: boolean | null
+          supplier?: string
+          total_price?: number
+          unit?: string
+          unit_price?: number
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          company_address: string | null
+          company_email: string | null
+          company_logo: string | null
+          company_manager_name: string | null
+          company_name: string | null
+          company_phone: string | null
+          created_at: string | null
+          id: string
+          login_background_image: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_address?: string | null
+          company_email?: string | null
+          company_logo?: string | null
+          company_manager_name?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          created_at?: string | null
+          id?: string
+          login_background_image?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_address?: string | null
+          company_email?: string | null
+          company_logo?: string | null
+          company_manager_name?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          created_at?: string | null
+          id?: string
+          login_background_image?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      work_logs: {
+        Row: {
+          address: string | null
+          arrival: string | null
+          break_time: string | null
+          client_name: string | null
+          client_signature: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          date: string
+          departure: string | null
+          end_time: string | null
+          hourly_rate: number | null
+          id: string
+          invoiced: boolean | null
+          is_archived: boolean | null
+          is_blank_worksheet: boolean | null
+          is_quote_signed: boolean | null
+          linked_project_id: string | null
+          notes: string | null
+          personnel: string[]
+          project_id: string
+          signed_quote_amount: number | null
+          tasks: string | null
+          total_hours: number
+          waste_management: string | null
+          water_consumption: number | null
+        }
+        Insert: {
+          address?: string | null
+          arrival?: string | null
+          break_time?: string | null
+          client_name?: string | null
+          client_signature?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          date: string
+          departure?: string | null
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          invoiced?: boolean | null
+          is_archived?: boolean | null
+          is_blank_worksheet?: boolean | null
+          is_quote_signed?: boolean | null
+          linked_project_id?: string | null
+          notes?: string | null
+          personnel: string[]
+          project_id: string
+          signed_quote_amount?: number | null
+          tasks?: string | null
+          total_hours?: number
+          waste_management?: string | null
+          water_consumption?: number | null
+        }
+        Update: {
+          address?: string | null
+          arrival?: string | null
+          break_time?: string | null
+          client_name?: string | null
+          client_signature?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          date?: string
+          departure?: string | null
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          invoiced?: boolean | null
+          is_archived?: boolean | null
+          is_blank_worksheet?: boolean | null
+          is_quote_signed?: boolean | null
+          linked_project_id?: string | null
+          notes?: string | null
+          personnel?: string[]
+          project_id?: string
+          signed_quote_amount?: number | null
+          tasks?: string | null
+          total_hours?: number
+          waste_management?: string | null
+          water_consumption?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
