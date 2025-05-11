@@ -2,7 +2,7 @@
 import { WorkLog } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { executeSupabaseQuery, handleSupabaseError } from './supabaseClient';
-import { formatWorkLogForDatabase, formatWorkLogFromDatabase } from './formatters';
+import { formatWorkLogFromDatabase } from './formatters';
 
 /**
  * Load workLogs from database
@@ -44,7 +44,7 @@ export const deleteWorkLogFromStorage = async (workLogId: string): Promise<void>
     console.log("Deleting work log from Supabase:", workLogId);
     
     // Delete the work log (cascade will handle consumables deletion)
-    await executeSupabaseQuery<null>(
+    await executeSupabaseQuery(
       () => supabase.from('work_logs').delete().eq('id', workLogId),
       'Erreur lors de la suppression de la fiche de suivi'
     );

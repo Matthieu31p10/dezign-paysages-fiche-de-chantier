@@ -1,6 +1,7 @@
 
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { PostgrestFilterBuilder, PostgrestQueryBuilder } from '@supabase/supabase-js';
 
 /**
  * Error handler for Supabase operations
@@ -16,11 +17,15 @@ export const handleSupabaseError = (error: any, message: string) => {
  * Generic type T is the expected return type of the data
  */
 export const executeSupabaseQuery = async <T>(
-  queryFn: () => Promise<{ data: T; error: any }>,
+  queryFn: () => Promise<{ data: T; error: any }> | PostgrestFilterBuilder<any> | PostgrestQueryBuilder<any>,
   errorMessage: string
 ): Promise<T> => {
   try {
-    const { data, error } = await queryFn();
+    // Assurez-vous que la requête est bien une promesse
+    const response = await queryFn();
+    
+    // Extraire les données et l'erreur de la réponse
+    const { data, error } = response as { data: T; error: any };
     
     if (error) {
       handleSupabaseError(error, errorMessage);

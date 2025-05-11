@@ -39,7 +39,7 @@ export const saveConsumableForReuse = async (consumable: Consumable): Promise<vo
   try {
     console.log("Saving consumable for reuse:", consumable);
     
-    await executeSupabaseQuery<null>(
+    await executeSupabaseQuery(
       () => supabase.from('saved_consumables').insert({
         id: consumable.id || crypto.randomUUID(),
         supplier: consumable.supplier,
