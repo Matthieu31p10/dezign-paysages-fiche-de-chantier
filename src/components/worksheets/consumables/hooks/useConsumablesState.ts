@@ -4,7 +4,7 @@ import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
 import { Consumable } from '@/types/models';
 import { ConsumableFormState, EmptyConsumable } from '../types';
-import { loadSavedConsumables } from '@/context/workLogs/storage';
+import { loadSavedConsumables } from '@/context/workLogs/workLogsStorage';
 
 export const useConsumablesState = () => {
   const { watch, setValue } = useFormContext<BlankWorkSheetValues>();

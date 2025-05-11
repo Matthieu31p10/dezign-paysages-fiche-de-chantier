@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { WorkLog } from '@/types/models';
 import { WorkLogsContextType } from '../types';
 import { toast } from 'sonner';
-import { loadWorkLogsFromStorage, saveWorkLogsToStorage } from './storage';
+import { loadWorkLogsFromStorage, saveWorkLogsToStorage } from './workLogsStorage';
 import { useWorkLogOperations } from './hooks/useWorkLogOperations';
 
 const WorkLogsContext = createContext<WorkLogsContextType | undefined>(undefined);
@@ -14,22 +14,14 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const operations = useWorkLogOperations(workLogs, setWorkLogs);
 
-  // Load data on initial mount
+  // Charger les données de localStorage au montage initial
   useEffect(() => {
     const fetchWorkLogs = async () => {
       try {
         setIsLoading(true);
-        console.log("Fetching work logs...");
+        const loadedWorkLogs = await loadWorkLogsFromStorage();
         
-        let loadedWorkLogs: WorkLog[] = [];
-        try {
-          loadedWorkLogs = await loadWorkLogsFromStorage();
-        } catch (e) {
-          console.error("Error in loadWorkLogsFromStorage:", e);
-          loadedWorkLogs = [];
-        }
-        
-        // Ensure createdAt is a Date object
+        // S'assurer que createdAt est un objet Date
         const formattedWorkLogs = loadedWorkLogs.map(log => {
           if (!(log.createdAt instanceof Date)) {
             log.createdAt = new Date(log.createdAt);
@@ -37,7 +29,6 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return log;
         });
         
-        console.log("Work logs loaded:", formattedWorkLogs.length);
         setWorkLogs(formattedWorkLogs);
       } catch (error) {
         console.error("Error loading work logs:", error);
@@ -51,11 +42,11 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetchWorkLogs();
   }, []);
 
-  // Save data when it changes
+  // Enregistrer les données dans localStorage quand elles changent
   useEffect(() => {
-    if (!isLoading && workLogs.length > 0) {
+    if (!isLoading) {
       try {
-        console.log('Saving work logs, count:', workLogs.length);
+        console.log('Saving work logs to the database:', workLogs);
         saveWorkLogsToStorage(workLogs);
       } catch (error) {
         console.error("Error saving work logs:", error);
