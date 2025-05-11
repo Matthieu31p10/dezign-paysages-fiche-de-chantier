@@ -3,11 +3,17 @@ import ProjectForm from '@/components/projects/ProjectForm';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
 
 const ProjectNew = () => {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleCancel = () => {
+    navigate('/projects');
+  };
+  
+  const handleSuccess = () => {
     navigate('/projects');
   };
   
@@ -20,6 +26,7 @@ const ProjectNew = () => {
             size="sm" 
             className="h-8 px-2 mr-2"
             onClick={() => navigate('/projects')}
+            disabled={isSubmitting}
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
@@ -28,7 +35,7 @@ const ProjectNew = () => {
         </div>
       </div>
       
-      <ProjectForm onCancel={handleCancel} />
+      <ProjectForm onCancel={handleCancel} onSuccess={handleSuccess} />
     </div>
   );
 };

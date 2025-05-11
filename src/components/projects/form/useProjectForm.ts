@@ -4,13 +4,14 @@ import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Helper function to safely convert to a ProjectInfo object
  */
 export const convertToProjectInfo = (data: any): Partial<ProjectInfo> => {
   return {
-    id: data.id,
+    id: data.id || crypto.randomUUID(),
     name: data.name,
     address: data.address,
     contact: data.contact,
@@ -26,7 +27,7 @@ export const convertToProjectInfo = (data: any): Partial<ProjectInfo> => {
     startDate: data.startDate,
     endDate: data.endDate,
     isArchived: data.isArchived,
-    createdAt: data.createdAt,
+    createdAt: data.createdAt || new Date(),
   };
 };
 
@@ -39,6 +40,7 @@ interface UseProjectFormProps {
 export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectFormProps) => {
   const navigate = useNavigate();
   const { addProjectInfo, updateProjectInfo, teams } = useApp();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<Omit<ProjectInfo, 'id' | 'createdAt'>>({
     name: initialData?.name || '',
@@ -117,43 +119,105 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const saveProjectToSupabase = async (project: ProjectInfo) => {
+    try {
+      // Convert the ProjectInfo object to Supabase format
+      const projectData = {
+        id: project.id,
+        name: project.name,
+        address: project.address,
+        contact_name: project.contact?.name,
+        contact_phone: project.contact?.phone,
+        contact_email: project.contact?.email,
+        contract_details: project.contract?.details,
+        contract_document_url: project.contract?.documentUrl,
+        irrigation: project.irrigation,
+        mower_type: project.mowerType,
+        annual_visits: project.annualVisits,
+        annual_total_hours: project.annualTotalHours,
+        visit_duration: project.visitDuration,
+        additional_info: project.additionalInfo,
+        team_id: project.team,
+        project_type: project.projectType,
+        start_date: project.startDate,
+        end_date: project.endDate,
+        is_archived: project.isArchived,
+        created_at: project.createdAt,
+        client_name: project.clientName || project.name,
+      };
+      
+      const { error } = await supabase
+        .from('projects')
+        .upsert(projectData, { onConflict: 'id' });
+      
+      if (error) {
+        console.error("Error saving project to Supabase:", error);
+        throw error;
+      }
+      
+      console.log("Project saved successfully to Supabase");
+    } catch (error) {
+      console.error("Error in saveProjectToSupabase:", error);
+      toast.error("Erreur lors de l'enregistrement du projet dans Supabase");
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Validation
-    if (!formData.name) {
-      toast.error('Le nom du chantier est requis');
-      return;
-    }
+    try {
+      // Validation
+      if (!formData.name) {
+        toast.error('Le nom du chantier est requis');
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (!formData.team) {
-      toast.error('Une équipe doit être sélectionnée');
-      return;
-    }
+      if (!formData.team) {
+        toast.error('Une équipe doit être sélectionnée');
+        setIsSubmitting(false);
+        return;
+      }
 
-    const projectData = convertToProjectInfo(formData);
-    
-    if (initialData) {
-      updateProjectInfo({
+      const projectData = convertToProjectInfo(formData);
+      const projectId = initialData?.id || crypto.randomUUID();
+      
+      const completeProjectInfo: ProjectInfo = {
         ...projectData,
-        id: initialData.id,
-        createdAt: initialData.createdAt,
-      } as ProjectInfo);
-      toast.success('Chantier mis à jour');
-    } else {
-      addProjectInfo(projectData as ProjectInfo);
-      toast.success('Chantier ajouté');
-    }
-    
-    if (onSuccess) {
-      onSuccess();
-    } else {
-      navigate('/projects');
+        id: projectId,
+        createdAt: initialData?.createdAt || new Date(),
+      } as ProjectInfo;
+      
+      // First save to Supabase
+      await saveProjectToSupabase(completeProjectInfo);
+      
+      // Then update local state
+      if (initialData) {
+        updateProjectInfo(completeProjectInfo);
+        toast.success('Chantier mis à jour et sauvegardé dans Supabase');
+      } else {
+        addProjectInfo(completeProjectInfo);
+        toast.success('Chantier ajouté et sauvegardé dans Supabase');
+      }
+      
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/projects');
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Erreur lors de la création/mise à jour du chantier");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
     formData,
+    isSubmitting,
     handleInputChange,
     handleContactChange,
     handleContractChange,
