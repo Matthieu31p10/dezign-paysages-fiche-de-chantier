@@ -4,7 +4,7 @@ import { WorkLog, Consumable } from '@/types/models';
 /**
  * Format a database work log to application format
  */
-export const formatWorkLogFromDatabase = (dbWorkLog: any, dbConsumables: any[]): WorkLog => {
+export const formatWorkLogFromDatabase = (dbWorkLog: any, dbConsumables: any[] = []): WorkLog => {
   // Find consumables for this work log
   const logConsumables = dbConsumables
     .filter(c => c.work_log_id === dbWorkLog.id)

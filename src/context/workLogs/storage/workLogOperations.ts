@@ -17,9 +17,15 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
       'Erreur lors du chargement des fiches de suivi'
     );
     
+    // Get all consumables for all work logs in one query
+    const consumables = await executeSupabaseQuery<any[]>(
+      () => supabase.from('consumables').select('*'),
+      'Erreur lors du chargement des consommables'
+    );
+    
     // Map the work logs to their app format
     const workLogs: WorkLog[] = data.map(workLog => 
-      formatWorkLogFromDatabase(workLog)
+      formatWorkLogFromDatabase(workLog, consumables.filter(c => c.work_log_id === workLog.id))
     );
     
     return workLogs;
