@@ -1,29 +1,13 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, User, Droplets, Trash2, Euro } from 'lucide-react';
 import { formatDate } from '@/utils/helpers';
 import { useWorkLogDetail } from './WorkLogDetailContext';
+import { formatWasteManagement } from '@/utils/format-helpers';
 
 const WorkLogDetails: React.FC = () => {
   const { workLog, calculateEndTime, calculateHourDifference, calculateTotalTeamHours } = useWorkLogDetail();
-  
-  // Fonction pour convertir le code de gestion des déchets en texte lisible
-  const getWasteManagementText = (wasteCode?: string) => {
-    if (!wasteCode || wasteCode === 'none') return 'Aucun';
-    
-    const parts = wasteCode.split('_');
-    const type = parts[0];
-    const quantity = parts.length > 1 ? parts[1] : '1';
-    
-    switch (type) {
-      case 'big_bag': return `${quantity} Big-bag${quantity !== '1' ? 's' : ''}`;
-      case 'half_dumpster': return `${quantity} × 1/2 Benne${quantity !== '1' ? 's' : ''}`;
-      case 'dumpster': return `${quantity} Benne${quantity !== '1' ? 's' : ''}`;
-      default: return wasteCode; // Fallback pour les anciens formats
-    }
-  };
   
   // Check if this is a blank worksheet (starts with blank- or DZFV)
   const isBlankWorksheet = workLog.projectId && (workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('DZFV'));
@@ -91,7 +75,7 @@ const WorkLogDetails: React.FC = () => {
           <div className="flex items-center">
             <Trash2 className="w-4 h-4 mr-2 text-muted-foreground" />
             <span className="font-medium">
-              {getWasteManagementText(workLog.wasteManagement)}
+              {formatWasteManagement(workLog.wasteManagement)}
             </span>
           </div>
         </div>

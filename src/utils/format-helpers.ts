@@ -25,3 +25,23 @@ export const formatDate = (dateString: string): string => {
     year: 'numeric',
   }).format(date);
 };
+
+/**
+ * Formate le code de gestion des déchets en texte lisible
+ */
+export const formatWasteManagement = (wasteCode?: string): string => {
+  if (!wasteCode || wasteCode === 'none') return 'Aucun';
+  
+  const parts = wasteCode.split('_');
+  const type = parts[0];
+  const quantity = parts.length > 1 ? parts[1] : '1';
+  
+  switch (type) {
+    case 'big_bag': return `${quantity} Big-bag${quantity !== '1' ? 's' : ''}`;
+    case 'half_dumpster': return `${quantity} × ½ Benne${quantity !== '1' ? 's' : ''}`;
+    case 'dumpster': return `${quantity} Benne${quantity !== '1' ? 's' : ''}`;
+    case 'small_container': return `${quantity} Petit container${quantity !== '1' ? 's' : ''}`;
+    case 'large_container': return `${quantity} Grand container${quantity !== '1' ? 's' : ''}`;
+    default: return wasteCode; // Fallback pour les anciens formats
+  }
+};
