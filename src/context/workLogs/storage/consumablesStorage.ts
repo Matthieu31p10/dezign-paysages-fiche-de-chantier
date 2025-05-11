@@ -1,7 +1,7 @@
 
 import { Consumable } from '@/types/models';
 import prisma from '@/utils/prismaClient';
-import { isBrowser, localConsumables, handleStorageError } from './storageUtils';
+import { isBrowser, getLocalConsumables, setLocalConsumables, handleStorageError } from './storageUtils';
 
 /**
  * Load saved consumables from database or local storage
@@ -15,9 +15,10 @@ export const loadSavedConsumables = async (): Promise<Consumable[]> => {
       try {
         const storedConsumables = localStorage.getItem('savedConsumables');
         if (storedConsumables) {
-          localConsumables = JSON.parse(storedConsumables);
+          const parsedConsumables = JSON.parse(storedConsumables);
+          setLocalConsumables(parsedConsumables);
         }
-        return localConsumables;
+        return getLocalConsumables();
       } catch (e) {
         console.error('Error loading consumables from localStorage:', e);
         return [];
@@ -54,8 +55,9 @@ export const saveConsumableForReuse = async (consumable: Consumable): Promise<vo
         ...consumable,
         id: consumable.id || crypto.randomUUID()
       };
-      localConsumables.push(newConsumable);
-      localStorage.setItem('savedConsumables', JSON.stringify(localConsumables));
+      const updatedConsumables = [...getLocalConsumables(), newConsumable];
+      setLocalConsumables(updatedConsumables);
+      localStorage.setItem('savedConsumables', JSON.stringify(updatedConsumables));
       return;
     }
     

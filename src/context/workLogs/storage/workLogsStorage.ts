@@ -2,7 +2,7 @@
 import { WorkLog } from '@/types/models';
 import prisma from '@/utils/prismaClient';
 import { toast } from 'sonner';
-import { isBrowser, localWorkLogs, handleStorageError } from './storageUtils';
+import { isBrowser, getLocalWorkLogs, setLocalWorkLogs, handleStorageError } from './storageUtils';
 
 /**
  * Load workLogs from database or local storage
@@ -16,13 +16,15 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
       try {
         const storedWorkLogs = localStorage.getItem('workLogs');
         if (storedWorkLogs) {
-          localWorkLogs = JSON.parse(storedWorkLogs).map((log: any) => ({
+          const parsedLogs = JSON.parse(storedWorkLogs).map((log: any) => ({
             ...log,
             createdAt: new Date(log.createdAt)
           }));
+          setLocalWorkLogs(parsedLogs);
         }
-        console.log(`Loaded ${localWorkLogs.length} work logs from localStorage`);
-        return localWorkLogs;
+        const localLogs = getLocalWorkLogs();
+        console.log(`Loaded ${localLogs.length} work logs from localStorage`);
+        return localLogs;
       } catch (e) {
         console.error('Error loading from localStorage:', e);
         return [];
@@ -69,7 +71,7 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
     if (isBrowser) {
       // Browser: save to localStorage
       try {
-        localWorkLogs = workLogs;
+        setLocalWorkLogs(workLogs);
         localStorage.setItem('workLogs', JSON.stringify(workLogs));
         console.log(`Saved ${workLogs.length} work logs to localStorage`);
       } catch (e) {

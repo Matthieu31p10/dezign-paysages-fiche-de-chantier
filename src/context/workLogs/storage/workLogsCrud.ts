@@ -1,7 +1,6 @@
-
 import { WorkLog } from '@/types/models';
 import prisma from '@/utils/prismaClient';
-import { isBrowser, localWorkLogs, handleStorageError } from './storageUtils';
+import { isBrowser, getLocalWorkLogs, setLocalWorkLogs, handleStorageError } from './storageUtils';
 import crypto from 'crypto';
 
 /**
@@ -17,8 +16,9 @@ export const addWorkLogToDatabase = async (workLog: WorkLog): Promise<WorkLog> =
         ...workLog,
         createdAt: new Date()
       };
-      localWorkLogs.push(newWorkLog);
-      localStorage.setItem('workLogs', JSON.stringify(localWorkLogs));
+      const updatedWorkLogs = [...getLocalWorkLogs(), newWorkLog];
+      setLocalWorkLogs(updatedWorkLogs);
+      localStorage.setItem('workLogs', JSON.stringify(updatedWorkLogs));
       return newWorkLog;
     }
     
@@ -114,13 +114,16 @@ export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog
     
     if (isBrowser) {
       // Browser: update local array and save to localStorage
-      const index = localWorkLogs.findIndex(log => log.id === workLog.id);
+      const localLogs = getLocalWorkLogs();
+      const index = localLogs.findIndex(log => log.id === workLog.id);
       if (index !== -1) {
-        localWorkLogs[index] = {
+        const updatedWorkLogs = [...localLogs];
+        updatedWorkLogs[index] = {
           ...workLog,
           createdAt: workLog.createdAt instanceof Date ? workLog.createdAt : new Date(workLog.createdAt)
         };
-        localStorage.setItem('workLogs', JSON.stringify(localWorkLogs));
+        setLocalWorkLogs(updatedWorkLogs);
+        localStorage.setItem('workLogs', JSON.stringify(updatedWorkLogs));
       }
       return workLog;
     }
