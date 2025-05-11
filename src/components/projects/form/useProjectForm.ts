@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { formatProjectForDatabase } from '@/context/projects/storage/projectOperations';
 
 /**
  * Helper function to safely convert to a ProjectInfo object
@@ -121,30 +121,8 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
 
   const saveProjectToSupabase = async (project: ProjectInfo) => {
     try {
-      // Convert the ProjectInfo object to Supabase format
-      const projectData = {
-        id: project.id,
-        name: project.name,
-        address: project.address,
-        contact_name: project.contact?.name,
-        contact_phone: project.contact?.phone,
-        contact_email: project.contact?.email,
-        contract_details: project.contract?.details,
-        contract_document_url: project.contract?.documentUrl,
-        irrigation: project.irrigation,
-        mower_type: project.mowerType,
-        annual_visits: project.annualVisits,
-        annual_total_hours: project.annualTotalHours,
-        visit_duration: project.visitDuration,
-        additional_info: project.additionalInfo,
-        team_id: project.team,
-        project_type: project.projectType,
-        start_date: project.startDate,
-        end_date: project.endDate,
-        is_archived: project.isArchived,
-        created_at: project.createdAt,
-        client_name: project.clientName || project.name,
-      };
+      // Use the formatter from projectOperations to get the correct format for Supabase
+      const projectData = formatProjectForDatabase(project);
       
       const { error } = await supabase
         .from('projects')

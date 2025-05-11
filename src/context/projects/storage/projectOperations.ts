@@ -40,6 +40,11 @@ export const formatProjectFromDatabase = (project: any): ProjectInfo => {
  * Formats a project from the app format to the database format
  */
 export const formatProjectForDatabase = (project: ProjectInfo): any => {
+  // Convert Date objects to ISO strings for Supabase compatibility
+  const startDate = project.startDate instanceof Date ? project.startDate.toISOString() : project.startDate;
+  const endDate = project.endDate instanceof Date ? project.endDate.toISOString() : project.endDate;
+  const createdAt = project.createdAt instanceof Date ? project.createdAt.toISOString() : project.createdAt;
+  
   return {
     id: project.id,
     name: project.name,
@@ -58,10 +63,10 @@ export const formatProjectForDatabase = (project: ProjectInfo): any => {
     additional_info: project.additionalInfo,
     team_id: project.team,
     project_type: project.projectType,
-    start_date: project.startDate,
-    end_date: project.endDate,
+    start_date: startDate,
+    end_date: endDate,
     is_archived: project.isArchived,
-    created_at: project.createdAt,
+    created_at: createdAt,
   };
 };
 
