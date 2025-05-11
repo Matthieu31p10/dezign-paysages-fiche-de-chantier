@@ -1,4 +1,3 @@
-
 import { WorkLog } from '@/types/models';
 import { 
   getWorkLogById, 
@@ -7,6 +6,10 @@ import {
   getTotalVisits, 
   getLastVisitDate 
 } from '../workLogsOperations';
+import { 
+  addWorkLogToDatabase, 
+  updateWorkLogInDatabase 
+} from '../workLogsStorage';
 import { Dispatch, SetStateAction } from 'react';
 
 export const useWorkLogOperations = (
@@ -34,12 +37,17 @@ export const useWorkLogOperations = (
       isBlankWorksheet: workLog.isBlankWorksheet || false
     };
     
-    console.log('Adding new WorkLog to state:', newWorkLog);
+    console.log('Adding new WorkLog to database:', newWorkLog);
     
     try {
-      setWorkLogs((prev) => [...prev, newWorkLog]);
-      console.log("WorkLog added successfully:", newWorkLog);
-      return newWorkLog;
+      // Ajouter à la base de données
+      const savedWorkLog = await addWorkLogToDatabase(newWorkLog);
+      
+      // Mettre à jour l'état local
+      setWorkLogs((prev) => [...prev, savedWorkLog]);
+      
+      console.log("WorkLog added successfully:", savedWorkLog);
+      return savedWorkLog;
     } catch (error) {
       console.error("Error adding WorkLog:", error);
       throw new Error("Erreur lors de l'ajout de la fiche");
@@ -48,65 +56,41 @@ export const useWorkLogOperations = (
 
   const updateWorkLog = async (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>): Promise<void> => {
     try {
-      setWorkLogs((prev) => {
-        if (typeof idOrWorkLog === 'string' && partialWorkLog) {
-          const id = idOrWorkLog;
-          const exists = prev.some(w => w.id === id);
-          
-          if (!exists) {
-            console.error(`WorkLog with ID ${id} not found for update`);
-            throw new Error(`Fiche avec ID ${id} introuvable`);
-          }
-          
-          return prev.map((w) => {
-            if (w.id === id) {
-              // Ensure createdAt remains a Date object
-              const updatedWorkLog = { ...w, ...partialWorkLog };
-              updatedWorkLog.createdAt = updatedWorkLog.createdAt instanceof Date 
-                ? updatedWorkLog.createdAt 
-                : new Date(updatedWorkLog.createdAt);
-              
-              // Preserve the isBlankWorksheet flag
-              updatedWorkLog.isBlankWorksheet = 
-                partialWorkLog.isBlankWorksheet !== undefined 
-                  ? partialWorkLog.isBlankWorksheet 
-                  : w.isBlankWorksheet;
-              
-              return updatedWorkLog;
-            }
-            return w;
-          });
+      let workLogToUpdate: WorkLog | undefined;
+      
+      // Déterminer le WorkLog à mettre à jour
+      if (typeof idOrWorkLog === 'string' && partialWorkLog) {
+        const id = idOrWorkLog;
+        const existingWorkLog = workLogs.find(w => w.id === id);
+        
+        if (!existingWorkLog) {
+          console.error(`WorkLog with ID ${id} not found for update`);
+          throw new Error(`Fiche avec ID ${id} introuvable`);
         }
         
-        if (typeof idOrWorkLog !== 'string') {
-          const workLog = idOrWorkLog;
-          const exists = prev.some(w => w.id === workLog.id);
-          
-          if (!exists) {
-            console.error(`WorkLog with ID ${workLog.id} not found for update`);
-            throw new Error(`Fiche avec ID ${workLog.id} introuvable`);
-          }
-          
-          // Ensure createdAt is a Date object
-          const updatedWorkLog = { ...workLog };
-          updatedWorkLog.createdAt = workLog.createdAt instanceof Date 
-            ? workLog.createdAt 
-            : new Date(workLog.createdAt);
-          
-          // Preserve the isBlankWorksheet flag if it already exists
-          const originalWorkLog = prev.find(w => w.id === workLog.id);
-          if (originalWorkLog) {
-            updatedWorkLog.isBlankWorksheet = 
-              updatedWorkLog.isBlankWorksheet !== undefined 
-                ? updatedWorkLog.isBlankWorksheet 
-                : originalWorkLog.isBlankWorksheet;
-          }
-          
-          return prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w);
-        }
-        
-        return prev;
-      });
+        workLogToUpdate = { ...existingWorkLog, ...partialWorkLog };
+      } else if (typeof idOrWorkLog !== 'string') {
+        workLogToUpdate = idOrWorkLog;
+      }
+      
+      if (!workLogToUpdate) {
+        throw new Error("Données de mise à jour invalides");
+      }
+      
+      // Ensure createdAt is a Date object
+      workLogToUpdate.createdAt = workLogToUpdate.createdAt instanceof Date 
+        ? workLogToUpdate.createdAt 
+        : new Date(workLogToUpdate.createdAt);
+      
+      // Mettre à jour dans la base de données
+      const updatedWorkLog = await updateWorkLogInDatabase(workLogToUpdate);
+      
+      // Mettre à jour l'état local
+      setWorkLogs((prev) => 
+        prev.map((w) => w.id === updatedWorkLog.id ? updatedWorkLog : w)
+      );
+      
+      console.log("WorkLog updated successfully:", updatedWorkLog);
     } catch (error) {
       console.error("Error updating WorkLog:", error);
       throw error;
@@ -114,33 +98,25 @@ export const useWorkLogOperations = (
   };
 
   const deleteWorkLog = (id: string): void => {
-    try {
-      setWorkLogs((prev) => prev.filter((w) => w.id !== id));
-    } catch (error) {
-      console.error("Error deleting WorkLog:", error);
-      throw error;
-    }
+    // TODO: Implement database version
   };
 
-  // Additional methods
   const deleteWorkLogsByProjectId = (projectId: string): void => {
-    setWorkLogs((prev) => prev.filter((w) => w.projectId !== projectId));
+    // TODO: Implement database version
   };
 
   const archiveWorkLogsByProjectId = (projectId: string, archived: boolean): void => {
-    setWorkLogs((prev) => 
-      prev.map((w) => w.projectId === projectId ? { ...w, isArchived: archived } : w)
-    );
+    // TODO: Implement database version
   };
 
-  // Méthode pour filtrer les fiches vierges
   const getBlankWorksheets = (): WorkLog[] => {
-    return workLogs.filter(workLog => workLog.isBlankWorksheet === true);
+    // TODO: Implement database version
+    return [];
   };
-  
-  // Méthode pour filtrer les fiches de suivi (non vierges)
+
   const getRegularWorkLogs = (): WorkLog[] => {
-    return workLogs.filter(workLog => workLog.isBlankWorksheet !== true);
+    // TODO: Implement database version
+    return [];
   };
 
   return {

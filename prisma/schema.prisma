@@ -8,7 +8,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = 
+  url      = env("DATABASE_URL")
+}
 
 model User {
   id            String    @id @default(uuid())
@@ -121,6 +122,7 @@ model WorkLog {
   signedQuoteAmount Float?
   isQuoteSigned   Boolean      @default(false)
   vatRate         String?
+  isBlankWorksheet Boolean     @default(false)
 }
 
 model RecurringClient {
