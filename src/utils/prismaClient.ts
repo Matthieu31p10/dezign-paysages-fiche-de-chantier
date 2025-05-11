@@ -1,13 +1,23 @@
 
 import { PrismaClient } from '@prisma/client';
 
-// Create a browser-compatible mock client
+// Create a more robust browser-compatible mock client
 const createMockPrismaClient = () => {
+  console.log('Creating mock Prisma client for browser environment');
+  
   return {
     workLog: {
       findMany: async () => {
         console.log('Mock: Loading work logs');
-        // Return mock data or empty array
+        // Try to return data from localStorage if available
+        try {
+          const storedData = localStorage.getItem('workLogs');
+          if (storedData) {
+            return JSON.parse(storedData);
+          }
+        } catch (e) {
+          console.error('Error accessing localStorage:', e);
+        }
         return [];
       },
       findUnique: async () => {
@@ -30,6 +40,14 @@ const createMockPrismaClient = () => {
     consumable: {
       findMany: async () => {
         console.log('Mock: Loading consumables');
+        try {
+          const storedData = localStorage.getItem('savedConsumables');
+          if (storedData) {
+            return JSON.parse(storedData);
+          }
+        } catch (e) {
+          console.error('Error accessing localStorage:', e);
+        }
         return [];
       },
       create: async (data) => {
@@ -44,32 +62,35 @@ const createMockPrismaClient = () => {
   };
 };
 
-// Determine if we're in a browser environment
-const isBrowser = typeof window !== 'undefined';
+// Safe check for browser environment
+const isBrowser = typeof window !== 'undefined' && !('process' in window);
 
-// Use real PrismaClient in Node.js environment, mock in browser
-let prisma: any;
+// Initialize prisma with appropriate client
+let prisma;
 
-if (!isBrowser) {
-  // Server-side (Node.js) - use actual PrismaClient
-  if (process.env.NODE_ENV === 'production') {
-    prisma = new PrismaClient();
-  } else {
-    // Prevent multiple instances in development with hot-reload
-    // @ts-ignore
-    if (!global.prisma) {
-      // @ts-ignore
-      global.prisma = new PrismaClient({
-        log: ['query', 'info', 'warn', 'error'],
-      });
-    }
-    // @ts-ignore
-    prisma = global.prisma;
-  }
-} else {
-  // Browser - use mock client
-  console.log('Using mock Prisma client for browser environment');
+if (isBrowser) {
+  // We're in a browser
+  console.log('Browser environment detected, using mock Prisma client');
   prisma = createMockPrismaClient();
+} else {
+  // We're in a Node.js environment
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      prisma = new PrismaClient();
+    } else {
+      // Prevent multiple instances during development
+      if (!global.prisma) {
+        global.prisma = new PrismaClient({
+          log: ['query', 'info', 'warn', 'error'],
+        });
+      }
+      prisma = global.prisma;
+    }
+  } catch (e) {
+    console.error('Error initializing Prisma client:', e);
+    // Fallback to mock client if Prisma initialization fails
+    prisma = createMockPrismaClient();
+  }
 }
 
 export default prisma;

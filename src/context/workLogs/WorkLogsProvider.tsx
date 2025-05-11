@@ -20,7 +20,14 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         setIsLoading(true);
         console.log("Fetching work logs...");
-        const loadedWorkLogs = await loadWorkLogsFromStorage();
+        
+        let loadedWorkLogs: WorkLog[] = [];
+        try {
+          loadedWorkLogs = await loadWorkLogsFromStorage();
+        } catch (e) {
+          console.error("Error in loadWorkLogsFromStorage:", e);
+          loadedWorkLogs = [];
+        }
         
         // Ensure createdAt is a Date object
         const formattedWorkLogs = loadedWorkLogs.map(log => {

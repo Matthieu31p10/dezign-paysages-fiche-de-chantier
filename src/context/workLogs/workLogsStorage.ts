@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 let localWorkLogs: WorkLog[] = [];
 let localConsumables: Consumable[] = [];
 
-const isBrowser = typeof window !== 'undefined';
+// Safe check for browser environment
+const isBrowser = typeof window !== 'undefined' && !('process' in window);
 
 /**
  * Load workLogs from database or local storage
@@ -17,35 +18,46 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
     
     if (isBrowser) {
       // Browser: try to load from localStorage
-      const storedWorkLogs = localStorage.getItem('workLogs');
-      if (storedWorkLogs) {
-        localWorkLogs = JSON.parse(storedWorkLogs).map((log: any) => ({
-          ...log,
-          createdAt: new Date(log.createdAt)
-        }));
+      try {
+        const storedWorkLogs = localStorage.getItem('workLogs');
+        if (storedWorkLogs) {
+          localWorkLogs = JSON.parse(storedWorkLogs).map((log: any) => ({
+            ...log,
+            createdAt: new Date(log.createdAt)
+          }));
+        }
+        console.log(`Loaded ${localWorkLogs.length} work logs from localStorage`);
+        return localWorkLogs;
+      } catch (e) {
+        console.error('Error loading from localStorage:', e);
+        return [];
       }
-      return localWorkLogs;
     }
     
     // Server: use Prisma
-    const workLogs = await prisma.workLog.findMany({
-      include: {
-        consumables: true
-      }
-    });
-    
-    return workLogs.map(workLog => ({
-      ...workLog,
-      createdAt: new Date(workLog.createdAt),
-      date: workLog.date.toISOString(),
-      timeTracking: {
-        departure: workLog.departure || '',
-        arrival: workLog.arrival || '',
-        end: workLog.end || '',
-        breakTime: workLog.breakTime || '',
-        totalHours: workLog.totalHours
-      }
-    }));
+    try {
+      const workLogs = await prisma.workLog.findMany({
+        include: {
+          consumables: true
+        }
+      });
+      
+      return workLogs.map(workLog => ({
+        ...workLog,
+        createdAt: new Date(workLog.createdAt),
+        date: workLog.date.toISOString(),
+        timeTracking: {
+          departure: workLog.departure || '',
+          arrival: workLog.arrival || '',
+          end: workLog.end || '',
+          breakTime: workLog.breakTime || '',
+          totalHours: workLog.totalHours
+        }
+      }));
+    } catch (e) {
+      console.error('Error loading from database:', e);
+      return [];
+    }
   } catch (error) {
     console.error('Error loading work logs:', error);
     toast.error('Erreur lors du chargement des fiches de suivi');
@@ -62,8 +74,14 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
     
     if (isBrowser) {
       // Browser: save to localStorage
-      localWorkLogs = workLogs;
-      localStorage.setItem('workLogs', JSON.stringify(workLogs));
+      try {
+        localWorkLogs = workLogs;
+        localStorage.setItem('workLogs', JSON.stringify(workLogs));
+        console.log(`Saved ${workLogs.length} work logs to localStorage`);
+      } catch (e) {
+        console.error('Error saving to localStorage:', e);
+        toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
+      }
       return;
     }
     
@@ -199,7 +217,6 @@ export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog
     }
     
     // Server: use Prisma
-    // ... keep existing code (server-side update operations using Prisma)
     const updatedWorkLog = await prisma.workLog.update({
       where: { id: workLog.id },
       data: {
@@ -231,7 +248,6 @@ export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog
       },
     });
     
-    // ... keep existing code (handling consumables and returning the updated work log)
     // Delete all existing consumables for this work log
     await prisma.consumable.deleteMany({
       where: { workLogId: workLog.id }
@@ -296,19 +312,29 @@ export const loadSavedConsumables = async (): Promise<Consumable[]> => {
     
     if (isBrowser) {
       // Browser: load from localStorage
-      const storedConsumables = localStorage.getItem('savedConsumables');
-      if (storedConsumables) {
-        localConsumables = JSON.parse(storedConsumables);
+      try {
+        const storedConsumables = localStorage.getItem('savedConsumables');
+        if (storedConsumables) {
+          localConsumables = JSON.parse(storedConsumables);
+        }
+        return localConsumables;
+      } catch (e) {
+        console.error('Error loading consumables from localStorage:', e);
+        return [];
       }
-      return localConsumables;
     }
     
     // Server: use Prisma
-    const savedConsumables = await prisma.consumable.findMany({
-      where: { savedForReuse: true }
-    });
-    
-    return savedConsumables;
+    try {
+      const savedConsumables = await prisma.consumable.findMany({
+        where: { savedForReuse: true }
+      });
+      
+      return savedConsumables;
+    } catch (e) {
+      console.error('Error loading consumables from database:', e);
+      return [];
+    }
   } catch (error) {
     console.error('Error loading saved consumables:', error);
     toast.error('Erreur lors du chargement des consommables');
