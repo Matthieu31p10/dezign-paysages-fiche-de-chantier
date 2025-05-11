@@ -1,23 +1,39 @@
-
 import { WorkLog, Consumable } from '@/types/models';
 import prisma from '@/utils/prismaClient';
 import { toast } from 'sonner';
 
+// Mock storage for browser environment
+let localWorkLogs: WorkLog[] = [];
+let localConsumables: Consumable[] = [];
+
+const isBrowser = typeof window !== 'undefined';
+
 /**
- * Load workLogs from database
+ * Load workLogs from database or local storage
  */
 export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
   try {
-    // Fetch work logs from database using Prisma
-    console.log("Loading work logs from the database");
+    console.log("Loading work logs");
     
+    if (isBrowser) {
+      // Browser: try to load from localStorage
+      const storedWorkLogs = localStorage.getItem('workLogs');
+      if (storedWorkLogs) {
+        localWorkLogs = JSON.parse(storedWorkLogs).map((log: any) => ({
+          ...log,
+          createdAt: new Date(log.createdAt)
+        }));
+      }
+      return localWorkLogs;
+    }
+    
+    // Server: use Prisma
     const workLogs = await prisma.workLog.findMany({
       include: {
         consumables: true
       }
     });
     
-    // Convertir les dates en objets Date pour la compatibilité
     return workLogs.map(workLog => ({
       ...workLog,
       createdAt: new Date(workLog.createdAt),
@@ -38,15 +54,22 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
 };
 
 /**
- * Save workLogs to database
+ * Save workLogs to database or local storage
  */
 export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> => {
   try {
-    console.log("Saving work logs to the database:", workLogs);
+    console.log("Saving work logs:", workLogs);
     
-    // For now, we'll implement a minimal version 
-    // In a real production app, this would need transaction support
-    // for batching and rollback capabilities
+    if (isBrowser) {
+      // Browser: save to localStorage
+      localWorkLogs = workLogs;
+      localStorage.setItem('workLogs', JSON.stringify(workLogs));
+      return;
+    }
+    
+    // In a Node.js environment, we would implement database operations here
+    // For now we'll just log this as it would require transactions
+    console.log("In server environment, would save workLogs to database:", workLogs);
   } catch (error) {
     console.error('Error saving work logs:', error);
     toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
@@ -54,11 +77,22 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
 };
 
 /**
- * Add a single workLog to the database
+ * Add a single workLog to the database or local storage
  */
 export const addWorkLogToDatabase = async (workLog: WorkLog): Promise<WorkLog> => {
   try {
-    console.log("Adding work log to database:", workLog);
+    console.log("Adding work log:", workLog);
+    
+    if (isBrowser) {
+      // Browser: add to local array and save to localStorage
+      const newWorkLog = {
+        ...workLog,
+        createdAt: new Date()
+      };
+      localWorkLogs.push(newWorkLog);
+      localStorage.setItem('workLogs', JSON.stringify(localWorkLogs));
+      return newWorkLog;
+    }
     
     // Extract consumables to create them separately
     const consumables = workLog.consumables || [];
@@ -138,23 +172,34 @@ export const addWorkLogToDatabase = async (workLog: WorkLog): Promise<WorkLog> =
       }
     } as WorkLog;
   } catch (error) {
-    console.error('Error adding work log to database:', error);
+    console.error('Error adding work log:', error);
     toast.error('Erreur lors de l\'ajout de la fiche de suivi');
     throw error;
   }
 };
 
 /**
- * Update a single workLog in the database
+ * Update a single workLog in the database or local storage
  */
 export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog> => {
   try {
-    console.log("Updating work log in database:", workLog);
+    console.log("Updating work log:", workLog);
     
-    // Extract consumables to update them separately
-    const consumables = workLog.consumables || [];
+    if (isBrowser) {
+      // Browser: update local array and save to localStorage
+      const index = localWorkLogs.findIndex(log => log.id === workLog.id);
+      if (index !== -1) {
+        localWorkLogs[index] = {
+          ...workLog,
+          createdAt: workLog.createdAt instanceof Date ? workLog.createdAt : new Date(workLog.createdAt)
+        };
+        localStorage.setItem('workLogs', JSON.stringify(localWorkLogs));
+      }
+      return workLog;
+    }
     
-    // Update the work log without consumables first
+    // Server: use Prisma
+    // ... keep existing code (server-side update operations using Prisma)
     const updatedWorkLog = await prisma.workLog.update({
       where: { id: workLog.id },
       data: {
@@ -186,11 +231,13 @@ export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog
       },
     });
     
+    // ... keep existing code (handling consumables and returning the updated work log)
     // Delete all existing consumables for this work log
     await prisma.consumable.deleteMany({
       where: { workLogId: workLog.id }
     });
     
+    const consumables = workLog.consumables || [];
     // Create all consumables related to this work log
     if (consumables.length > 0) {
       for (const consumable of consumables) {
@@ -234,19 +281,29 @@ export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog
       }
     } as WorkLog;
   } catch (error) {
-    console.error('Error updating work log in database:', error);
+    console.error('Error updating work log:', error);
     toast.error('Erreur lors de la mise à jour de la fiche de suivi');
     throw error;
   }
 };
 
 /**
- * Load saved consumables from database
+ * Load saved consumables from database or local storage
  */
 export const loadSavedConsumables = async (): Promise<Consumable[]> => {
   try {
-    console.log("Loading saved consumables from the database");
+    console.log("Loading saved consumables");
     
+    if (isBrowser) {
+      // Browser: load from localStorage
+      const storedConsumables = localStorage.getItem('savedConsumables');
+      if (storedConsumables) {
+        localConsumables = JSON.parse(storedConsumables);
+      }
+      return localConsumables;
+    }
+    
+    // Server: use Prisma
     const savedConsumables = await prisma.consumable.findMany({
       where: { savedForReuse: true }
     });
@@ -266,6 +323,18 @@ export const saveConsumableForReuse = async (consumable: Consumable): Promise<vo
   try {
     console.log("Saving consumable for reuse:", consumable);
     
+    if (isBrowser) {
+      // Browser: add to local array and save to localStorage
+      const newConsumable = {
+        ...consumable,
+        id: consumable.id || crypto.randomUUID()
+      };
+      localConsumables.push(newConsumable);
+      localStorage.setItem('savedConsumables', JSON.stringify(localConsumables));
+      return;
+    }
+    
+    // Server: use Prisma
     await prisma.consumable.create({
       data: {
         id: consumable.id || crypto.randomUUID(),
