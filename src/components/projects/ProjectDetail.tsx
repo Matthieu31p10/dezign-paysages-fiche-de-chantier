@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ProjectDetailHeader from './detail/ProjectDetailHeader';
 import ProjectDetailsTab from './detail/ProjectDetailsTab';
 import ProjectWorkLogsTab from './detail/ProjectWorkLogsTab';
+import ProjectDocumentsTab from './documents/ProjectDocumentsTab';
 import ProjectEditDialog from './detail/ProjectEditDialog';
 import ProjectDeleteDialog from './detail/ProjectDeleteDialog';
 import ProjectNotFound from './detail/ProjectNotFound';
@@ -54,9 +55,10 @@ const ProjectDetail = () => {
       />
       
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
           <TabsTrigger value="details">Informations</TabsTrigger>
           <TabsTrigger value="worklogs">Fiches de suivi ({projectWorkLogs.length})</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
         
         <TabsContent value="details" className="pt-4">
@@ -65,6 +67,10 @@ const ProjectDetail = () => {
         
         <TabsContent value="worklogs" className="pt-4">
           <ProjectWorkLogsTab project={project} workLogs={projectWorkLogs} isMobile={isMobile} />
+        </TabsContent>
+        
+        <TabsContent value="documents" className="pt-4">
+          <ProjectDocumentsTab project={project} />
         </TabsContent>
       </Tabs>
       
