@@ -23,7 +23,7 @@ export const useWorkLogDetailProvider = (
   const pdfUtils = usePDFExport(workLog, project, settings);
   
   // For the notes and delete actions, we need to add the updateWorkLog function
-  const [notes, setNotes] = useState(workLog?.notes || '');
+  const [notes, setNotes] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Update notes when workLog changes

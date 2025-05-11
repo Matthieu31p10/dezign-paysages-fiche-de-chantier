@@ -25,28 +25,37 @@ const WorkLogList: React.FC<WorkLogListProps> = ({
     return workLogs.filter(log => !log.isBlankWorksheet);
   }, [workLogs]);
   
-  // Show empty state if no logs
-  if (regularWorkLogs.length === 0) {
-    return <EmptyState message={emptyMessage} projectId={projectId} />;
-  }
-  
-  // Trier d'abord par date (plus récent en premier)
+  // Préparations des données toujours exécutées (pas dans des conditions)
   const sortedWorkLogs = useMemo(() => {
+    if (regularWorkLogs.length === 0) {
+      return [];
+    }
     return [...regularWorkLogs].sort((a, b) => {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
   }, [regularWorkLogs]);
   
-  // Grouper les fiches par mois
+  // Grouper les fiches par mois (toujours exécuté)
   const workLogsByMonth = useMemo(() => {
+    if (regularWorkLogs.length === 0) {
+      return {};
+    }
     return groupWorkLogsByMonth(sortedWorkLogs);
-  }, [sortedWorkLogs]);
+  }, [sortedWorkLogs, regularWorkLogs]);
   
-  // Obtenir les mois dans l'ordre chronologique inversé (plus récent en premier)
+  // Obtenir les mois dans l'ordre chronologique inversé (toujours exécuté)
   const months = useMemo(() => {
+    if (regularWorkLogs.length === 0) {
+      return [];
+    }
     const monthsArray = Object.keys(workLogsByMonth);
     return sortMonths(monthsArray, 'date-desc');
-  }, [workLogsByMonth]);
+  }, [workLogsByMonth, regularWorkLogs]);
+  
+  // Show empty state if no logs
+  if (regularWorkLogs.length === 0) {
+    return <EmptyState message={emptyMessage} projectId={projectId} />;
+  }
   
   return (
     <div className={`space-y-${isMobile ? '4' : '8'} animate-fade-in`}>
