@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 interface SubmitButtonProps {
   isSubmitting: boolean;
   isEditing?: boolean;
-  onClick?: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  onClick?: (e?: React.BaseSyntheticEvent) => Promise<void> | void;
 }
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({
