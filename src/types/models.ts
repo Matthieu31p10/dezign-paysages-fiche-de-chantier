@@ -79,48 +79,46 @@ export interface WorkLog {
   projectId: string;
   date: string;  // String format for date storage
   personnel: string[];
-  tasks?: string;
-  wasteManagement?: string;
-  notes?: string;
-  clientSignature?: string | null;
-  consumables?: Consumable[];
+  timeTracking: {
+    departure?: string;
+    arrival?: string;
+    end?: string;
+    breakTime?: string;
+    totalHours: number;
+  };
+  duration?: number;
   waterConsumption?: number;
+  wasteManagement?: string;
+  tasks?: string;
+  notes?: string;
+  consumables?: Consumable[];
   createdAt: Date; // Explicitly typed as Date object
   invoiced?: boolean;
   isArchived?: boolean;
-  duration?: number;
-  timeTracking?: {
-    departure: string;
-    arrival: string;
-    end: string;
-    breakTime: string;
-    totalHours: number;
-  };
-  hourlyRate?: number;
-  clientName?: string;
-  address?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  linkedProjectId?: string | null;
-  signedQuoteAmount?: number;
-  isQuoteSigned?: boolean;
-  vatRate?: string;
-  isBlankWorksheet?: boolean;
-  // Add the tasksPerformed property
+  clientSignature?: string;
   tasksPerformed?: {
+    watering?: 'none' | 'on' | 'off';
+    customTasks?: Record<string, boolean>;
+    tasksProgress?: Record<string, number>;
+    pruning?: { 
+      done: boolean;
+      progress: number;
+    };
     mowing?: boolean;
     brushcutting?: boolean;
     blower?: boolean;
     manualWeeding?: boolean;
     whiteVinegar?: boolean;
-    pruning?: {
-      done: boolean;
-      details?: string;
-    };
-    watering?: 'none' | 'on' | 'off';
-    customTasks?: Record<string, boolean>;
-    tasksProgress?: Record<string, number>;
   };
+  clientName?: string;
+  address?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  hourlyRate?: number;
+  linkedProjectId?: string;
+  signedQuoteAmount?: number;
+  isQuoteSigned?: boolean;
+  isBlankWorksheet?: boolean;
 }
 
 export interface Team {

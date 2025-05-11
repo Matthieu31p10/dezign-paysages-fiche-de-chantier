@@ -1,4 +1,3 @@
-
 import { WorkLog } from '@/types/models';
 import { 
   getWorkLogById, 
@@ -10,7 +9,7 @@ import {
 import { 
   addWorkLogToDatabase, 
   updateWorkLogInDatabase 
-} from '../storage';
+} from '../workLogsStorage';
 import { Dispatch, SetStateAction } from 'react';
 
 export const useWorkLogOperations = (
