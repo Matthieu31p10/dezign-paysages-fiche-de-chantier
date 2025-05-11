@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -79,45 +78,32 @@ export interface WorkLog {
   projectId: string;
   date: string;  // String format for date storage
   personnel: string[];
-  timeTracking: {
-    departure?: string;
-    arrival?: string;
-    end?: string;
-    breakTime?: string;
-    totalHours: number;
-  };
-  duration?: number;
-  waterConsumption?: number;
-  wasteManagement?: string;
   tasks?: string;
+  wasteManagement?: string;
   notes?: string;
+  clientSignature?: string | null;
   consumables?: Consumable[];
+  waterConsumption?: number;
   createdAt: Date; // Explicitly typed as Date object
   invoiced?: boolean;
   isArchived?: boolean;
-  clientSignature?: string;
-  tasksPerformed?: {
-    watering?: 'none' | 'on' | 'off';
-    customTasks?: Record<string, boolean>;
-    tasksProgress?: Record<string, number>;
-    pruning?: { 
-      done: boolean;
-      progress: number;
-    };
-    mowing?: boolean;
-    brushcutting?: boolean;
-    blower?: boolean;
-    manualWeeding?: boolean;
-    whiteVinegar?: boolean;
+  duration?: number;
+  timeTracking?: {
+    departure: string;
+    arrival: string;
+    end: string;
+    breakTime: string;
+    totalHours: number;
   };
+  hourlyRate?: number;
   clientName?: string;
   address?: string;
   contactPhone?: string;
   contactEmail?: string;
-  hourlyRate?: number;
-  linkedProjectId?: string;
+  linkedProjectId?: string | null;
   signedQuoteAmount?: number;
   isQuoteSigned?: boolean;
+  vatRate?: string;
   isBlankWorksheet?: boolean;
 }
 
