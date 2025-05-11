@@ -15,7 +15,7 @@ export const handleSupabaseError = (error: any, message: string) => {
  * Execute a Supabase query with error handling
  */
 export const executeSupabaseQuery = async <T>(
-  queryFn: () => Promise<{ data: T | null; error: any }>,
+  queryFn: () => Promise<{ data: T; error: any }>,
   errorMessage: string
 ): Promise<T> => {
   try {

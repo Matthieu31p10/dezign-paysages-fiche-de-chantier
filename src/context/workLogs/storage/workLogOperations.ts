@@ -12,13 +12,13 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
     console.log("Loading work logs from Supabase");
     
     // Fetch work logs from Supabase
-    const workLogsData = await executeSupabaseQuery(
+    const workLogsData = await executeSupabaseQuery<any[]>(
       () => supabase.from('work_logs').select('*'),
       'Erreur lors du chargement des fiches de suivi'
     );
     
     // Fetch all consumables to map them to their respective work logs
-    const consumablesData = await executeSupabaseQuery(
+    const consumablesData = await executeSupabaseQuery<any[]>(
       () => supabase.from('consumables').select('*'),
       'Erreur lors du chargement des consommables'
     );
@@ -44,7 +44,7 @@ export const deleteWorkLogFromStorage = async (workLogId: string): Promise<void>
     console.log("Deleting work log from Supabase:", workLogId);
     
     // Delete the work log (cascade will handle consumables deletion)
-    await executeSupabaseQuery(
+    await executeSupabaseQuery<null>(
       () => supabase.from('work_logs').delete().eq('id', workLogId),
       'Erreur lors de la suppression de la fiche de suivi'
     );

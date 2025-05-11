@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { WorkLog } from '@/types/models';
+import { useWorkLogs } from '@/context/WorkLogsContext';
 
 export const useWorkLogActions = (
   workLog?: WorkLog,
@@ -11,6 +12,7 @@ export const useWorkLogActions = (
   const navigate = useNavigate();
   const [notes, setNotes] = useState(workLog?.notes || '');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { updateWorkLog: updateWorkLogContext } = useWorkLogs();
   
   // Update notes when workLog changes
   useEffect(() => {
@@ -38,13 +40,13 @@ export const useWorkLogActions = (
   };
   
   const handleSaveNotes = () => {
-    if (!workLog || !updateWorkLog) return;
+    if (!workLog || !updateWorkLogContext) return;
     
     try {
       // Sécurité: validation des données
       const sanitizedNotes = notes.trim().substring(0, 2000); // Limite la taille
       
-      updateWorkLog(workLog.id, {
+      updateWorkLogContext(workLog.id, {
         notes: sanitizedNotes
       });
       toast.success("Notes enregistrées avec succès");
@@ -63,10 +65,4 @@ export const useWorkLogActions = (
     confirmDelete,
     handleSaveNotes
   };
-};
-
-// This is a placeholder for the updateWorkLog function
-// It will be injected when the hook is used
-const updateWorkLog = (id: string, partialWorkLog: Partial<WorkLog>) => {
-  console.log('Update work log:', id, partialWorkLog);
 };

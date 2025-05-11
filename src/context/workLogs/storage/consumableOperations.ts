@@ -10,7 +10,7 @@ export const loadSavedConsumables = async (): Promise<Consumable[]> => {
   try {
     console.log("Loading saved consumables from Supabase");
     
-    const data = await executeSupabaseQuery(
+    const data = await executeSupabaseQuery<any[]>(
       () => supabase.from('saved_consumables').select('*').eq('saved_for_reuse', true),
       'Erreur lors du chargement des consommables'
     );
@@ -39,7 +39,7 @@ export const saveConsumableForReuse = async (consumable: Consumable): Promise<vo
   try {
     console.log("Saving consumable for reuse:", consumable);
     
-    await executeSupabaseQuery(
+    await executeSupabaseQuery<null>(
       () => supabase.from('saved_consumables').insert({
         id: consumable.id || crypto.randomUUID(),
         supplier: consumable.supplier,

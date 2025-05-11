@@ -18,14 +18,14 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
       const workLogData = formatWorkLogForDatabase(workLog);
       
       // Upsert the work log
-      await executeSupabaseQuery(
+      await executeSupabaseQuery<null>(
         () => supabase.from('work_logs').upsert(workLogData, { onConflict: 'id' }),
         'Erreur lors de l\'enregistrement de la fiche de suivi'
       );
       
       // Handle consumables - first delete existing ones for this work log
       if (workLog.consumables && workLog.consumables.length > 0) {
-        await executeSupabaseQuery(
+        await executeSupabaseQuery<null>(
           () => supabase.from('consumables').delete().eq('work_log_id', workLog.id),
           'Erreur lors de la mise à jour des consommables'
         );
@@ -33,7 +33,7 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
         // Insert updated consumables
         const consumablesData = formatConsumablesForDatabase(workLog.id, workLog.consumables);
         
-        await executeSupabaseQuery(
+        await executeSupabaseQuery<null>(
           () => supabase.from('consumables').insert(consumablesData),
           'Erreur lors de l\'enregistrement des consommables'
         );
