@@ -1,35 +1,13 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { formatProjectForDatabase } from '@/context/projects/storage/projectOperations';
-
-/**
- * Helper function to safely convert to a ProjectInfo object
- */
-export const convertToProjectInfo = (data: any): Partial<ProjectInfo> => {
-  return {
-    id: data.id || crypto.randomUUID(),
-    name: data.name,
-    address: data.address,
-    contact: data.contact,
-    contract: data.contract,
-    irrigation: data.irrigation,
-    mowerType: data.mowerType,
-    annualVisits: data.annualVisits,
-    annualTotalHours: data.annualTotalHours,
-    visitDuration: data.visitDuration,
-    additionalInfo: data.additionalInfo,
-    team: data.team,
-    projectType: data.projectType,
-    startDate: data.startDate,
-    endDate: data.endDate,
-    isArchived: data.isArchived,
-    createdAt: data.createdAt || new Date(),
-  };
-};
+import { validateProjectData } from '../utils/projectValidation';
+import { useProjectFormHandlers } from './useProjectFormHandlers';
+import { saveProjectToSupabase } from '../utils/projectSupabaseOperations';
+import { convertToProjectInfo } from '../utils/projectDataTransformers';
 
 interface UseProjectFormProps {
   initialData?: ProjectInfo;
@@ -67,77 +45,19 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
     isArchived: initialData?.isArchived || false,
   });
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const {
+    handleInputChange,
+    handleContactChange,
+    handleContractChange,
+    handleSelectChange,
+    handleDateChange
+  } = useProjectFormHandlers(setFormData);
   
-  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      contact: {
-        ...prev.contact,
-        [name]: value,
-      },
-    }));
-  };
-  
-  const handleContractChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      contract: {
-        ...prev.contract,
-        [name]: value,
-      },
-    }));
-  };
-  
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-  
-  const handleDateChange = (name: string, date: Date | undefined) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: date,
-    }));
-  };
-
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
     } else {
       navigate('/projects');
-    }
-  };
-
-  const saveProjectToSupabase = async (project: ProjectInfo) => {
-    try {
-      // Use the formatter from projectOperations to get the correct format for Supabase
-      const projectData = formatProjectForDatabase(project);
-      
-      const { error } = await supabase
-        .from('projects')
-        .upsert(projectData, { onConflict: 'id' });
-      
-      if (error) {
-        console.error("Error saving project to Supabase:", error);
-        throw error;
-      }
-      
-      console.log("Project saved successfully to Supabase");
-    } catch (error) {
-      console.error("Error in saveProjectToSupabase:", error);
-      toast.error("Erreur lors de l'enregistrement du projet dans Supabase");
-      throw error;
     }
   };
 
@@ -147,14 +67,9 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
     
     try {
       // Validation
-      if (!formData.name) {
-        toast.error('Le nom du chantier est requis');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!formData.team) {
-        toast.error('Une équipe doit être sélectionnée');
+      const validationResult = validateProjectData(formData);
+      if (!validationResult.isValid) {
+        toast.error(validationResult.errorMessage);
         setIsSubmitting(false);
         return;
       }

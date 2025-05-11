@@ -1,7 +1,7 @@
 
 import { ProjectInfo } from '@/types/models';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useProjectForm } from './form/useProjectForm';
+import { useProjectForm } from './form';
 import BasicInfoSection from './form/BasicInfoSection';
 import ContactSection from './form/ContactSection';
 import ContractSection from './form/ContractSection';
