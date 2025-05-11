@@ -1,98 +1,8 @@
-import { WorkLog, Consumable } from '@/types/models';
+
+import { WorkLog } from '@/types/models';
 import prisma from '@/utils/prismaClient';
-import { toast } from 'sonner';
-
-// Mock storage for browser environment
-let localWorkLogs: WorkLog[] = [];
-let localConsumables: Consumable[] = [];
-
-// Safe check for browser environment
-const isBrowser = typeof window !== 'undefined' && !('process' in window);
-
-/**
- * Load workLogs from database or local storage
- */
-export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
-  try {
-    console.log("Loading work logs");
-    
-    if (isBrowser) {
-      // Browser: try to load from localStorage
-      try {
-        const storedWorkLogs = localStorage.getItem('workLogs');
-        if (storedWorkLogs) {
-          localWorkLogs = JSON.parse(storedWorkLogs).map((log: any) => ({
-            ...log,
-            createdAt: new Date(log.createdAt)
-          }));
-        }
-        console.log(`Loaded ${localWorkLogs.length} work logs from localStorage`);
-        return localWorkLogs;
-      } catch (e) {
-        console.error('Error loading from localStorage:', e);
-        return [];
-      }
-    }
-    
-    // Server: use Prisma
-    try {
-      const workLogs = await prisma.workLog.findMany({
-        include: {
-          consumables: true
-        }
-      });
-      
-      return workLogs.map(workLog => ({
-        ...workLog,
-        createdAt: new Date(workLog.createdAt),
-        date: workLog.date.toISOString(),
-        timeTracking: {
-          departure: workLog.departure || '',
-          arrival: workLog.arrival || '',
-          end: workLog.end || '',
-          breakTime: workLog.breakTime || '',
-          totalHours: workLog.totalHours
-        }
-      }));
-    } catch (e) {
-      console.error('Error loading from database:', e);
-      return [];
-    }
-  } catch (error) {
-    console.error('Error loading work logs:', error);
-    toast.error('Erreur lors du chargement des fiches de suivi');
-    return [];
-  }
-};
-
-/**
- * Save workLogs to database or local storage
- */
-export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> => {
-  try {
-    console.log("Saving work logs:", workLogs);
-    
-    if (isBrowser) {
-      // Browser: save to localStorage
-      try {
-        localWorkLogs = workLogs;
-        localStorage.setItem('workLogs', JSON.stringify(workLogs));
-        console.log(`Saved ${workLogs.length} work logs to localStorage`);
-      } catch (e) {
-        console.error('Error saving to localStorage:', e);
-        toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
-      }
-      return;
-    }
-    
-    // In a Node.js environment, we would implement database operations here
-    // For now we'll just log this as it would require transactions
-    console.log("In server environment, would save workLogs to database:", workLogs);
-  } catch (error) {
-    console.error('Error saving work logs:', error);
-    toast.error('Erreur lors de l\'enregistrement des fiches de suivi');
-  }
-};
+import { isBrowser, localWorkLogs, handleStorageError } from './storageUtils';
+import crypto from 'crypto';
 
 /**
  * Add a single workLog to the database or local storage
@@ -190,8 +100,7 @@ export const addWorkLogToDatabase = async (workLog: WorkLog): Promise<WorkLog> =
       }
     } as WorkLog;
   } catch (error) {
-    console.error('Error adding work log:', error);
-    toast.error('Erreur lors de l\'ajout de la fiche de suivi');
+    handleStorageError(error, 'de l\'ajout de la fiche de suivi');
     throw error;
   }
 };
@@ -297,85 +206,7 @@ export const updateWorkLogInDatabase = async (workLog: WorkLog): Promise<WorkLog
       }
     } as WorkLog;
   } catch (error) {
-    console.error('Error updating work log:', error);
-    toast.error('Erreur lors de la mise à jour de la fiche de suivi');
+    handleStorageError(error, 'de la mise à jour de la fiche de suivi');
     throw error;
-  }
-};
-
-/**
- * Load saved consumables from database or local storage
- */
-export const loadSavedConsumables = async (): Promise<Consumable[]> => {
-  try {
-    console.log("Loading saved consumables");
-    
-    if (isBrowser) {
-      // Browser: load from localStorage
-      try {
-        const storedConsumables = localStorage.getItem('savedConsumables');
-        if (storedConsumables) {
-          localConsumables = JSON.parse(storedConsumables);
-        }
-        return localConsumables;
-      } catch (e) {
-        console.error('Error loading consumables from localStorage:', e);
-        return [];
-      }
-    }
-    
-    // Server: use Prisma
-    try {
-      const savedConsumables = await prisma.consumable.findMany({
-        where: { savedForReuse: true }
-      });
-      
-      return savedConsumables;
-    } catch (e) {
-      console.error('Error loading consumables from database:', e);
-      return [];
-    }
-  } catch (error) {
-    console.error('Error loading saved consumables:', error);
-    toast.error('Erreur lors du chargement des consommables');
-    return [];
-  }
-};
-
-/**
- * Save a consumable for reuse
- */
-export const saveConsumableForReuse = async (consumable: Consumable): Promise<void> => {
-  try {
-    console.log("Saving consumable for reuse:", consumable);
-    
-    if (isBrowser) {
-      // Browser: add to local array and save to localStorage
-      const newConsumable = {
-        ...consumable,
-        id: consumable.id || crypto.randomUUID()
-      };
-      localConsumables.push(newConsumable);
-      localStorage.setItem('savedConsumables', JSON.stringify(localConsumables));
-      return;
-    }
-    
-    // Server: use Prisma
-    await prisma.consumable.create({
-      data: {
-        id: consumable.id || crypto.randomUUID(),
-        supplier: consumable.supplier,
-        product: consumable.product,
-        unit: consumable.unit,
-        quantity: consumable.quantity,
-        unitPrice: consumable.unitPrice,
-        totalPrice: consumable.totalPrice,
-        savedForReuse: true
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error saving consumable for reuse:', error);
-    toast.error('Erreur lors de l\'enregistrement du consommable');
   }
 };

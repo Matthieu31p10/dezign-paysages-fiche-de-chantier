@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { WorkLog } from '@/types/models';
 import { WorkLogsContextType } from '../types';
 import { toast } from 'sonner';
-import { loadWorkLogsFromStorage, saveWorkLogsToStorage } from './workLogsStorage';
+import { loadWorkLogsFromStorage, saveWorkLogsToStorage } from './storage';
 import { useWorkLogOperations } from './hooks/useWorkLogOperations';
 
 const WorkLogsContext = createContext<WorkLogsContextType | undefined>(undefined);
