@@ -13,6 +13,7 @@ export const handleSupabaseError = (error: any, message: string) => {
 
 /**
  * Execute a Supabase query with error handling
+ * Generic type T is the expected return type of the data
  */
 export const executeSupabaseQuery = async <T>(
   queryFn: () => Promise<{ data: T; error: any }>,
