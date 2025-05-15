@@ -1,7 +1,10 @@
+
 import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { UserRole } from '@/types/models';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole;
@@ -13,21 +16,40 @@ const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: Prot
   const { auth, canUserAccess } = useApp();
   const location = useLocation();
 
-  // Check if the user is authenticated
+  // Vérifier la connectivité à Supabase quand l'utilisateur accède à des routes protégées
+  useEffect(() => {
+    const checkSupabaseConnection = async () => {
+      try {
+        const { error } = await supabase.from('settings').select('id').limit(1);
+        if (error) {
+          console.error("Erreur de connexion à Supabase:", error);
+          toast.error("Problème de connexion à la base de données", {
+            description: "Certaines fonctionnalités pourraient ne pas fonctionner correctement"
+          });
+        }
+      } catch (err) {
+        console.error("Erreur lors de la vérification de la connexion:", err);
+      }
+    };
+    
+    checkSupabaseConnection();
+  }, [location.pathname]);
+
+  // Vérifier si l'utilisateur est authentifié
   if (!auth.isAuthenticated) {
-    // Redirect to the login page, but save the current location
+    // Rediriger vers la page de connexion, mais sauvegarder l'emplacement actuel
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if the user has the required role
+  // Vérifier si l'utilisateur a le rôle requis
   if (requiredRole && !canUserAccess(requiredRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // If specific module access is required, check that too
+  // Si l'accès à un module spécifique est requis, vérifier cela aussi
   if (requiredModule) {
-    // This is where we would check module-specific permissions
-    // For now, we're just using role-based permissions
+    // C'est ici que nous vérifierions les autorisations spécifiques au module
+    // Pour l'instant, nous utilisons simplement des autorisations basées sur le rôle
     const hasAccess = auth.currentUser?.role === 'admin' || 
                      (auth.currentUser?.role === 'manager') ||
                      (requiredModule === 'projects' || requiredModule === 'worklogs' || requiredModule === 'blanksheets');
@@ -37,12 +59,12 @@ const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: Prot
     }
   }
 
-  // If an element is provided, return it
+  // Si un élément est fourni, le retourner
   if (element) {
     return element;
   }
 
-  // Otherwise, render the child routes
+  // Sinon, rendre les routes enfants
   return <Outlet />;
 };
 

@@ -1,118 +1,158 @@
 
-import React, { Suspense } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import { WorkLogDetailProvider } from './WorkLogDetailContext';
-import { useWorkLogDetailProvider } from './useWorkLogDetailProvider';
-import DetailHeader from './DetailHeader';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WorkLogDetails from './WorkLogDetails';
-import CustomTasksCard from './CustomTasksCard';
-import NotesSection from './NotesSection';
+import DetailHeader from './DetailHeader';
+import PDFOptionsDialog from './PDFOptionsDialog';
 import DeleteWorkLogDialog from './DeleteWorkLogDialog';
-import HeaderActions from './HeaderActions';
-import { Loader2 } from 'lucide-react';
+import { useWorkLogs } from '@/context/WorkLogsContext';
+import { PDFOptions } from './WorkLogDetailContext';
+import { WorkLogDetailProvider } from './WorkLogDetailContext';
+import { toast } from 'sonner';
+import { useWorkLogActions } from './utils/useWorkLogActions';
+import { useWorkLogCalculations } from './utils/useWorkLogCalculations';
+import usePDFExport from './utils/usePDFExport';
+import { supabase } from '@/integrations/supabase/client';
 
-// Lazy load components for better performance
-const LazyNotesSection = React.lazy(() => import('./NotesSection'));
-const LazyCustomTasksCard = React.lazy(() => import('./CustomTasksCard'));
-
-const WorkLogDetail = () => {
+const WorkLogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { workLogs, getProjectById, deleteWorkLog, updateWorkLog, settings, isLoading } = useApp();
+  const navigate = useNavigate();
+  const { projectInfos } = useApp();
+  const { workLogs, deleteWorkLog: deleteWorkLogContext } = useWorkLogs();
+  const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
   
-  // Sécurité: vérifier si id existe
-  if (!id) {
-    console.warn("WorkLogDetail - ID not provided");
-    return <Navigate to="/worklogs" />;
-  }
-  
-  // Get the right workLog and project data
+  // Trouver le workLog correspondant à l'ID
   const workLog = workLogs.find(log => log.id === id);
-  const project = workLog ? getProjectById(workLog.projectId) : undefined;
+  const project = workLog ? projectInfos.find(project => project.id === workLog.projectId) : undefined;
   
-  // Always call hooks at top-level, regardless of conditions
-  const contextValues = useWorkLogDetailProvider(
-    workLog, 
-    project, 
-    workLogs,
-    updateWorkLog,
-    deleteWorkLog,
-    settings
-  );
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Chargement...</span>
-      </div>
-    );
-  }
-  
-  // Early return if no workLog is found - AFTER all hooks are called
+  // Si le workLog n'existe pas, rediriger vers la page de fiches de suivi
   if (!workLog) {
-    console.warn(`WorkLogDetail - WorkLog with ID ${id} not found`);
-    return <Navigate to="/worklogs" />;
+    // Attente pour éviter les problèmes de rendu
+    React.useEffect(() => {
+      toast.error("Fiche de suivi non trouvée");
+      navigate('/worklogs');
+    }, [navigate]);
+    
+    return <div>Chargement...</div>;
   }
+
+  const {
+    notes,
+    setNotes,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    handleDeleteWorkLog,
+    confirmDelete,
+    handleSaveNotes
+  } = useWorkLogActions(workLog, deleteWorkLogContext);
+
+  const {
+    calculateEndTime,
+    calculateHourDifference,
+    calculateTotalTeamHours
+  } = useWorkLogCalculations(workLog);
+
+  const { handleExportToPDF } = usePDFExport(workLog, project);
+  
+  // Gestion de l'envoi par email (à implémenter)
+  const handleSendEmail = () => {
+    // Cette fonctionnalité serait connectée à une Edge Function Supabase
+    toast.info("Fonctionnalité d'envoi d'email en cours de développement");
+  };
+  
+  // Vérification en temps réel de la connexion à Supabase
+  React.useEffect(() => {
+    const checkConnection = async () => {
+      const { data, error } = await supabase.from('projects').select('id').limit(1);
+      if (error) {
+        console.error("Erreur de connexion à Supabase:", error);
+        toast.error("Problème de connexion à la base de données");
+      }
+    };
+    
+    checkConnection();
+  }, []);
+
+  const contextValue = {
+    workLog,
+    project,
+    notes,
+    setNotes,
+    calculateEndTime,
+    calculateHourDifference,
+    calculateTotalTeamHours,
+    handleSaveNotes,
+    confirmDelete,
+    handleDeleteWorkLog,
+    handleExportToPDF,
+    handleSendEmail,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen
+  };
   
   return (
-    <WorkLogDetailProvider value={{
-      ...contextValues,
-      workLog,
-      project
-    }}>
-      <div className="animate-fade-in space-y-6">
-        <div className="flex justify-between items-start">
-          <DetailHeader />
-          <HeaderActions workLogId={id} />
-        </div>
+    <WorkLogDetailProvider value={contextValue}>
+      <div className="space-y-6 animate-fade-in">
+        <DetailHeader 
+          workLog={workLog} 
+          projectName={project?.name || 'Chantier inconnu'} 
+          onExportClick={() => setIsPDFDialogOpen(true)}
+        />
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1 md:col-span-2 space-y-6">
+        <Tabs defaultValue="details" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="details">Détails</TabsTrigger>
+            <TabsTrigger value="tasks">Tâches effectuées</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details" className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <WorkLogDetails />
+                <WorkLogDetails workLog={workLog} project={project} />
               </CardContent>
             </Card>
-            
-            <Suspense fallback={
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex justify-center items-center h-32">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            }>
-              <Card>
-                <CardContent className="pt-6">
-                  <LazyNotesSection />
-                </CardContent>
-              </Card>
-            </Suspense>
-          </div>
+          </TabsContent>
           
-          <div className="space-y-6">
-            <Suspense fallback={
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex justify-center items-center h-32">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            }>
-              <LazyCustomTasksCard />
-            </Suspense>
-          </div>
-        </div>
+          <TabsContent value="tasks" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6 whitespace-pre-wrap">
+                {workLog.tasks ? workLog.tasks : "Aucune tâche spécifiée"}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="notes" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full min-h-[200px] p-3 border rounded-md"
+                  placeholder="Ajoutez des notes ici..."
+                />
+                <div className="mt-4">
+                  <button
+                    onClick={handleSaveNotes}
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                  >
+                    Enregistrer les notes
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+        
+        <DeleteWorkLogDialog />
+        <PDFOptionsDialog 
+          open={isPDFDialogOpen} 
+          onOpenChange={setIsPDFDialogOpen} 
+        />
       </div>
-      
-      <DeleteWorkLogDialog 
-        isOpen={contextValues.isDeleteDialogOpen}
-        onOpenChange={contextValues.setIsDeleteDialogOpen}
-      />
     </WorkLogDetailProvider>
   );
 };

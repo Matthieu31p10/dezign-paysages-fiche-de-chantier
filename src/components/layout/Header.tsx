@@ -5,13 +5,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { FileText, BarChart2, Files, Settings, LogOut, User, FileBarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
+import { ConnectionStatus } from '@/components/ui/connection-status';
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { auth, logout } = useApp();
   
-  // Check active route
+  // Vérifier la route active
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
   };
@@ -103,6 +104,9 @@ const Header = () => {
           </Link>
         </Button>
 
+        {/* Indicateur de statut de connexion Supabase */}
+        <ConnectionStatus className="mr-2" />
+
         {auth.isAuthenticated && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -110,7 +114,7 @@ const Header = () => {
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 {auth.currentUser?.name || auth.currentUser?.username}
                 <p className="font-normal text-xs text-muted-foreground">
