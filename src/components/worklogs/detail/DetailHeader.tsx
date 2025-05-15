@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '@/utils/helpers';
 import { useWorkLogDetail } from './WorkLogDetailContext';
+import HeaderActions from './HeaderActions';
 
 const DetailHeader: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +35,10 @@ const DetailHeader: React.FC = () => {
         <p className="text-muted-foreground">
           Fiche de suivi du {formatDate(workLog.date)}
         </p>
+      </div>
+      
+      <div>
+        <HeaderActions workLogId={workLog.id} />
       </div>
     </div>
   );

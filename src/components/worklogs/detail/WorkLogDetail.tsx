@@ -14,7 +14,7 @@ import { WorkLogDetailProvider } from './WorkLogDetailContext';
 import { toast } from 'sonner';
 import { useWorkLogActions } from './utils/useWorkLogActions';
 import { useWorkLogCalculations } from './utils/useWorkLogCalculations';
-import usePDFExport from './utils/usePDFExport';
+import { usePDFExport } from './utils/usePDFExport';
 import { supabase } from '@/integrations/supabase/client';
 
 const WorkLogDetail: React.FC = () => {
@@ -23,6 +23,7 @@ const WorkLogDetail: React.FC = () => {
   const { projectInfos } = useApp();
   const { workLogs, deleteWorkLog: deleteWorkLogContext } = useWorkLogs();
   const [isPDFDialogOpen, setIsPDFDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Trouver le workLog correspondant à l'ID
   const workLog = workLogs.find(log => log.id === id);
@@ -42,8 +43,6 @@ const WorkLogDetail: React.FC = () => {
   const {
     notes,
     setNotes,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
     handleDeleteWorkLog,
     confirmDelete,
     handleSaveNotes
@@ -96,11 +95,7 @@ const WorkLogDetail: React.FC = () => {
   return (
     <WorkLogDetailProvider value={contextValue}>
       <div className="space-y-6 animate-fade-in">
-        <DetailHeader 
-          workLog={workLog} 
-          projectName={project?.name || 'Chantier inconnu'} 
-          onExportClick={() => setIsPDFDialogOpen(true)}
-        />
+        <DetailHeader />
         
         <Tabs defaultValue="details" className="space-y-4">
           <TabsList>
@@ -112,7 +107,7 @@ const WorkLogDetail: React.FC = () => {
           <TabsContent value="details" className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <WorkLogDetails workLog={workLog} project={project} />
+                <WorkLogDetails />
               </CardContent>
             </Card>
           </TabsContent>
@@ -147,7 +142,10 @@ const WorkLogDetail: React.FC = () => {
           </TabsContent>
         </Tabs>
         
-        <DeleteWorkLogDialog />
+        <DeleteWorkLogDialog 
+          isOpen={isDeleteDialogOpen} 
+          onOpenChange={setIsDeleteDialogOpen}
+        />
         <PDFOptionsDialog 
           open={isPDFDialogOpen} 
           onOpenChange={setIsPDFDialogOpen} 
