@@ -51,7 +51,7 @@ export const formatWasteManagement = (wasteCode?: string): string => {
     case 'container': 
       return `${quantity} Container${parseInt(quantity) > 1 ? 's' : ''}`;
     
-    // Support pour les anciens formats
+    // Support pour les anciens formats (pour la rétrocompatibilité)
     case 'half_dumpster': 
       return `${quantity} × ½ Benne${parseInt(quantity) > 1 ? 's' : ''}`;
     case 'dumpster': 
