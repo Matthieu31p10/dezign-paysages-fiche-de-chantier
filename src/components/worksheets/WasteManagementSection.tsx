@@ -17,17 +17,18 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Trash2 } from 'lucide-react';
+import { Recycle, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const WasteManagementSection = () => {
   const { control, register, watch } = useFormContext();
   const wasteManagement = watch('wasteManagement');
   
   return (
-    <Card className="border-amber-200">
+    <Card className="border-amber-200 shadow-sm">
       <CardHeader className="bg-amber-50 border-b border-amber-100">
-        <CardTitle className="text-amber-800 flex items-center text-base">
-          <Trash2 className="h-4 w-4 mr-2 text-amber-600" />
+        <CardTitle className="text-amber-800 flex items-center text-base gap-2">
+          <Recycle className="h-5 w-5 text-amber-600" />
           Gestion des déchets
         </CardTitle>
       </CardHeader>
@@ -39,45 +40,70 @@ const WasteManagementSection = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type de déchets</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner..." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">Aucun déchet</SelectItem>
-                    <SelectItem value="greenWaste">Déchets verts</SelectItem>
-                    <SelectItem value="mixedWaste">Déchets mixtes</SelectItem>
-                    <SelectItem value="rubble">Gravats</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-amber-300 focus:border-amber-500">
+                            <SelectValue placeholder="Sélectionner..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Aucun déchet</SelectItem>
+                          <SelectItem value="big_bag">Big-bag</SelectItem>
+                          <SelectItem value="half_dumpster">½ Benne</SelectItem>
+                          <SelectItem value="dumpster">Benne complète</SelectItem>
+                          <SelectItem value="small_container">Petit container</SelectItem>
+                          <SelectItem value="large_container">Grand container</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-amber-700 text-white">
+                      <p>Sélectionnez le type de collecte de déchets</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </FormItem>
             )}
           />
           
           {wasteManagement && wasteManagement !== 'none' && (
             <FormItem>
-              <FormLabel>Quantité (m³)</FormLabel>
+              <FormLabel>Quantité</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  placeholder="Volume en m³"
-                  {...register('wasteQuantity')}
-                />
+                <div className="flex items-center">
+                  <Input
+                    type="number"
+                    step="1"
+                    min="1"
+                    placeholder="Nombre d'unités"
+                    className="border-amber-300 focus:border-amber-500"
+                    {...register('wasteQuantity', { 
+                      valueAsNumber: true 
+                    })}
+                  />
+                  <span className="ml-3 text-sm text-amber-800">unité(s)</span>
+                </div>
               </FormControl>
               <FormDescription>
-                Estimation du volume en mètres cubes
+                Indiquez le nombre d'unités pour ce type de déchets
               </FormDescription>
             </FormItem>
           )}
         </div>
+        
+        {wasteManagement && wasteManagement !== 'none' && (
+          <div className="mt-4 bg-amber-50 p-3 rounded-md border border-amber-100 flex items-center">
+            <Trash2 className="h-5 w-5 mr-2 text-amber-600" />
+            <p className="text-sm text-amber-800">
+              Les déchets seront traités selon les normes environnementales en vigueur.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -27,7 +27,7 @@ export const formatDate = (dateString: string): string => {
 };
 
 /**
- * Formate le code de gestion des déchets en texte lisible
+ * Formate le code de gestion des déchets en texte lisible avec descriptions améliorées
  */
 export const formatWasteManagement = (wasteCode?: string): string => {
   if (!wasteCode || wasteCode === 'none') return 'Aucun';
@@ -36,12 +36,37 @@ export const formatWasteManagement = (wasteCode?: string): string => {
   const type = parts[0];
   const quantity = parts.length > 1 ? parts[1] : '1';
   
+  // Fonction pour pluraliser correctement
+  const pluralize = (singular: string, count: string): string => {
+    return parseInt(count) > 1 ? `${singular}s` : singular;
+  };
+  
   switch (type) {
-    case 'big_bag': return `${quantity} Big-bag${quantity !== '1' ? 's' : ''}`;
-    case 'half_dumpster': return `${quantity} × ½ Benne${quantity !== '1' ? 's' : ''}`;
-    case 'dumpster': return `${quantity} Benne${quantity !== '1' ? 's' : ''}`;
-    case 'small_container': return `${quantity} Petit container${quantity !== '1' ? 's' : ''}`;
-    case 'large_container': return `${quantity} Grand container${quantity !== '1' ? 's' : ''}`;
-    default: return wasteCode; // Fallback pour les anciens formats
+    case 'big_bag': 
+      return `${quantity} Big-bag${parseInt(quantity) > 1 ? 's' : ''}`;
+    
+    case 'half_dumpster': 
+      return `${quantity} × ½ Benne${parseInt(quantity) > 1 ? 's' : ''}`;
+    
+    case 'dumpster': 
+      return `${quantity} Benne${parseInt(quantity) > 1 ? 's' : ''}`;
+    
+    case 'small_container': 
+      return `${quantity} Petit${pluralize(' container', quantity)}`;
+    
+    case 'large_container': 
+      return `${quantity} Grand${pluralize(' container', quantity)}`;
+    
+    // Support pour les anciens formats
+    case 'keep': return 'Déchets conservés';
+    case 'remove': return 'Déchets évacués';
+    
+    default: 
+      // Essayer de gérer d'autres formats possibles
+      if (type.includes('bag')) return `${quantity} Sac${parseInt(quantity) > 1 ? 's' : ''}`;
+      if (type.includes('container')) return `${quantity} Container${parseInt(quantity) > 1 ? 's' : ''}`;
+      if (type.includes('dumpster')) return `${quantity} Benne${parseInt(quantity) > 1 ? 's' : ''}`;
+      
+      return wasteCode; // Fallback pour les formats inconnus
   }
 };
