@@ -45,19 +45,21 @@ export const formatWasteManagement = (wasteCode?: string): string => {
     case 'big_bag': 
       return `${quantity} Big-bag${parseInt(quantity) > 1 ? 's' : ''}`;
     
-    case 'half_dumpster': 
-      return `${quantity} × ½ Benne${parseInt(quantity) > 1 ? 's' : ''}`;
-    
-    case 'dumpster': 
+    case 'benne': 
       return `${quantity} Benne${parseInt(quantity) > 1 ? 's' : ''}`;
     
-    case 'small_container': 
-      return `${quantity} Petit${pluralize(' container', quantity)}`;
-    
-    case 'large_container': 
-      return `${quantity} Grand${pluralize(' container', quantity)}`;
+    case 'container': 
+      return `${quantity} Container${parseInt(quantity) > 1 ? 's' : ''}`;
     
     // Support pour les anciens formats
+    case 'half_dumpster': 
+      return `${quantity} × ½ Benne${parseInt(quantity) > 1 ? 's' : ''}`;
+    case 'dumpster': 
+      return `${quantity} Benne${parseInt(quantity) > 1 ? 's' : ''}`;
+    case 'small_container': 
+      return `${quantity} Petit${pluralize(' container', quantity)}`;
+    case 'large_container': 
+      return `${quantity} Grand${pluralize(' container', quantity)}`;
     case 'keep': return 'Déchets conservés';
     case 'remove': return 'Déchets évacués';
     
@@ -65,7 +67,7 @@ export const formatWasteManagement = (wasteCode?: string): string => {
       // Essayer de gérer d'autres formats possibles
       if (type.includes('bag')) return `${quantity} Sac${parseInt(quantity) > 1 ? 's' : ''}`;
       if (type.includes('container')) return `${quantity} Container${parseInt(quantity) > 1 ? 's' : ''}`;
-      if (type.includes('dumpster')) return `${quantity} Benne${parseInt(quantity) > 1 ? 's' : ''}`;
+      if (type.includes('dumpster') || type.includes('benne')) return `${quantity} Benne${parseInt(quantity) > 1 ? 's' : ''}`;
       
       return wasteCode; // Fallback pour les formats inconnus
   }

@@ -34,7 +34,7 @@ export const formSchema = z.object({
   watering: z.enum(['none', 'on', 'off']).optional(),
   customTasks: z.record(z.boolean()).optional(),
   tasksProgress: z.record(z.number()).optional(),
-  wasteManagement: z.enum(['none', 'keep', 'remove']).optional(),
+  wasteManagement: z.string().optional(),
   invoiced: z.boolean().optional().default(false),
   consumables: z.array(consumableSchema).optional().default([]),
   

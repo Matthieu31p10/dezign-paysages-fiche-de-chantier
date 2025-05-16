@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Trash2, Recycle } from 'lucide-react';
+import { Box, Recycle } from 'lucide-react';
 import { useWorkLogDetail } from '../WorkLogDetailContext';
 import { formatWasteManagement } from '@/utils/format-helpers';
 
@@ -17,7 +17,7 @@ const WasteManagementSection: React.FC = () => {
         <span>Gestion des déchets</span>
       </h3>
       <div className="flex items-center bg-white p-3 rounded-md">
-        <Trash2 className="w-5 h-5 mr-3 text-muted-foreground" />
+        <Box className="w-5 h-5 mr-3 text-muted-foreground" />
         <span className={`font-medium ${wasteManagement === 'none' ? 'text-gray-500' : 'text-green-700'}`}>
           {formatWasteManagement(workLog.wasteManagement)}
         </span>

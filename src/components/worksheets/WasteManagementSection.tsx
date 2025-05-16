@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Recycle, Trash2 } from 'lucide-react';
+import { Recycle, Trash2, Box } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const WasteManagementSection = () => {
@@ -55,10 +55,8 @@ const WasteManagementSection = () => {
                         <SelectContent>
                           <SelectItem value="none">Aucun déchet</SelectItem>
                           <SelectItem value="big_bag">Big-bag</SelectItem>
-                          <SelectItem value="half_dumpster">½ Benne</SelectItem>
-                          <SelectItem value="dumpster">Benne complète</SelectItem>
-                          <SelectItem value="small_container">Petit container</SelectItem>
-                          <SelectItem value="large_container">Grand container</SelectItem>
+                          <SelectItem value="benne">Benne</SelectItem>
+                          <SelectItem value="container">Container</SelectItem>
                         </SelectContent>
                       </Select>
                     </TooltipTrigger>
@@ -98,7 +96,7 @@ const WasteManagementSection = () => {
         
         {wasteManagement && wasteManagement !== 'none' && (
           <div className="mt-4 bg-amber-50 p-3 rounded-md border border-amber-100 flex items-center">
-            <Trash2 className="h-5 w-5 mr-2 text-amber-600" />
+            <Box className="h-5 w-5 mr-2 text-amber-600" />
             <p className="text-sm text-amber-800">
               Les déchets seront traités selon les normes environnementales en vigueur.
             </p>

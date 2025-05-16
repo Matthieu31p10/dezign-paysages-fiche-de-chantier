@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Trash2, Recycle } from 'lucide-react';
+import { Trash2, Recycle, Box } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -37,13 +37,11 @@ const WasteManagementSection: React.FC = () => {
     }
   };
 
-  // Options de type de déchets
+  // Options de type de déchets simplifiées
   const wasteOptions = [
     { id: 'big_bag', label: 'Big-bag', description: 'Sac de collecte grande capacité' },
-    { id: 'half_dumpster', label: '½ Benne', description: 'Demi-benne pour déchets verts' },
-    { id: 'dumpster', label: 'Benne', description: 'Benne complète pour gros volume' },
-    { id: 'small_container', label: 'Petit container', description: 'Container compact pour petits déchets' },
-    { id: 'large_container', label: 'Grand container', description: 'Grand container pour déchets importants' }
+    { id: 'benne', label: 'Benne', description: 'Benne pour déchets verts' },
+    { id: 'container', label: 'Container', description: 'Container pour déchets variés' }
   ];
 
   return (
