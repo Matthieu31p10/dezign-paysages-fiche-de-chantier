@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Trash2, Recycle, Box } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -10,26 +10,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const WasteManagementSection: React.FC = () => {
   const form = useFormContext();
-  const [wasteType, setWasteType] = useState('none');
-  const [quantity, setQuantity] = useState('1');
-
-  // Observer les changements de type de déchets
-  useEffect(() => {
-    const wasteValue = form.watch('wasteManagement');
-    if (wasteValue) {
-      const parts = wasteValue.split('_');
-      if (parts.length >= 2) {
-        setWasteType(parts[0]);
-        setQuantity(parts[1]);
-      } else {
-        setWasteType(wasteValue);
-        setQuantity('1');
-      }
-    }
-  }, [form.watch('wasteManagement')]);
-
+  
+  // Parse waste management value to get type and quantity
+  const wasteManagement = form.watch('wasteManagement') || 'none';
+  
+  const getWasteType = (value: string) => {
+    if (!value || value === 'none') return 'none';
+    return value.split('_')[0];
+  };
+  
+  const getWasteQuantity = (value: string) => {
+    if (!value || value === 'none') return '1';
+    const parts = value.split('_');
+    return parts.length > 1 ? parts[1] : '1';
+  };
+  
+  const wasteType = getWasteType(wasteManagement);
+  const quantity = getWasteQuantity(wasteManagement);
+  
   // Mettre à jour la valeur combinée
-  const updateWasteManagement = (type: string, qty: string) => {
+  const updateWasteManagement = (type: string, qty: string = '1') => {
     if (type === 'none') {
       form.setValue('wasteManagement', 'none');
     } else {
@@ -46,12 +46,6 @@ const WasteManagementSection: React.FC = () => {
     { id: 'benne', label: 'Benne', description: 'Benne pour déchets verts' },
     { id: 'container', label: 'Container', description: 'Container pour déchets variés' }
   ];
-
-  // Handle waste type change
-  const handleWasteTypeChange = (value: string) => {
-    setWasteType(value);
-    updateWasteManagement(value, quantity);
-  };
 
   return (
     <div className="space-y-4 rounded-md p-5 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 shadow-sm">
@@ -75,12 +69,12 @@ const WasteManagementSection: React.FC = () => {
               <FormControl>
                 <Select 
                   value={wasteType} 
-                  onValueChange={handleWasteTypeChange}
+                  onValueChange={(value) => updateWasteManagement(value, quantity)}
                 >
                   <SelectTrigger className="w-full bg-white border-green-200 focus:ring-green-500">
                     <SelectValue placeholder="Sélectionner un type de déchet" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white z-50">
                     {wasteOptions.map((option) => (
                       <TooltipProvider key={option.id}>
                         <Tooltip>
@@ -118,7 +112,6 @@ const WasteManagementSection: React.FC = () => {
                         value={quantity}
                         onChange={(e) => {
                           const value = e.target.value || "1";
-                          setQuantity(value);
                           updateWasteManagement(wasteType, value);
                         }}
                         className="border-green-300 focus:border-green-500"
@@ -126,13 +119,16 @@ const WasteManagementSection: React.FC = () => {
                       <span className="ml-3 text-sm text-green-800">unité(s)</span>
                     </div>
                   </FormControl>
+                  <FormDescription className="text-xs text-green-600">
+                    Nombre d'unités pour ce type de déchets
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             <div className="flex items-center">
-              <Trash2 className="h-5 w-5 text-green-600 mr-2" />
+              <Box className="h-5 w-5 text-green-600 mr-2" />
               <div className="text-sm">
                 <p className="font-medium">Traitement sélectionné:</p>
                 <p className="text-green-800">

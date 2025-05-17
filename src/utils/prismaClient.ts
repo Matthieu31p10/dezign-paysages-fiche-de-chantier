@@ -1,8 +1,9 @@
 
-import { PrismaClient } from '@prisma/client'
+// Importation correcte
+const { PrismaClient } = require('@prisma/client');
 
 // Prevent multiple instances in development with hot-reload
-let prisma: PrismaClient;
+let prisma;
 
 if (process.env.NODE_ENV === 'production') {
   prisma = new PrismaClient();
