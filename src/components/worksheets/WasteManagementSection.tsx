@@ -8,15 +8,11 @@ import {
   FormDescription 
 } from '@/components/ui/form';
 import { useFormContext } from 'react-hook-form';
-import { 
-  RadioGroup,
-  RadioGroupItem
-} from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Recycle, Trash2, Box } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WasteManagementSection = () => {
   const { control, register, watch, setValue } = useFormContext();
@@ -51,6 +47,14 @@ const WasteManagementSection = () => {
     const newQuantity = e.target.value || '1';
     updateWasteManagement(wasteType, newQuantity);
   };
+
+  // Options de type de déchets
+  const wasteOptions = [
+    { id: 'none', label: 'Aucun', description: 'Pas de gestion de déchets' },
+    { id: 'big_bag', label: 'Big-bag', description: 'Sac de collecte grande capacité' },
+    { id: 'benne', label: 'Benne', description: 'Benne pour déchets verts' },
+    { id: 'container', label: 'Container', description: 'Container pour déchets variés' }
+  ];
   
   return (
     <Card className="border-amber-200 shadow-sm">
@@ -64,54 +68,28 @@ const WasteManagementSection = () => {
         <div className="grid grid-cols-1 gap-4">
           <FormItem>
             <FormLabel>Type de collecte</FormLabel>
-            <TooltipProvider>
-              <RadioGroup 
-                value={wasteType}
-                onValueChange={(value) => updateWasteManagement(value, wasteQuantity)}
-                className="flex flex-wrap gap-3 mt-2"
-              >
-                <div className="flex items-center space-x-2 bg-white p-3 rounded-md border hover:border-amber-400 transition-colors">
-                  <RadioGroupItem value="none" id="waste-none" />
-                  <Label htmlFor="waste-none" className="cursor-pointer">Aucun</Label>
-                </div>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center space-x-2 bg-white p-3 rounded-md border hover:border-amber-400 transition-colors">
-                      <RadioGroupItem value="big_bag" id="waste-big_bag" />
-                      <Label htmlFor="waste-big_bag" className="cursor-pointer">Big-bag</Label>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-amber-700 text-white">
-                    <p>Sac de collecte grande capacité</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center space-x-2 bg-white p-3 rounded-md border hover:border-amber-400 transition-colors">
-                      <RadioGroupItem value="benne" id="waste-benne" />
-                      <Label htmlFor="waste-benne" className="cursor-pointer">Benne</Label>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-amber-700 text-white">
-                    <p>Benne pour déchets verts</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center space-x-2 bg-white p-3 rounded-md border hover:border-amber-400 transition-colors">
-                      <RadioGroupItem value="container" id="waste-container" />
-                      <Label htmlFor="waste-container" className="cursor-pointer">Container</Label>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-amber-700 text-white">
-                    <p>Container pour déchets variés</p>
-                  </TooltipContent>
-                </Tooltip>
-              </RadioGroup>
-            </TooltipProvider>
+            <Select 
+              value={wasteType}
+              onValueChange={(value) => updateWasteManagement(value, wasteQuantity)}
+            >
+              <SelectTrigger className="w-full bg-white border-amber-200 focus:ring-amber-500">
+                <SelectValue placeholder="Sélectionner un type de déchet" />
+              </SelectTrigger>
+              <SelectContent>
+                {wasteOptions.map((option) => (
+                  <TooltipProvider key={option.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SelectItem value={option.id}>{option.label}</SelectItem>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-amber-700 text-white">
+                        <p>{option.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+              </SelectContent>
+            </Select>
           </FormItem>
           
           {wasteType !== 'none' && (

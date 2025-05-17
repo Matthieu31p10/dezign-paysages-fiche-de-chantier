@@ -6,8 +6,7 @@ import { Trash2, Recycle, Box } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WasteManagementSection: React.FC = () => {
   const form = useFormContext();
@@ -42,12 +41,13 @@ const WasteManagementSection: React.FC = () => {
 
   // Options de type de déchets
   const wasteOptions = [
+    { id: 'none', label: 'Aucun', description: 'Pas de gestion de déchets' },
     { id: 'big_bag', label: 'Big-bag', description: 'Sac de collecte grande capacité' },
     { id: 'benne', label: 'Benne', description: 'Benne pour déchets verts' },
     { id: 'container', label: 'Container', description: 'Container pour déchets variés' }
   ];
 
-  // Handle radio selection
+  // Handle waste type change
   const handleWasteTypeChange = (value: string) => {
     setWasteType(value);
     updateWasteManagement(value, quantity);
@@ -73,37 +73,28 @@ const WasteManagementSection: React.FC = () => {
             <FormItem className="space-y-2">
               <FormLabel className="text-sm text-green-700 font-medium">Type de collecte</FormLabel>
               <FormControl>
-                <RadioGroup 
+                <Select 
                   value={wasteType} 
                   onValueChange={handleWasteTypeChange}
-                  className="flex flex-wrap gap-3"
                 >
-                  <div className="flex items-center space-x-2 bg-white p-3 rounded-md border border-green-200 hover:border-green-400 transition-colors">
-                    <RadioGroupItem value="none" id="waste-none" />
-                    <Label htmlFor="waste-none" className="cursor-pointer">Aucun</Label>
-                  </div>
-                  
-                  {wasteOptions.map((option) => (
-                    <TooltipProvider key={option.id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center space-x-2 bg-white p-3 rounded-md border border-green-200 hover:border-green-400 transition-colors">
-                            <RadioGroupItem value={option.id} id={`waste-${option.id}`} />
-                            <Label 
-                              htmlFor={`waste-${option.id}`}
-                              className="cursor-pointer"
-                            >
-                              {option.label}
-                            </Label>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-green-700 text-white">
-                          <p>{option.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                </RadioGroup>
+                  <SelectTrigger className="w-full bg-white border-green-200 focus:ring-green-500">
+                    <SelectValue placeholder="Sélectionner un type de déchet" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wasteOptions.map((option) => (
+                      <TooltipProvider key={option.id}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SelectItem value={option.id}>{option.label}</SelectItem>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-green-700 text-white">
+                            <p>{option.description}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
