@@ -7,5 +7,6 @@ export interface PDFOptions {
   includeWatering: boolean;
   includeNotes: boolean;
   includeTimeTracking: boolean;
-  includeSummary: boolean;
+  includeWasteManagement?: boolean;
+  includeSummary?: boolean;
 }

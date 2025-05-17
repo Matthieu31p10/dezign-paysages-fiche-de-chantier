@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 
@@ -27,6 +26,8 @@ export interface PDFOptions {
   includeWatering: boolean;
   includeNotes: boolean;
   includeTimeTracking: boolean;
+  includeWasteManagement?: boolean;
+  includeSummary?: boolean;
 }
 
 // Export the context so it can be imported elsewhere

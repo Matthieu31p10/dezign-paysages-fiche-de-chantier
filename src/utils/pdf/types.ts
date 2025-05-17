@@ -7,6 +7,7 @@ export interface PDFOptions {
   includePersonnel?: boolean;
   includeTasks?: boolean;
   includeWasteManagement?: boolean;
+  includeWatering?: boolean;
   includeNotes?: boolean;
   includeTimeTracking?: boolean;
   includeConsumables?: boolean;
@@ -34,6 +35,6 @@ export interface PDFData {
   vatRate?: number;
   signedQuote?: boolean;
   quoteValue?: number;
-  action?: 'download' | 'print';  // Add the action property here
-  config?: any;  // Add config property to handle additional configuration
+  action?: 'download' | 'print';  // Action property
+  config?: any;  // Config property for additional configuration
 }
