@@ -1,19 +1,16 @@
 
-import { PrismaClient as PrismaClientImport } from '@prisma/client';
-
-// Renamed type to avoid confusion
-type PrismaClient = PrismaClientImport;
+import { PrismaClient } from '@prisma/client';
 
 // Prevent multiple instances in development with hot-reload
 let prisma: PrismaClient;
 
 if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClientImport();
+  prisma = new PrismaClient();
 } else {
   // @ts-ignore: attach to global for dev only
   if (!global.prisma) {
     // @ts-ignore
-    global.prisma = new PrismaClientImport({
+    global.prisma = new PrismaClient({
       log: ['query', 'info', 'warn', 'error'],
     });
   }
