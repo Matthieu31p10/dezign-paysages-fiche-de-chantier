@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWorkLogDetail, PDFOptions } from './WorkLogDetailContext';
 import CompanyLogo from '@/components/ui/company-logo';
-import { FileText, Building, Users, ClipboardList, Droplets, FileText as Notes, Clock } from 'lucide-react';
+import { FileText, Building, Users, ClipboardList, Droplets, FileText as Notes, Clock, Trash2 } from 'lucide-react';
+import ThemeSelector from '@/components/reports/pdf/components/ThemeSelector';
 
 interface PDFOptionsDialogProps {
   open: boolean;
@@ -17,20 +18,29 @@ interface PDFOptionsDialogProps {
 const PDFOptionsDialog: React.FC<PDFOptionsDialogProps> = ({ open, onOpenChange }) => {
   const { handleExportToPDF } = useWorkLogDetail();
   
-  const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
+  const [pdfOptions, setPdfOptions] = useState<PDFOptions & { theme?: string }>({
     includeContactInfo: true,
     includeCompanyInfo: true,
     includePersonnel: true,
     includeTasks: true, 
     includeWatering: true,
     includeNotes: true,
-    includeTimeTracking: true
+    includeTimeTracking: true,
+    includeWasteManagement: true,
+    theme: 'default'
   });
   
   const handleOptionChange = (option: keyof PDFOptions) => {
     setPdfOptions(prev => ({
       ...prev,
       [option]: !prev[option]
+    }));
+  };
+  
+  const handleThemeChange = (theme: string) => {
+    setPdfOptions(prev => ({
+      ...prev,
+      theme
     }));
   };
   
@@ -53,8 +63,9 @@ const PDFOptionsDialog: React.FC<PDFOptionsDialogProps> = ({ open, onOpenChange 
         </DialogHeader>
         
         <Tabs defaultValue="content">
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid grid-cols-3">
             <TabsTrigger value="content">Contenu</TabsTrigger>
+            <TabsTrigger value="style">Style</TabsTrigger>
             <TabsTrigger value="preview">Aperçu</TabsTrigger>
           </TabsList>
           
@@ -192,7 +203,33 @@ const PDFOptionsDialog: React.FC<PDFOptionsDialogProps> = ({ open, onOpenChange 
                   </p>
                 </div>
               </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="includeWasteManagement" 
+                  checked={pdfOptions.includeWasteManagement}
+                  onCheckedChange={() => handleOptionChange('includeWasteManagement')}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <div className="flex items-center">
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                    <Label htmlFor="includeWasteManagement" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Gestion des déchets
+                    </Label>
+                  </div>
+                  <p className="text-[0.8rem] text-muted-foreground">
+                    Informations sur la gestion des déchets
+                  </p>
+                </div>
+              </div>
             </div>
+          </TabsContent>
+          
+          <TabsContent value="style" className="py-4">
+            <ThemeSelector 
+              selectedTheme={pdfOptions.theme || 'default'}
+              onThemeChange={handleThemeChange}
+            />
           </TabsContent>
           
           <TabsContent value="preview" className="py-4">
@@ -228,18 +265,18 @@ const PDFOptionsDialog: React.FC<PDFOptionsDialogProps> = ({ open, onOpenChange 
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="bg-gray-50 p-2 rounded text-xs">
+                  <div className={`p-2 rounded text-xs ${pdfOptions.theme === 'professional' ? 'bg-slate-100' : pdfOptions.theme === 'nature' ? 'bg-green-50' : 'bg-gray-50'}`}>
                     <span className="text-gray-500">Écart du temps</span>
-                    <p className="text-green-600 font-bold">+1.56 h</p>
+                    <p className={`font-bold ${pdfOptions.theme === 'nature' ? 'text-green-700' : 'text-green-600'}`}>+1.56 h</p>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded text-xs">
+                  <div className={`p-2 rounded text-xs ${pdfOptions.theme === 'professional' ? 'bg-slate-100' : pdfOptions.theme === 'nature' ? 'bg-green-50' : 'bg-gray-50'}`}>
                     <span className="text-gray-500">Gestion déchets</span>
                     <p>1 Big-bag</p>
                   </div>
                 </div>
                 
                 <div className="text-xs text-gray-400 mt-3">
-                  Aperçu simplifié du document PDF
+                  Aperçu simplifié du thème: {pdfOptions.theme || 'default'}
                 </div>
               </div>
             </div>

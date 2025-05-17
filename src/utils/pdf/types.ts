@@ -14,6 +14,36 @@ export interface PDFOptions {
   includeSummary?: boolean;
 }
 
+export interface PDFThemeFont {
+  family: string;
+  style: string;
+  size: number;
+}
+
+export interface PDFTheme {
+  fonts: {
+    title: PDFThemeFont;
+    subtitle: PDFThemeFont;
+    body: PDFThemeFont;
+    small: PDFThemeFont;
+  };
+  colors: {
+    primary: number[];
+    secondary: number[];
+    accent: number[];
+    text: number[];
+    lightText: number[];
+    background: number[];
+    lightGrey: number[];
+    border: number[];
+  };
+  spacing: {
+    margin: number;
+    sectionGap: number;
+    paragraphGap: number;
+  };
+}
+
 export interface PDFData {
   workLog?: WorkLog;
   project?: ProjectInfo;
@@ -37,4 +67,5 @@ export interface PDFData {
   quoteValue?: number;
   action?: 'download' | 'print';  // Action property
   config?: any;  // Config property for additional configuration
+  theme?: string | PDFTheme; // New theme property that can be a theme name or an actual theme object
 }

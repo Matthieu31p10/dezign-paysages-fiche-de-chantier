@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { PDFData } from './types';
+import { PDFData, PDFTheme } from './types';
 import { drawHeaderSection } from './sections/headerSection';
 import { drawDetailsSection } from './sections/detailsSection';
 import { drawPersonnelSection } from './sections/personnelSection';
@@ -14,7 +14,7 @@ import { drawWateringSection } from './sections/wateringSection';
 import { drawInfoBoxesSection } from './sections/infoBoxesSection';
 import { drawConsumablesSection } from './sections/consumablesSection';
 import { addSummarySection } from './sections/summarySection';
-import { pdfColors } from './pdfHelpers';
+import { getPDFTheme, applyTheme } from './pdfHelpers';
 
 /**
  * Generates a PDF document for a work log using a modular approach with section files
@@ -27,62 +27,67 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
     throw new Error('WorkLog data is required');
   }
   
+  // Get the theme to use for this PDF
+  const theme = getPDFTheme(data);
+  
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 10;
+  const margin = theme.spacing.margin;
   const contentWidth = pageWidth - (margin * 2);
+  
+  // Apply the theme to the document
+  applyTheme(doc, theme);
   
   // Starting position
   let yPos = margin;
   
   // Draw header section with company info and logo
   if (data.pdfOptions?.includeCompanyInfo) {
-    yPos = drawHeaderSection(doc, data, margin, yPos);
+    yPos = drawHeaderSection(doc, data, margin, yPos, theme);
   }
   
   // Draw project details section
-  yPos = drawDetailsSection(doc, data, margin, yPos, pageWidth, contentWidth);
+  yPos = drawDetailsSection(doc, data, margin, yPos, pageWidth, contentWidth, theme);
   
   // Draw personnel section
   if (data.pdfOptions?.includePersonnel) {
-    yPos = drawPersonnelSection(doc, data, margin, yPos);
+    yPos = drawPersonnelSection(doc, data, margin, yPos, theme);
   }
   
   // Draw tasks section
   if (data.pdfOptions?.includeTasks && data.workLog.tasks) {
-    yPos = drawTasksSection(doc, data, margin, yPos, pageWidth, contentWidth);
+    yPos = drawTasksSection(doc, data, margin, yPos, pageWidth, contentWidth, theme);
   }
   
   // Draw time tracking section
   if (data.pdfOptions?.includeTimeTracking) {
-    yPos = drawTimeTrackingSection(doc, data, margin, yPos, contentWidth);
+    yPos = drawTimeTrackingSection(doc, data, margin, yPos, contentWidth, theme);
   }
   
   // Draw info boxes for waste management
   if (data.pdfOptions?.includeWasteManagement) {
-    yPos = drawInfoBoxesSection(doc, data, margin, yPos, contentWidth);
+    yPos = drawInfoBoxesSection(doc, data, margin, yPos, contentWidth, theme);
   }
   
   // Draw watering section
   if (data.pdfOptions?.includeWatering) {
-    yPos = drawWateringSection(doc, data, margin, yPos, contentWidth);
+    yPos = drawWateringSection(doc, data, margin, yPos, contentWidth, theme);
   }
   
   // Draw notes section
   if (data.pdfOptions?.includeNotes) {
-    yPos = drawNotesSection(doc, data, margin, yPos, contentWidth);
+    yPos = drawNotesSection(doc, data, margin, yPos, contentWidth, theme);
   }
   
   // Draw consumables section
   if (data.pdfOptions?.includeConsumables) {
-    yPos = drawConsumablesSection(doc, data, margin, yPos, contentWidth);
+    yPos = drawConsumablesSection(doc, data, margin, yPos, contentWidth, theme);
   }
   
   // Draw summary section
   if (data.pdfOptions?.includeSummary) {
-    const fontSizes = { normal: 9, title: 12, subtitle: 10 };
     if (data.workLog) {
-      yPos = addSummarySection(doc, data.workLog, yPos, margin, fontSizes);
+      yPos = addSummarySection(doc, data.workLog, yPos, margin, theme);
     }
   }
   
@@ -90,8 +95,8 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(theme.fonts.small.size);
+    doc.setFont(theme.fonts.small.family, theme.fonts.small.style);
     
     // Page number
     doc.text(`Page ${i} / ${pageCount}`, doc.internal.pageSize.getWidth() - 25, doc.internal.pageSize.getHeight() - 10);

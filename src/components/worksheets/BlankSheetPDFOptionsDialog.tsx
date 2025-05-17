@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PDFOptions } from '@/utils/pdf'
 import { Building, Users, ClipboardList, FileText, Clock, Calculator } from 'lucide-react'
+import ThemeSelector from '@/components/reports/pdf/components/ThemeSelector'
 
 interface BlankSheetPDFOptionsDialogProps {
   onOpenChange: (isOpen: boolean) => void;
@@ -30,14 +31,15 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
   isLoading
 }) => {
   const [percentage, setPercentage] = React.useState(100);
-  const [options, setOptions] = React.useState<PDFOptions>({
+  const [options, setOptions] = React.useState<PDFOptions & { theme?: string }>({
     includeCompanyInfo: true,
     includeContactInfo: true,
     includePersonnel: true,
     includeTasks: true,
     includeNotes: true,
     includeTimeTracking: true,
-    includeSummary: true
+    includeSummary: true,
+    theme: 'default'
   });
 
   const handleGenerate = () => {
@@ -54,6 +56,13 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
     }));
   };
 
+  const handleThemeChange = (theme: string) => {
+    setOptions(prev => ({
+      ...prev,
+      theme
+    }));
+  };
+
   return (
     <AlertDialogContent className="max-w-md">
       <AlertDialogHeader>
@@ -64,8 +73,9 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
       </AlertDialogHeader>
       
       <Tabs defaultValue="content" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="content">Contenu</TabsTrigger>
+          <TabsTrigger value="style">Style</TabsTrigger>
           <TabsTrigger value="format">Format</TabsTrigger>
         </TabsList>
         
@@ -182,6 +192,15 @@ const BlankSheetPDFOptionsDialog: React.FC<BlankSheetPDFOptionsDialogProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="style">
+          <div className="py-4">
+            <ThemeSelector 
+              selectedTheme={options.theme || 'default'}
+              onThemeChange={handleThemeChange}
+            />
           </div>
         </TabsContent>
         
