@@ -26,6 +26,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   const handleFormSubmit = async (formData: FormValues) => {
     try {
       console.log('Form submitted with data:', formData);
+      console.log('Waste management value:', formData.wasteManagement);
       
       // Validation de base
       if (!isBlankWorksheet && !formData.projectId) {

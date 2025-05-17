@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Trash2, Recycle, Box } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +36,8 @@ const WasteManagementSection: React.FC = () => {
     } else {
       form.setValue('wasteManagement', `${type}_${qty}`);
     }
+    // Trigger validation
+    form.trigger('wasteManagement');
   };
 
   // Options de type de déchets
@@ -65,41 +66,49 @@ const WasteManagementSection: React.FC = () => {
       </h3>
       
       <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-3">
-          <FormLabel className="text-sm text-green-700 font-medium">Type de collecte</FormLabel>
-          
-          <RadioGroup 
-            value={wasteType} 
-            onValueChange={handleWasteTypeChange}
-            className="flex flex-wrap gap-3"
-          >
-            <div className="flex items-center space-x-2 bg-white p-3 rounded-md border border-green-200 hover:border-green-400 transition-colors">
-              <RadioGroupItem value="none" id="waste-none" />
-              <Label htmlFor="waste-none" className="cursor-pointer">Aucun</Label>
-            </div>
-            
-            {wasteOptions.map((option) => (
-              <TooltipProvider key={option.id}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center space-x-2 bg-white p-3 rounded-md border border-green-200 hover:border-green-400 transition-colors">
-                      <RadioGroupItem value={option.id} id={`waste-${option.id}`} />
-                      <Label 
-                        htmlFor={`waste-${option.id}`}
-                        className="cursor-pointer"
-                      >
-                        {option.label}
-                      </Label>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-green-700 text-white">
-                    <p>{option.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-          </RadioGroup>
-        </div>
+        <FormField
+          control={form.control}
+          name="wasteManagement"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm text-green-700 font-medium">Type de collecte</FormLabel>
+              <FormControl>
+                <RadioGroup 
+                  value={wasteType} 
+                  onValueChange={handleWasteTypeChange}
+                  className="flex flex-wrap gap-3"
+                >
+                  <div className="flex items-center space-x-2 bg-white p-3 rounded-md border border-green-200 hover:border-green-400 transition-colors">
+                    <RadioGroupItem value="none" id="waste-none" />
+                    <Label htmlFor="waste-none" className="cursor-pointer">Aucun</Label>
+                  </div>
+                  
+                  {wasteOptions.map((option) => (
+                    <TooltipProvider key={option.id}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center space-x-2 bg-white p-3 rounded-md border border-green-200 hover:border-green-400 transition-colors">
+                            <RadioGroupItem value={option.id} id={`waste-${option.id}`} />
+                            <Label 
+                              htmlFor={`waste-${option.id}`}
+                              className="cursor-pointer"
+                            >
+                              {option.label}
+                            </Label>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-green-700 text-white">
+                          <p>{option.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {wasteType !== 'none' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-md border border-green-200">

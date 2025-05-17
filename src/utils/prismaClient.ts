@@ -1,5 +1,6 @@
 
-import { PrismaClient } from '@prisma/client';
+// Import PrismaClient correctly
+import { PrismaClient } from '@prisma/client'
 
 // Prevent multiple instances in development with hot-reload
 let prisma: PrismaClient;
