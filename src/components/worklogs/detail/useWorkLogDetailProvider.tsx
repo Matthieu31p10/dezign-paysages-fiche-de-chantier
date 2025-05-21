@@ -25,6 +25,9 @@ export const useWorkLogDetailProvider = (
   // For the notes and delete actions, we need to add the updateWorkLog function
   const [notes, setNotes] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  // Add placeholders for required context values
+  const [isLoading] = useState(false);
+  const [isEditable] = useState(true);
   
   // Update notes when workLog changes
   useEffect(() => {
@@ -88,7 +91,7 @@ export const useWorkLogDetailProvider = (
   
   const calculateTotalTeamHours = () => {
     if (!workLog) return 0;
-    const totalHours = workLog.totalHours || 0;
+    const totalHours = workLog.timeTracking?.totalHours || 0;
     const personnelCount = workLog.personnel?.length || 0;
     return totalHours * Math.max(1, personnelCount);
   };
@@ -118,6 +121,10 @@ export const useWorkLogDetailProvider = (
     handleExportToPDF,
     isExporting,
     handleSendEmail,
+    
+    // Added required context values
+    isLoading,
+    isEditable,
     
     // Expose whether this is a blank worksheet
     isBlankWorksheet: workLog?.isBlankWorksheet || false

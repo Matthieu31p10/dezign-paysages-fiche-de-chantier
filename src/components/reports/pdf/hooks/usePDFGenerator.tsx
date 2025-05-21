@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { generatePDF, PDFOptions, PDFData } from '@/utils/pdf';
+import { generatePDF } from '@/utils/pdf';
+import { PDFOptions, PDFData } from '@/utils/pdf/types';
 import { toast } from 'sonner';
 import { useApp } from '@/context/AppContext';
 

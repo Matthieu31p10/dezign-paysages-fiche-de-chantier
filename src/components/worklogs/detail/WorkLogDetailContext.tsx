@@ -2,6 +2,20 @@
 import React, { createContext, useContext, useState } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 
+// Options for PDF generation
+export interface PDFOptions {
+  includeContactInfo?: boolean;
+  includeCompanyInfo?: boolean;
+  includePersonnel?: boolean;
+  includeTasks?: boolean; 
+  includeWatering?: boolean;
+  includeNotes?: boolean;
+  includeTimeTracking?: boolean;
+  includeWasteManagement?: boolean;
+  includeSummary?: boolean;
+  includeConsumables?: boolean;
+}
+
 // Type for the WorkLogDetail context
 interface WorkLogDetailContextType {
   workLog: WorkLog | null;
@@ -26,19 +40,6 @@ interface WorkLogDetailContextType {
   isBlankWorksheet: boolean;
 }
 
-// Options for PDF generation
-export interface PDFOptions {
-  includeContactInfo: boolean;
-  includeCompanyInfo: boolean;
-  includePersonnel: boolean;
-  includeTasks: boolean; 
-  includeWatering: boolean;
-  includeNotes: boolean;
-  includeTimeTracking: boolean;
-  includeWasteManagement?: boolean;
-  includeSummary?: boolean;
-}
-
 // Create the context
 const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
 
@@ -53,9 +54,6 @@ export const WorkLogDetailProvider: React.FC<{
     </WorkLogDetailContext.Provider>
   );
 };
-
-// Export the context so it can be imported elsewhere
-export { WorkLogDetailContext };
 
 // Create a hook for easy access to the context
 export const useWorkLogDetail = () => {

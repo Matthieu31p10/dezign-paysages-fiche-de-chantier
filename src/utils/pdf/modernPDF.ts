@@ -69,7 +69,7 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   
   // Add tasks section
   if (pdfOptions.includeTasks !== false && (workLog.tasks?.length || customTasks?.length)) {
-    y = drawTasksSection(doc, data, 20, y, doc.internal.pageSize.width, 170);
+    y = drawTasksSection(doc, data, 20, y, doc.internal.pageSize.width - 40, 170);
   }
   
   // Add watering section for water consumption
@@ -93,10 +93,10 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   }
   
   // Add summary section if requested
-  if (pdfOptions.includeSummary !== false && (hourlyRate || workLog.totalHours)) {
+  if (pdfOptions.includeSummary !== false && (hourlyRate || (workLog.timeTracking && workLog.timeTracking.totalHours))) {
     y = addSummarySection(doc, {
       hourlyRate,
-      totalHours: workLog.totalHours || 0,
+      totalHours: workLog.timeTracking?.totalHours || 0,
       taxRate: vatRate,
       signedQuote,
       quoteValue

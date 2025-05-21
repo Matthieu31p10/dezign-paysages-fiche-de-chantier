@@ -61,14 +61,14 @@ export const drawDetailsSection = (
   doc.setFont(fonts.body.family, 'normal');
   doc.text(formatDate(workLog.date || ''), margin + 25, y);
   
-  // Get type safely (this field might not exist on all worklogs)
+  // Get type safely - check if it exists on the workLog or use a default
   const workLogType = (workLog as any).type || 'Standard';
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Type:', margin + colWidth, y);
   doc.setFont(fonts.body.family, 'normal');
   doc.text(workLogType, margin + colWidth + 25, y);
   
-  // Get weather safely (this field might not exist on all worklogs)
+  // Get weather safely - check if it exists on the workLog or use a default
   const workLogWeather = (workLog as any).weather || 'Non spécifiée';
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Météo:', margin + colWidth * 2, y);
@@ -86,7 +86,7 @@ export const drawDetailsSection = (
     doc.text(`${plannedDuration} h`, margin + 25, y);
   }
   
-  const totalHours = workLog.totalHours || 0;
+  const totalHours = workLog.timeTracking?.totalHours || 0;
   if (totalHours) {
     doc.setFont(fonts.body.family, 'bold');
     doc.text('Temps total:', margin + colWidth, y);

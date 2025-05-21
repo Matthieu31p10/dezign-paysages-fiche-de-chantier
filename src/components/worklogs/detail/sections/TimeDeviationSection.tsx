@@ -7,11 +7,17 @@ const TimeDeviationSection: React.FC = () => {
   const { workLog, calculateHourDifference } = useWorkLogDetail();
 
   // Vérifier si c'est une fiche vierge
-  const isBlankWorksheet = workLog.projectId && (workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('DZFV'));
+  const isBlankWorksheet = workLog?.projectId && (workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('DZFV'));
 
   if (isBlankWorksheet) {
     return null;
   }
+
+  const plannedHours = workLog?.plannedDuration || 0;
+  const actualHours = workLog?.timeTracking?.totalHours || 0;
+  const hourDifference = calculateHourDifference(plannedHours, actualHours);
+  const isPositive = hourDifference > 0;
+  const hourDifferenceText = isPositive ? `+${hourDifference}` : `${hourDifference}`;
 
   return (
     <div className="p-3 border rounded-md bg-gray-50">
@@ -19,9 +25,9 @@ const TimeDeviationSection: React.FC = () => {
       <div className="flex items-center">
         <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
         <span className={`font-medium ${
-          calculateHourDifference().startsWith('+') ? 'text-green-600' : 'text-red-600'
+          isPositive ? 'text-green-600' : 'text-red-600'
         }`}>
-          {calculateHourDifference()}
+          {hourDifferenceText}
         </span>
       </div>
       <p className="text-xs text-muted-foreground mt-1">
