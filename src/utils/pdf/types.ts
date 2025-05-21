@@ -65,7 +65,7 @@ export interface PDFData {
   vatRate?: number;
   signedQuote?: boolean;
   quoteValue?: number;
-  action?: 'download' | 'print';  // Action property
-  config?: any;  // Config property for additional configuration
-  theme?: string | PDFTheme; // New theme property that can be a theme name or an actual theme object
+  action?: 'download' | 'print';
+  config?: any;
+  theme?: string | PDFTheme;
 }

@@ -1,110 +1,92 @@
 
-import { PDFData, PDFTheme } from '../types';
-import { formatDate } from '../../date';
-import { drawInfoBox } from '../pdfHelpers';
-import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUniqueIds';
+import jsPDF from 'jspdf';
+import { WorkLog, ProjectInfo } from '@/types/models';
+import { formatDate } from '../formatHelpers';
+import { PDFTheme } from '../types';
 
-export const drawDetailsSection = (
-  pdf: any, 
-  data: PDFData, 
-  margin: number, 
-  yPos: number, 
-  pageWidth: number, 
-  contentWidth: number,
+export const addDetailsSection = (
+  doc: jsPDF,
+  workLog: WorkLog,
+  project?: ProjectInfo,
+  startY: number = 60,
   theme?: PDFTheme
 ): number => {
-  const colors = theme?.colors || { primary: [61, 90, 254], text: [60, 60, 60] };
-  const fonts = theme?.fonts || {
-    title: { size: 14, family: 'helvetica', style: 'bold' },
-    body: { size: 11, family: 'helvetica', style: 'normal' },
-    small: { size: 9, family: 'helvetica', style: 'bold' }
+  const defaultTheme = {
+    fonts: {
+      title: { size: 14, family: 'helvetica', style: 'bold' },
+      body: { size: 10, family: 'helvetica', style: 'normal' },
+      small: { size: 8, family: 'helvetica', style: 'normal' },
+    },
+    colors: {
+      primary: [0, 100, 0],
+      text: [60, 60, 60],
+      lightText: [100, 100, 100],
+      background: [255, 255, 255],
+      lightGrey: [240, 240, 240],
+      border: [200, 200, 200],
+    },
+    spacing: {
+      margin: 20,
+      sectionGap: 15,
+      paragraphGap: 8,
+    },
   };
+
+  const { fonts, colors, spacing } = theme || defaultTheme;
+
+  // Set up colors and fonts
+  const textColor = colors.text || [60, 60, 60];
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+  // Set initial Y position
+  let y = startY;
+
+  // Add details header
+  doc.setFont(fonts.title.family, fonts.title.style);
+  doc.setFontSize(fonts.title.size);
+  doc.text('Détails de l\'intervention', spacing.margin, y);
+  y += 8;
+
+  // Setup for detail items
+  doc.setFont(fonts.body.family, fonts.body.style);
+  doc.setFontSize(fonts.body.size);
+
+  // Create detail items grid
+  const margin = spacing.margin;
+  const colWidth = (doc.internal.pageSize.width - margin * 2) / 3;
+
+  // Row 1: Date, Type, Météo
+  doc.setFont(fonts.body.family, 'bold');
+  doc.text('Date:', margin, y);
+  doc.setFont(fonts.body.family, 'normal');
+  doc.text(formatDate(workLog.date || ''), margin + 25, y);
   
-  // Titre du document et date - aligné à droite
-  pdf.setFontSize(fonts.title.size);
-  pdf.setFont(fonts.title.family, fonts.title.style);
-  pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+  doc.setFont(fonts.body.family, 'bold');
+  doc.text('Type:', margin + colWidth, y);
+  doc.setFont(fonts.body.family, 'normal');
+  doc.text(workLog.type || 'Standard', margin + colWidth + 25, y);
   
-  // Si on a les informations du projet, on affiche le nom
-  if (data.pdfOptions?.includeContactInfo && data.project) {
-    pdf.text(data.project.name, pageWidth - margin, yPos, { align: 'right' });
-  } else {
-    // Use isBlankWorksheet function for consistency
-    const sheetIsBlank = data.workLog?.projectId && isBlankWorksheet(data.workLog?.projectId);
-    pdf.text(sheetIsBlank ? "Fiche Vierge" : "Fiche de suivi", pageWidth - margin, yPos, { align: 'right' });
+  doc.setFont(fonts.body.family, 'bold');
+  doc.text('Météo:', margin + colWidth * 2, y);
+  doc.setFont(fonts.body.family, 'normal');
+  doc.text(workLog.weather || 'Non spécifiée', margin + colWidth * 2 + 25, y);
+  
+  y += spacing.paragraphGap;
+
+  // Row 2: Durée prévue, Temps total effectif
+  if (workLog.plannedDuration) {
+    doc.setFont(fonts.body.family, 'bold');
+    doc.text('Durée prévue:', margin, y);
+    doc.setFont(fonts.body.family, 'normal');
+    doc.text(`${workLog.plannedDuration} h`, margin + 25, y);
   }
   
-  pdf.setFontSize(fonts.body.size);
-  pdf.setFont(fonts.body.family, fonts.body.style);
-  pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-  
-  // Use isBlankWorksheet function for consistency
-  const sheetIsBlank = data.workLog?.projectId && isBlankWorksheet(data.workLog?.projectId);
-  pdf.text(`${sheetIsBlank ? 'Fiche Vierge' : 'Fiche de suivi'} du ${formatDate(data.workLog?.date)}`, pageWidth - margin, yPos + 6, { align: 'right' });
-  
-  // Ligne de séparation
-  yPos += 10; // Réduire l'espace
-  pdf.setDrawColor(theme?.colors.border[0] || 200, theme?.colors.border[1] || 200, theme?.colors.border[2] || 200);
-  pdf.line(margin, yPos, pageWidth - margin, yPos);
-  
-  // Section détails du passage
-  yPos += 8; // Réduire l'espace
-  pdf.setFontSize(fonts.subtitle?.size || 12);
-  pdf.setFont(fonts.subtitle?.family || 'helvetica', fonts.subtitle?.style || 'bold');
-  pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-  pdf.text("Détails du passage", pageWidth / 2, yPos, { align: 'center' });
-  pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-  
-  // Zones pour les détails principaux
-  yPos += 8; // Réduire l'espace
-  
-  // Première ligne: Date, Durée prévue, Temps total - plus compact
-  // Colonne 1: Date
-  pdf.setFontSize(fonts.small.size);
-  pdf.setFont(fonts.small.family, fonts.small.style);
-  pdf.text("Date", margin, yPos);
-  
-  pdf.setFont(fonts.body.family, fonts.body.style);
-  pdf.setFontSize(fonts.body.size);
-  pdf.text(formatDate(data.workLog?.date), margin, yPos + 6);
-  
-  // Colonne 2: Durée prévue
-  const col2X = margin + contentWidth / 3;
-  pdf.setFontSize(fonts.small.size);
-  pdf.setFont(fonts.small.family, fonts.small.style);
-  pdf.text("Durée prévue", col2X, yPos);
-  
-  pdf.setFont(fonts.body.family, fonts.body.style);
-  pdf.setFontSize(fonts.body.size);
-  if (data.workLog) {
-    pdf.text(`${data.workLog.duration || '0'} heures`, col2X, yPos + 6);
+  if (workLog.totalHours) {
+    doc.setFont(fonts.body.family, 'bold');
+    doc.text('Temps total:', margin + colWidth, y);
+    doc.setFont(fonts.body.family, 'normal');
+    doc.text(`${workLog.totalHours} h`, margin + colWidth + 25, y);
   }
-  
-  // Colonne 3: Temps total (équipe)
-  const col3X = margin + (contentWidth * 2/3);
-  pdf.setFontSize(fonts.small.size);
-  pdf.setFont(fonts.small.family, fonts.small.style);
-  
-  // Pour les fiches vierges, afficher le total équipe (heures × nombre de personnel)
-  const isBlankSheet = isBlankWorksheet(data.workLog?.projectId);
-  
-  if (isBlankSheet) {
-    pdf.text("Temps total équipe", col3X, yPos);
-    
-    pdf.setFont(fonts.body.family, fonts.body.style);
-    pdf.setFontSize(fonts.body.size);
-    const totalHours = data.workLog?.timeTracking?.totalHours || 0;
-    const personnelCount = data.workLog?.personnel?.length || 1;
-    const teamTotalHours = totalHours * personnelCount;
-    pdf.text(`${teamTotalHours.toFixed(2)} heures (${totalHours.toFixed(2)}h × ${personnelCount})`, col3X, yPos + 6);
-  } else {
-    pdf.text("Temps total", col3X, yPos);
-    
-    pdf.setFont(fonts.body.family, fonts.body.style);
-    pdf.setFontSize(fonts.body.size);
-    const totalTime = data.workLog?.timeTracking?.totalHours || 0;
-    pdf.text(`${totalTime.toFixed(2)} heures`, col3X, yPos + 6);
-  }
-  
-  return yPos + 12; // Réduire l'espace après cette section
-}
+
+  return y + spacing.sectionGap;
+};

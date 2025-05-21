@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
-import { useSettingsContext } from '@/context/SettingsContext';
+import { useSettings } from '@/context/SettingsContext';
 import { generatePDF, PDFOptions } from '@/utils/pdf';
 import { toast } from 'sonner';
 
@@ -11,7 +11,7 @@ interface UsePDFExportProps {
 }
 
 export const usePDFExport = ({ workLog, project }: UsePDFExportProps) => {
-  const { settings } = useSettingsContext();
+  const { settings } = useSettings();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportToPDF = async (options: PDFOptions & { theme?: string } = {}) => {

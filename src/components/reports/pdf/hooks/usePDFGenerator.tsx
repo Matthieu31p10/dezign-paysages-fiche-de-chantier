@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { generatePDF, PDFOptions, PDFData } from '@/utils/pdf';
 import { toast } from 'sonner';
+import { useApp } from '@/context/AppContext';
 
 export interface PDFGeneratorOptions extends PDFOptions {
   scale?: number;
@@ -9,7 +10,44 @@ export interface PDFGeneratorOptions extends PDFOptions {
 }
 
 export const usePDFGenerator = () => {
+  const { workLogs } = useApp();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState('regular');
+  const [selectedWorkLogId, setSelectedWorkLogId] = useState<string | null>(null);
+  const [selectedBlankWorkLogId, setSelectedBlankWorkLogId] = useState<string | null>(null);
+  const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
+    includeContactInfo: true,
+    includeCompanyInfo: true,
+    includePersonnel: true,
+    includeTasks: true,
+    includeWatering: true,
+    includeNotes: true,
+    includeTimeTracking: true,
+    includeWasteManagement: true,
+  });
+
+  const handleOptionChange = (option: keyof PDFOptions, value: boolean) => {
+    setPdfOptions(prev => ({
+      ...prev,
+      [option]: value
+    }));
+  };
+
+  const handleGenerateWorkLogPDF = async (isBlank: boolean = false) => {
+    const id = isBlank ? selectedBlankWorkLogId : selectedWorkLogId;
+    if (!id) {
+      toast.error('Sélectionnez une fiche de suivi');
+      return;
+    }
+
+    const workLog = workLogs.find(wl => wl.id === id);
+    if (!workLog) {
+      toast.error('Fiche de suivi non trouvée');
+      return;
+    }
+
+    await generateWorkLogPDF({ workLog }, { ...pdfOptions, theme: 'default' });
+  };
 
   const generateWorkLogPDF = async (
     data: Omit<PDFData, 'pdfOptions'>,
@@ -45,6 +83,15 @@ export const usePDFGenerator = () => {
 
   return {
     generateWorkLogPDF,
-    isGenerating
+    isGenerating,
+    activeTab,
+    setActiveTab,
+    selectedWorkLogId,
+    setSelectedWorkLogId,
+    selectedBlankWorkLogId,
+    setSelectedBlankWorkLogId,
+    pdfOptions,
+    handleOptionChange,
+    handleGenerateWorkLogPDF
   };
 };

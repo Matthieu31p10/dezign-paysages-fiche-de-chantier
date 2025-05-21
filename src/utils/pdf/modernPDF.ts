@@ -1,121 +1,128 @@
 
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { PDFData, PDFTheme } from './types';
-import { drawHeaderSection } from './sections/headerSection';
-import { drawDetailsSection } from './sections/detailsSection';
-import { drawPersonnelSection } from './sections/personnelSection';
-import { drawTasksSection } from './sections/tasksSection';
-import { drawTimeTrackingSection } from './sections/timeTrackingSection';
-import { drawNotesSection } from './sections/notesSection';
-import { drawWateringSection } from './sections/wateringSection';
-import { drawInfoBoxesSection } from './sections/infoBoxesSection';
-import { drawConsumablesSection } from './sections/consumablesSection';
+import { WorkLog, ProjectInfo, CompanyInfo } from '@/types/models';
+import { PDFData, PDFOptions, PDFTheme } from './types';
+import { getTheme } from './themes/pdfThemes';
+import { addHeaderSection } from './sections/headerSection';
+import { addInfoBoxesSection } from './sections/infoBoxesSection';
+import { addDetailsSection } from './sections/detailsSection';
+import { addPersonnelSection } from './sections/personnelSection';
+import { addTasksSection } from './sections/tasksSection';
+import { addWateringSection } from './sections/wateringSection';
+import { addNotesSection } from './sections/notesSection';
+import { addTimeTrackingSection } from './sections/timeTrackingSection';
+import { addConsumablesSection } from './sections/consumablesSection';
 import { addSummarySection } from './sections/summarySection';
-import { getPDFTheme, applyTheme } from './pdfHelpers';
+import { saveAs } from 'file-saver';
 
-/**
- * Generates a PDF document for a work log using a modular approach with section files
- * @param data The data to use for generating the PDF
- * @returns Filename of the generated PDF
- */
 export const generateModernWorkLogPDF = (data: PDFData): string => {
-  // Make sure we have a WorkLog object
-  if (!data.workLog) {
-    throw new Error('WorkLog data is required');
-  }
-  
-  // Get the theme to use for this PDF
-  const theme = getPDFTheme(data);
-  
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = theme.spacing.margin;
-  const contentWidth = pageWidth - (margin * 2);
-  
-  // Apply the theme to the document
-  applyTheme(doc, theme);
-  
-  // Starting position
-  let yPos = margin;
-  
-  // Draw header section with company info and logo
-  if (data.pdfOptions?.includeCompanyInfo) {
-    yPos = drawHeaderSection(doc, data, margin, yPos, theme);
-  }
-  
-  // Draw project details section
-  yPos = drawDetailsSection(doc, data, margin, yPos, pageWidth, contentWidth, theme);
-  
-  // Draw personnel section
-  if (data.pdfOptions?.includePersonnel) {
-    yPos = drawPersonnelSection(doc, data, margin, yPos, theme);
-  }
-  
-  // Draw tasks section
-  if (data.pdfOptions?.includeTasks && data.workLog.tasks) {
-    yPos = drawTasksSection(doc, data, margin, yPos, pageWidth, contentWidth, theme);
-  }
-  
-  // Draw time tracking section
-  if (data.pdfOptions?.includeTimeTracking) {
-    yPos = drawTimeTrackingSection(doc, data, margin, yPos, contentWidth, theme);
-  }
-  
-  // Draw info boxes for waste management
-  if (data.pdfOptions?.includeWasteManagement) {
-    yPos = drawInfoBoxesSection(doc, data, margin, yPos, contentWidth, theme);
-  }
-  
-  // Draw watering section
-  if (data.pdfOptions?.includeWatering) {
-    yPos = drawWateringSection(doc, data, margin, yPos, contentWidth, theme);
-  }
-  
-  // Draw notes section
-  if (data.pdfOptions?.includeNotes) {
-    yPos = drawNotesSection(doc, data, margin, yPos, contentWidth, theme);
-  }
-  
-  // Draw consumables section
-  if (data.pdfOptions?.includeConsumables) {
-    yPos = drawConsumablesSection(doc, data, margin, yPos, contentWidth, theme);
-  }
-  
-  // Draw summary section
-  if (data.pdfOptions?.includeSummary) {
-    if (data.workLog) {
-      yPos = addSummarySection(doc, data.workLog, yPos, margin, theme);
-    }
-  }
-  
-  // Add footer with page number
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(theme.fonts.small.size);
-    doc.setFont(theme.fonts.small.family, theme.fonts.small.style);
-    
-    // Page number
-    doc.text(`Page ${i} / ${pageCount}`, doc.internal.pageSize.getWidth() - 25, doc.internal.pageSize.getHeight() - 10);
-    
-    // Generation date
-    const today = format(new Date(), 'dd/MM/yyyy', { locale: fr });
-    doc.text(`Document généré le ${today}`, margin, doc.internal.pageSize.getHeight() - 10);
+  // Extract data
+  const {
+    workLog,
+    project,
+    companyInfo,
+    companyLogo,
+    pdfOptions = {},
+    customTasks,
+    hourlyRate,
+    consumables,
+    vatRate,
+    signedQuote,
+    quoteValue,
+    action = 'download',
+    theme: themeInput
+  } = data;
+
+  if (!workLog) {
+    throw new Error('No worklog data provided');
   }
 
-  // Save the PDF with a consistent file name
-  const fileName = `worklog-${data.workLog.id}.pdf`;
+  // Get theme
+  const theme = typeof themeInput === 'string' 
+    ? getTheme(themeInput) 
+    : themeInput;
+
+  // Create PDF document
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  // Initialize page coordinates
+  let y = 20;
+
+  // Add company and project header
+  y = addHeaderSection(doc, workLog, companyInfo, companyLogo, project, theme);
   
-  // Handle different actions (download or print)
-  if (data.action === 'print') {
-    doc.autoPrint();
-    doc.output('dataurlnewwindow');
-  } else {
-    doc.save(fileName);
+  // Add info boxes (date, total hours, etc)
+  if (pdfOptions.includeContactInfo !== false) {
+    y = addInfoBoxesSection(doc, workLog, project, y, theme);
   }
   
-  return fileName;
+  // Add project details
+  y = addDetailsSection(doc, workLog, project, y, theme);
+  
+  // Add personnel section
+  if (pdfOptions.includePersonnel !== false && workLog.personnel?.length) {
+    y = addPersonnelSection(doc, workLog.personnel, y, theme);
+  }
+  
+  // Add tasks section
+  if (pdfOptions.includeTasks !== false && (workLog.tasks?.length || customTasks?.length)) {
+    y = addTasksSection(doc, workLog.tasks || [], customTasks || [], y, theme);
+  }
+  
+  // Add watering section
+  if (pdfOptions.includeWatering !== false && workLog.watering) {
+    y = addWateringSection(doc, workLog.watering, y, theme);
+  }
+  
+  // Add notes section
+  if (pdfOptions.includeNotes !== false && workLog.notes) {
+    y = addNotesSection(doc, workLog.notes, y, theme);
+  }
+  
+  // Add time tracking section
+  if (pdfOptions.includeTimeTracking !== false) {
+    y = addTimeTrackingSection(doc, workLog, y, theme);
+  }
+  
+  // Add consumables section if present and requested
+  if (pdfOptions.includeConsumables !== false && consumables?.length) {
+    y = addConsumablesSection(doc, consumables, y, theme);
+  }
+  
+  // Add summary section if requested
+  if (pdfOptions.includeSummary !== false && (hourlyRate || workLog.totalHours)) {
+    y = addSummarySection(doc, {
+      hourlyRate,
+      totalHours: workLog.totalHours,
+      taxRate: vatRate,
+      signedQuote,
+      quoteValue
+    }, y, theme);
+  }
+
+  // Generate filename
+  const formattedDate = workLog.date 
+    ? new Date(workLog.date).toISOString().split('T')[0] 
+    : new Date().toISOString().split('T')[0];
+  
+  const projectName = project?.name 
+    ? project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() 
+    : 'projet';
+  
+  const filename = `fiche_suivi_${projectName}_${formattedDate}.pdf`;
+
+  // Handle output based on action
+  if (action === 'download') {
+    const blob = doc.output('blob');
+    saveAs(blob, filename);
+  } else {
+    doc.autoPrint();
+    window.open(doc.output('bloburl'));
+  }
+
+  return filename;
 };
