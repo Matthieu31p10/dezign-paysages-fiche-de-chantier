@@ -10,6 +10,20 @@ interface WorkLogDetailContextType {
   isEditable: boolean;
   handleExportToPDF: (options: PDFOptions & { theme?: string }) => Promise<void>;
   isExporting: boolean;
+  
+  // Add missing properties required by components
+  notes: string;
+  setNotes: React.Dispatch<React.SetStateAction<string>>;
+  handleSaveNotes: () => void;
+  calculateEndTime: (startTime: string, totalHours: number) => string;
+  calculateHourDifference: (planned: number, actual: number) => number;
+  calculateTotalTeamHours: () => number;
+  confirmDelete: () => void;
+  handleDeleteWorkLog: () => void;
+  handleSendEmail: () => void;
+  isDeleteDialogOpen: boolean;
+  setIsDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isBlankWorksheet: boolean;
 }
 
 // Options for PDF generation
@@ -25,8 +39,23 @@ export interface PDFOptions {
   includeSummary?: boolean;
 }
 
+// Create the context
+const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
+
+// Provider component
+export const WorkLogDetailProvider: React.FC<{
+  children: React.ReactNode;
+  value: WorkLogDetailContextType;
+}> = ({ children, value }) => {
+  return (
+    <WorkLogDetailContext.Provider value={value}>
+      {children}
+    </WorkLogDetailContext.Provider>
+  );
+};
+
 // Export the context so it can be imported elsewhere
-export const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
+export { WorkLogDetailContext };
 
 // Create a hook for easy access to the context
 export const useWorkLogDetail = () => {

@@ -4,7 +4,7 @@ import { WorkLog, ProjectInfo } from '@/types/models';
 import { formatDate } from '../formatHelpers';
 import { PDFTheme } from '../types';
 
-export const addDetailsSection = (
+export const drawDetailsSection = (
   doc: jsPDF,
   workLog: WorkLog,
   project?: ProjectInfo,
@@ -61,31 +61,37 @@ export const addDetailsSection = (
   doc.setFont(fonts.body.family, 'normal');
   doc.text(formatDate(workLog.date || ''), margin + 25, y);
   
+  // Get type safely (this field might not exist on all worklogs)
+  const workLogType = (workLog as any).type || 'Standard';
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Type:', margin + colWidth, y);
   doc.setFont(fonts.body.family, 'normal');
-  doc.text(workLog.type || 'Standard', margin + colWidth + 25, y);
+  doc.text(workLogType, margin + colWidth + 25, y);
   
+  // Get weather safely (this field might not exist on all worklogs)
+  const workLogWeather = (workLog as any).weather || 'Non spécifiée';
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Météo:', margin + colWidth * 2, y);
   doc.setFont(fonts.body.family, 'normal');
-  doc.text(workLog.weather || 'Non spécifiée', margin + colWidth * 2 + 25, y);
+  doc.text(workLogWeather, margin + colWidth * 2 + 25, y);
   
   y += spacing.paragraphGap;
 
-  // Row 2: Durée prévue, Temps total effectif
-  if (workLog.plannedDuration) {
+  // Row 2: Durée prévue, Temps total effectif - handle optional fields safely
+  const plannedDuration = (workLog as any).plannedDuration;
+  if (plannedDuration) {
     doc.setFont(fonts.body.family, 'bold');
     doc.text('Durée prévue:', margin, y);
     doc.setFont(fonts.body.family, 'normal');
-    doc.text(`${workLog.plannedDuration} h`, margin + 25, y);
+    doc.text(`${plannedDuration} h`, margin + 25, y);
   }
   
-  if (workLog.totalHours) {
+  const totalHours = workLog.totalHours || 0;
+  if (totalHours) {
     doc.setFont(fonts.body.family, 'bold');
     doc.text('Temps total:', margin + colWidth, y);
     doc.setFont(fonts.body.family, 'normal');
-    doc.text(`${workLog.totalHours} h`, margin + colWidth + 25, y);
+    doc.text(`${totalHours} h`, margin + colWidth + 25, y);
   }
 
   return y + spacing.sectionGap;

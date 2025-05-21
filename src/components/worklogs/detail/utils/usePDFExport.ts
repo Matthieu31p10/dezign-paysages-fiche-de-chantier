@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { useSettings } from '@/context/SettingsContext';
-import { generatePDF, PDFOptions } from '@/utils/pdf';
+import { generatePDF } from '@/utils/pdf';
+import { PDFOptions } from '@/utils/pdf/types';
 import { toast } from 'sonner';
 
 interface UsePDFExportProps {

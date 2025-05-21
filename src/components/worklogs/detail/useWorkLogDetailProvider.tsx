@@ -3,14 +3,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { PDFOptions } from './WorkLogDetailContext';
-import { useWorkLogCalculations } from './utils/useWorkLogCalculations';
 import { usePDFExport } from './utils/usePDFExport';
-import { useWorkLogActions } from './utils/useWorkLogActions';
 import { toast } from 'sonner';
 
 export const useWorkLogDetailProvider = (
   workLog?: WorkLog,
-  project?: ProjectInfo,
+  project?: ProjectInfo | null,
   workLogs: WorkLog[] = [],
   updateWorkLog?: (id: string, partialWorkLog: Partial<WorkLog>) => void,
   deleteWorkLog?: (id: string) => void,
@@ -18,9 +16,11 @@ export const useWorkLogDetailProvider = (
 ) => {
   const navigate = useNavigate();
   
-  // Use our new utility hooks
-  const calculations = useWorkLogCalculations(workLog, project, workLogs);
-  const pdfUtils = usePDFExport(workLog, project, settings);
+  // Use our PDF export utility hook
+  const { handleExportToPDF, isExporting } = usePDFExport({ 
+    workLog: workLog as WorkLog, 
+    project 
+  });
   
   // For the notes and delete actions, we need to add the updateWorkLog function
   const [notes, setNotes] = useState('');
@@ -68,6 +68,35 @@ export const useWorkLogDetailProvider = (
       toast.error("Erreur lors de l'enregistrement des notes");
     }
   };
+
+  // Time calculation utilities
+  const calculateEndTime = (startTime: string, totalHours: number) => {
+    if (!startTime || !totalHours) return "--:--";
+    
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + totalHours * 60;
+    
+    const endHours = Math.floor(totalMinutes / 60) % 24;
+    const endMinutes = Math.floor(totalMinutes % 60);
+    
+    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+  };
+  
+  const calculateHourDifference = (planned: number, actual: number) => {
+    return planned - actual;
+  };
+  
+  const calculateTotalTeamHours = () => {
+    if (!workLog) return 0;
+    const totalHours = workLog.totalHours || 0;
+    const personnelCount = workLog.personnel?.length || 0;
+    return totalHours * Math.max(1, personnelCount);
+  };
+  
+  // Email functionality (placeholder)
+  const handleSendEmail = () => {
+    toast.info("Fonctionnalité d'envoi par email en développement");
+  };
   
   // Combine all the utilities into a single return value
   return {
@@ -81,13 +110,14 @@ export const useWorkLogDetailProvider = (
     handleSaveNotes,
     
     // From calculations
-    calculateEndTime: calculations.calculateEndTime,
-    calculateHourDifference: calculations.calculateHourDifference,
-    calculateTotalTeamHours: calculations.calculateTotalTeamHours,
+    calculateEndTime,
+    calculateHourDifference,
+    calculateTotalTeamHours,
     
     // From PDF export
-    handleExportToPDF: pdfUtils.handleExportToPDF,
-    handleSendEmail: pdfUtils.handleSendEmail,
+    handleExportToPDF,
+    isExporting,
+    handleSendEmail,
     
     // Expose whether this is a blank worksheet
     isBlankWorksheet: workLog?.isBlankWorksheet || false

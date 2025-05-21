@@ -1,17 +1,16 @@
 
 import jsPDF from 'jspdf';
-import { WorkLog, ProjectInfo, CompanyInfo } from '@/types/models';
-import { PDFData, PDFOptions, PDFTheme } from './types';
+import { PDFData, PDFTheme } from './types';
 import { getTheme } from './themes/pdfThemes';
-import { addHeaderSection } from './sections/headerSection';
-import { addInfoBoxesSection } from './sections/infoBoxesSection';
-import { addDetailsSection } from './sections/detailsSection';
-import { addPersonnelSection } from './sections/personnelSection';
-import { addTasksSection } from './sections/tasksSection';
-import { addWateringSection } from './sections/wateringSection';
-import { addNotesSection } from './sections/notesSection';
-import { addTimeTrackingSection } from './sections/timeTrackingSection';
-import { addConsumablesSection } from './sections/consumablesSection';
+import { drawHeaderSection } from './sections/headerSection';
+import { drawInfoBoxesSection } from './sections/infoBoxesSection';
+import { drawDetailsSection } from './sections/detailsSection';
+import { drawPersonnelSection } from './sections/personnelSection';
+import { drawTasksSection } from './sections/tasksSection';
+import { drawWateringSection } from './sections/wateringSection';
+import { drawNotesSection } from './sections/notesSection';
+import { drawTimeTrackingSection } from './sections/timeTrackingSection';
+import { drawConsumablesSection } from './sections/consumablesSection';
 import { addSummarySection } from './sections/summarySection';
 import { saveAs } from 'file-saver';
 
@@ -53,51 +52,51 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   let y = 20;
 
   // Add company and project header
-  y = addHeaderSection(doc, workLog, companyInfo, companyLogo, project, theme);
+  y = drawHeaderSection(doc, data, 20, y, theme);
   
   // Add info boxes (date, total hours, etc)
   if (pdfOptions.includeContactInfo !== false) {
-    y = addInfoBoxesSection(doc, workLog, project, y, theme);
+    y = drawInfoBoxesSection(doc, data, 20, y, 170);
   }
   
   // Add project details
-  y = addDetailsSection(doc, workLog, project, y, theme);
+  y = drawDetailsSection(doc, workLog, project, y, theme);
   
   // Add personnel section
   if (pdfOptions.includePersonnel !== false && workLog.personnel?.length) {
-    y = addPersonnelSection(doc, workLog.personnel, y, theme);
+    y = drawPersonnelSection(doc, data, 20, y);
   }
   
   // Add tasks section
   if (pdfOptions.includeTasks !== false && (workLog.tasks?.length || customTasks?.length)) {
-    y = addTasksSection(doc, workLog.tasks || [], customTasks || [], y, theme);
+    y = drawTasksSection(doc, data, 20, y, doc.internal.pageSize.width, 170);
   }
   
-  // Add watering section
-  if (pdfOptions.includeWatering !== false && workLog.watering) {
-    y = addWateringSection(doc, workLog.watering, y, theme);
+  // Add watering section for water consumption
+  if (pdfOptions.includeWatering !== false && workLog.waterConsumption) {
+    y = drawWateringSection(doc, data, 20, y, 170);
   }
   
   // Add notes section
   if (pdfOptions.includeNotes !== false && workLog.notes) {
-    y = addNotesSection(doc, workLog.notes, y, theme);
+    y = drawNotesSection(doc, data, 20, y, 170);
   }
   
   // Add time tracking section
   if (pdfOptions.includeTimeTracking !== false) {
-    y = addTimeTrackingSection(doc, workLog, y, theme);
+    y = drawTimeTrackingSection(doc, data, 20, y, 170);
   }
   
   // Add consumables section if present and requested
   if (pdfOptions.includeConsumables !== false && consumables?.length) {
-    y = addConsumablesSection(doc, consumables, y, theme);
+    y = drawConsumablesSection(doc, data, 20, y, 170);
   }
   
   // Add summary section if requested
   if (pdfOptions.includeSummary !== false && (hourlyRate || workLog.totalHours)) {
     y = addSummarySection(doc, {
       hourlyRate,
-      totalHours: workLog.totalHours,
+      totalHours: workLog.totalHours || 0,
       taxRate: vatRate,
       signedQuote,
       quoteValue
