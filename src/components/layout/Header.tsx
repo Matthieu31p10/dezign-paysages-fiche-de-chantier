@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { CompanyLogo } from '@/components/ui/company-logo';
+import CompanyLogo from '@/components/ui/company-logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
@@ -25,7 +25,7 @@ const navItems = [
 ];
 
 const Header: React.FC = () => {
-  const { currentUser, logout } = useAuth();
+  const { auth, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -39,18 +39,18 @@ const Header: React.FC = () => {
     return location.pathname.startsWith(path);
   };
 
-  const userInitials = currentUser && currentUser.name 
-    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
+  const userInitials = auth.currentUser && auth.currentUser.name 
+    ? auth.currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : 'U';
 
   const filteredNavItems = navItems.filter(item => {
     // Filter items based on user permissions
-    if (item.adminOnly && currentUser?.role !== 'admin') {
+    if (item.adminOnly && auth.currentUser?.role !== 'admin') {
       return false;
     }
     // Filter module-specific items
-    if (item.requiredModule && currentUser?.permissions) {
-      return !!currentUser.permissions[item.requiredModule];
+    if (item.requiredModule && auth.currentUser?.permissions) {
+      return !!auth.currentUser.permissions[item.requiredModule];
     }
     return true;
   });
@@ -99,10 +99,10 @@ const Header: React.FC = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <div className="px-2 py-1.5 text-sm font-medium">
-                  {currentUser?.name || currentUser?.username}
+                  {auth.currentUser?.name || auth.currentUser?.username}
                 </div>
                 <div className="px-2 py-1 text-xs text-gray-500">
-                  {currentUser?.email}
+                  {auth.currentUser?.email}
                 </div>
                 <DropdownMenuSeparator />
                 
