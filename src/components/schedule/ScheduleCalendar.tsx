@@ -38,6 +38,11 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
   // Fonction pour générer des événements simulés pour la démonstration
   // Dans une version réelle, ceux-ci viendraient des workLogs ou d'une table dédiée
   const getEventsForDay = (date: Date) => {
+    // Ne pas retourner d'événements pour les weekends (samedi et dimanche)
+    if (isWeekend(date)) {
+      return [];
+    }
+    
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
     
@@ -64,10 +69,12 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     <Card className="overflow-hidden">
       <CardContent className="pt-6">
         <div className="grid grid-cols-7 gap-1">
-          {daysOfWeek.map((day) => (
+          {daysOfWeek.map((day, index) => (
             <div 
               key={day} 
-              className="text-center font-medium py-2 bg-muted text-muted-foreground text-sm"
+              className={`text-center font-medium py-2 ${
+                index >= 5 ? 'bg-gray-200 text-gray-500' : 'bg-muted text-muted-foreground'
+              } text-sm`}
             >
               {day}
             </div>
@@ -80,18 +87,20 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
           
           {/* Jours du mois */}
           {days.map((day) => {
+            const isWeekendDay = isWeekend(day);
             const dateEvents = getEventsForDay(day);
             return (
               <div 
                 key={day.toString()} 
                 className={`h-24 p-1 border overflow-hidden ${
                   isToday(day) ? 'bg-primary/10 border-primary' : 
-                  isWeekend(day) ? 'bg-muted/30' : 'bg-white'
+                  isWeekendDay ? 'bg-gray-200/70' : 'bg-white'
                 }`}
               >
                 <div className="flex justify-between items-center mb-1">
                   <span className={`text-sm font-medium ${
-                    isToday(day) ? 'text-primary' : ''
+                    isToday(day) ? 'text-primary' : 
+                    isWeekendDay ? 'text-gray-500' : ''
                   }`}>
                     {format(day, 'd')}
                   </span>
@@ -102,30 +111,36 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
                   )}
                 </div>
                 
-                <div className="space-y-1 overflow-y-auto max-h-[65px]">
-                  {dateEvents.map((event) => (
-                    <TooltipProvider key={event.id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div 
-                            className={`text-xs truncate px-1.5 py-0.5 rounded-sm cursor-pointer bg-green-100 border-l-2 border-green-500`}
-                          >
-                            {event.projectName.length > 15 
-                              ? `${event.projectName.slice(0, 15)}...` 
-                              : event.projectName
-                            }
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-sm">
-                            <p className="font-medium">{event.projectName}</p>
-                            <p>Durée: {event.duration}h</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                </div>
+                {isWeekendDay ? (
+                  <div className="text-xs text-gray-500 italic text-center mt-2">
+                    Non travaillé
+                  </div>
+                ) : (
+                  <div className="space-y-1 overflow-y-auto max-h-[65px]">
+                    {dateEvents.map((event) => (
+                      <TooltipProvider key={event.id}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div 
+                              className={`text-xs truncate px-1.5 py-0.5 rounded-sm cursor-pointer bg-green-100 border-l-2 border-green-500`}
+                            >
+                              {event.projectName.length > 15 
+                                ? `${event.projectName.slice(0, 15)}...` 
+                                : event.projectName
+                              }
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="text-sm">
+                              <p className="font-medium">{event.projectName}</p>
+                              <p>Durée: {event.duration}h</p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}

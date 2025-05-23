@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWeekend } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -48,6 +48,12 @@ const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, y
       const dayIndex = i * interval + Math.floor(interval / 2);
       if (dayIndex < days.length) {
         const day = days[dayIndex];
+        
+        // Éviter de programmer des événements pendant les weekends
+        if (isWeekend(day)) {
+          continue;
+        }
+        
         const dateKey = format(day, 'yyyy-MM-dd');
         
         events[dateKey].push({
@@ -101,33 +107,36 @@ const TeamSchedules: React.FC<TeamSchedulesProps> = ({
                 {Object.entries(events)
                   .filter(([_, dayEvents]) => dayEvents.length > 0)
                   .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-                  .map(([date, dayEvents]) => (
-                    <AccordionItem key={date} value={date} className="border rounded-lg overflow-hidden">
-                      <AccordionTrigger className="px-4 py-2 hover:bg-muted/50">
-                        <div className="flex justify-between items-center w-full">
-                          <span className="font-medium">
-                            {format(new Date(date), "EEEE d MMMM", { locale: fr })}
-                          </span>
-                          <Badge variant="outline" className="ml-2 bg-green-50">
-                            {dayEvents.length} chantier{dayEvents.length > 1 ? 's' : ''}
-                          </Badge>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 py-2">
-                        <div className="space-y-3">
-                          {dayEvents.map(event => (
-                            <div key={event.id} className="p-3 border rounded-lg bg-green-50/30">
-                              <div className="flex justify-between">
-                                <h4 className="font-medium text-green-800">{event.projectName}</h4>
-                                <span className="text-sm text-gray-500">{event.duration}h</span>
+                  .map(([date, dayEvents]) => {
+                    const currentDate = new Date(date);
+                    return (
+                      <AccordionItem key={date} value={date} className="border rounded-lg overflow-hidden">
+                        <AccordionTrigger className="px-4 py-2 hover:bg-muted/50">
+                          <div className="flex justify-between items-center w-full">
+                            <span className="font-medium">
+                              {format(new Date(date), "EEEE d MMMM", { locale: fr })}
+                            </span>
+                            <Badge variant="outline" className="ml-2 bg-green-50">
+                              {dayEvents.length} chantier{dayEvents.length > 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 py-2">
+                          <div className="space-y-3">
+                            {dayEvents.map(event => (
+                              <div key={event.id} className="p-3 border rounded-lg bg-green-50/30">
+                                <div className="flex justify-between">
+                                  <h4 className="font-medium text-green-800">{event.projectName}</h4>
+                                  <span className="text-sm text-gray-500">{event.duration}h</span>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">{event.address}</p>
                               </div>
-                              <p className="text-sm text-gray-600 mt-1">{event.address}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
                 
                 {Object.entries(events).filter(([_, dayEvents]) => dayEvents.length > 0).length === 0 && (
                   <div className="p-6 text-center text-gray-500">
