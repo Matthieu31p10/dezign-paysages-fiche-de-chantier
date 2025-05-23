@@ -20,6 +20,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
+import Schedule from './pages/Schedule';
 import './App.css';
 
 function App() {
@@ -39,6 +40,10 @@ function App() {
               <Route path="projects/new" element={<ProjectNew />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
               <Route path="projects/:id/edit" element={<ProjectEdit />} />
+              
+              {/* Nouvelle route pour l'agenda/planning */}
+              <Route path="schedule" element={<Schedule />} />
+              
               <Route path="worklogs" element={<WorkLogs />} />
               <Route path="worklogs/new" element={<WorkLogNew />} />
               <Route path="worklogs/:id" element={<WorkLogDetail />} />

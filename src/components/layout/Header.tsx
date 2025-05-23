@@ -1,138 +1,132 @@
 
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { FileText, BarChart2, Files, Settings, LogOut, User, FileBarChart } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useApp } from '@/context/AppContext';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { CalendarDaysIcon } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { CompanyLogo } from '@/components/ui/company-logo';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const Header = () => {
+const navItems = [
+  { path: '/projects', label: 'Chantiers' },
+  { path: '/schedule', label: 'Agenda' },
+  { path: '/worklogs', label: 'Suivis' },
+  { path: '/blank-worksheets', label: 'Fiches vierges', requiredModule: 'blanksheets' },
+  { path: '/reports', label: 'Rapports' },
+  { path: '/settings', label: 'Paramètres', adminOnly: true }
+];
+
+const Header: React.FC = () => {
+  const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { auth, logout } = useApp();
-  
-  // Check active route
-  const isActive = (path: string) => {
-    return location.pathname.startsWith(path);
-  };
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-  
-  return (
-    <header className="flex items-center h-16 px-4 md:px-6 border-b bg-background">
-      <Link to="/" className="flex items-center gap-2 font-semibold text-lg sm:text-xl">
-        <span className="hidden sm:inline-block text-primary">Suivi Chantier</span>
-      </Link>
-      
-      <nav className="ml-auto flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/projects") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/projects">
-            <Files className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Chantiers</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/worklogs") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/worklogs">
-            <FileText className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Suivis</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/blank-worksheets") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/blank-worksheets">
-            <FileBarChart className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Fiches Vierges</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/reports") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/reports">
-            <BarChart2 className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Bilans</span>
-          </Link>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "text-muted-foreground hover:text-foreground px-2 sm:px-4",
-            isActive("/settings") && "bg-accent text-accent-foreground"
-          )}
-          asChild
-        >
-          <Link to="/settings">
-            <Settings className="h-5 w-5 sm:mr-1.5" />
-            <span className="hidden sm:inline-block">Paramètres</span>
-          </Link>
-        </Button>
 
-        {auth.isAuthenticated && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="ml-2 px-2">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                {auth.currentUser?.name || auth.currentUser?.username}
-                <p className="font-normal text-xs text-muted-foreground">
-                  {auth.currentUser?.role === 'admin' ? 'Administrateur' : 
-                   auth.currentUser?.role === 'manager' ? 'Gestionnaire' : 'Utilisateur'}
-                </p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/settings" className="cursor-pointer w-full">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Paramètres
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
+
+  const userInitials = currentUser && currentUser.name 
+    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : 'U';
+
+  const filteredNavItems = navItems.filter(item => {
+    // Filter items based on user permissions
+    if (item.adminOnly && currentUser?.role !== 'admin') {
+      return false;
+    }
+    // Filter module-specific items
+    if (item.requiredModule && currentUser?.permissions) {
+      return !!currentUser.permissions[item.requiredModule];
+    }
+    return true;
+  });
+
+  return (
+    <header className="border-b shadow-sm bg-white">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <CompanyLogo className="h-8 w-auto" />
+            </Link>
+          </div>
+
+          {!isMobile && (
+            <nav className="flex items-center space-x-1">
+              {filteredNavItems.map((item) => (
+                <Link 
+                  key={item.path} 
+                  to={item.path} 
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
+                    ${isActive(item.path) 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                >
+                  {item.label}
+                  {item.path === '/schedule' && (
+                    <CalendarDaysIcon className="inline-block ml-1 w-4 h-4" />
+                  )}
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-                <LogOut className="h-4 w-4 mr-2" />
-                Déconnexion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </nav>
+              ))}
+            </nav>
+          )}
+
+          <div className="flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative rounded-full h-8 w-8 p-0">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-green-200 text-green-800">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <div className="px-2 py-1.5 text-sm font-medium">
+                  {currentUser?.name || currentUser?.username}
+                </div>
+                <div className="px-2 py-1 text-xs text-gray-500">
+                  {currentUser?.email}
+                </div>
+                <DropdownMenuSeparator />
+                
+                {isMobile && (
+                  <>
+                    {filteredNavItems.map((item) => (
+                      <DropdownMenuItem key={item.path} asChild>
+                        <Link to={item.path} className="cursor-pointer">
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                  Déconnexion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
     </header>
   );
 };
