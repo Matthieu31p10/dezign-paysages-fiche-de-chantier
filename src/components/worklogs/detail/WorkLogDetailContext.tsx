@@ -1,8 +1,8 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 
-// Options for PDF generation
+// Options pour la génération PDF
 export interface PDFOptions {
   includeContactInfo?: boolean;
   includeCompanyInfo?: boolean;
@@ -16,7 +16,7 @@ export interface PDFOptions {
   includeConsumables?: boolean;
 }
 
-// Type for the WorkLogDetail context
+// Type pour le contexte WorkLogDetail
 interface WorkLogDetailContextType {
   workLog: WorkLog | null;
   project: ProjectInfo | null;
@@ -25,7 +25,7 @@ interface WorkLogDetailContextType {
   handleExportToPDF: (options: PDFOptions & { theme?: string }) => Promise<void>;
   isExporting: boolean;
   
-  // Add missing properties required by components
+  // Ajout des propriétés manquantes requises par les composants
   notes: string;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
   handleSaveNotes: () => void;
@@ -40,10 +40,10 @@ interface WorkLogDetailContextType {
   isBlankWorksheet: boolean;
 }
 
-// Create the context
+// Création du contexte
 const WorkLogDetailContext = createContext<WorkLogDetailContextType | undefined>(undefined);
 
-// Provider component
+// Composant Provider
 export const WorkLogDetailProvider: React.FC<{
   children: React.ReactNode;
   value: WorkLogDetailContextType;
@@ -55,7 +55,7 @@ export const WorkLogDetailProvider: React.FC<{
   );
 };
 
-// Create a hook for easy access to the context
+// Création d'un hook pour un accès facile au contexte
 export const useWorkLogDetail = () => {
   const context = useContext(WorkLogDetailContext);
   if (!context) {

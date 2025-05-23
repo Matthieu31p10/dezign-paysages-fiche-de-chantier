@@ -34,41 +34,41 @@ export const drawDetailsSection = (
 
   const { fonts, colors, spacing } = theme || defaultTheme;
 
-  // Set up colors and fonts
+  // Configurer les couleurs et les polices
   const textColor = colors.text || [60, 60, 60];
   doc.setTextColor(textColor[0], textColor[1], textColor[2]);
 
-  // Set initial Y position
+  // Définir la position Y initiale
   let y = startY;
 
-  // Add details header
+  // Ajouter l'en-tête des détails
   doc.setFont(fonts.title.family, fonts.title.style);
   doc.setFontSize(fonts.title.size);
   doc.text('Détails de l\'intervention', spacing.margin, y);
   y += 8;
 
-  // Setup for detail items
+  // Configuration pour les éléments de détail
   doc.setFont(fonts.body.family, fonts.body.style);
   doc.setFontSize(fonts.body.size);
 
-  // Create detail items grid
+  // Créer une grille d'éléments de détail
   const margin = spacing.margin;
   const colWidth = (doc.internal.pageSize.width - margin * 2) / 3;
 
-  // Row 1: Date, Type, Météo
+  // Ligne 1 : Date, Type, Météo
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Date:', margin, y);
   doc.setFont(fonts.body.family, 'normal');
   doc.text(formatDate(workLog.date || ''), margin + 25, y);
   
-  // Get type safely - check if it exists on the workLog or use a default
+  // Obtenir le type en toute sécurité - vérifier s'il existe sur le workLog ou utiliser une valeur par défaut
   const workLogType = (workLog as any).type || 'Standard';
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Type:', margin + colWidth, y);
   doc.setFont(fonts.body.family, 'normal');
   doc.text(workLogType, margin + colWidth + 25, y);
   
-  // Get weather safely - check if it exists on the workLog or use a default
+  // Obtenir la météo en toute sécurité - vérifier si elle existe sur le workLog ou utiliser une valeur par défaut
   const workLogWeather = (workLog as any).weather || 'Non spécifiée';
   doc.setFont(fonts.body.family, 'bold');
   doc.text('Météo:', margin + colWidth * 2, y);
@@ -77,13 +77,13 @@ export const drawDetailsSection = (
   
   y += spacing.paragraphGap;
 
-  // Row 2: Durée prévue, Temps total effectif - handle optional fields safely
-  const plannedDuration = (workLog as any).plannedDuration;
-  if (plannedDuration) {
+  // Ligne 2 : Durée prévue, Temps total effectif - gérer les champs optionnels en toute sécurité
+  const duration = workLog.duration || 0;
+  if (duration) {
     doc.setFont(fonts.body.family, 'bold');
     doc.text('Durée prévue:', margin, y);
     doc.setFont(fonts.body.family, 'normal');
-    doc.text(`${plannedDuration} h`, margin + 25, y);
+    doc.text(`${duration} h`, margin + 25, y);
   }
   
   const totalHours = workLog.timeTracking?.totalHours || 0;

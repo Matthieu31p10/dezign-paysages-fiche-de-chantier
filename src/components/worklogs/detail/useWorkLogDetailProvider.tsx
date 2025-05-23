@@ -22,14 +22,14 @@ export const useWorkLogDetailProvider = (
     project 
   });
   
-  // For the notes and delete actions, we need to add the updateWorkLog function
+  // Pour les notes et les actions de suppression, nous avons besoin d'ajouter la fonction updateWorkLog
   const [notes, setNotes] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  // Add placeholders for required context values
+  // Ajout de placeholders pour les valeurs de contexte requises
   const [isLoading] = useState(false);
   const [isEditable] = useState(true);
   
-  // Update notes when workLog changes
+  // Mise à jour des notes lorsque workLog change
   useEffect(() => {
     if (workLog && workLog.notes) {
       setNotes(workLog.notes);
@@ -72,7 +72,7 @@ export const useWorkLogDetailProvider = (
     }
   };
 
-  // Time calculation utilities
+  // Utilitaires de calcul du temps
   const calculateEndTime = (startTime: string, totalHours: number) => {
     if (!startTime || !totalHours) return "--:--";
     
@@ -91,19 +91,20 @@ export const useWorkLogDetailProvider = (
   
   const calculateTotalTeamHours = () => {
     if (!workLog) return 0;
+    // Accès sécurisé à totalHours via timeTracking
     const totalHours = workLog.timeTracking?.totalHours || 0;
     const personnelCount = workLog.personnel?.length || 0;
     return totalHours * Math.max(1, personnelCount);
   };
   
-  // Email functionality (placeholder)
+  // Fonctionnalité d'email (placeholder)
   const handleSendEmail = () => {
     toast.info("Fonctionnalité d'envoi par email en développement");
   };
   
-  // Combine all the utilities into a single return value
+  // Combine tous les utilitaires dans une seule valeur de retour
   return {
-    // From notes and delete actions
+    // Des notes et des actions de suppression
     notes,
     setNotes,
     isDeleteDialogOpen,
@@ -112,21 +113,25 @@ export const useWorkLogDetailProvider = (
     confirmDelete,
     handleSaveNotes,
     
-    // From calculations
+    // Des calculs
     calculateEndTime,
     calculateHourDifference,
     calculateTotalTeamHours,
     
-    // From PDF export
+    // De l'export PDF
     handleExportToPDF,
     isExporting,
     handleSendEmail,
     
-    // Added required context values
+    // Valeurs de contexte requises ajoutées
     isLoading,
     isEditable,
     
-    // Expose whether this is a blank worksheet
-    isBlankWorksheet: workLog?.isBlankWorksheet || false
+    // Indique s'il s'agit d'une fiche vierge
+    isBlankWorksheet: workLog?.isBlankWorksheet || false,
+    
+    // Ajouter workLog et project manuellement pour éviter les erreurs TypeScript
+    workLog: workLog || null,
+    project: project || null
   };
 };

@@ -13,7 +13,7 @@ import DeleteWorkLogDialog from './DeleteWorkLogDialog';
 import HeaderActions from './HeaderActions';
 import { Loader2 } from 'lucide-react';
 
-// Lazy load components for better performance
+// Chargement paresseux des composants pour de meilleures performances
 const LazyNotesSection = React.lazy(() => import('./NotesSection'));
 const LazyCustomTasksCard = React.lazy(() => import('./CustomTasksCard'));
 
@@ -27,11 +27,11 @@ const WorkLogDetail = () => {
     return <Navigate to="/worklogs" />;
   }
   
-  // Get the right workLog and project data
+  // Obtenir les bonnes données workLog et projet
   const workLog = workLogs.find(log => log.id === id);
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
   
-  // Always call hooks at top-level, regardless of conditions
+  // Toujours appeler les hooks au niveau supérieur, quelles que soient les conditions
   const contextValues = useWorkLogDetailProvider(
     workLog, 
     project, 
@@ -50,18 +50,14 @@ const WorkLogDetail = () => {
     );
   }
   
-  // Early return if no workLog is found - AFTER all hooks are called
+  // Retour anticipé si aucun workLog n'est trouvé - APRÈS que tous les hooks sont appelés
   if (!workLog) {
     console.warn(`WorkLogDetail - WorkLog with ID ${id} not found`);
     return <Navigate to="/worklogs" />;
   }
   
   return (
-    <WorkLogDetailProvider value={{
-      ...contextValues,
-      workLog,
-      project
-    }}>
+    <WorkLogDetailProvider value={contextValues}>
       <div className="animate-fade-in space-y-6">
         <div className="flex justify-between items-start">
           <DetailHeader />
