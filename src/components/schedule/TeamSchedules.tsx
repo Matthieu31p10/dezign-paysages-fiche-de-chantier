@@ -35,14 +35,12 @@ const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, y
     ? projects 
     : projects.filter(p => p.team === teamId);
   
-  // Pour chaque projet, générer des événements pseudo-aléatoires
+  // Pour chaque projet, générer des événements pseudo-aléatoires avec numéro de passage
   teamProjects.forEach(project => {
-    // Simple logique de démonstration: visites basées sur le nombre de visites annuelles
-    // et la durée de chaque visite
     const visitsPerMonth = Math.max(1, Math.round(project.annualVisits / 12));
-    
-    // Distribuer les visites à travers le mois
     const interval = Math.floor(days.length / visitsPerMonth);
+    
+    let passageCounter = 1;
     
     for (let i = 0; i < visitsPerMonth; i++) {
       const dayIndex = i * interval + Math.floor(interval / 2);
@@ -63,7 +61,10 @@ const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, y
           team: project.team,
           duration: project.visitDuration,
           address: project.address,
+          passageNumber: passageCounter
         });
+        
+        passageCounter++;
       }
     }
   });
@@ -125,11 +126,18 @@ const TeamSchedules: React.FC<TeamSchedulesProps> = ({
                           <div className="space-y-3">
                             {dayEvents.map(event => (
                               <div key={event.id} className="p-3 border rounded-lg bg-green-50/30">
-                                <div className="flex justify-between">
-                                  <h4 className="font-medium text-green-800">{event.projectName}</h4>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="font-medium text-green-800">{event.projectName}</h4>
+                                      <Badge variant="outline" className="text-xs bg-green-500 text-white">
+                                        Passage {event.passageNumber}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-1">{event.address}</p>
+                                  </div>
                                   <span className="text-sm text-gray-500">{event.duration}h</span>
                                 </div>
-                                <p className="text-sm text-gray-600 mt-1">{event.address}</p>
                               </div>
                             ))}
                           </div>

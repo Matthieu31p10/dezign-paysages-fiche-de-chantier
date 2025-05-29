@@ -36,7 +36,6 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     : projectInfos.filter(project => project.team === teamId);
   
   // Fonction pour générer des événements simulés pour la démonstration
-  // Dans une version réelle, ceux-ci viendraient des workLogs ou d'une table dédiée
   const getEventsForDay = (date: Date) => {
     // Ne pas retourner d'événements pour les weekends (samedi et dimanche)
     if (isWeekend(date)) {
@@ -46,18 +45,45 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
     
+    // Pour chaque projet, créer un compteur de passages pour le mois
+    const projectPassageCounts: Record<string, number> = {};
+    
+    // Parcourir tous les jours du mois pour compter les passages par projet
+    days.forEach(dayInMonth => {
+      if (isWeekend(dayInMonth)) return;
+      
+      teamProjects.forEach(project => {
+        const dayNum = dayInMonth.getDate();
+        
+        // Même logique de génération d'événements
+        if ((dayNum % Math.max(1, project.annualVisits % 30)) === 0) {
+          if (!projectPassageCounts[project.id]) {
+            projectPassageCounts[project.id] = 0;
+          }
+          
+          // Si c'est le jour actuel ou avant, incrémenter le compteur
+          if (dayInMonth <= date) {
+            projectPassageCounts[project.id]++;
+          }
+        }
+      });
+    });
+    
     // Pour la démo, créer des événements pseudo-aléatoires basés sur le jour et l'id du chantier
     teamProjects.forEach(project => {
       const day = date.getDate();
       
       // Générer quelques événements basés sur une logique simple
       if ((day % Math.max(1, project.annualVisits % 30)) === 0) {
+        const passageNumber = projectPassageCounts[project.id] || 1;
+        
         events.push({
           id: `${project.id}-${dateString}`,
           projectId: project.id,
           projectName: project.name,
           team: project.team,
-          duration: project.visitDuration
+          duration: project.visitDuration,
+          passageNumber: passageNumber
         });
       }
     });
@@ -122,17 +148,25 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div 
-                              className={`text-xs truncate px-1.5 py-0.5 rounded-sm cursor-pointer bg-green-100 border-l-2 border-green-500`}
+                              className={`text-xs truncate px-1.5 py-0.5 rounded-sm cursor-pointer bg-green-100 border-l-2 border-green-500 relative`}
                             >
-                              {event.projectName.length > 15 
-                                ? `${event.projectName.slice(0, 15)}...` 
-                                : event.projectName
-                              }
+                              <div className="flex items-center justify-between">
+                                <span className="truncate flex-1">
+                                  {event.projectName.length > 12 
+                                    ? `${event.projectName.slice(0, 12)}...` 
+                                    : event.projectName
+                                  }
+                                </span>
+                                <span className="ml-1 text-xs font-bold bg-green-500 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                                  {event.passageNumber}
+                                </span>
+                              </div>
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
                             <div className="text-sm">
                               <p className="font-medium">{event.projectName}</p>
+                              <p>Passage n°{event.passageNumber}</p>
                               <p>Durée: {event.duration}h</p>
                             </div>
                           </TooltipContent>
