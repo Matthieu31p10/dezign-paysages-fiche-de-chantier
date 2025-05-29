@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,51 +21,62 @@ const Schedule = () => {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [activeTab, setActiveTab] = useState<string>('planning');
   
+  const months = useMemo(() => [
+    { value: "1", label: "Janvier" },
+    { value: "2", label: "Février" },
+    { value: "3", label: "Mars" },
+    { value: "4", label: "Avril" },
+    { value: "5", label: "Mai" },
+    { value: "6", label: "Juin" },
+    { value: "7", label: "Juillet" },
+    { value: "8", label: "Août" },
+    { value: "9", label: "Septembre" },
+    { value: "10", label: "Octobre" },
+    { value: "11", label: "Novembre" },
+    { value: "12", label: "Décembre" }
+  ], []);
+  
   const handleGenerateSchedule = () => {
     toast.success("Planning généré avec succès");
-    // Dans une version future, nous implémenterons la logique complète de génération automatique du planning
   };
   
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Agenda des passages</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-gray-900">Agenda des passages</h1>
+          <p className="text-gray-600 mt-2">
             Planifiez et visualisez les passages prévus sur vos chantiers
           </p>
         </div>
         
-        <Button onClick={handleGenerateSchedule}>
+        <Button onClick={handleGenerateSchedule} className="hover:scale-105 transition-transform">
           <CalendarIcon className="mr-2 h-4 w-4" />
           Générer le planning
         </Button>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center">
-          <TabsList>
-            <TabsTrigger value="planning" className="flex items-center gap-1">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:flex">
+            <TabsTrigger value="planning" className="flex items-center gap-2">
               <CalendarDaysIcon className="h-4 w-4" />
               <span>Planning</span>
             </TabsTrigger>
-            <TabsTrigger value="rules" className="flex items-center gap-1">
+            <TabsTrigger value="rules" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>Règles</span>
             </TabsTrigger>
-            <TabsTrigger value="distribution" className="flex items-center gap-1">
+            <TabsTrigger value="distribution" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span>Distribution</span>
             </TabsTrigger>
           </TabsList>
           
-          <div className="flex flex-col sm:flex-row gap-4 mt-4 sm:mt-0">
-            <Select
-              value={selectedTeam}
-              onValueChange={setSelectedTeam}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Équipe" />
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Sélectionner une équipe" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes les équipes</SelectItem>
@@ -79,71 +90,68 @@ const Schedule = () => {
               value={selectedMonth.toString()}
               onValueChange={(value) => setSelectedMonth(parseInt(value))}
             >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Mois" />
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Sélectionner un mois" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Janvier</SelectItem>
-                <SelectItem value="2">Février</SelectItem>
-                <SelectItem value="3">Mars</SelectItem>
-                <SelectItem value="4">Avril</SelectItem>
-                <SelectItem value="5">Mai</SelectItem>
-                <SelectItem value="6">Juin</SelectItem>
-                <SelectItem value="7">Juillet</SelectItem>
-                <SelectItem value="8">Août</SelectItem>
-                <SelectItem value="9">Septembre</SelectItem>
-                <SelectItem value="10">Octobre</SelectItem>
-                <SelectItem value="11">Novembre</SelectItem>
-                <SelectItem value="12">Décembre</SelectItem>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
         
-        <TabsContent value="planning" className="space-y-6">
-          <div className="flex justify-end mb-2">
-            <div className="border rounded-md flex">
+        <TabsContent value="planning" className="space-y-4">
+          <div className="flex justify-end">
+            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
               <Button 
-                variant={viewMode === 'calendar' ? "secondary" : "ghost"} 
+                variant={viewMode === 'calendar' ? "default" : "ghost"} 
                 size="sm"
                 onClick={() => setViewMode('calendar')}
-                className="px-3"
+                className="h-8 px-3 transition-all"
               >
-                <CalendarDaysIcon className="h-4 w-4" />
+                <CalendarDaysIcon className="h-4 w-4 mr-1" />
+                Calendrier
               </Button>
               <Button 
-                variant={viewMode === 'list' ? "secondary" : "ghost"} 
+                variant={viewMode === 'list' ? "default" : "ghost"} 
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className="px-3"
+                className="h-8 px-3 transition-all"
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-4 w-4 mr-1" />
+                Liste
               </Button>
             </div>
           </div>
           
-          {viewMode === 'calendar' ? (
-            <ScheduleCalendar 
-              month={selectedMonth} 
-              year={selectedYear} 
-              teamId={selectedTeam}
-            />
-          ) : (
-            <TeamSchedules
-              month={selectedMonth}
-              year={selectedYear}
-              teamId={selectedTeam}
-              teams={teams}
-              projects={projectInfos}
-            />
-          )}
+          <div className="transition-all duration-300">
+            {viewMode === 'calendar' ? (
+              <ScheduleCalendar 
+                month={selectedMonth} 
+                year={selectedYear} 
+                teamId={selectedTeam}
+              />
+            ) : (
+              <TeamSchedules
+                month={selectedMonth}
+                year={selectedYear}
+                teamId={selectedTeam}
+                teams={teams}
+                projects={projectInfos}
+              />
+            )}
+          </div>
         </TabsContent>
         
-        <TabsContent value="rules">
+        <TabsContent value="rules" className="space-y-4">
           <SchedulingRules projects={projectInfos} teams={teams} />
         </TabsContent>
         
-        <TabsContent value="distribution">
+        <TabsContent value="distribution" className="space-y-4">
           <MonthlyDistribution 
             projects={projectInfos} 
             teams={teams}

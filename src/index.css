@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -93,16 +93,22 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Animations et transitions */
   .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-xl;
+    @apply bg-white/90 backdrop-blur-lg border border-white/20 shadow-xl rounded-2xl;
   }
   
   .hover-scale {
-    @apply transition-transform duration-300 hover:scale-[1.02];
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
   }
   
   .animate-enter {
@@ -110,14 +116,161 @@
   }
   
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200;
   }
   
   .badge-green {
-    @apply bg-brand-100 text-brand-800;
+    @apply bg-green-100 text-green-800 hover:bg-green-200;
   }
   
   .badge-gray {
-    @apply bg-gray-100 text-gray-800;
+    @apply bg-gray-100 text-gray-800 hover:bg-gray-200;
+  }
+
+  /* Améliorations des interactions */
+  .interactive-element {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .interactive-element:hover {
+    @apply transform scale-105;
+  }
+
+  .interactive-element:active {
+    @apply transform scale-95;
+  }
+
+  /* Amélioration des focus states */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200;
+  }
+
+  /* Scrollbar custom */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Styles pour les cartes */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  /* Animations fluides pour les accordions */
+  .accordion-content {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Amélioration des bordures */
+  .border-l-3 {
+    border-left-width: 3px;
+  }
+
+  /* Responsive text scaling */
+  @media (max-width: 640px) {
+    .responsive-text {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Loading states */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  /* États de succès et d'erreur */
+  .success-state {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+
+  .error-state {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+
+  .warning-state {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+  }
+
+  /* Optimisation pour les écrans tactiles */
+  @media (pointer: coarse) {
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
+
+/* Keyframes supplémentaires pour animations fluides */
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.animate-fade-scale {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
   }
 }
