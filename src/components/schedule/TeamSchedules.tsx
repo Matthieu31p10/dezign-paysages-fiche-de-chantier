@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWeekend } from 'date-fns';
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWeekend, startOfYear, endOfYear } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -16,15 +16,20 @@ interface TeamSchedulesProps {
   projects: ProjectInfo[];
 }
 
-// Générer des événements pour la démonstration
+// Générer des événements pour la démonstration avec calcul annuel des numéros de passage
 const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, year: number) => {
   const monthStart = startOfMonth(new Date(year, month - 1));
   const monthEnd = endOfMonth(monthStart);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
+  // Calculer les passages pour toute l'année civile
+  const yearStart = startOfYear(new Date(year, 0));
+  const yearEnd = endOfYear(new Date(year, 0));
+  const yearDays = eachDayOfInterval({ start: yearStart, end: yearEnd });
+  
   const events: Record<string, any[]> = {};
   
-  // Initialiser les tableaux vides pour chaque jour
+  // Initialiser les tableaux vides pour chaque jour du mois
   days.forEach(day => {
     const dateKey = format(day, 'yyyy-MM-dd');
     events[dateKey] = [];
@@ -35,15 +40,32 @@ const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, y
     ? projects 
     : projects.filter(p => p.team === teamId);
   
-  // Pour chaque projet, générer des événements pseudo-aléatoires avec numéro de passage
+  // Pour chaque projet, calculer les numéros de passage sur l'année civile
   teamProjects.forEach(project => {
-    const visitsPerMonth = Math.max(1, Math.round(project.annualVisits / 12));
-    const interval = Math.floor(days.length / visitsPerMonth);
+    const visitsPerYear = project.annualVisits || 12;
+    const workingDaysInYear = yearDays.filter(d => !isWeekend(d));
+    const interval = Math.floor(workingDaysInYear.length / visitsPerYear);
     
+    // Créer une map des passages pour toute l'année
+    const yearlyPassages: Record<string, number> = {};
     let passageCounter = 1;
     
-    for (let i = 0; i < visitsPerMonth; i++) {
+    for (let i = 0; i < visitsPerYear; i++) {
       const dayIndex = i * interval + Math.floor(interval / 2);
+      if (dayIndex < workingDaysInYear.length) {
+        const day = workingDaysInYear[dayIndex];
+        const dateKey = format(day, 'yyyy-MM-dd');
+        yearlyPassages[dateKey] = passageCounter;
+        passageCounter++;
+      }
+    }
+    
+    // Ajouter les événements du mois avec les bons numéros de passage
+    const visitsPerMonth = Math.max(1, Math.round(visitsPerYear / 12));
+    const monthInterval = Math.floor(days.length / visitsPerMonth);
+    
+    for (let i = 0; i < visitsPerMonth; i++) {
+      const dayIndex = i * monthInterval + Math.floor(monthInterval / 2);
       if (dayIndex < days.length) {
         const day = days[dayIndex];
         
@@ -53,6 +75,7 @@ const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, y
         }
         
         const dateKey = format(day, 'yyyy-MM-dd');
+        const passageNumber = yearlyPassages[dateKey] || 1;
         
         events[dateKey].push({
           id: `${project.id}-${dateKey}`,
@@ -61,10 +84,8 @@ const getTeamEvents = (projects: ProjectInfo[], teamId: string, month: number, y
           team: project.team,
           duration: project.visitDuration,
           address: project.address,
-          passageNumber: passageCounter
+          passageNumber: passageNumber
         });
-        
-        passageCounter++;
       }
     }
   });

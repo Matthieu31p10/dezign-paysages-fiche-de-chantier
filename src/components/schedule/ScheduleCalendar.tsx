@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { addDays, format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isWeekend, isSameMonth, getDay } from 'date-fns';
+import { addDays, format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isWeekend, isSameMonth, getDay, startOfYear, endOfYear } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,42 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     ? projectInfos
     : projectInfos.filter(project => project.team === teamId);
   
-  // Fonction pour générer des événements simulés pour la démonstration
+  // Fonction pour calculer les passages sur toute l'année civile
+  const getYearlyPassageNumbers = (currentYear: number) => {
+    const yearStart = startOfYear(new Date(currentYear, 0));
+    const yearEnd = endOfYear(new Date(currentYear, 0));
+    const yearDays = eachDayOfInterval({ start: yearStart, end: yearEnd });
+    
+    const yearlyPassages: Record<string, Record<string, number>> = {};
+    
+    teamProjects.forEach(project => {
+      let passageCounter = 1;
+      const visitsPerYear = project.annualVisits || 12;
+      const interval = Math.floor(yearDays.filter(d => !isWeekend(d)).length / visitsPerYear);
+      
+      yearlyPassages[project.id] = {};
+      
+      for (let i = 0; i < visitsPerYear; i++) {
+        const dayIndex = i * interval + Math.floor(interval / 2);
+        if (dayIndex < yearDays.length) {
+          const day = yearDays[dayIndex];
+          
+          // Éviter de programmer des événements pendant les weekends
+          if (isWeekend(day)) {
+            continue;
+          }
+          
+          const dateKey = format(day, 'yyyy-MM-dd');
+          yearlyPassages[project.id][dateKey] = passageCounter;
+          passageCounter++;
+        }
+      }
+    });
+    
+    return yearlyPassages;
+  };
+  
+  // Fonction pour obtenir les événements d'une journée avec les numéros de passage annuels
   const getEventsForDay = (date: Date) => {
     // Ne pas retourner d'événements pour les weekends (samedi et dimanche)
     if (isWeekend(date)) {
@@ -44,30 +79,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
-    
-    // Pour chaque projet, créer un compteur de passages pour le mois
-    const projectPassageCounts: Record<string, number> = {};
-    
-    // Parcourir tous les jours du mois pour compter les passages par projet
-    days.forEach(dayInMonth => {
-      if (isWeekend(dayInMonth)) return;
-      
-      teamProjects.forEach(project => {
-        const dayNum = dayInMonth.getDate();
-        
-        // Même logique de génération d'événements
-        if ((dayNum % Math.max(1, project.annualVisits % 30)) === 0) {
-          if (!projectPassageCounts[project.id]) {
-            projectPassageCounts[project.id] = 0;
-          }
-          
-          // Si c'est le jour actuel ou avant, incrémenter le compteur
-          if (dayInMonth <= date) {
-            projectPassageCounts[project.id]++;
-          }
-        }
-      });
-    });
+    const yearlyPassages = getYearlyPassageNumbers(year);
     
     // Pour la démo, créer des événements pseudo-aléatoires basés sur le jour et l'id du chantier
     teamProjects.forEach(project => {
@@ -75,7 +87,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
       
       // Générer quelques événements basés sur une logique simple
       if ((day % Math.max(1, project.annualVisits % 30)) === 0) {
-        const passageNumber = projectPassageCounts[project.id] || 1;
+        const passageNumber = yearlyPassages[project.id]?.[dateString] || 1;
         
         events.push({
           id: `${project.id}-${dateString}`,
