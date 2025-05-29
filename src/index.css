@@ -1,123 +1,187 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-@layer base {
-  :root {
-    --background: 150 30% 99%;
-    --foreground: 150 10% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 150 10% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 10% 10%;
-
-    --primary: 142 70% 45%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 150 20% 96%;
-    --secondary-foreground: 150 10% 20%;
-
-    --muted: 150 10% 96%;
-    --muted-foreground: 150 5% 40%;
-
-    --accent: 142 50% 96%;
-    --accent-foreground: 150 10% 20%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 150 20% 90%;
-    --input: 150 20% 90%;
-    --ring: 142 70% 45%;
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 150 30% 99%;
-    --sidebar-foreground: 150 10% 30%;
-    --sidebar-primary: 142 70% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 20% 96%;
-    --sidebar-accent-foreground: 150 10% 20%;
-    --sidebar-border: 150 20% 90%;
-    --sidebar-ring: 142 70% 45%;
-  }
-
-  .dark {
-    --background: 150 10% 5%;
-    --foreground: 150 10% 98%;
-
-    --card: 150 10% 7%;
-    --card-foreground: 150 10% 98%;
-
-    --popover: 150 10% 7%;
-    --popover-foreground: 150 10% 98%;
-
-    --primary: 142 70% 45%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 150 10% 12%;
-    --secondary-foreground: 150 10% 98%;
-
-    --muted: 150 10% 15%;
-    --muted-foreground: 150 5% 65%;
-
-    --accent: 150 10% 12%;
-    --accent-foreground: 150 10% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 150 10% 98%;
-
-    --border: 150 10% 20%;
-    --input: 150 10% 20%;
-    --ring: 142 70% 45%;
-
-    --sidebar-background: 150 10% 7%;
-    --sidebar-foreground: 150 10% 80%;
-    --sidebar-primary: 142 70% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 10% 12%;
-    --sidebar-accent-foreground: 150 10% 90%;
-    --sidebar-border: 150 10% 15%;
-    --sidebar-ring: 142 70% 45%;
-  }
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-
+  
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+    scroll-behavior: smooth;
   }
 
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-xl;
+  /* Scrollbar personnalisée */
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
   
-  .hover-scale {
-    @apply transition-transform duration-300 hover:scale-[1.02];
+  .scrollbar-thumb-green-200::-webkit-scrollbar-thumb {
+    background-color: rgb(187 247 208);
+    border-radius: 0.375rem;
   }
   
-  .animate-enter {
-    @apply animate-fade-in;
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
   
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgb(243 244 246);
+    border-radius: 0.375rem;
   }
   
-  .badge-green {
-    @apply bg-brand-100 text-brand-800;
+  /* Amélioration des transitions globales */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+}
+
+@layer utilities {
+  /* Animations personnalisées */
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
   }
   
-  .badge-gray {
-    @apply bg-gray-100 text-gray-800;
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
   }
+  
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+  }
+  
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s infinite;
+  }
+
+  /* Utilitaires pour les bordures */
+  .border-l-3 {
+    border-left-width: 3px;
+  }
+  
+  .border-l-4 {
+    border-left-width: 4px;
+  }
+
+  /* Effet de focus amélioré */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+
+  /* Texte avec gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, #059669, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Amélioration des composants UI */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.02];
+}
+
+.button-primary {
+  @apply bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.input-focus {
+  @apply border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200;
+}
+
+/* Amélioration des états de chargement */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-green-600;
+}
+
+/* Optimisation mobile */
+@media (max-width: 768px) {
+  .mobile-optimized {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .mobile-spacing {
+    @apply px-4 py-3;
+  }
+}
+
+/* Mode sombre (préparation future) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-ready {
+    @apply transition-colors duration-300;
+  }
+}
+
+/* Accessibilité améliorée */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible pour l'accessibilité */
+.focus-visible {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2;
 }
