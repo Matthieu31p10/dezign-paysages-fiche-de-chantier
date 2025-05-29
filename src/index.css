@@ -1,112 +1,123 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-sans: 'Inter', system-ui, sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 150 30% 99%;
+    --foreground: 150 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 10% 10%;
+
+    --primary: 142 70% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 20% 96%;
+    --secondary-foreground: 150 10% 20%;
+
+    --muted: 150 10% 96%;
+    --muted-foreground: 150 5% 40%;
+
+    --accent: 142 50% 96%;
+    --accent-foreground: 150 10% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 150 20% 90%;
+    --input: 150 20% 90%;
+    --ring: 142 70% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 150 30% 99%;
+    --sidebar-foreground: 150 10% 30%;
+    --sidebar-primary: 142 70% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 150 20% 96%;
+    --sidebar-accent-foreground: 150 10% 20%;
+    --sidebar-border: 150 20% 90%;
+    --sidebar-ring: 142 70% 45%;
+  }
+
+  .dark {
+    --background: 150 10% 5%;
+    --foreground: 150 10% 98%;
+
+    --card: 150 10% 7%;
+    --card-foreground: 150 10% 98%;
+
+    --popover: 150 10% 7%;
+    --popover-foreground: 150 10% 98%;
+
+    --primary: 142 70% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 10% 12%;
+    --secondary-foreground: 150 10% 98%;
+
+    --muted: 150 10% 15%;
+    --muted-foreground: 150 5% 65%;
+
+    --accent: 150 10% 12%;
+    --accent-foreground: 150 10% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 150 10% 98%;
+
+    --border: 150 10% 20%;
+    --input: 150 10% 20%;
+    --ring: 142 70% 45%;
+
+    --sidebar-background: 150 10% 7%;
+    --sidebar-foreground: 150 10% 80%;
+    --sidebar-primary: 142 70% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 150 10% 12%;
+    --sidebar-accent-foreground: 150 10% 90%;
+    --sidebar-border: 150 10% 15%;
+    --sidebar-ring: 142 70% 45%;
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-sans);
-    font-feature-settings: "cv11", "ss01";
-    font-variation-settings: "opsz" 32;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', sans-serif;
   }
 
-  /* Scrollbar personnalisée */
-  .scrollbar-thin {
-    scrollbar-width: thin;
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-xl;
   }
   
-  .scrollbar-thumb-green-200::-webkit-scrollbar-thumb {
-    background-color: rgb(187 247 208);
-    border-radius: 0.375rem;
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-[1.02];
   }
   
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  .animate-enter {
+    @apply animate-fade-in;
   }
   
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: rgb(243 244 246);
-    border-radius: 0.375rem;
-  }
-}
-
-@layer utilities {
-  /* Animations personnalisées */
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out;
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
   
-  .animate-scale-in {
-    animation: scale-in 0.3s ease-out;
+  .badge-green {
+    @apply bg-brand-100 text-brand-800;
   }
   
-  .animate-slide-up {
-    animation: slide-up 0.4s ease-out;
-  }
-  
-  .animate-bounce-subtle {
-    animation: bounce-subtle 2s infinite;
-  }
-
-  /* Utilitaires pour les bordures */
-  .border-l-3 {
-    border-left-width: 3px;
-  }
-  
-  .border-l-4 {
-    border-left-width: 4px;
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scale-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slide-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
+  .badge-gray {
+    @apply bg-gray-100 text-gray-800;
   }
 }
