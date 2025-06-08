@@ -28,7 +28,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Update local state when data changes
   useEffect(() => {
     if (projectsData) {
-      const formattedProjects = projectsData.map(project => ({
+      const formattedProjects: ProjectInfo[] = projectsData.map(project => ({
         id: project.id,
         name: project.name,
         clientName: project.client_name || '',
@@ -42,8 +42,8 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           details: project.contract_details || '',
           documentUrl: project.contract_document_url || '',
         },
-        irrigation: project.irrigation || 'none',
-        mowerType: project.mower_type || 'both',
+        irrigation: (project.irrigation as "irrigation" | "none" | "disabled") || 'none',
+        mowerType: (project.mower_type as "manual" | "robot" | "both") || 'both',
         annualVisits: project.annual_visits || 0,
         annualTotalHours: project.annual_total_hours || 0,
         visitDuration: project.visit_duration || 0,

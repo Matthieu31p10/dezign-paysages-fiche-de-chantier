@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SettingsContextType } from '../types';
@@ -61,8 +61,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
   });
 
-  // Update local state when data changes
-  useEffect(() => {
+  // Memoize settings to prevent infinite re-renders
+  const memoizedSettings = useMemo(() => {
     const newSettings: AppSettings = {
       companyName: settingsData?.company_name || 'Vertos Chantiers',
       companyLogo: settingsData?.company_logo || '',
@@ -85,8 +85,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         name: t.name,
       })) || [],
     };
-    setSettings(newSettings);
+    return newSettings;
   }, [settingsData, personnelData, customTasksData]);
+
+  // Update local state when data changes
+  useEffect(() => {
+    setSettings(memoizedSettings);
+  }, [memoizedSettings]);
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
@@ -116,7 +121,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Add personnel mutation
   const addPersonnelMutation = useMutation({
-    mutationFn: async (name: string, position?: string) => {
+    mutationFn: async ({ name, position }: { name: string; position?: string }) => {
       const { data, error } = await supabase
         .from('personnel')
         .insert([{
@@ -215,7 +220,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       position: position || '',
       active: true,
     };
-    addPersonnelMutation.mutate(name, position);
+    addPersonnelMutation.mutate({ name, position });
     return newPersonnel;
   };
 
