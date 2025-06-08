@@ -1,52 +1,94 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { ProjectsContextType } from './types';
 import { toast } from 'sonner';
 import { useWorkLogs } from './WorkLogsContext';
+import { loadProjectsFromStorage, saveProjectsToStorage, deleteProjectFromStorage } from './projects/storage/projectOperations';
 
 const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined);
 
 export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projectInfos, setProjectInfos] = useState<ProjectInfo[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { deleteWorkLogsByProjectId, archiveWorkLogsByProjectId } = useWorkLogs();
 
-  // In the future, load data from database on initial render
-  // This would be implemented with a React Query hook
+  // Load projects from Supabase on mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setIsLoading(true);
+        const loadedProjects = await loadProjectsFromStorage();
+        setProjectInfos(loadedProjects);
+      } catch (error) {
+        console.error("Error loading projects:", error);
+        toast.error("Erreur lors du chargement des projets");
+        setProjectInfos([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProjects();
+  }, []);
 
-  const addProjectInfo = (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
+  const addProjectInfo = async (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
     const newProjectInfo: ProjectInfo = {
       ...projectInfo,
       id: crypto.randomUUID(),
       createdAt: new Date(),
     };
-    setProjectInfos((prev) => [...prev, newProjectInfo]);
-    // In the future, save to database
-    toast.success('Fiche chantier créée');
-    return newProjectInfo;
-  };
-
-  const updateProjectInfo = (projectInfo: ProjectInfo) => {
-    const oldProject = projectInfos.find(p => p.id === projectInfo.id);
-    setProjectInfos((prev) => prev.map((p) => (p.id === projectInfo.id ? projectInfo : p)));
     
-    // Si l'état d'archivage a changé, mettre à jour les fiches de suivi
-    if (oldProject && oldProject.isArchived !== projectInfo.isArchived) {
-      archiveWorkLogsByProjectId(projectInfo.id, !!projectInfo.isArchived);
+    try {
+      // Save to Supabase
+      await saveProjectsToStorage([...projectInfos, newProjectInfo]);
+      setProjectInfos((prev) => [...prev, newProjectInfo]);
+      toast.success('Fiche chantier créée');
+      return newProjectInfo;
+    } catch (error) {
+      console.error("Error adding project:", error);
+      toast.error('Erreur lors de la création du projet');
+      throw error;
     }
-    
-    // In the future, update in database
-    toast.success('Fiche chantier mise à jour');
   };
 
-  const deleteProjectInfo = (id: string) => {
-    setProjectInfos((prev) => prev.filter((p) => p.id !== id));
-    deleteWorkLogsByProjectId(id);
-    // In the future, delete from database
-    toast.success('Fiche chantier supprimée');
-    if (selectedProjectId === id) {
-      setSelectedProjectId(null);
+  const updateProjectInfo = async (projectInfo: ProjectInfo) => {
+    const oldProject = projectInfos.find(p => p.id === projectInfo.id);
+    const updatedProjects = projectInfos.map((p) => (p.id === projectInfo.id ? projectInfo : p));
+    
+    try {
+      // Save to Supabase
+      await saveProjectsToStorage(updatedProjects);
+      setProjectInfos(updatedProjects);
+      
+      // Si l'état d'archivage a changé, mettre à jour les fiches de suivi
+      if (oldProject && oldProject.isArchived !== projectInfo.isArchived) {
+        archiveWorkLogsByProjectId(projectInfo.id, !!projectInfo.isArchived);
+      }
+      
+      toast.success('Fiche chantier mise à jour');
+    } catch (error) {
+      console.error("Error updating project:", error);
+      toast.error('Erreur lors de la mise à jour du projet');
+      throw error;
+    }
+  };
+
+  const deleteProjectInfo = async (id: string) => {
+    try {
+      // Delete from Supabase
+      await deleteProjectFromStorage(id);
+      setProjectInfos((prev) => prev.filter((p) => p.id !== id));
+      deleteWorkLogsByProjectId(id);
+      toast.success('Fiche chantier supprimée');
+      if (selectedProjectId === id) {
+        setSelectedProjectId(null);
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      toast.error('Erreur lors de la suppression du projet');
+      throw error;
     }
   };
 
@@ -71,6 +113,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         projectInfos,
         selectedProjectId,
+        isLoading,
         addProjectInfo,
         updateProjectInfo,
         deleteProjectInfo,

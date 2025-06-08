@@ -1,11 +1,13 @@
+
 import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask } from '@/types/models';
 
 export interface ProjectsContextType {
   projectInfos: ProjectInfo[];
   selectedProjectId: string | null;
-  addProjectInfo: (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => ProjectInfo;
-  updateProjectInfo: (projectInfo: ProjectInfo) => void;
-  deleteProjectInfo: (id: string) => void;
+  isLoading?: boolean;
+  addProjectInfo: (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => Promise<ProjectInfo>;
+  updateProjectInfo: (projectInfo: ProjectInfo) => Promise<void>;
+  deleteProjectInfo: (id: string) => Promise<void>;
   selectProject: (id: string | null) => void;
   getProjectById: (id: string) => ProjectInfo | undefined;
   getActiveProjects: () => ProjectInfo[];
@@ -29,21 +31,22 @@ export type WorkLogsContextType = {
 
 export interface TeamsContextType {
   teams: Team[];
-  addTeam: (team: Omit<Team, 'id'>) => Team;
-  updateTeam: (team: Team) => void;
-  deleteTeam: (id: string) => void;
+  isLoading?: boolean;
+  addTeam: (team: Omit<Team, 'id'>) => Promise<Team>;
+  updateTeam: (team: Team) => Promise<void>;
+  deleteTeam: (id: string) => Promise<void>;
 }
 
 export interface SettingsContextType {
   settings: AppSettings;
-  updateSettings: (newSettings: Partial<AppSettings>) => void;
-  addCustomTask: (taskName: string) => CustomTask;
-  deleteCustomTask: (id: string) => void;
-  addPersonnel: (name: string, position?: string) => Personnel;
-  updatePersonnel: (personnel: Personnel) => void;
-  deletePersonnel: (id: string) => void;
+  updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
+  addCustomTask: (taskName: string) => Promise<CustomTask>;
+  deleteCustomTask: (id: string) => Promise<void>;
+  addPersonnel: (name: string, position?: string) => Promise<Personnel>;
+  updatePersonnel: (personnel: Personnel) => Promise<void>;
+  deletePersonnel: (id: string) => Promise<void>;
   getPersonnel: () => Personnel[];
-  togglePersonnelActive: (id: string, isActive: boolean) => void;
+  togglePersonnelActive: (id: string, isActive: boolean) => Promise<void>;
   getCustomTasks: () => CustomTask[];
   users?: User[];
   updateUserPermissions?: (userId: string, permissions: Record<string, boolean>) => void;
