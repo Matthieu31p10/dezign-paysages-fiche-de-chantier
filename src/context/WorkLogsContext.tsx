@@ -175,9 +175,22 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const deleteWorkLog = (id: string) => {
-    setWorkLogs((prev) => prev.filter((log) => log.id !== id));
-    toast.success('Fiche de suivi supprimée');
+  const deleteWorkLog = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('work_logs')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setWorkLogs((prev) => prev.filter((log) => log.id !== id));
+      toast.success('Fiche de suivi supprimée');
+    } catch (error) {
+      console.error("Error deleting work log:", error);
+      toast.error('Erreur lors de la suppression de la fiche');
+      throw error;
+    }
   };
 
   const deleteWorkLogsByProjectId = (projectId: string) => {

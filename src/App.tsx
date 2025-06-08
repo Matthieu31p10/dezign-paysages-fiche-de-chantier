@@ -21,6 +21,7 @@ import { Toaster as SonnerToaster } from 'sonner';
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Schedule from './pages/Schedule';
+import Index from './pages/Index';
 import './App.css';
 
 function App() {
@@ -35,13 +36,13 @@ function App() {
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/projects" replace />} />
+              <Route index element={<Index />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/new" element={<ProjectNew />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
               <Route path="projects/:id/edit" element={<ProjectEdit />} />
               
-              {/* Nouvelle route pour l'agenda/planning */}
+              {/* Planning/Schedule route */}
               <Route path="schedule" element={<Schedule />} />
               
               <Route path="worklogs" element={<WorkLogs />} />

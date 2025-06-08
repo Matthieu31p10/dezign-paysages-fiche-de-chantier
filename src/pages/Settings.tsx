@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import TeamsManagement from '@/components/settings/TeamsManagement';
 import PersonnelManagement from '@/components/settings/PersonnelManagement';
 
 const Settings = () => {
-  const { auth, canUserAccess } = useAuth();
+  const { canUserAccess } = useApp();
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   
   const canManageUsers = canUserAccess('admin');
@@ -33,7 +33,7 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="company">
-        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-5 lg:w-auto">
+        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-6 lg:w-auto">
           <TabsTrigger value="company" className="flex items-center gap-1.5">
             <Building className="h-4 w-4" />
             <span className="hidden sm:inline">Entreprise</span>
