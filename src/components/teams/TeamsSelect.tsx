@@ -25,13 +25,17 @@ export const TeamsSelect = ({ value, onValueChange }: TeamsSelectProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   
-  const handleAddTeam = () => {
+  const handleAddTeam = async () => {
     if (newTeamName.trim() === '') return;
     
-    const newTeam = addTeam({ name: newTeamName.trim() });
-    onValueChange(newTeam.id);
-    setNewTeamName('');
-    setIsDialogOpen(false);
+    try {
+      const newTeam = await addTeam({ name: newTeamName.trim() });
+      onValueChange(newTeam.id);
+      setNewTeamName('');
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding team:', error);
+    }
   };
   
   return (
