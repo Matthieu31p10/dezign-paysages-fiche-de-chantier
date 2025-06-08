@@ -1,107 +1,93 @@
 
 import { FormValues } from '../schema';
-import { Consumable, WorkLog } from '@/types/models';
+import { WorkLog, Consumable } from '@/types/models';
+import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Formate les notes structurées à partir des données du formulaire
- */
-export const formatStructuredNotes = (data: FormValues): string => {
-  // Vérification que data existe
-  if (!data) return '';
-  
-  return `
-CLIENT: ${data.clientName || ''}
-ADRESSE: ${data.address || ''}
-TÉLÉPHONE: ${data.contactPhone || ''}
-EMAIL: ${data.contactEmail || ''}
-ID PROJET: ${data.linkedProjectId || ''}
-TAUX HORAIRE: ${data.hourlyRate || 0}
-TVA: ${data.vatRate || ''}
-DEVIS SIGNÉ: ${data.isQuoteSigned ? 'oui' : 'non'}
-VALEUR DEVIS: ${data.signedQuoteAmount || 0}
-HEURE D'ENREGISTREMENT: ${new Date().toISOString()}
-DESCRIPTION: ${data.notes || ''}
-`;
-};
-
-/**
- * Valide et formate les consommables
- */
-export const validateConsumables = (consumables: any[] = []): Consumable[] => {
-  if (!Array.isArray(consumables)) return [];
-  
-  return consumables.map(item => ({
-    id: item.id || crypto.randomUUID(),
-    supplier: item.supplier || '',
-    product: item.product || '',
-    unit: item.unit || '',
-    quantity: Number(item.quantity) || 0,
-    unitPrice: Number(item.unitPrice) || 0,
-    totalPrice: Number(item.totalPrice) || 0
-  }));
-};
-
-/**
- * Creates a WorkLog object from form data
- */
 export const createWorkLogFromFormData = (
-  data: FormValues,
+  formData: FormValues,
   existingWorkLogId: string | null | undefined,
-  workLogs: WorkLog[] = [],
-  notes: string,
-  consumables: Consumable[] = []
+  workLogs: WorkLog[],
+  structuredNotes: string,
+  validatedConsumables: Consumable[]
 ): WorkLog => {
-  const id = existingWorkLogId || crypto.randomUUID();
+  const id = existingWorkLogId || uuidv4();
   
-  // Ensure numeric values are properly converted
-  const duration = typeof data.duration === 'string' ? parseFloat(data.duration) || 0 : (data.duration || 0);
-  const totalHours = typeof data.totalHours === 'string' ? parseFloat(data.totalHours) || 0 : (data.totalHours || 0);
-  const waterConsumption = typeof data.waterConsumption === 'string' ? parseFloat(data.waterConsumption) || 0 : (data.waterConsumption || 0);
-  
-  // Ensure date is properly handled
-  const date = data.date instanceof Date 
-    ? data.date 
-    : (typeof data.date === 'string' ? new Date(data.date) : new Date());
-  
-  console.log('Creating WorkLog with data:', { id, projectId: data.projectId, date });
+  // Calculate total hours if not provided
+  let totalHours = formData.totalHours || 0;
+  if (formData.departure && formData.arrival && formData.end) {
+    const departure = new Date(`1970-01-01T${formData.departure}:00`);
+    const arrival = new Date(`1970-01-01T${formData.arrival}:00`);
+    const end = new Date(`1970-01-01T${formData.end}:00`);
+    const breakTime = formData.breakTime ? parseFloat(formData.breakTime) : 0;
+    
+    const workTimeMs = end.getTime() - arrival.getTime();
+    const workTimeHours = workTimeMs / (1000 * 60 * 60);
+    totalHours = Math.max(0, workTimeHours - breakTime);
+  }
 
-  // Créer l'objet WorkLog
-  const workLog: WorkLog = {
+  return {
     id,
-    projectId: data.projectId || '',
-    date: date.toISOString(),
-    personnel: data.personnel || [],
+    projectId: formData.projectId || '',
+    date: formData.date.toISOString().split('T')[0],
+    personnel: formData.personnel || [],
     timeTracking: {
-      departure: data.departure || '',
-      arrival: data.arrival || '',
-      end: data.end || '',
-      breakTime: data.breakTime || '',
-      totalHours
+      departure: formData.departure,
+      arrival: formData.arrival,
+      end: formData.end,
+      breakTime: formData.breakTime,
+      totalHours: totalHours
     },
-    duration,
-    waterConsumption,
-    wasteManagement: data.wasteManagement || 'none',
-    notes,
-    consumables,
-    invoiced: data.invoiced || false,
+    duration: formData.duration,
+    waterConsumption: formData.waterConsumption,
+    wasteManagement: formData.wasteManagement || 'none',
+    tasks: '',
+    notes: structuredNotes,
+    consumables: validatedConsumables,
+    invoiced: formData.invoiced || false,
+    isArchived: false,
     tasksPerformed: {
-      watering: data.watering || 'none',
-      customTasks: data.customTasks || {},
-      tasksProgress: data.tasksProgress || {}
+      watering: formData.watering || 'none',
+      customTasks: formData.customTasks || {},
+      tasksProgress: formData.tasksProgress || {}
     },
-    createdAt: new Date(),
-    isBlankWorksheet: false // Par défaut, c'est une fiche de suivi standard
+    clientName: formData.clientName,
+    address: formData.address,
+    contactPhone: formData.contactPhone,
+    contactEmail: formData.contactEmail,
+    hourlyRate: formData.hourlyRate,
+    signedQuoteAmount: formData.signedQuoteAmount,
+    isQuoteSigned: formData.isQuoteSigned,
+    linkedProjectId: formData.linkedProjectId,
+    isBlankWorksheet: false,
+    createdAt: new Date()
   };
+};
+
+export const formatStructuredNotes = (formData: any): string => {
+  const sections: string[] = [];
   
-  // Ajouter les champs spécifiques aux fiches vierges si présents
-  if (data.clientName) workLog.clientName = data.clientName;
-  if (data.address) workLog.address = data.address;
-  if (data.contactPhone) workLog.contactPhone = data.contactPhone;
-  if (data.contactEmail) workLog.contactEmail = data.contactEmail;
-  if (data.linkedProjectId) workLog.linkedProjectId = data.linkedProjectId;
-  if (data.hourlyRate !== undefined) workLog.hourlyRate = data.hourlyRate;
-  if (data.signedQuoteAmount !== undefined) workLog.signedQuoteAmount = data.signedQuoteAmount;
-  if (data.isQuoteSigned !== undefined) workLog.isQuoteSigned = data.isQuoteSigned;
+  if (formData.notes && formData.notes.trim()) {
+    sections.push(`Notes: ${formData.notes.trim()}`);
+  }
   
-  return workLog;
+  return sections.join('\n\n');
+};
+
+export const validateConsumables = (consumables: any[] = []): Consumable[] => {
+  return consumables
+    .filter(consumable => 
+      consumable && 
+      consumable.product && 
+      consumable.product.trim() !== '' &&
+      consumable.quantity > 0
+    )
+    .map(consumable => ({
+      id: consumable.id || uuidv4(),
+      supplier: consumable.supplier || '',
+      product: consumable.product,
+      unit: consumable.unit || 'unité',
+      quantity: Number(consumable.quantity) || 0,
+      unitPrice: Number(consumable.unitPrice) || 0,
+      totalPrice: Number(consumable.totalPrice) || 0
+    }));
 };

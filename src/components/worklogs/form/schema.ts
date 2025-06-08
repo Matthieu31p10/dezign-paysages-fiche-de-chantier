@@ -31,10 +31,10 @@ export const formSchema = z.object({
   // Tâches et consommations
   waterConsumption: z.coerce.number().optional().default(0),
   teamFilter: z.string().optional().default("all"),
-  watering: z.enum(['none', 'on', 'off']).optional(),
-  customTasks: z.record(z.boolean()).optional(),
-  tasksProgress: z.record(z.number()).optional(),
-  wasteManagement: z.string().optional(),
+  watering: z.enum(['none', 'on', 'off']).optional().default('none'),
+  customTasks: z.record(z.boolean()).optional().default({}),
+  tasksProgress: z.record(z.number()).optional().default({}),
+  wasteManagement: z.string().optional().default('none'),
   invoiced: z.boolean().optional().default(false),
   consumables: z.array(consumableSchema).optional().default([]),
   

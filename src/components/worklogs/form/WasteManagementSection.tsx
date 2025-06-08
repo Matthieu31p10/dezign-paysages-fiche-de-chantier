@@ -1,15 +1,16 @@
 
-import React, { useState, useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
+import React from 'react';
+import { Controller } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Trash2, Recycle, Box } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useWorkLogForm } from './WorkLogFormContext';
 
 const WasteManagementSection: React.FC = () => {
-  const form = useFormContext();
+  const { form } = useWorkLogForm();
   
   // Parse waste management value to get type and quantity
   const wasteManagement = form.watch('wasteManagement') || 'none';
@@ -28,7 +29,7 @@ const WasteManagementSection: React.FC = () => {
   const wasteType = getWasteType(wasteManagement);
   const quantity = getWasteQuantity(wasteManagement);
   
-  // Mettre à jour la valeur combinée
+  // Update combined waste management value
   const updateWasteManagement = (type: string, qty: string = '1') => {
     if (type === 'none') {
       form.setValue('wasteManagement', 'none');
@@ -39,7 +40,7 @@ const WasteManagementSection: React.FC = () => {
     form.trigger('wasteManagement');
   };
 
-  // Options de type de déchets
+  // Waste type options
   const wasteOptions = [
     { id: 'none', label: 'Aucun', description: 'Pas de gestion de déchets' },
     { id: 'big_bag', label: 'Big-bag', description: 'Sac de collecte grande capacité' },
@@ -97,35 +98,26 @@ const WasteManagementSection: React.FC = () => {
 
         {wasteType !== 'none' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-md border border-green-200">
-            <FormField
-              control={form.control}
-              name="wasteQuantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm text-green-700">Quantité</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center">
-                      <Input
-                        type="number"
-                        min="1"
-                        max="99"
-                        value={quantity}
-                        onChange={(e) => {
-                          const value = e.target.value || "1";
-                          updateWasteManagement(wasteType, value);
-                        }}
-                        className="border-green-300 focus:border-green-500"
-                      />
-                      <span className="ml-3 text-sm text-green-800">unité(s)</span>
-                    </div>
-                  </FormControl>
-                  <FormDescription className="text-xs text-green-600">
-                    Nombre d'unités pour ce type de déchets
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <FormLabel className="text-sm text-green-700">Quantité</FormLabel>
+              <div className="flex items-center mt-1">
+                <Input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={quantity}
+                  onChange={(e) => {
+                    const value = e.target.value || "1";
+                    updateWasteManagement(wasteType, value);
+                  }}
+                  className="border-green-300 focus:border-green-500"
+                />
+                <span className="ml-3 text-sm text-green-800">unité(s)</span>
+              </div>
+              <FormDescription className="text-xs text-green-600 mt-1">
+                Nombre d'unités pour ce type de déchets
+              </FormDescription>
+            </div>
 
             <div className="flex items-center">
               <Box className="h-5 w-5 text-green-600 mr-2" />
