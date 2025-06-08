@@ -18,7 +18,7 @@ export const formSchema = z.object({
   projectId: z.string().optional(),
   date: z.date(),
   personnel: z.array(z.string()).min(1, "Sélectionnez au moins une personne"),
-  duration: z.coerce.number().optional().default(0),
+  duration: z.coerce.number().min(0, "La durée doit être positive").optional().default(0),
   notes: z.string().optional(),
   
   // Suivi du temps
