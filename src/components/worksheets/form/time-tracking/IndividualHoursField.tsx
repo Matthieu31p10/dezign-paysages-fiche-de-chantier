@@ -10,9 +10,9 @@ interface IndividualHoursFieldProps {
 }
 
 export const IndividualHoursField = ({ control, totalHours }: IndividualHoursFieldProps) => {
-  // S'assurer que totalHours est bien un nombre
+  // S'assurer que totalHours est bien un nombre et afficher 2 décimales
   const hoursValue = typeof totalHours === 'number' 
-    ? totalHours.toFixed(2) 
+    ? Number(totalHours).toFixed(2)
     : '0.00';
 
   return (

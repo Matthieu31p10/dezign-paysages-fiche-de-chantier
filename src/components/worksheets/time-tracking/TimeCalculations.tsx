@@ -39,7 +39,7 @@ export const TimeCalculations: React.FC<TimeCalculationsProps> = ({
               <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
               Heures totales (individu)
             </span>
-            <span className="text-lg font-medium">{formatNumber(totalHours)} h</span>
+            <span className="text-lg font-medium">{Number(totalHours).toFixed(2)} h</span>
           </div>
           
           <div className="flex flex-col space-y-1">
@@ -55,7 +55,7 @@ export const TimeCalculations: React.FC<TimeCalculationsProps> = ({
               <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
               Heures totales (équipe)
             </span>
-            <span className="text-lg font-medium">{formatNumber(totalTeamHours)} h</span>
+            <span className="text-lg font-medium">{Number(totalTeamHours).toFixed(2)} h</span>
           </div>
           
           <FormField
@@ -85,7 +85,7 @@ export const TimeCalculations: React.FC<TimeCalculationsProps> = ({
         <div className="mt-4 pt-4 border-t border-border">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">Coût main d'œuvre</span>
-            <span className="text-lg font-bold text-primary">{formatNumber(laborCost)} €</span>
+            <span className="text-lg font-bold text-primary">{Number(laborCost).toFixed(2)} €</span>
           </div>
         </div>
       </CardContent>

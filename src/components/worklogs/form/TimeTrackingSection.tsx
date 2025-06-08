@@ -56,7 +56,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
                 <Input 
                   type="number" 
                   step="0.01"
-                  value={typeof field.value === 'number' ? field.value.toFixed(2) : '0.00'}
+                  value={typeof field.value === 'number' ? Number(field.value).toFixed(2) : '0.00'}
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                   className="bg-gradient-to-r from-green-50 to-white border-green-200"
                 />
@@ -69,7 +69,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({
         <Card className="p-3 border rounded-md bg-gradient-to-r from-green-50 to-white border-green-200">
           <Label className="text-sm text-green-700">Heures équipe totales</Label>
           <div className="text-xl font-bold text-green-800">
-            {typeof totalTeamHours === 'number' ? totalTeamHours.toFixed(2) : '0.00'}h
+            {typeof totalTeamHours === 'number' ? Number(totalTeamHours).toFixed(2) : '0.00'}h
           </div>
           <div className="text-xs text-green-600">
             Pour {personnelCount} {personnelCount > 1 ? 'personnes' : 'personne'}

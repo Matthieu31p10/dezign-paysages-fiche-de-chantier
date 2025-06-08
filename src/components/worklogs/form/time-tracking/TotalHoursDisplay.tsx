@@ -17,7 +17,7 @@ const TotalHoursDisplay: React.FC<TotalHoursDisplayProps> = ({ value, onChange }
           type="number" 
           step="0.01"
           readOnly
-          value={value.toFixed(2)}
+          value={Number(value).toFixed(2)}
           onChange={(e) => onChange(parseFloat(e.target.value))}
         />
       </FormControl>
