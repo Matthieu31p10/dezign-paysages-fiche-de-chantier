@@ -20,12 +20,10 @@ const WorkLogMonthGroup: React.FC<WorkLogMonthGroupProps> = ({ month, workLogs, 
     <div className="space-y-2">
       <h3 className="text-lg font-medium">{formattedMonth}</h3>
       <div className="space-y-3">
-        {workLogs.map((workLog, index) => (
+        {workLogs.map((workLog) => (
           <WorkLogItem 
             key={workLog.id} 
-            workLog={workLog} 
-            projectId={projectId}
-            index={index}
+            workLog={workLog}
           />
         ))}
       </div>
