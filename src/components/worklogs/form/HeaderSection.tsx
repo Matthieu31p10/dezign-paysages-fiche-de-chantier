@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, MapPin, Clock, Users } from 'lucide-react';
+import { CalendarIcon, MapPin, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -34,22 +34,22 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
   const selectedPersonnel = watch('personnel') || [];
   
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-green-800 flex items-center">
-        <MapPin className="mr-2 h-5 w-5 text-green-600" />
+    <div className="space-y-3">
+      <h2 className="text-lg font-semibold text-green-800 flex items-center">
+        <MapPin className="mr-2 h-4 w-4 text-green-600" />
         Informations générales
       </h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <FormField
           control={control}
           name="projectId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-medium text-green-700">Projet</FormLabel>
+              <FormLabel className="text-sm font-medium text-green-700">Projet</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="border-green-200 focus:border-green-500">
+                  <SelectTrigger className="h-9 border-green-200 focus:border-green-500">
                     <SelectValue placeholder="Sélectionner un projet" />
                   </SelectTrigger>
                 </FormControl>
@@ -71,21 +71,21 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-medium text-green-700">Date</FormLabel>
+              <FormLabel className="text-sm font-medium text-green-700">Date</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full pl-3 text-left font-normal border-green-200 focus:border-green-500",
+                        "w-full h-9 pl-3 text-left font-normal border-green-200 focus:border-green-500",
                         !field.value && "text-muted-foreground"
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP", { locale: fr })
+                        format(field.value, "dd/MM/yyyy", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>Date</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -114,16 +114,16 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           name="duration"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-medium text-green-700">Durée (jours)</FormLabel>
+              <FormLabel className="text-sm font-medium text-green-700">Durée (jours)</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
-                  step="0.01"
+                  step="0.1"
                   min="0"
                   value={field.value || ''}
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  className="border-green-200 focus:border-green-500"
-                  placeholder="Ex: 1.5"
+                  className="h-9 border-green-200 focus:border-green-500"
+                  placeholder="1.5"
                 />
               </FormControl>
               <FormMessage />
@@ -136,14 +136,14 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           name="teamFilter"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-medium text-green-700">Filtre équipe</FormLabel>
+              <FormLabel className="text-sm font-medium text-green-700">Équipe</FormLabel>
               <Select onValueChange={(value) => {
                 field.onChange(value);
                 handleTeamFilterChange(value);
               }} value={field.value || "all"}>
                 <FormControl>
-                  <SelectTrigger className="border-green-200 focus:border-green-500">
-                    <SelectValue placeholder="Toutes les équipes" />
+                  <SelectTrigger className="h-9 border-green-200 focus:border-green-500">
+                    <SelectValue placeholder="Toutes" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -162,13 +162,13 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
       </div>
       
       <Card className="border-green-100">
-        <CardContent className="pt-4">
+        <CardContent className="p-3">
           <FormField
             control={control}
             name="personnel"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-medium text-green-700 flex items-center">
+                <FormLabel className="text-sm font-medium text-green-700 flex items-center">
                   <Users className="mr-2 h-4 w-4" />
                   Personnel présent
                 </FormLabel>
@@ -184,11 +184,11 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           />
           
           {selectedPersonnel.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-1">
               {selectedPersonnel.map((person) => (
                 <div 
                   key={person} 
-                  className="px-2 py-1 bg-green-100 text-green-800 rounded-md text-sm"
+                  className="px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs"
                 >
                   {person}
                 </div>

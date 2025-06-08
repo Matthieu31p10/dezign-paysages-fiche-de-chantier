@@ -51,8 +51,6 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     existingWorkLogs
   });
   
-  console.log("WorkLogForm initialized with isBlankWorksheet:", isBlankWorksheet);
-  
   return (
     <FormProvider {...form}>
       <WorkLogFormProvider
@@ -69,43 +67,39 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
           existingWorkLogId={initialData?.id}
           isBlankWorksheet={isBlankWorksheet}
         >
-          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4 border border-green-100 shadow-sm">
-            <HeaderSection 
-              teams={teams}
-              filteredProjects={filteredProjects}
-              handleTeamFilterChange={handleTeamFilterChange}
-              handlePersonnelChange={handlePersonnelChange}
-            />
-          </div>
-          
-          <Separator className="my-6 bg-green-200" />
-          
-          <div className="bg-gradient-to-r from-white to-green-50 p-4 rounded-md mb-4 border border-green-100 shadow-sm">
-            <TimeTrackingSection 
-              previousYearsHours={previousYearsHours}
-              currentYearTarget={currentYearTarget}
-            />
-          </div>
-          
-          <Separator className="my-6 bg-green-200" />
-          
-          <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-md mb-4 border border-green-100 shadow-sm">
-            <TasksSection />
-          </div>
-          
-          <Separator className="my-6 bg-green-200" />
-          
-          <WasteManagementSection />
-          
-          <div className="mt-6 bg-white p-4 rounded-md border border-green-100 shadow-sm">
-            <ProjectInfoSection />
-          </div>
-          
-          <div className="mt-6 bg-gradient-to-r from-white to-green-50 p-4 rounded-md border border-green-100 shadow-sm">
-            <NotesSection />
-          </div>
-          
-          <div className="mt-8">
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-green-50 to-white p-3 rounded-md border border-green-100">
+              <HeaderSection 
+                teams={teams}
+                filteredProjects={filteredProjects}
+                handleTeamFilterChange={handleTeamFilterChange}
+                handlePersonnelChange={handlePersonnelChange}
+              />
+            </div>
+            
+            <div className="bg-gradient-to-r from-white to-green-50 p-3 rounded-md border border-green-100">
+              <TimeTrackingSection 
+                previousYearsHours={previousYearsHours}
+                currentYearTarget={currentYearTarget}
+              />
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-white p-3 rounded-md border border-green-100">
+              <TasksSection />
+            </div>
+            
+            <WasteManagementSection />
+            
+            {selectedProject && (
+              <div className="bg-white p-3 rounded-md border border-green-100">
+                <ProjectInfoSection />
+              </div>
+            )}
+            
+            <div className="bg-gradient-to-r from-white to-green-50 p-3 rounded-md border border-green-100">
+              <NotesSection />
+            </div>
+            
             <ActionButtons 
               onCancel={handleCancel}
               isEditing={!!initialData}
