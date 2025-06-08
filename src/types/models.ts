@@ -37,7 +37,7 @@ export interface ProjectInfo {
     documentUrl?: string;
   };
   irrigation?: 'irrigation' | 'none' | 'disabled';
-  mowerType?: 'large' | 'small' | 'both';
+  mowerType?: 'manual' | 'robot' | 'both'; // Corrigé pour correspondre aux données
   annualVisits: number;
   annualTotalHours: number;
   visitDuration: number;
