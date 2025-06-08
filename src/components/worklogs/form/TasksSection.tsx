@@ -11,12 +11,11 @@ import { CustomTask } from '@/types/models';
 import { useWorkLogForm } from './WorkLogFormContext';
 
 const TasksSection: React.FC = () => {
-  const { settings } = useApp();
+  const { customTasks } = useApp();
   const { form } = useWorkLogForm();
   const { control, watch, setValue } = form;
   
   const [customTaskDialogOpen, setCustomTaskDialogOpen] = useState(false);
-  const customTasks = settings.customTasks || [];
   
   const handleCustomTaskChange = (taskId: string, checked: boolean) => {
     const currentCustomTasks = watch('customTasks') || {};
@@ -46,7 +45,6 @@ const TasksSection: React.FC = () => {
     setValue('tasksProgress', updatedTasksProgress);
   };
 
-  // Empêcher la propagation de l'événement pour ne pas soumettre le formulaire parent
   const openTaskDialog = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -159,6 +157,10 @@ const TasksSection: React.FC = () => {
       <CustomTaskDialog 
         open={customTaskDialogOpen} 
         onOpenChange={setCustomTaskDialogOpen} 
+        onTaskAdded={() => {
+          // Force refresh of custom tasks when a new one is added
+          setCustomTaskDialogOpen(false);
+        }}
       />
     </div>
   );

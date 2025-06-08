@@ -119,6 +119,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     canUserAccess,
   } = useAuth();
 
+  // Ensure custom tasks are properly included in settings
+  const enhancedSettings = {
+    ...settings,
+    customTasks: getCustomTasks()
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -139,7 +145,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCustomTask,
         
         // Settings
-        settings,
+        settings: enhancedSettings,
         updateSettings,
         
         // Projects
