@@ -12,7 +12,8 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectInfo, Team } from '@/types/models';
 import { useWorkLogForm } from './WorkLogFormContext';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import PersonnelDialog from '@/components/worklogs/PersonnelDialog';
 
 interface HeaderSectionProps {
   teams: Team[];
@@ -29,6 +30,8 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
 }) => {
   const { form } = useWorkLogForm();
   const { control, watch } = form;
+  
+  const selectedPersonnel = watch('personnel') || [];
   
   return (
     <div className="space-y-4">
@@ -157,6 +160,43 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
           )}
         />
       </div>
+      
+      <Card className="border-green-100">
+        <CardContent className="pt-4">
+          <FormField
+            control={control}
+            name="personnel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="font-medium text-green-700 flex items-center">
+                  <Users className="mr-2 h-4 w-4" />
+                  Personnel présent
+                </FormLabel>
+                <FormControl>
+                  <PersonnelDialog 
+                    selectedPersonnel={selectedPersonnel}
+                    onChange={handlePersonnelChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {selectedPersonnel.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {selectedPersonnel.map((person) => (
+                <div 
+                  key={person} 
+                  className="px-2 py-1 bg-green-100 text-green-800 rounded-md text-sm"
+                >
+                  {person}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
