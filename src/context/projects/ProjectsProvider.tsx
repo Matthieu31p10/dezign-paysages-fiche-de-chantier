@@ -33,11 +33,15 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         name: project.name,
         clientName: project.client_name || '',
         address: project.address,
-        contactName: project.contact_name || '',
-        contactPhone: project.contact_phone || '',
-        contactEmail: project.contact_email || '',
-        contractDetails: project.contract_details || '',
-        contractDocumentUrl: project.contract_document_url || '',
+        contact: {
+          name: project.contact_name || '',
+          phone: project.contact_phone || '',
+          email: project.contact_email || '',
+        },
+        contract: {
+          details: project.contract_details || '',
+          documentUrl: project.contract_document_url || '',
+        },
         irrigation: project.irrigation || 'none',
         mowerType: project.mower_type || 'both',
         annualVisits: project.annual_visits || 0,
@@ -46,9 +50,10 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         additionalInfo: project.additional_info || '',
         team: project.team_id || '',
         projectType: project.project_type || '',
-        startDate: project.start_date || '',
-        endDate: project.end_date || '',
+        startDate: project.start_date ? new Date(project.start_date) : null,
+        endDate: project.end_date ? new Date(project.end_date) : null,
         isArchived: project.is_archived || false,
+        createdAt: new Date(project.created_at),
       }));
       setProjects(formattedProjects);
     }
@@ -56,18 +61,18 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Add project mutation
   const addProjectMutation = useMutation({
-    mutationFn: async (project: Omit<ProjectInfo, 'id'>) => {
+    mutationFn: async (project: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
       const { data, error } = await supabase
         .from('projects')
         .insert([{
           name: project.name,
           client_name: project.clientName,
           address: project.address,
-          contact_name: project.contactName,
-          contact_phone: project.contactPhone,
-          contact_email: project.contactEmail,
-          contract_details: project.contractDetails,
-          contract_document_url: project.contractDocumentUrl,
+          contact_name: project.contact?.name,
+          contact_phone: project.contact?.phone,
+          contact_email: project.contact?.email,
+          contract_details: project.contract?.details,
+          contract_document_url: project.contract?.documentUrl,
           irrigation: project.irrigation,
           mower_type: project.mowerType,
           annual_visits: project.annualVisits,
@@ -76,8 +81,8 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           additional_info: project.additionalInfo,
           team_id: project.team,
           project_type: project.projectType,
-          start_date: project.startDate,
-          end_date: project.endDate,
+          start_date: project.startDate?.toISOString(),
+          end_date: project.endDate?.toISOString(),
           is_archived: project.isArchived,
         }])
         .select()
@@ -93,18 +98,18 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Update project mutation
   const updateProjectMutation = useMutation({
-    mutationFn: async ({ id, ...project }: ProjectInfo) => {
+    mutationFn: async (project: ProjectInfo) => {
       const { data, error } = await supabase
         .from('projects')
         .update({
           name: project.name,
           client_name: project.clientName,
           address: project.address,
-          contact_name: project.contactName,
-          contact_phone: project.contactPhone,
-          contact_email: project.contactEmail,
-          contract_details: project.contractDetails,
-          contract_document_url: project.contractDocumentUrl,
+          contact_name: project.contact?.name,
+          contact_phone: project.contact?.phone,
+          contact_email: project.contact?.email,
+          contract_details: project.contract?.details,
+          contract_document_url: project.contract?.documentUrl,
           irrigation: project.irrigation,
           mower_type: project.mowerType,
           annual_visits: project.annualVisits,
@@ -113,11 +118,11 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           additional_info: project.additionalInfo,
           team_id: project.team,
           project_type: project.projectType,
-          start_date: project.startDate,
-          end_date: project.endDate,
+          start_date: project.startDate?.toISOString(),
+          end_date: project.endDate?.toISOString(),
           is_archived: project.isArchived,
         })
-        .eq('id', id)
+        .eq('id', project.id)
         .select()
         .single();
       
@@ -144,15 +149,21 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
   });
 
-  const addProject = (project: Omit<ProjectInfo, 'id'>) => {
+  const addProjectInfo = (project: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
+    const newProject: ProjectInfo = {
+      ...project,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+    };
     addProjectMutation.mutate(project);
+    return newProject;
   };
 
-  const updateProject = (project: ProjectInfo) => {
+  const updateProjectInfo = (project: ProjectInfo) => {
     updateProjectMutation.mutate(project);
   };
 
-  const deleteProject = (id: string) => {
+  const deleteProjectInfo = (id: string) => {
     deleteProjectMutation.mutate(id);
   };
 
@@ -160,13 +171,28 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return projects.find(project => project.id === id);
   };
 
+  const getActiveProjects = () => {
+    return projects.filter(project => !project.isArchived);
+  };
+
+  const getArchivedProjects = () => {
+    return projects.filter(project => project.isArchived);
+  };
+
+  const selectProject = (id: string | null) => {
+    // Implementation for selecting a project
+  };
+
   const value: ProjectsContextType = {
-    projects,
-    addProject,
-    updateProject,
-    deleteProject,
+    projectInfos: projects,
+    selectedProjectId: null,
+    addProjectInfo,
+    updateProjectInfo,
+    deleteProjectInfo,
+    selectProject,
     getProjectById,
-    isLoading,
+    getActiveProjects,
+    getArchivedProjects,
   };
 
   return (

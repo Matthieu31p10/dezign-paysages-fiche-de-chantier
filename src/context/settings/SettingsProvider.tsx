@@ -3,20 +3,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SettingsContextType } from '../types';
-import { Settings, Personnel } from '@/types/models';
+import { AppSettings, Personnel, CustomTask } from '@/types/models';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<Settings>({
+  const [settings, setSettings] = useState<AppSettings>({
     companyName: 'Vertos Chantiers',
     companyLogo: '',
     loginBackgroundImage: '',
-    companyAddress: '',
-    companyManagerName: '',
-    companyPhone: '',
-    companyEmail: '',
     personnel: [],
+    customTasks: [],
   });
   
   const queryClient = useQueryClient();
@@ -50,39 +47,60 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
   });
 
+  // Fetch custom tasks from Supabase
+  const { data: customTasksData } = useQuery({
+    queryKey: ['custom_tasks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('custom_tasks')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Update local state when data changes
   useEffect(() => {
-    const newSettings: Settings = {
+    const newSettings: AppSettings = {
       companyName: settingsData?.company_name || 'Vertos Chantiers',
       companyLogo: settingsData?.company_logo || '',
       loginBackgroundImage: settingsData?.login_background_image || '',
-      companyAddress: settingsData?.company_address || '',
-      companyManagerName: settingsData?.company_manager_name || '',
-      companyPhone: settingsData?.company_phone || '',
-      companyEmail: settingsData?.company_email || '',
+      companyInfo: settingsData ? {
+        name: settingsData.company_name || '',
+        address: settingsData.company_address || '',
+        managerName: settingsData.company_manager_name || '',
+        phone: settingsData.company_phone || '',
+        email: settingsData.company_email || '',
+      } : undefined,
       personnel: personnelData?.map(p => ({
         id: p.id,
         name: p.name,
         position: p.position || '',
         active: p.active !== false,
       })) || [],
+      customTasks: customTasksData?.map(t => ({
+        id: t.id,
+        name: t.name,
+      })) || [],
     };
     setSettings(newSettings);
-  }, [settingsData, personnelData]);
+  }, [settingsData, personnelData, customTasksData]);
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
-    mutationFn: async (newSettings: Partial<Settings>) => {
+    mutationFn: async (newSettings: Partial<AppSettings>) => {
       const { data, error } = await supabase
         .from('settings')
         .upsert({
           company_name: newSettings.companyName,
           company_logo: newSettings.companyLogo,
           login_background_image: newSettings.loginBackgroundImage,
-          company_address: newSettings.companyAddress,
-          company_manager_name: newSettings.companyManagerName,
-          company_phone: newSettings.companyPhone,
-          company_email: newSettings.companyEmail,
+          company_address: newSettings.companyInfo?.address,
+          company_manager_name: newSettings.companyInfo?.managerName,
+          company_phone: newSettings.companyInfo?.phone,
+          company_email: newSettings.companyInfo?.email,
           updated_at: new Date().toISOString(),
         })
         .select()
@@ -98,13 +116,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Add personnel mutation
   const addPersonnelMutation = useMutation({
-    mutationFn: async (personnel: Omit<Personnel, 'id'>) => {
+    mutationFn: async (name: string, position?: string) => {
       const { data, error } = await supabase
         .from('personnel')
         .insert([{
-          name: personnel.name,
-          position: personnel.position,
-          active: personnel.active,
+          name,
+          position: position || '',
+          active: true,
         }])
         .select()
         .single();
@@ -154,12 +172,51 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
   });
 
-  const updateSettings = (newSettings: Partial<Settings>) => {
+  // Add custom task mutation
+  const addCustomTaskMutation = useMutation({
+    mutationFn: async (taskName: string) => {
+      const { data, error } = await supabase
+        .from('custom_tasks')
+        .insert([{ name: taskName }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom_tasks'] });
+    },
+  });
+
+  // Delete custom task mutation
+  const deleteCustomTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('custom_tasks')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom_tasks'] });
+    },
+  });
+
+  const updateSettings = (newSettings: Partial<AppSettings>) => {
     updateSettingsMutation.mutate(newSettings);
   };
 
-  const addPersonnel = (personnel: Omit<Personnel, 'id'>) => {
-    addPersonnelMutation.mutate(personnel);
+  const addPersonnel = (name: string, position?: string) => {
+    const newPersonnel: Personnel = {
+      id: crypto.randomUUID(),
+      name,
+      position: position || '',
+      active: true,
+    };
+    addPersonnelMutation.mutate(name, position);
+    return newPersonnel;
   };
 
   const updatePersonnel = (personnel: Personnel) => {
@@ -170,12 +227,45 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     deletePersonnelMutation.mutate(id);
   };
 
+  const addCustomTask = (taskName: string) => {
+    const newTask: CustomTask = {
+      id: crypto.randomUUID(),
+      name: taskName,
+    };
+    addCustomTaskMutation.mutate(taskName);
+    return newTask;
+  };
+
+  const deleteCustomTask = (id: string) => {
+    deleteCustomTaskMutation.mutate(id);
+  };
+
+  const getPersonnel = () => {
+    return settings.personnel || [];
+  };
+
+  const togglePersonnelActive = (id: string, isActive: boolean) => {
+    const personnel = getPersonnel().find(p => p.id === id);
+    if (personnel) {
+      updatePersonnel({ ...personnel, active: isActive });
+    }
+  };
+
+  const getCustomTasks = () => {
+    return settings.customTasks || [];
+  };
+
   const value: SettingsContextType = {
     settings,
     updateSettings,
+    addCustomTask,
+    deleteCustomTask,
     addPersonnel,
     updatePersonnel,
     deletePersonnel,
+    getPersonnel,
+    togglePersonnelActive,
+    getCustomTasks,
   };
 
   return (

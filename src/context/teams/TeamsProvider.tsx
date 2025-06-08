@@ -87,7 +87,12 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const addTeam = (team: Omit<Team, 'id'>) => {
+    const newTeam: Team = {
+      ...team,
+      id: crypto.randomUUID(),
+    };
     addTeamMutation.mutate(team);
+    return newTeam;
   };
 
   const updateTeam = (team: Team) => {
@@ -103,7 +108,6 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addTeam,
     updateTeam,
     deleteTeam,
-    isLoading,
   };
 
   return (
