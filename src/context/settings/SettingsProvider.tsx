@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SettingsContextType } from '../types';
@@ -8,14 +7,6 @@ import { AppSettings, Personnel, CustomTask } from '@/types/models';
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<AppSettings>({
-    companyName: 'Vertos Chantiers',
-    companyLogo: '',
-    loginBackgroundImage: '',
-    personnel: [],
-    customTasks: [],
-  });
-  
   const queryClient = useQueryClient();
 
   // Fetch settings from Supabase
@@ -61,8 +52,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
   });
 
-  // Memoize settings to prevent infinite re-renders
-  const memoizedSettings = useMemo(() => {
+  // Stable memoized settings to prevent infinite re-renders
+  const settings = useMemo(() => {
     const newSettings: AppSettings = {
       companyName: settingsData?.company_name || 'Vertos Chantiers',
       companyLogo: settingsData?.company_logo || '',
@@ -87,11 +78,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     return newSettings;
   }, [settingsData, personnelData, customTasksData]);
-
-  // Update local state when data changes
-  useEffect(() => {
-    setSettings(memoizedSettings);
-  }, [memoizedSettings]);
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
@@ -209,11 +195,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
   });
 
-  const updateSettings = (newSettings: Partial<AppSettings>) => {
+  const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
     updateSettingsMutation.mutate(newSettings);
-  };
+  }, [updateSettingsMutation]);
 
-  const addPersonnel = (name: string, position?: string) => {
+  const addPersonnel = useCallback((name: string, position?: string) => {
     const newPersonnel: Personnel = {
       id: crypto.randomUUID(),
       name,
@@ -222,45 +208,45 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     addPersonnelMutation.mutate({ name, position });
     return newPersonnel;
-  };
+  }, [addPersonnelMutation]);
 
-  const updatePersonnel = (personnel: Personnel) => {
+  const updatePersonnel = useCallback((personnel: Personnel) => {
     updatePersonnelMutation.mutate(personnel);
-  };
+  }, [updatePersonnelMutation]);
 
-  const deletePersonnel = (id: string) => {
+  const deletePersonnel = useCallback((id: string) => {
     deletePersonnelMutation.mutate(id);
-  };
+  }, [deletePersonnelMutation]);
 
-  const addCustomTask = (taskName: string) => {
+  const addCustomTask = useCallback((taskName: string) => {
     const newTask: CustomTask = {
       id: crypto.randomUUID(),
       name: taskName,
     };
     addCustomTaskMutation.mutate(taskName);
     return newTask;
-  };
+  }, [addCustomTaskMutation]);
 
-  const deleteCustomTask = (id: string) => {
+  const deleteCustomTask = useCallback((id: string) => {
     deleteCustomTaskMutation.mutate(id);
-  };
+  }, [deleteCustomTaskMutation]);
 
-  const getPersonnel = () => {
+  const getPersonnel = useCallback(() => {
     return settings.personnel || [];
-  };
+  }, [settings.personnel]);
 
-  const togglePersonnelActive = (id: string, isActive: boolean) => {
-    const personnel = getPersonnel().find(p => p.id === id);
+  const togglePersonnelActive = useCallback((id: string, isActive: boolean) => {
+    const personnel = (settings.personnel || []).find(p => p.id === id);
     if (personnel) {
       updatePersonnel({ ...personnel, active: isActive });
     }
-  };
+  }, [settings.personnel, updatePersonnel]);
 
-  const getCustomTasks = () => {
+  const getCustomTasks = useCallback(() => {
     return settings.customTasks || [];
-  };
+  }, [settings.customTasks]);
 
-  const value: SettingsContextType = {
+  const value: SettingsContextType = useMemo(() => ({
     settings,
     updateSettings,
     addCustomTask,
@@ -271,7 +257,18 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     getPersonnel,
     togglePersonnelActive,
     getCustomTasks,
-  };
+  }), [
+    settings,
+    updateSettings,
+    addCustomTask,
+    deleteCustomTask,
+    addPersonnel,
+    updatePersonnel,
+    deletePersonnel,
+    getPersonnel,
+    togglePersonnelActive,
+    getCustomTasks,
+  ]);
 
   return (
     <SettingsContext.Provider value={value}>

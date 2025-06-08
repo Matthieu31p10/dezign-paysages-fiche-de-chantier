@@ -49,7 +49,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         visitDuration: project.visit_duration || 0,
         additionalInfo: project.additional_info || '',
         team: project.team_id || '',
-        projectType: project.project_type || '',
+        projectType: (project.project_type as "residence" | "particular" | "enterprise" | "") || '',
         startDate: project.start_date ? new Date(project.start_date) : null,
         endDate: project.end_date ? new Date(project.end_date) : null,
         isArchived: project.is_archived || false,
