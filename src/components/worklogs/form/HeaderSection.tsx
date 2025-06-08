@@ -137,14 +137,14 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
               <Select onValueChange={(value) => {
                 field.onChange(value);
                 handleTeamFilterChange(value);
-              }} value={field.value}>
+              }} value={field.value || "all"}>
                 <FormControl>
                   <SelectTrigger className="border-green-200 focus:border-green-500">
                     <SelectValue placeholder="Toutes les équipes" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Toutes les équipes</SelectItem>
+                  <SelectItem value="all">Toutes les équipes</SelectItem>
                   {teams.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}

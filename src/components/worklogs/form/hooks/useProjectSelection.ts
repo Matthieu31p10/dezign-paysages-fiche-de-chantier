@@ -61,7 +61,7 @@ export const useProjectSelection = ({
   const handleTeamFilterChange = (teamId: string) => {
     form.setValue('teamFilter', teamId);
     
-    if (teamId === 'all') {
+    if (teamId === 'all' || teamId === '') {
       setFilteredProjects(projectInfos);
     } else {
       const filtered = projectInfos.filter(p => p.team === teamId);

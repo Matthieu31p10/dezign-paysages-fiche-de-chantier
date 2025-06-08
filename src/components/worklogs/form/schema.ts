@@ -30,7 +30,7 @@ export const formSchema = z.object({
   
   // Tâches et consommations
   waterConsumption: z.coerce.number().optional().default(0),
-  teamFilter: z.string().optional(),
+  teamFilter: z.string().optional().default("all"),
   watering: z.enum(['none', 'on', 'off']).optional(),
   customTasks: z.record(z.boolean()).optional(),
   tasksProgress: z.record(z.number()).optional(),
