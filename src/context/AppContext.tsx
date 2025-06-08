@@ -44,8 +44,8 @@ interface AppContextType {
   addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
   updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => Promise<void>;
   deleteWorkLog: (id: string) => Promise<void>;
-  deleteWorkLogsByProjectId: (projectId: string) => void;
-  archiveWorkLogsByProjectId: (projectId: string, archived: boolean) => void;
+  deleteWorkLogsByProjectId: (projectId: string) => Promise<void>;
+  archiveWorkLogsByProjectId: (projectId: string, archived: boolean) => Promise<void>;
   getWorkLogById: (id: string) => WorkLog | undefined;
   getWorkLogsByProjectId: (projectId: string) => WorkLog[];
   getTotalDuration: (projectId: string) => number;
