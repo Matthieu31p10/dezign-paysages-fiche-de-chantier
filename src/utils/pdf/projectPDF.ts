@@ -1,106 +1,101 @@
-
-import { ProjectInfo, WorkLog } from '@/types/models';
-import { formatDate } from '../date';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { ProjectInfo, WorkLog } from '@/types/models';
+import { formatDate } from '@/utils/date';
 
-/**
- * Generate a PDF for a specific project with optional work logs
- */
-export const generateProjectPDF = async (project: ProjectInfo, workLogs: WorkLog[] = []): Promise<string> => {
-  console.log('Generating PDF for project:', project.name);
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => void;
+}
+
+export const generateProjectPDF = (project: ProjectInfo, workLogs: WorkLog[]): jsPDF => {
+  const doc = new jsPDF() as jsPDFWithAutoTable;
+
+  // PDF metadata
+  doc.setProperties({
+    title: `Fiche de projet - ${project.name}`,
+    subject: 'Fiche de projet générée par l\'application',
+    author: 'Your App Name',
+    keywords: 'projet, fiche de suivi, PDF'
+  });
+
+  // Add header
+  doc.setFontSize(22);
+  doc.text(`Fiche de projet - ${project.name}`, 14, 20);
+
+  // Add project details
+  doc.setFontSize(12);
+  doc.text(`Client: ${project.clientName || 'N/A'}`, 14, 30);
+  doc.text(`Adresse: ${project.address}`, 14, 36);
+  doc.text(`Contact: ${project.contact?.name || 'N/A'} - ${project.contact?.phone || 'N/A'}`, 14, 42);
+  doc.text(`Type de projet: ${project.projectType || 'N/A'}`, 14, 48);
+  doc.text(`Informations supplémentaires: ${project.additionalInfo || 'N/A'}`, 14, 54);
   
-  try {
-    // Initialize the PDF document
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
+  // Prepare work logs data
+  const workLogData = workLogs.map((log, index) => {
+    const tasks = [];
     
-    // Add project title
-    pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(`Projet: ${project.name}`, 20, 20);
-    
-    // Add project details
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Adresse: ${project.address}`, 20, 30);
-    
-    if (project.contact.name) {
-      pdf.text(`Contact: ${project.contact.name}`, 20, 40);
+    // Check watering status
+    if (log.tasksPerformed?.watering && log.tasksPerformed.watering !== 'none') {
+      tasks.push(`Arrosage: ${log.tasksPerformed.watering === 'on' ? 'Activé' : 'Désactivé'}`);
     }
     
-    pdf.text(`Téléphone: ${project.contact.phone}`, 20, 50);
-    pdf.text(`Email: ${project.contact.email}`, 20, 60);
-    
-    // Add contract details
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Détails du contrat', 20, 75);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Visites annuelles: ${project.annualVisits}`, 20, 85);
-    pdf.text(`Heures annuelles totales: ${project.annualTotalHours}`, 20, 95);
-    pdf.text(`Durée des visites: ${project.visitDuration} heures`, 20, 105);
-    
-    // Add work logs if included
-    if (workLogs.length > 0) {
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Fiches de suivi', 20, 120);
-      pdf.setFont('helvetica', 'normal');
-      
-      const headers = ['Date', 'Durée', 'Personnel', 'Tâches principales'];
-      const rows = workLogs.map(log => {
-        const tasks = [];
-        if (log.tasksPerformed.mowing) tasks.push('Tonte');
-        if (log.tasksPerformed.brushcutting) tasks.push('Débroussaillage');
-        if (log.tasksPerformed.pruning.done) tasks.push('Taille');
-        
-        return [
-          formatDate(log.date),
-          `${log.duration}h`,
-          log.personnel.join(', '),
-          tasks.join(', ')
-        ];
-      });
-      
-      // Draw table
-      const startY = 130;
-      const cellPadding = 4;
-      const colWidths = [30, 20, 70, 60];
-      const rowHeight = 10;
-      
-      // Draw headers
-      pdf.setFont('helvetica', 'bold');
-      headers.forEach((header, i) => {
-        let x = 20;
-        for (let j = 0; j < i; j++) {
-          x += colWidths[j];
+    // Check custom tasks
+    if (log.tasksPerformed?.customTasks) {
+      Object.entries(log.tasksPerformed.customTasks).forEach(([task, completed]) => {
+        if (completed) {
+          tasks.push(task);
         }
-        pdf.text(header, x + cellPadding, startY);
-      });
-      
-      // Draw rows
-      pdf.setFont('helvetica', 'normal');
-      rows.forEach((row, rowIndex) => {
-        const y = startY + ((rowIndex + 1) * rowHeight);
-        
-        row.forEach((cell, cellIndex) => {
-          let x = 20;
-          for (let j = 0; j < cellIndex; j++) {
-            x += colWidths[j];
-          }
-          pdf.text(cell, x + cellPadding, y);
-        });
       });
     }
     
-    // Save the PDF
-    const fileName = `Projet_${project.name}_${new Date().toISOString().split('T')[0]}.pdf`;
-    pdf.save(fileName);
-    
-    return fileName;
-  } catch (error) {
-    console.error('Error generating project PDF:', error);
-    throw error;
-  }
+    return [
+      index + 1,
+      formatDate(log.date),
+      log.personnel.join(', '),
+      log.timeTracking?.totalHours?.toFixed(1) || '0',
+      tasks.join(', ') || 'Aucune',
+      log.notes || '',
+    ];
+  });
+
+  // Define table headers
+  const headers = [
+    '#',
+    'Date',
+    'Personnel',
+    'Heures',
+    'Tâches',
+    'Notes'
+  ];
+
+  // Add table to the document
+  (doc as jsPDFWithAutoTable).autoTable({
+    head: [headers],
+    body: workLogData,
+    startY: 70,
+    styles: {
+      fontSize: 10,
+    },
+    headStyles: {
+      fillColor: '#22c55e',
+      textColor: '#fff',
+      lineWidth: 0.5,
+      lineColor: '#fff',
+      halign: 'center',
+    },
+    bodyStyles: {
+      lineWidth: 0.5,
+      lineColor: '#ddd',
+    },
+    alternateRowStyles: {
+      fillColor: '#f2f2f2',
+    },
+  });
+
+  // Add creation date
+  const creationDate = formatDate(new Date());
+  doc.setFontSize(10);
+  doc.text(`Généré le: ${creationDate}`, 14, doc.internal.pageSize.height - 10);
+  
+  return doc;
 };

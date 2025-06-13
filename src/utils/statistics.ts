@@ -1,5 +1,4 @@
-
-import { WorkLog, CustomTask } from '@/types/models';
+import { WorkLog, ProjectInfo, CustomTask } from '@/types/models';
 
 // Calculate average hours per visit
 export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
@@ -195,4 +194,31 @@ export const calculateTaskStatistics = (workLogs: WorkLog[], customTasks: Custom
     totalTasks,
     taskCounts
   };
+};
+
+export const getTasksStatistics = (workLogs: WorkLog[]) => {
+  const taskStats = {
+    watering: 0,
+    customTasks: {} as Record<string, number>
+  };
+
+  workLogs.forEach(log => {
+    if (log.tasksPerformed) {
+      // Count watering tasks
+      if (log.tasksPerformed.watering && log.tasksPerformed.watering !== 'none') {
+        taskStats.watering++;
+      }
+      
+      // Count custom tasks
+      if (log.tasksPerformed.customTasks) {
+        Object.entries(log.tasksPerformed.customTasks).forEach(([task, completed]) => {
+          if (completed) {
+            taskStats.customTasks[task] = (taskStats.customTasks[task] || 0) + 1;
+          }
+        });
+      }
+    }
+  });
+
+  return taskStats;
 };
