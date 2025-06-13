@@ -1,6 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProviders } from './context/AppProviders';
+import AppProviders from './context/AppProviders';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
 import WorkLogs from './pages/WorkLogs';
