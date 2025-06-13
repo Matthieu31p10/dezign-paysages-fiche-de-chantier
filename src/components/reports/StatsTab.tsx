@@ -58,7 +58,7 @@ const StatsTab: React.FC = () => {
         selectedYear={selectedYear}
       />
       
-      <YearlyAnalysisTab workLogs={workLogs} />
+      <YearlyAnalysisTab />
     </div>
   );
 };
