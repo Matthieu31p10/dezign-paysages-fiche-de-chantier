@@ -25,10 +25,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   const { getCurrentUser } = useApp();
   
   const handleFormSubmit = async (formData: FormValues) => {
+    console.log('Form submission started with data:', formData);
+    
     try {
-      console.log('Form submitted with data:', formData);
-      console.log('Waste management value:', formData.wasteManagement);
-      
       // Validation de base
       if (!isBlankWorksheet && !formData.projectId) {
         toast.error("Veuillez sélectionner un projet");
@@ -73,15 +72,15 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
           arrival: formData.arrival || '',
           end: formData.end || '',
           breakTime: formData.breakTime || '',
-          totalHours: formData.totalHours || 0
+          totalHours: Number(formData.totalHours) || 0
         },
-        duration: formData.duration || 0,
-        waterConsumption: formData.waterConsumption || 0,
+        duration: Number(formData.duration) || 0,
+        waterConsumption: Number(formData.waterConsumption) || 0,
         wasteManagement: formData.wasteManagement || 'none',
         tasks: '', // Champ requis mais non utilisé dans ce formulaire
         notes: formData.notes || '',
         consumables: validatedConsumables,
-        invoiced: formData.invoiced || false,
+        invoiced: Boolean(formData.invoiced),
         isArchived: false,
         tasksPerformed: {
           watering: formData.watering || 'none',
@@ -93,16 +92,17 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         createdBy: currentUserName
       };
       
-      console.log('WorkLog data before submission:', workLogData);
+      console.log('WorkLog data prepared for submission:', workLogData);
       
       // Soumission des données
       if (existingWorkLogId) {
+        console.log('Updating existing worklog');
         await updateWorkLog(workLogData);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} mise à jour avec succès`);
       } else {
-        console.log('Adding new worklog:', workLogData);
+        console.log('Creating new worklog');
         const result = await addWorkLog(workLogData);
-        console.log('Added worklog result:', result);
+        console.log('Worklog created successfully:', result);
         toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);
       }
       
@@ -112,7 +112,25 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error(`Erreur lors de l'enregistrement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      
+      // Messages d'erreur plus détaillés selon le type d'erreur
+      let errorMessage = 'Erreur inconnue';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Messages spécifiques pour les erreurs courantes de Supabase
+        if (errorMessage.includes('duplicate key')) {
+          errorMessage = 'Cette fiche existe déjà';
+        } else if (errorMessage.includes('foreign key')) {
+          errorMessage = 'Projet ou données liées non trouvées';
+        } else if (errorMessage.includes('not null')) {
+          errorMessage = 'Certains champs obligatoires sont manquants';
+        } else if (errorMessage.includes('permission denied')) {
+          errorMessage = 'Permissions insuffisantes pour cette action';
+        }
+      }
+      
+      toast.error(`Erreur lors de l'enregistrement: ${errorMessage}`);
     }
   };
   

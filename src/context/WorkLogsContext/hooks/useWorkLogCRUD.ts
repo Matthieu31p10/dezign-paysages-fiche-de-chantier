@@ -7,39 +7,76 @@ import { toast } from 'sonner';
 export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<React.SetStateAction<WorkLog[]>>) => {
   const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
     try {
+      console.log('Adding worklog to Supabase:', workLog);
+      
+      // Formatter les données pour Supabase
+      const workLogForDB = {
+        id: workLog.id,
+        project_id: workLog.projectId || '',
+        date: workLog.date,
+        personnel: workLog.personnel || [],
+        departure: workLog.timeTracking?.departure || '',
+        arrival: workLog.timeTracking?.arrival || '',
+        end_time: workLog.timeTracking?.end || '',
+        break_time: workLog.timeTracking?.breakTime || '',
+        total_hours: Number(workLog.timeTracking?.totalHours || 0),
+        water_consumption: Number(workLog.waterConsumption || 0),
+        waste_management: workLog.wasteManagement || 'none',
+        tasks: workLog.tasks || '',
+        notes: workLog.notes || '',
+        invoiced: Boolean(workLog.invoiced),
+        is_archived: Boolean(workLog.isArchived),
+        client_signature: workLog.clientSignature || null,
+        client_name: workLog.clientName || null,
+        address: workLog.address || null,
+        contact_phone: workLog.contactPhone || null,
+        contact_email: workLog.contactEmail || null,
+        hourly_rate: workLog.hourlyRate ? Number(workLog.hourlyRate) : null,
+        linked_project_id: workLog.linkedProjectId || null,
+        signed_quote_amount: workLog.signedQuoteAmount ? Number(workLog.signedQuoteAmount) : null,
+        is_quote_signed: Boolean(workLog.isQuoteSigned),
+        is_blank_worksheet: Boolean(workLog.isBlankWorksheet),
+        created_by: workLog.createdBy || null
+      };
+
+      console.log('Formatted data for Supabase:', workLogForDB);
+
       const { data, error } = await supabase
         .from('work_logs')
-        .insert([{
-          project_id: workLog.projectId,
-          date: workLog.date,
-          personnel: workLog.personnel,
-          departure: workLog.timeTracking?.departure,
-          arrival: workLog.timeTracking?.arrival,
-          end_time: workLog.timeTracking?.end,
-          break_time: workLog.timeTracking?.breakTime,
-          total_hours: workLog.timeTracking?.totalHours || 0,
-          water_consumption: workLog.waterConsumption,
-          waste_management: workLog.wasteManagement,
-          tasks: workLog.tasks,
-          notes: workLog.notes,
-          invoiced: workLog.invoiced || false,
-          is_archived: workLog.isArchived || false,
-          client_signature: workLog.clientSignature,
-          client_name: workLog.clientName,
-          address: workLog.address,
-          contact_phone: workLog.contactPhone,
-          contact_email: workLog.contactEmail,
-          hourly_rate: workLog.hourlyRate,
-          linked_project_id: workLog.linkedProjectId,
-          signed_quote_amount: workLog.signedQuoteAmount,
-          is_quote_signed: workLog.isQuoteSigned || false,
-          is_blank_worksheet: workLog.isBlankWorksheet || false,
-          created_by: workLog.createdBy
-        }])
+        .insert([workLogForDB])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Successfully inserted worklog:', data);
+
+      // Gérer les consumables séparément si ils existent
+      if (workLog.consumables && workLog.consumables.length > 0) {
+        const consumablesForDB = workLog.consumables.map(consumable => ({
+          id: consumable.id,
+          work_log_id: data.id,
+          supplier: consumable.supplier || '',
+          product: consumable.product || '',
+          unit: consumable.unit || 'unité',
+          quantity: Number(consumable.quantity || 0),
+          unit_price: Number(consumable.unitPrice || 0),
+          total_price: Number(consumable.totalPrice || 0),
+          saved_for_reuse: false
+        }));
+
+        const { error: consumablesError } = await supabase
+          .from('consumables')
+          .insert(consumablesForDB);
+
+        if (consumablesError) {
+          console.error('Error inserting consumables:', consumablesError);
+          // Ne pas bloquer pour les consumables, juste logger l'erreur
+        }
+      }
 
       const newWorkLog: WorkLog = {
         ...workLog,
@@ -49,11 +86,11 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
       };
 
       setWorkLogs((prev) => [newWorkLog, ...prev]);
-      toast.success('Fiche de suivi créée');
+      toast.success('Fiche de suivi créée avec succès');
       return newWorkLog;
     } catch (error) {
       console.error("Error adding work log:", error);
-      toast.error('Erreur lors de la création de la fiche');
+      toast.error(`Erreur lors de la création: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       throw error;
     }
   };
