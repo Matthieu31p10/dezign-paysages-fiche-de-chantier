@@ -1,67 +1,80 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole, Team, AppSettings } from '@/types/models';
+import { User, UserRole, Team, AppSettings, ProjectInfo, WorkLog } from '@/types/models';
 import { useSettings } from './SettingsContext';
+import { useProjects } from './ProjectsContext';
+import { useWorkLogs } from './WorkLogsContext/WorkLogsContext';
+import { useTeams } from './TeamsContext';
+import { useAuth } from './AuthContext';
 
 interface AppContextType {
+  // Auth properties
+  auth: {
+    isAuthenticated: boolean;
+    currentUser: User | null;
+  };
   currentUser: User | null;
-  teams: Team[];
-  settings: AppSettings;
   login: (username: string, password: string) => boolean;
   logout: () => void;
   canUserAccess: (requiredRole: UserRole | string) => boolean;
+  getCurrentUser: () => User | null;
+  
+  // Settings
+  settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
-  addTeam: (name: string) => void;
+  
+  // Teams
+  teams: Team[];
+  addTeam: (name: string) => Promise<Team>;
   updateTeam: (team: Team) => void;
   deleteTeam: (id: string) => void;
+  
+  // Users
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
   updateUser: (user: User) => void;
   deleteUser: (id: string) => void;
+  
+  // Projects
+  projectInfos: ProjectInfo[];
+  selectedProjectId: string | null;
+  addProjectInfo: (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => Promise<ProjectInfo>;
+  updateProjectInfo: (projectInfo: ProjectInfo) => Promise<void>;
+  deleteProjectInfo: (id: string) => Promise<void>;
+  selectProject: (id: string | null) => void;
+  getProjectById: (id: string) => ProjectInfo | undefined;
+  getActiveProjects: () => ProjectInfo[];
+  getArchivedProjects: () => ProjectInfo[];
+  
+  // Work Logs
+  workLogs: WorkLog[];
+  isLoading: boolean;
+  addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
+  updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => Promise<void>;
+  deleteWorkLog: (id: string) => Promise<void>;
+  deleteWorkLogsByProjectId: (projectId: string) => Promise<void>;
+  archiveWorkLogsByProjectId: (projectId: string, archived: boolean) => Promise<void>;
+  getWorkLogById: (id: string) => WorkLog | undefined;
+  getWorkLogsByProjectId: (projectId: string) => WorkLog[];
+  getTotalDuration: (projectId: string) => number;
+  getTotalVisits: (projectId: string) => number;
+  getLastVisitDate: (projectId: string) => Date | null;
+  
+  // Custom tasks and personnel
+  addCustomTask: (taskName: string) => Promise<any>;
+  customTasks: any[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const defaultAdmin: User = {
-  id: 'admin-default',
-  username: 'admin',
-  password: 'admin',
-  role: 'admin',
-  name: 'Administrateur',
-  createdAt: new Date('2024-01-01')
-};
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { settings, updateSettings: updateSettingsContext } = useSettings();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [teams, setTeams] = useState<Team[]>([]);
-
-  // Initialize default users if not present
-  useEffect(() => {
-    if (!settings.users) {
-      updateSettingsContext({
-        ...settings,
-        users: [defaultAdmin]
-      });
-    }
-  }, [settings, updateSettingsContext]);
-
-  const login = (username: string, password: string): boolean => {
-    const users = settings.users || [defaultAdmin];
-    const user = users.find(u => u.username === username && u.password === password);
-    
-    if (user) {
-      setCurrentUser(user);
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-  };
+  const auth = useAuth();
+  const { settings, updateSettings, addCustomTask, getCustomTasks } = useSettings();
+  const projects = useProjects();
+  const workLogs = useWorkLogs();
+  const teams = useTeams();
 
   const canUserAccess = (requiredRole: UserRole | string): boolean => {
-    if (!currentUser) return false;
+    if (!auth.auth.currentUser) return false;
     
     if (typeof requiredRole === 'string' && requiredRole !== 'admin' && requiredRole !== 'manager' && requiredRole !== 'user') {
       // Module-based access control
@@ -74,79 +87,75 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'admin': 3
     };
     
-    const userLevel = roleHierarchy[currentUser.role];
+    const userLevel = roleHierarchy[auth.auth.currentUser.role];
     const requiredLevel = roleHierarchy[requiredRole as UserRole];
     
     return userLevel >= requiredLevel;
   };
 
-  const addTeam = (name: string) => {
+  const addTeam = async (name: string): Promise<Team> => {
     const newTeam: Team = {
       id: crypto.randomUUID(),
       name,
-      createdAt: new Date()
     };
-    setTeams(prev => [...prev, newTeam]);
-  };
-
-  const updateTeam = (team: Team) => {
-    setTeams(prev => prev.map(t => t.id === team.id ? team : t));
-  };
-
-  const deleteTeam = (id: string) => {
-    setTeams(prev => prev.filter(t => t.id !== id));
-  };
-
-  const addUser = (userData: Omit<User, 'id' | 'createdAt'>) => {
-    const newUser: User = {
-      ...userData,
-      id: crypto.randomUUID(),
-      createdAt: new Date()
-    };
-    
-    const updatedUsers = [...(settings.users || []), newUser];
-    updateSettingsContext({
-      ...settings,
-      users: updatedUsers
-    });
-  };
-
-  const updateUser = (user: User) => {
-    const updatedUsers = (settings.users || []).map(u => u.id === user.id ? user : u);
-    updateSettingsContext({
-      ...settings,
-      users: updatedUsers
-    });
-  };
-
-  const deleteUser = (id: string) => {
-    const updatedUsers = (settings.users || []).filter(u => u.id !== id);
-    updateSettingsContext({
-      ...settings,
-      users: updatedUsers
-    });
-  };
-
-  const updateSettings = async (newSettings: Partial<AppSettings>) => {
-    await updateSettingsContext(newSettings);
+    await teams.addTeam(newTeam);
+    return newTeam;
   };
 
   return (
     <AppContext.Provider
       value={{
-        currentUser,
-        teams,
-        settings,
-        login,
-        logout,
+        // Auth
+        auth: auth.auth,
+        currentUser: auth.auth.currentUser,
+        login: auth.login,
+        logout: auth.logout,
         canUserAccess,
+        getCurrentUser: auth.getCurrentUser,
+        
+        // Settings
+        settings,
         updateSettings,
+        
+        // Teams
+        teams: teams.teams,
         addTeam,
-        updateTeam,
-        deleteTeam,
-        addUser,
-        updateUser,
-        deleteUser
+        updateTeam: teams.updateTeam,
+        deleteTeam: teams.deleteTeam,
+        
+        // Users
+        addUser: auth.addUser,
+        updateUser: auth.updateUser,
+        deleteUser: auth.deleteUser,
+        
+        // Projects
+        projectInfos: projects.projectInfos,
+        selectedProjectId: projects.selectedProjectId,
+        addProjectInfo: projects.addProjectInfo,
+        updateProjectInfo: projects.updateProjectInfo,
+        deleteProjectInfo: projects.deleteProjectInfo,
+        selectProject: projects.selectProject,
+        getProjectById: projects.getProjectById,
+        getActiveProjects: projects.getActiveProjects,
+        getArchivedProjects: projects.getArchivedProjects,
+        
+        // Work Logs
+        workLogs: workLogs.workLogs,
+        isLoading: workLogs.isLoading,
+        addWorkLog: workLogs.addWorkLog,
+        updateWorkLog: workLogs.updateWorkLog,
+        deleteWorkLog: workLogs.deleteWorkLog,
+        deleteWorkLogsByProjectId: workLogs.deleteWorkLogsByProjectId,
+        archiveWorkLogsByProjectId: workLogs.archiveWorkLogsByProjectId,
+        getWorkLogById: workLogs.getWorkLogById,
+        getWorkLogsByProjectId: workLogs.getWorkLogsByProjectId,
+        getTotalDuration: workLogs.getTotalDuration,
+        getTotalVisits: workLogs.getTotalVisits,
+        getLastVisitDate: workLogs.getLastVisitDate,
+        
+        // Custom tasks
+        addCustomTask,
+        customTasks: getCustomTasks(),
       }}
     >
       {children}
