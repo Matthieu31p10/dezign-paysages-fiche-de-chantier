@@ -129,12 +129,7 @@ export const calculateWaterConsumptionStats = (workLogs: WorkLog[]): WaterConsum
 export interface TaskStatistics {
   totalTasks: number;
   taskCounts: {
-    mowing: number;
-    brushcutting: number;
-    blower: number;
-    manualWeeding: number;
-    whiteVinegar: number;
-    pruning: number;
+    watering: number;
     customTasks: {
       [id: string]: {
         count: number;
@@ -146,12 +141,7 @@ export interface TaskStatistics {
 
 export const calculateTaskStatistics = (workLogs: WorkLog[], customTasks: CustomTask[]): TaskStatistics => {
   const taskCounts = {
-    mowing: 0,
-    brushcutting: 0,
-    blower: 0, 
-    manualWeeding: 0,
-    whiteVinegar: 0,
-    pruning: 0,
+    watering: 0,
     customTasks: {} as { [id: string]: { count: number; name: string } }
   };
   
@@ -165,15 +155,13 @@ export const calculateTaskStatistics = (workLogs: WorkLog[], customTasks: Custom
   
   // Count tasks
   workLogs.forEach(log => {
-    if (log.tasksPerformed.mowing) taskCounts.mowing++;
-    if (log.tasksPerformed.brushcutting) taskCounts.brushcutting++;
-    if (log.tasksPerformed.blower) taskCounts.blower++;
-    if (log.tasksPerformed.manualWeeding) taskCounts.manualWeeding++;
-    if (log.tasksPerformed.whiteVinegar) taskCounts.whiteVinegar++;
-    if (log.tasksPerformed.pruning.done) taskCounts.pruning++;
+    // Count watering tasks
+    if (log.tasksPerformed?.watering && log.tasksPerformed.watering !== 'none') {
+      taskCounts.watering++;
+    }
     
     // Count custom tasks
-    if (log.tasksPerformed.customTasks) {
+    if (log.tasksPerformed?.customTasks) {
       Object.entries(log.tasksPerformed.customTasks).forEach(([id, isDone]) => {
         if (isDone && taskCounts.customTasks[id]) {
           taskCounts.customTasks[id].count++;
@@ -182,12 +170,7 @@ export const calculateTaskStatistics = (workLogs: WorkLog[], customTasks: Custom
     }
   });
   
-  const totalTasks = taskCounts.mowing + 
-    taskCounts.brushcutting + 
-    taskCounts.blower + 
-    taskCounts.manualWeeding + 
-    taskCounts.whiteVinegar + 
-    taskCounts.pruning + 
+  const totalTasks = taskCounts.watering + 
     Object.values(taskCounts.customTasks).reduce((sum, task) => sum + task.count, 0);
   
   return {
