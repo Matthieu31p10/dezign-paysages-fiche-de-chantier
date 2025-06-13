@@ -5,6 +5,7 @@ import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
 import { WorkLogsProvider } from './WorkLogsContext/WorkLogsContext';
 import { SchedulingProvider } from './SchedulingContext';
+import { AppProvider } from './AppContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -28,7 +29,9 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
           <WorkLogsProvider>
             <ProjectsProvider>
               <SchedulingProvider>
-                {children}
+                <AppProvider>
+                  {children}
+                </AppProvider>
               </SchedulingProvider>
             </ProjectsProvider>
           </WorkLogsProvider>
