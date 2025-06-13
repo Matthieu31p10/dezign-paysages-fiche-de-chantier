@@ -29,7 +29,7 @@ export const TeamsSelect = ({ value, onValueChange }: TeamsSelectProps) => {
     if (newTeamName.trim() === '') return;
     
     try {
-      const newTeam = await addTeam(newTeamName.trim());
+      const newTeam = await addTeam({ name: newTeamName.trim() });
       onValueChange(newTeam.id);
       setNewTeamName('');
       setIsDialogOpen(false);
