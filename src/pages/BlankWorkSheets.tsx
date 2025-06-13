@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { WorkLog } from '@/types/models';
 import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHeader';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
@@ -15,7 +16,8 @@ import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUni
 
 const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
-  const { workLogs = [], projectInfos = [] } = useApp();
+  const { projectInfos = [] } = useApp();
+  const { workLogs = [] } = useWorkLogs();
   const [activeTab, setActiveTab] = useState<string>("list");
   const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
   const [pdfOptionsOpen, setPdfOptionsOpen] = useState<boolean>(false);
@@ -66,7 +68,7 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       await generatePDF({
         workLog,
-        action: 'print',  // This matches our updated PDFData interface
+        action: 'print',
         config: {
           includeCompanyHeader: true,
           includeClientInfo: true,
@@ -90,7 +92,7 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       await generatePDF({
         workLog,
-        action: 'download',  // This matches our updated PDFData interface
+        action: 'download',
         config: options
       });
       

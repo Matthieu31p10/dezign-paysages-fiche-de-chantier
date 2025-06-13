@@ -1,5 +1,6 @@
 
 import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import WorkLogList from '@/components/worklogs/WorkLogList';
 import WorkLogsHeader from '@/components/worklogs/list/WorkLogsHeader';
@@ -8,7 +9,8 @@ import { useWorkLogsFiltering } from '@/components/worklogs/hooks/useWorkLogsFil
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WorkLogs = () => {
-  const { workLogs, projectInfos, teams } = useApp();
+  const { projectInfos, teams } = useApp();
+  const { workLogs } = useWorkLogs();
   const {
     selectedProjectId,
     setSelectedProjectId,

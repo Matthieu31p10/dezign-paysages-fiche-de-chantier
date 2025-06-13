@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ProjectsProvider } from './ProjectsContext';
-import { WorkLogsProvider } from './WorkLogsContext';
+import { WorkLogsProvider } from './WorkLogsContext/WorkLogsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
 import { AuthProvider } from './AuthContext';

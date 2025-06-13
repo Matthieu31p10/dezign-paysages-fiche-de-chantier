@@ -7,7 +7,7 @@ import { getCurrentYear } from '@/utils/date-utils';
 import { getYearsFromWorkLogs } from '@/utils/statistics';
 import WaterConsumptionReport from '@/components/reports/WaterConsumptionReport';
 import BlankSheetAnalysis from '@/components/reports/blank-sheet-analysis';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 
 const StatsTab = () => {
   const { projectInfos, teams } = useApp();
