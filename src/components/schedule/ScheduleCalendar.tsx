@@ -49,37 +49,54 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     return { monthStart, monthEnd, days, startDayOfWeek, teamProjects };
   }, [month, year, teamId, projectInfos, showWeekends]);
   
-  const getYearlyPassageNumbers = useMemo(() => {
+  // Generate scheduled passages for the entire year
+  const getYearlyPassageSchedule = useMemo(() => {
     return (currentYear: number) => {
       const yearStart = startOfYear(new Date(currentYear, 0));
       const yearEnd = endOfYear(new Date(currentYear, 0));
       const yearDays = eachDayOfInterval({ start: yearStart, end: yearEnd });
       
-      const yearlyPassages: Record<string, Record<string, number>> = {};
+      const yearlySchedule: Record<string, Record<string, number>> = {};
       
       teamProjects.forEach(project => {
-        let passageCounter = 1;
-        const visitsPerYear = project.annualVisits || 12;
+        const annualVisits = project.annualVisits || 12;
         const workingDays = showWeekends ? yearDays : yearDays.filter(d => !isWeekend(d));
-        const interval = Math.floor(workingDays.length / visitsPerYear);
         
-        yearlyPassages[project.id] = {};
+        // Calculate interval between visits
+        const interval = Math.floor(workingDays.length / annualVisits);
         
-        for (let i = 0; i < visitsPerYear; i++) {
-          const dayIndex = i * interval + Math.floor(interval / 2);
+        yearlySchedule[project.id] = {};
+        
+        // Schedule visits evenly throughout the year
+        for (let i = 0; i < annualVisits; i++) {
+          let dayIndex = i * interval;
+          
+          // Add some variation to avoid all visits on the same day of week
+          dayIndex += Math.floor(interval / 3);
+          
           if (dayIndex < workingDays.length) {
-            const day = workingDays[dayIndex];
+            const scheduledDay = workingDays[dayIndex];
             
-            if (!showWeekends && isWeekend(day)) continue;
-            
-            const dateKey = format(day, 'yyyy-MM-dd');
-            yearlyPassages[project.id][dateKey] = passageCounter;
-            passageCounter++;
+            // Skip weekends if showWeekends is false
+            if (!showWeekends && isWeekend(scheduledDay)) {
+              // Find next working day
+              let nextDayIndex = dayIndex + 1;
+              while (nextDayIndex < workingDays.length && isWeekend(workingDays[nextDayIndex])) {
+                nextDayIndex++;
+              }
+              if (nextDayIndex < workingDays.length) {
+                const dateKey = format(workingDays[nextDayIndex], 'yyyy-MM-dd');
+                yearlySchedule[project.id][dateKey] = i + 1; // Passage number starts at 1
+              }
+            } else {
+              const dateKey = format(scheduledDay, 'yyyy-MM-dd');
+              yearlySchedule[project.id][dateKey] = i + 1; // Passage number starts at 1
+            }
           }
         }
       });
       
-      return yearlyPassages;
+      return yearlySchedule;
     };
   }, [teamProjects, showWeekends]);
   
@@ -88,21 +105,20 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
-    const yearlyPassages = getYearlyPassageNumbers(year);
+    const yearlySchedule = getYearlyPassageSchedule(year);
     
     teamProjects.forEach(project => {
-      const day = date.getDate();
+      const passageNumber = yearlySchedule[project.id]?.[dateString];
       
-      if ((day % Math.max(1, project.annualVisits % 30)) === 0) {
-        const passageNumber = yearlyPassages[project.id]?.[dateString] || 1;
-        
+      if (passageNumber) {
         events.push({
           id: `${project.id}-${dateString}`,
           projectId: project.id,
           projectName: project.name,
           team: project.team,
           duration: project.visitDuration,
-          passageNumber: passageNumber
+          passageNumber: passageNumber,
+          totalPassages: project.annualVisits || 12
         });
       }
     });
@@ -204,7 +220,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
                             <TooltipContent side="top" className="bg-white shadow-lg border">
                               <div className="text-sm p-1">
                                 <p className="font-semibold text-gray-900">{event.projectName}</p>
-                                <p className="text-green-600">Passage n°{event.passageNumber}</p>
+                                <p className="text-green-600">Passage n°{event.passageNumber}/{event.totalPassages}</p>
                                 <p className="text-gray-600">Durée: {event.duration}h</p>
                               </div>
                             </TooltipContent>

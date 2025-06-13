@@ -49,36 +49,36 @@ const TeamSchedules: React.FC<TeamSchedulesProps> = ({
         : projects.filter(p => p.team === teamId);
       
       teamProjects.forEach(project => {
-        const visitsPerYear = project.annualVisits || 12;
+        const annualVisits = project.annualVisits || 12;
         const workingDaysInYear = yearDays.filter(d => !isWeekend(d));
-        const interval = Math.floor(workingDaysInYear.length / visitsPerYear);
         
-        const yearlyPassages: Record<string, number> = {};
-        let passageCounter = 1;
+        // Calculate interval between visits for the entire year
+        const interval = Math.floor(workingDaysInYear.length / annualVisits);
         
-        for (let i = 0; i < visitsPerYear; i++) {
-          const dayIndex = i * interval + Math.floor(interval / 2);
+        // Generate the full year schedule with proper passage numbering
+        const yearlySchedule: Record<string, number> = {};
+        
+        for (let i = 0; i < annualVisits; i++) {
+          let dayIndex = i * interval;
+          
+          // Add some variation to avoid all visits on the same day of week
+          dayIndex += Math.floor(interval / 3);
+          
           if (dayIndex < workingDaysInYear.length) {
-            const day = workingDaysInYear[dayIndex];
-            const dateKey = format(day, 'yyyy-MM-dd');
-            yearlyPassages[dateKey] = passageCounter;
-            passageCounter++;
+            const scheduledDay = workingDaysInYear[dayIndex];
+            const dateKey = format(scheduledDay, 'yyyy-MM-dd');
+            yearlySchedule[dateKey] = i + 1; // Passage number starts at 1
           }
         }
         
-        const visitsPerMonth = Math.max(1, Math.round(visitsPerYear / 12));
-        const monthInterval = Math.floor(days.length / visitsPerMonth);
-        
-        for (let i = 0; i < visitsPerMonth; i++) {
-          const dayIndex = i * monthInterval + Math.floor(monthInterval / 2);
-          if (dayIndex < days.length) {
-            const day = days[dayIndex];
-            
-            if (isWeekend(day)) continue;
-            
-            const dateKey = format(day, 'yyyy-MM-dd');
-            const passageNumber = yearlyPassages[dateKey] || 1;
-            
+        // Add events for the current month based on the yearly schedule
+        days.forEach(day => {
+          if (isWeekend(day)) return;
+          
+          const dateKey = format(day, 'yyyy-MM-dd');
+          const passageNumber = yearlySchedule[dateKey];
+          
+          if (passageNumber) {
             events[dateKey].push({
               id: `${project.id}-${dateKey}`,
               projectId: project.id,
@@ -86,10 +86,11 @@ const TeamSchedules: React.FC<TeamSchedulesProps> = ({
               team: project.team,
               duration: project.visitDuration,
               address: project.address,
-              passageNumber: passageNumber
+              passageNumber: passageNumber,
+              totalPassages: annualVisits
             });
           }
-        }
+        });
       });
       
       return events;
@@ -161,7 +162,7 @@ const TeamSchedules: React.FC<TeamSchedulesProps> = ({
                                   <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
                                       <Badge variant="outline" className="bg-green-600 text-white border-green-600 font-bold text-xs">
-                                        #{event.passageNumber}
+                                        #{event.passageNumber}/{event.totalPassages}
                                       </Badge>
                                       <h4 className="font-bold text-green-800 text-lg">{event.projectName}</h4>
                                     </div>
