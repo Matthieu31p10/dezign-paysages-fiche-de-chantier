@@ -1,10 +1,11 @@
-import React from 'react';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
-import { useProjects } from '@/context/ProjectsContext';
+
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BarChart2, Building2, FileText, CalendarRange } from 'lucide-react';
 import ProjectsTab from '@/components/reports/ProjectsTab';
 import StatsTab from '@/components/reports/StatsTab';
 import ToolsTab from '@/components/reports/ToolsTab';
+import YearlyAnalysisTab from '@/components/reports/YearlyAnalysisTab';
 
 const Reports = () => {
   return (
