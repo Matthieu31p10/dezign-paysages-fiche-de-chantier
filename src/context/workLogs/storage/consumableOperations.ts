@@ -1,7 +1,7 @@
 
 import { Consumable } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
-import { executeSupabaseQuery, handleSupabaseError } from './supabaseClient';
+import { handleSupabaseError } from './supabaseClient';
 
 /**
  * Load saved consumables from database
@@ -10,13 +10,18 @@ export const loadSavedConsumables = async (): Promise<Consumable[]> => {
   try {
     console.log("Loading saved consumables from Supabase");
     
-    const data = await executeSupabaseQuery<any[]>(
-      () => supabase.from('saved_consumables').select('*').eq('saved_for_reuse', true),
-      'Erreur lors du chargement des consommables'
-    );
+    const { data, error } = await supabase
+      .from('saved_consumables')
+      .select('*')
+      .eq('saved_for_reuse', true);
+    
+    if (error) {
+      handleSupabaseError(error, 'Erreur lors du chargement des consommables');
+      return [];
+    }
     
     // Map database format to application format
-    return data.map(c => ({
+    return (data || []).map(c => ({
       id: c.id,
       supplier: c.supplier,
       product: c.product,
@@ -39,8 +44,9 @@ export const saveConsumableForReuse = async (consumable: Consumable): Promise<vo
   try {
     console.log("Saving consumable for reuse:", consumable);
     
-    await executeSupabaseQuery(
-      () => supabase.from('saved_consumables').insert({
+    const { error } = await supabase
+      .from('saved_consumables')
+      .insert({
         id: consumable.id || crypto.randomUUID(),
         supplier: consumable.supplier,
         product: consumable.product,
@@ -49,9 +55,11 @@ export const saveConsumableForReuse = async (consumable: Consumable): Promise<vo
         unit_price: consumable.unitPrice,
         total_price: consumable.totalPrice,
         saved_for_reuse: true
-      }),
-      'Erreur lors de l\'enregistrement du consommable'
-    );
+      });
+    
+    if (error) {
+      handleSupabaseError(error, 'Erreur lors de l\'enregistrement du consommable');
+    }
     
   } catch (error) {
     handleSupabaseError(error, 'Erreur lors de l\'enregistrement du consommable');

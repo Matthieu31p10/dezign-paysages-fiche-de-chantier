@@ -3,7 +3,7 @@ import { WorkLog } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatWorkLogForDatabase, formatWorkLogFromDatabase } from './formatters';
-import { executeSupabaseQuery } from './supabaseClient';
+import { handleSupabaseError } from './supabaseClient';
 
 /**
  * Load work logs from database
@@ -12,20 +12,27 @@ export const loadWorkLogsFromStorage = async (): Promise<WorkLog[]> => {
   try {
     console.log("Loading work logs from Supabase");
     
-    const data = await executeSupabaseQuery<any[]>(
-      () => supabase.from('work_logs').select('*'),
-      'Erreur lors du chargement des fiches de suivi'
-    );
+    const { data: workLogsData, error: workLogsError } = await supabase
+      .from('work_logs')
+      .select('*');
+    
+    if (workLogsError) {
+      handleSupabaseError(workLogsError, 'Erreur lors du chargement des fiches de suivi');
+      return [];
+    }
     
     // Get all consumables for all work logs in one query
-    const consumables = await executeSupabaseQuery<any[]>(
-      () => supabase.from('consumables').select('*'),
-      'Erreur lors du chargement des consommables'
-    );
+    const { data: consumablesData, error: consumablesError } = await supabase
+      .from('consumables')
+      .select('*');
+    
+    if (consumablesError) {
+      console.warn('Error loading consumables:', consumablesError);
+    }
     
     // Map the work logs to their app format
-    const workLogs: WorkLog[] = data.map(workLog => 
-      formatWorkLogFromDatabase(workLog, consumables.filter(c => c.work_log_id === workLog.id))
+    const workLogs: WorkLog[] = (workLogsData || []).map(workLog => 
+      formatWorkLogFromDatabase(workLog, (consumablesData || []).filter(c => c.work_log_id === workLog.id))
     );
     
     return workLogs;
@@ -48,22 +55,25 @@ export const deleteWorkLogFromStorage = async (workLogId: string): Promise<void>
       throw new Error('Invalid work log ID');
     }
     
-    await executeSupabaseQuery(
-      () => supabase
-        .from('work_logs')
-        .delete()
-        .eq('id', workLogId),
-      'Erreur lors de la suppression de la fiche de suivi'
-    );
+    const { error: workLogError } = await supabase
+      .from('work_logs')
+      .delete()
+      .eq('id', workLogId);
+    
+    if (workLogError) {
+      handleSupabaseError(workLogError, 'Erreur lors de la suppression de la fiche de suivi');
+      return;
+    }
     
     // Supprimer également les consommables associés
-    await executeSupabaseQuery(
-      () => supabase
-        .from('consumables')
-        .delete()
-        .eq('work_log_id', workLogId),
-      'Erreur lors de la suppression des consommables associés'
-    );
+    const { error: consumablesError } = await supabase
+      .from('consumables')
+      .delete()
+      .eq('work_log_id', workLogId);
+    
+    if (consumablesError) {
+      console.warn('Error deleting associated consumables:', consumablesError);
+    }
     
   } catch (error) {
     console.error('Error deleting work log:', error);

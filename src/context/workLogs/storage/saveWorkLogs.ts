@@ -2,7 +2,7 @@
 import { WorkLog } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { executeSupabaseQuery, handleSupabaseError } from './supabaseClient';
+import { handleSupabaseError } from './supabaseClient';
 import { formatWorkLogForDatabase, formatConsumablesForDatabase } from './formatters';
 
 /**
@@ -18,25 +18,36 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
       const workLogData = formatWorkLogForDatabase(workLog);
       
       // Upsert the work log
-      await executeSupabaseQuery(
-        () => supabase.from('work_logs').upsert(workLogData, { onConflict: 'id' }),
-        'Erreur lors de l\'enregistrement de la fiche de suivi'
-      );
+      const { error: workLogError } = await supabase
+        .from('work_logs')
+        .upsert(workLogData, { onConflict: 'id' });
+      
+      if (workLogError) {
+        handleSupabaseError(workLogError, 'Erreur lors de l\'enregistrement de la fiche de suivi');
+        continue;
+      }
       
       // Handle consumables - first delete existing ones for this work log
       if (workLog.consumables && workLog.consumables.length > 0) {
-        await executeSupabaseQuery(
-          () => supabase.from('consumables').delete().eq('work_log_id', workLog.id),
-          'Erreur lors de la mise à jour des consommables'
-        );
+        const { error: deleteError } = await supabase
+          .from('consumables')
+          .delete()
+          .eq('work_log_id', workLog.id);
+        
+        if (deleteError) {
+          console.warn('Error deleting existing consumables:', deleteError);
+        }
         
         // Insert updated consumables
         const consumablesData = formatConsumablesForDatabase(workLog.id, workLog.consumables);
         
-        await executeSupabaseQuery(
-          () => supabase.from('consumables').insert(consumablesData),
-          'Erreur lors de l\'enregistrement des consommables'
-        );
+        const { error: insertError } = await supabase
+          .from('consumables')
+          .insert(consumablesData);
+        
+        if (insertError) {
+          handleSupabaseError(insertError, 'Erreur lors de l\'enregistrement des consommables');
+        }
       }
     }
     
