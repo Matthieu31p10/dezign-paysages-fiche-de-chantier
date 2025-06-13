@@ -25,13 +25,13 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     <QueryClientProvider client={queryClient}>
       <SettingsProvider>
         <TeamsProvider>
-          <ProjectsProvider>
-            <WorkLogsProvider>
+          <WorkLogsProvider>
+            <ProjectsProvider>
               <SchedulingProvider>
                 {children}
               </SchedulingProvider>
-            </WorkLogsProvider>
-          </ProjectsProvider>
+            </ProjectsProvider>
+          </WorkLogsProvider>
         </TeamsProvider>
       </SettingsProvider>
     </QueryClientProvider>
