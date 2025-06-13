@@ -7,7 +7,7 @@ import BlankSheetActions from './BlankSheetActions';
 import BlankSheetHeader from './BlankSheetHeader';
 import BlankSheetStats from './BlankSheetStats';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface BlankSheetItemProps {
