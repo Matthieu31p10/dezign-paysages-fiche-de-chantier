@@ -65,7 +65,7 @@ export const createWorkLogFromFormData = (
   };
 };
 
-export const formatStructuredNotes = (formData: any): string => {
+export const formatStructuredNotes = (formData: FormValues): string => {
   const sections: string[] = [];
   
   if (formData.notes && formData.notes.trim()) {

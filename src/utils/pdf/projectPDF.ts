@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { ProjectInfo, WorkLog } from '@/types/models';
@@ -69,7 +70,7 @@ export const generateProjectPDF = (project: ProjectInfo, workLogs: WorkLog[]): j
   ];
 
   // Add table to the document
-  (doc as jsPDFWithAutoTable).autoTable({
+  doc.autoTable({
     head: [headers],
     body: workLogData,
     startY: 70,

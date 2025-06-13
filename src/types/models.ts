@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -7,11 +8,11 @@ export interface User {
   role: UserRole;
   name?: string;
   email?: string;
-  phone?: string; // Nouveau champ ajouté
-  position?: string; // Nouveau champ ajouté (poste)
-  drivingLicense?: string; // Nouveau champ ajouté (permis)
+  phone?: string;
+  position?: string;
+  drivingLicense?: string;
   createdAt: Date;
-  permissions?: Record<string, boolean>; // Permissions personnalisées
+  permissions?: Record<string, boolean>;
 }
 
 export interface AuthState {
@@ -22,10 +23,10 @@ export interface AuthState {
 export interface ProjectInfo {
   id: string;
   name: string;
-  clientName?: string;  // Added this property
+  clientName?: string;
   address: string;
-  contactPhone?: string; // Added this property
-  contactEmail?: string; // Added this property
+  contactPhone?: string;
+  contactEmail?: string;
   contact: {
     name?: string;
     phone: string;
@@ -41,20 +42,20 @@ export interface ProjectInfo {
   annualTotalHours: number;
   visitDuration: number;
   additionalInfo: string;
-  team: string;
+  team: string; // Changé de string à string pour correspondre à la DB
   projectType: 'residence' | 'particular' | 'enterprise' | '';
   startDate?: Date | null;
   endDate?: Date | null;
   isArchived?: boolean;
   createdAt: Date;
-  documents?: ProjectDocument[]; // Documents associés au chantier
+  documents?: ProjectDocument[];
 }
 
 export interface ProjectDocument {
   id: string;
   name: string;
   type: string;
-  url: string; // URL encodée en base64 ou chemin vers le fichier
+  url: string;
   uploadDate: Date;
 }
 
@@ -111,7 +112,7 @@ export interface WorkLog {
   isQuoteSigned?: boolean;
   isBlankWorksheet?: boolean;
   createdAt?: Date;
-  createdBy?: string; // Nouveau champ pour enregistrer qui a créé la fiche
+  createdBy?: string;
 }
 
 export interface Team {
@@ -135,7 +136,7 @@ export interface Personnel {
 }
 
 export interface AppSettings {
-  companyName?: string; // Added the companyName property
+  companyName?: string;
   companyLogo?: string;
   loginBackgroundImage?: string;
   companyInfo?: CompanyInfo;
