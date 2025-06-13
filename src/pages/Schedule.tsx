@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -7,11 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Users, CalendarDaysIcon, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarIcon, Users, CalendarDaysIcon, Clock, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import ScheduleCalendar from '@/components/schedule/ScheduleCalendar';
 import TeamSchedules from '@/components/schedule/TeamSchedules';
 import SchedulingRules from '@/components/schedule/SchedulingRules';
 import MonthlyDistribution from '@/components/schedule/MonthlyDistribution';
+import SchedulingConfiguration from '@/components/schedule/SchedulingConfiguration';
 import { getCurrentMonth, getCurrentYear } from '@/utils/date-helpers';
 import { toast } from 'sonner';
 
@@ -87,10 +87,14 @@ const Schedule = () => {
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:flex">
+          <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:flex">
             <TabsTrigger value="planning" className="flex items-center gap-2">
               <CalendarDaysIcon className="h-4 w-4" />
               <span>Planning</span>
+            </TabsTrigger>
+            <TabsTrigger value="configuration" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span>Consignes</span>
             </TabsTrigger>
             <TabsTrigger value="rules" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
@@ -118,9 +122,7 @@ const Schedule = () => {
         </div>
         
         <TabsContent value="planning" className="space-y-4">
-          {/* Navigation et contrôles */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border">
-            {/* Navigation mois */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -147,9 +149,7 @@ const Schedule = () => {
               </Button>
             </div>
 
-            {/* Options d'affichage */}
             <div className="flex items-center gap-4">
-              {/* Switch pour les weekends */}
               <div className="flex items-center space-x-2">
                 <Switch
                   id="show-weekends"
@@ -161,7 +161,6 @@ const Schedule = () => {
                 </Label>
               </div>
 
-              {/* Mode d'affichage */}
               <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
                 <Button 
                   variant={viewMode === 'calendar' ? "default" : "ghost"} 
@@ -203,6 +202,10 @@ const Schedule = () => {
               />
             )}
           </div>
+        </TabsContent>
+        
+        <TabsContent value="configuration" className="space-y-4">
+          <SchedulingConfiguration />
         </TabsContent>
         
         <TabsContent value="rules" className="space-y-4">
