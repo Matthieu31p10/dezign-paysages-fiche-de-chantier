@@ -4,6 +4,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormValues } from './schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useApp } from '@/context/AppContext';
 import { WorkLog } from '@/types/models';
 import { createWorkLogFromFormData, formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
 
@@ -22,6 +23,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
 }) => {
   const methods = useFormContext<FormValues>();
   const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
+  const { getCurrentUser } = useApp();
   
   const handleFormSubmit = async (formData: FormValues) => {
     try {
@@ -39,6 +41,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         return;
       }
       
+      // Récupérer l'utilisateur actuel
+      const currentUser = getCurrentUser();
+      const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
+      
       // Préparation des données
       const structuredNotes = isBlankWorksheet ? 
         formatStructuredNotes(formData) : 
@@ -52,7 +58,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         existingWorkLogId,
         workLogs,
         structuredNotes,
-        validatedConsumables
+        validatedConsumables,
+        currentUserName
       );
       
       // Définir explicitement si c'est une fiche vierge

@@ -51,7 +51,8 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           signedQuoteAmount: log.signed_quote_amount,
           isQuoteSigned: log.is_quote_signed,
           isBlankWorksheet: log.is_blank_worksheet,
-          createdAt: new Date(log.created_at)
+          createdAt: new Date(log.created_at),
+          createdBy: log.created_by
         }));
 
         setWorkLogs(formattedWorkLogs);
@@ -94,7 +95,8 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           linked_project_id: workLog.linkedProjectId,
           signed_quote_amount: workLog.signedQuoteAmount,
           is_quote_signed: workLog.isQuoteSigned || false,
-          is_blank_worksheet: workLog.isBlankWorksheet || false
+          is_blank_worksheet: workLog.isBlankWorksheet || false,
+          created_by: workLog.createdBy
         }])
         .select()
         .single();
@@ -104,7 +106,8 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const newWorkLog: WorkLog = {
         ...workLog,
         id: data.id,
-        createdAt: new Date(data.created_at)
+        createdAt: new Date(data.created_at),
+        createdBy: data.created_by
       };
 
       setWorkLogs((prev) => [newWorkLog, ...prev]);
@@ -160,7 +163,8 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           linked_project_id: workLogToUpdate.linkedProjectId,
           signed_quote_amount: workLogToUpdate.signedQuoteAmount,
           is_quote_signed: workLogToUpdate.isQuoteSigned || false,
-          is_blank_worksheet: workLogToUpdate.isBlankWorksheet || false
+          is_blank_worksheet: workLogToUpdate.isBlankWorksheet || false,
+          created_by: workLogToUpdate.createdBy
         })
         .eq('id', id);
 

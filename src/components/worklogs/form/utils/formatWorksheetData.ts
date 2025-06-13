@@ -8,7 +8,8 @@ export const createWorkLogFromFormData = (
   existingWorkLogId: string | null | undefined,
   workLogs: WorkLog[],
   structuredNotes: string,
-  validatedConsumables: Consumable[]
+  validatedConsumables: Consumable[],
+  currentUserName?: string
 ): WorkLog => {
   const id = existingWorkLogId || uuidv4();
   
@@ -59,7 +60,8 @@ export const createWorkLogFromFormData = (
     isQuoteSigned: formData.isQuoteSigned,
     linkedProjectId: formData.linkedProjectId,
     isBlankWorksheet: false,
-    createdAt: new Date()
+    createdAt: new Date(),
+    createdBy: currentUserName
   };
 };
 

@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -77,14 +76,14 @@ export interface Consumable {
 export interface WorkLog {
   id: string;
   projectId: string;
-  date: string;  // String format for date storage
+  date: string;
   personnel: string[];
-  timeTracking: {
+  timeTracking?: {
     departure?: string;
     arrival?: string;
     end?: string;
     breakTime?: string;
-    totalHours: number;
+    totalHours?: number;
   };
   duration?: number;
   waterConsumption?: number;
@@ -92,7 +91,6 @@ export interface WorkLog {
   tasks?: string;
   notes?: string;
   consumables?: Consumable[];
-  createdAt: Date; // Explicitly typed as Date object
   invoiced?: boolean;
   isArchived?: boolean;
   clientSignature?: string;
@@ -100,16 +98,9 @@ export interface WorkLog {
     watering?: 'none' | 'on' | 'off';
     customTasks?: Record<string, boolean>;
     tasksProgress?: Record<string, number>;
-    pruning?: { 
-      done: boolean;
-      progress: number;
-    };
-    mowing?: boolean;
-    brushcutting?: boolean;
-    blower?: boolean;
-    manualWeeding?: boolean;
-    whiteVinegar?: boolean;
   };
+  
+  // Champs pour les fiches vierges
   clientName?: string;
   address?: string;
   contactPhone?: string;
@@ -119,6 +110,8 @@ export interface WorkLog {
   signedQuoteAmount?: number;
   isQuoteSigned?: boolean;
   isBlankWorksheet?: boolean;
+  createdAt?: Date;
+  createdBy?: string; // Nouveau champ pour enregistrer qui a créé la fiche
 }
 
 export interface Team {

@@ -4,6 +4,7 @@ import { useFormContext } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useApp } from '@/context/AppContext';
 import { WorkLog, Consumable } from '@/types/models';
 import { createWorkLogFromFormData, formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
 import { generateUniqueBlankSheetId, isBlankWorksheet } from './utils/generateUniqueIds';
@@ -23,6 +24,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
 }) => {
   const methods = useFormContext<BlankWorkSheetValues>();
   const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
+  const { getCurrentUser } = useApp();
   
   const handleFormSubmit = async (formData: BlankWorkSheetValues) => {
     try {
@@ -32,6 +34,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         toast.error("Veuillez sélectionner au moins une personne");
         return;
       }
+      
+      // Récupérer l'utilisateur actuel
+      const currentUser = getCurrentUser();
+      const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
       // Format data for storage
       const structuredNotes = formatStructuredNotes(formData);
@@ -43,7 +49,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         existingWorkLogId, 
         workLogs, 
         structuredNotes, 
-        validatedConsumables
+        validatedConsumables,
+        currentUserName
       );
       
       // For new blank worksheets, ensure we use a specific format for projectId
