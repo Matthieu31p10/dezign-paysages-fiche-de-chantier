@@ -5,8 +5,7 @@ import { FormValues } from './schema';
 import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { useApp } from '@/context/AppContext';
-import { WorkLog } from '@/types/models';
-import { createWorkLogFromFormData, formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
+import { WorkLog, Consumable } from '@/types/models';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -45,10 +44,28 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       const currentUser = getCurrentUser();
       const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
+      // Valider et formater les consumables
+      const validatedConsumables: Consumable[] = (formData.consumables || [])
+        .filter(consumable => 
+          consumable && 
+          consumable.product && 
+          consumable.product.trim() !== '' &&
+          consumable.quantity && consumable.quantity > 0
+        )
+        .map(consumable => ({
+          id: consumable.id || crypto.randomUUID(),
+          supplier: consumable.supplier || '',
+          product: consumable.product || '',
+          unit: consumable.unit || 'unité',
+          quantity: Number(consumable.quantity) || 0,
+          unitPrice: Number(consumable.unitPrice) || 0,
+          totalPrice: Number(consumable.totalPrice) || 0
+        }));
+      
       // Préparation des données pour WorkLog
       const workLogData: WorkLog = {
         id: existingWorkLogId || crypto.randomUUID(),
-        projectId: formData.projectId,
+        projectId: formData.projectId || '',
         date: formData.date.toISOString().split('T')[0],
         personnel: formData.personnel,
         timeTracking: {
@@ -61,9 +78,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         duration: formData.duration || 0,
         waterConsumption: formData.waterConsumption || 0,
         wasteManagement: formData.wasteManagement || 'none',
-        tasks: formData.tasks || '',
+        tasks: '', // Champ requis mais non utilisé dans ce formulaire
         notes: formData.notes || '',
-        consumables: formData.consumables || [],
+        consumables: validatedConsumables,
         invoiced: formData.invoiced || false,
         isArchived: false,
         tasksPerformed: {
