@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { WorkLog } from '@/types/models';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 
 export const useWorkLogActions = (
   workLog?: WorkLog,

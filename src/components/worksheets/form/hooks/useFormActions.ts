@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
 import { submitWorksheetForm } from '../submitWorksheetForm';
 import { WorkLog } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 
 interface UseFormActionsProps {
   form: UseFormReturn<BlankWorkSheetValues>;

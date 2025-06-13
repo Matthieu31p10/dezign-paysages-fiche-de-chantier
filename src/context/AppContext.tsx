@@ -4,7 +4,7 @@ import { Team, Personnel, CustomTask, ProjectInfo, WorkLog, AppSettings, AuthSta
 import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
 import { useProjects } from './ProjectsContext';
-import { useWorkLogs } from './WorkLogsContext';
+import { useWorkLogs } from './WorkLogsContext/WorkLogsContext';
 import { useAuth } from './AuthContext';
 
 interface AppContextType {

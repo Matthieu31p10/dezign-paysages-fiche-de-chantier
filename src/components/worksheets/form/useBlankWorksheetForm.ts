@@ -6,7 +6,7 @@ import { useTimeCalculation } from './hooks/useTimeCalculation';
 import { useWorksheetLoader } from './hooks/useWorksheetLoader';
 import { useFormActions } from './hooks/useFormActions';
 import { WorkLog } from '@/types/models';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 interface UseBlankWorksheetFormProps {

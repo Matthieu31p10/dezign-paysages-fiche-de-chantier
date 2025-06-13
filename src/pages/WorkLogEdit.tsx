@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import WorkLogForm from '@/components/worklogs/WorkLogForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';

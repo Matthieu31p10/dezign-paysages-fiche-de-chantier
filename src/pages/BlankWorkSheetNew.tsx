@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { Card } from '@/components/ui/card';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import { toast } from 'sonner';

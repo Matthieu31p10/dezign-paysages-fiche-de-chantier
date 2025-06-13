@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { ProjectsContextType } from './types';
 import { toast } from 'sonner';
-import { useWorkLogs } from './WorkLogsContext';
+import { useWorkLogs } from './WorkLogsContext/WorkLogsContext';
 import { loadProjectsFromStorage, saveProjectsToStorage, deleteProjectFromStorage } from './projects/storage/projectOperations';
 
 const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined);

@@ -7,7 +7,7 @@ import { formatNumber } from '@/utils/helpers';
 import { Button } from '@/components/ui/button';
 import { File } from 'lucide-react';
 import ProjectProgressCard from './ProjectProgressCard';
-import { useWorkLogs } from '@/context/WorkLogsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
