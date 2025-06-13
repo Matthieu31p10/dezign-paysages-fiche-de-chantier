@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, Users, CalendarDaysIcon, Clock } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { CalendarIcon, Users, CalendarDaysIcon, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import ScheduleCalendar from '@/components/schedule/ScheduleCalendar';
 import TeamSchedules from '@/components/schedule/TeamSchedules';
 import SchedulingRules from '@/components/schedule/SchedulingRules';
@@ -20,6 +22,7 @@ const Schedule = () => {
   const [selectedYear, setSelectedYear] = useState<number>(getCurrentYear());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [activeTab, setActiveTab] = useState<string>('planning');
+  const [showWeekends, setShowWeekends] = useState<boolean>(true);
   
   const months = useMemo(() => [
     { value: "1", label: "Janvier" },
@@ -39,6 +42,32 @@ const Schedule = () => {
   const handleGenerateSchedule = () => {
     toast.success("Planning généré avec succès");
   };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
+    
+    if (direction === 'next') {
+      if (selectedMonth === 12) {
+        newMonth = 1;
+        newYear = selectedYear + 1;
+      } else {
+        newMonth = selectedMonth + 1;
+      }
+    } else {
+      if (selectedMonth === 1) {
+        newMonth = 12;
+        newYear = selectedYear - 1;
+      } else {
+        newMonth = selectedMonth - 1;
+      }
+    }
+    
+    setSelectedMonth(newMonth);
+    setSelectedYear(newYear);
+  };
+
+  const currentMonthLabel = months.find(m => m.value === selectedMonth.toString())?.label || '';
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -85,46 +114,74 @@ const Schedule = () => {
                 ))}
               </SelectContent>
             </Select>
-            
-            <Select
-              value={selectedMonth.toString()}
-              onValueChange={(value) => setSelectedMonth(parseInt(value))}
-            >
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="Sélectionner un mois" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month.value} value={month.value}>
-                    {month.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
         
         <TabsContent value="planning" className="space-y-4">
-          <div className="flex justify-end">
-            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
-              <Button 
-                variant={viewMode === 'calendar' ? "default" : "ghost"} 
+          {/* Navigation et contrôles */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border">
+            {/* Navigation mois */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={() => setViewMode('calendar')}
-                className="h-8 px-3 transition-all"
+                onClick={() => navigateMonth('prev')}
+                className="h-8 w-8 p-0"
               >
-                <CalendarDaysIcon className="h-4 w-4 mr-1" />
-                Calendrier
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button 
-                variant={viewMode === 'list' ? "default" : "ghost"} 
+              
+              <div className="flex items-center gap-2 min-w-[180px]">
+                <span className="font-medium text-lg">
+                  {currentMonthLabel} {selectedYear}
+                </span>
+              </div>
+              
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-8 px-3 transition-all"
+                onClick={() => navigateMonth('next')}
+                className="h-8 w-8 p-0"
               >
-                <Users className="h-4 w-4 mr-1" />
-                Liste
+                <ChevronRight className="h-4 w-4" />
               </Button>
+            </div>
+
+            {/* Options d'affichage */}
+            <div className="flex items-center gap-4">
+              {/* Switch pour les weekends */}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-weekends"
+                  checked={showWeekends}
+                  onCheckedChange={setShowWeekends}
+                />
+                <Label htmlFor="show-weekends" className="text-sm font-medium">
+                  Afficher les weekends
+                </Label>
+              </div>
+
+              {/* Mode d'affichage */}
+              <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+                <Button 
+                  variant={viewMode === 'calendar' ? "default" : "ghost"} 
+                  size="sm"
+                  onClick={() => setViewMode('calendar')}
+                  className="h-8 px-3 transition-all"
+                >
+                  <CalendarDaysIcon className="h-4 w-4 mr-1" />
+                  Calendrier
+                </Button>
+                <Button 
+                  variant={viewMode === 'list' ? "default" : "ghost"} 
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="h-8 px-3 transition-all"
+                >
+                  <Users className="h-4 w-4 mr-1" />
+                  Liste
+                </Button>
+              </div>
             </div>
           </div>
           
@@ -134,6 +191,7 @@ const Schedule = () => {
                 month={selectedMonth} 
                 year={selectedYear} 
                 teamId={selectedTeam}
+                showWeekends={showWeekends}
               />
             ) : (
               <TeamSchedules

@@ -11,27 +11,43 @@ interface ScheduleCalendarProps {
   month: number;
   year: number;
   teamId: string;
+  showWeekends?: boolean;
 }
 
-const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-
-const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId }) => {
+const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId, showWeekends = true }) => {
   const { projectInfos } = useApp();
   
+  const daysOfWeek = useMemo(() => {
+    if (showWeekends) {
+      return ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    }
+    return ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
+  }, [showWeekends]);
+
   const { monthStart, monthEnd, days, startDayOfWeek, teamProjects } = useMemo(() => {
     const monthStart = startOfMonth(new Date(year, month - 1));
     const monthEnd = endOfMonth(monthStart);
-    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    // Filter weekends if showWeekends is false
+    const days = showWeekends ? allDays : allDays.filter(day => !isWeekend(day));
     
     let startDayOfWeek = getDay(monthStart);
     if (startDayOfWeek === 0) startDayOfWeek = 7;
+    
+    // Adjust start day for weekdays only view
+    if (!showWeekends && startDayOfWeek > 5) {
+      startDayOfWeek = 1; // Start from Monday if weekend
+    } else if (!showWeekends && startDayOfWeek > 1) {
+      startDayOfWeek = startDayOfWeek > 5 ? 1 : startDayOfWeek;
+    }
     
     const teamProjects = teamId === 'all'
       ? projectInfos
       : projectInfos.filter(project => project.team === teamId);
     
     return { monthStart, monthEnd, days, startDayOfWeek, teamProjects };
-  }, [month, year, teamId, projectInfos]);
+  }, [month, year, teamId, projectInfos, showWeekends]);
   
   const getYearlyPassageNumbers = useMemo(() => {
     return (currentYear: number) => {
@@ -44,16 +60,17 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
       teamProjects.forEach(project => {
         let passageCounter = 1;
         const visitsPerYear = project.annualVisits || 12;
-        const interval = Math.floor(yearDays.filter(d => !isWeekend(d)).length / visitsPerYear);
+        const workingDays = showWeekends ? yearDays : yearDays.filter(d => !isWeekend(d));
+        const interval = Math.floor(workingDays.length / visitsPerYear);
         
         yearlyPassages[project.id] = {};
         
         for (let i = 0; i < visitsPerYear; i++) {
           const dayIndex = i * interval + Math.floor(interval / 2);
-          if (dayIndex < yearDays.length) {
-            const day = yearDays[dayIndex];
+          if (dayIndex < workingDays.length) {
+            const day = workingDays[dayIndex];
             
-            if (isWeekend(day)) continue;
+            if (!showWeekends && isWeekend(day)) continue;
             
             const dateKey = format(day, 'yyyy-MM-dd');
             yearlyPassages[project.id][dateKey] = passageCounter;
@@ -64,10 +81,10 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
       
       return yearlyPassages;
     };
-  }, [teamProjects]);
+  }, [teamProjects, showWeekends]);
   
   const getEventsForDay = (date: Date) => {
-    if (isWeekend(date)) return [];
+    if (!showWeekends && isWeekend(date)) return [];
     
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
@@ -92,16 +109,29 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     
     return events;
   };
+
+  const getGridColumns = () => {
+    return showWeekends ? 'grid-cols-7' : 'grid-cols-5';
+  };
+
+  const getEmptyStartCells = () => {
+    if (!showWeekends) {
+      // For weekdays only, adjust the start position
+      const adjustedStart = startDayOfWeek > 5 ? 0 : startDayOfWeek - 1;
+      return Array.from({ length: adjustedStart });
+    }
+    return Array.from({ length: startDayOfWeek - 1 });
+  };
   
   return (
     <Card className="overflow-hidden shadow-lg border-0 bg-white">
       <CardContent className="p-0">
-        <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
+        <div className={`grid ${getGridColumns()} gap-0 border-b border-gray-200`}>
           {daysOfWeek.map((day, index) => (
             <div 
               key={day} 
               className={`text-center font-semibold py-4 text-sm border-r border-gray-200 last:border-r-0 ${
-                index >= 5 ? 'bg-gray-50 text-gray-500' : 'bg-white text-gray-700'
+                showWeekends && index >= 5 ? 'bg-gray-50 text-gray-500' : 'bg-white text-gray-700'
               }`}
             >
               {day}
@@ -109,8 +139,8 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
           ))}
         </div>
         
-        <div className="grid grid-cols-7 gap-0">
-          {Array.from({ length: startDayOfWeek - 1 }).map((_, i) => (
+        <div className={`grid ${getGridColumns()} gap-0`}>
+          {getEmptyStartCells().map((_, i) => (
             <div key={`empty-start-${i}`} className="h-28 border-r border-b border-gray-200 bg-gray-50/50"></div>
           ))}
           
@@ -118,6 +148,11 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
             const isWeekendDay = isWeekend(day);
             const dateEvents = getEventsForDay(day);
             const isCurrentDay = isToday(day);
+            
+            // Skip weekend days if showWeekends is false
+            if (!showWeekends && isWeekendDay) {
+              return null;
+            }
             
             return (
               <div 
@@ -142,7 +177,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
                     )}
                   </div>
                   
-                  {isWeekendDay ? (
+                  {isWeekendDay && showWeekends ? (
                     <div className="text-xs text-gray-400 italic text-center mt-2">
                       Non travaillé
                     </div>
