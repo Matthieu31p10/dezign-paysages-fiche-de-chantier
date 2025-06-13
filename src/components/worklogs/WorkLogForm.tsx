@@ -1,6 +1,7 @@
-
 import React from 'react';
 import { FormProvider } from 'react-hook-form';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
+import { useProjects } from '@/context/ProjectsContext';
 import { useApp } from '@/context/AppContext';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Separator } from '@/components/ui/separator';
