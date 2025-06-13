@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,6 +39,11 @@ const Schedule = () => {
     { value: "11", label: "Novembre" },
     { value: "12", label: "Décembre" }
   ], []);
+
+  const years = useMemo(() => {
+    const currentYear = getCurrentYear();
+    return Array.from({ length: 5 }, (_, i) => currentYear - 1 + i);
+  }, []);
   
   const handleGenerateSchedule = () => {
     toast.success("Planning généré avec succès");
@@ -105,20 +111,6 @@ const Schedule = () => {
               <span>Distribution</span>
             </TabsTrigger>
           </TabsList>
-          
-          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Sélectionner une équipe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les équipes</SelectItem>
-                {teams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
         
         <TabsContent value="planning" className="space-y-4">
@@ -133,10 +125,32 @@ const Schedule = () => {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <span className="font-medium text-lg">
-                  {currentMonthLabel} {selectedYear}
-                </span>
+              <div className="flex items-center gap-3">
+                <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+                  <SelectTrigger className="w-[120px] h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                  <SelectTrigger className="w-[80px] h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <Button
@@ -150,6 +164,18 @@ const Schedule = () => {
             </div>
 
             <div className="flex items-center gap-4">
+              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                <SelectTrigger className="w-[180px] h-8">
+                  <SelectValue placeholder="Sélectionner une équipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les équipes</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="show-weekends"
