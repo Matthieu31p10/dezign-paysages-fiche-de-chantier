@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/context/AppContext';
@@ -17,6 +18,7 @@ type Permission = {
   name: string;
   description: string;
   enabled: boolean;
+  category: string;
 };
 
 type UserPermission = {
@@ -30,16 +32,53 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [userPermissions, setUserPermissions] = useState<UserPermission[]>([]);
   
-  // Liste des permissions disponibles
+  // Liste des permissions disponibles organisées par catégories
   const availablePermissions: Permission[] = [
-    { id: 'createProject', name: 'Créer des chantiers', description: 'Permet de créer de nouveaux chantiers', enabled: true },
-    { id: 'editProject', name: 'Modifier des chantiers', description: 'Permet de modifier les informations des chantiers', enabled: true },
-    { id: 'deleteProject', name: 'Supprimer des chantiers', description: 'Permet de supprimer des chantiers', enabled: false },
-    { id: 'createWorkLog', name: 'Créer des fiches de suivi', description: 'Permet de créer des fiches de suivi', enabled: true },
-    { id: 'createBlankWorksheet', name: 'Créer des fiches vierges', description: 'Permet de créer des fiches vierges', enabled: true },
-    { id: 'exportPDF', name: 'Exporter en PDF', description: 'Permet d\'exporter des documents en PDF', enabled: true },
-    { id: 'viewReports', name: 'Consulter les bilans', description: 'Permet de consulter les bilans et statistiques', enabled: true },
+    // Gestion des chantiers
+    { id: 'createProject', name: 'Créer des chantiers', description: 'Permet de créer de nouveaux chantiers', enabled: true, category: 'Chantiers' },
+    { id: 'editProject', name: 'Modifier des chantiers', description: 'Permet de modifier les informations des chantiers', enabled: true, category: 'Chantiers' },
+    { id: 'deleteProject', name: 'Supprimer des chantiers', description: 'Permet de supprimer des chantiers', enabled: false, category: 'Chantiers' },
+    { id: 'archiveProject', name: 'Archiver des chantiers', description: 'Permet d\'archiver/désarchiver des chantiers', enabled: true, category: 'Chantiers' },
+    
+    // Fiches de suivi
+    { id: 'createWorkLog', name: 'Créer des fiches de suivi', description: 'Permet de créer des fiches de suivi', enabled: true, category: 'Fiches de suivi' },
+    { id: 'editWorkLog', name: 'Modifier des fiches de suivi', description: 'Permet de modifier les fiches de suivi existantes', enabled: true, category: 'Fiches de suivi' },
+    { id: 'deleteWorkLog', name: 'Supprimer des fiches de suivi', description: 'Permet de supprimer des fiches de suivi', enabled: false, category: 'Fiches de suivi' },
+    
+    // Fiches vierges
+    { id: 'createBlankWorksheet', name: 'Créer des fiches vierges', description: 'Permet de créer des fiches vierges', enabled: true, category: 'Fiches vierges' },
+    { id: 'editBlankWorksheet', name: 'Modifier des fiches vierges', description: 'Permet de modifier les fiches vierges', enabled: true, category: 'Fiches vierges' },
+    { id: 'deleteBlankWorksheet', name: 'Supprimer des fiches vierges', description: 'Permet de supprimer des fiches vierges', enabled: false, category: 'Fiches vierges' },
+    
+    // Bilans et rapports
+    { id: 'viewReports', name: 'Consulter les bilans', description: 'Permet de consulter les bilans et statistiques', enabled: true, category: 'Bilans' },
+    { id: 'exportPDF', name: 'Exporter en PDF', description: 'Permet d\'exporter des documents en PDF', enabled: true, category: 'Bilans' },
+    { id: 'viewGlobalStats', name: 'Voir les statistiques globales', description: 'Permet de voir les statistiques générales', enabled: true, category: 'Bilans' },
+    { id: 'viewYearlyAnalysis', name: 'Analyse annuelle', description: 'Permet de consulter l\'analyse annuelle', enabled: true, category: 'Bilans' },
+    
+    // Planification
+    { id: 'viewSchedule', name: 'Consulter la planification', description: 'Permet de voir le planning des interventions', enabled: true, category: 'Planification' },
+    { id: 'editSchedule', name: 'Modifier la planification', description: 'Permet de modifier le planning', enabled: false, category: 'Planification' },
+    
+    // Gestion des équipes et personnel
+    { id: 'manageTeams', name: 'Gérer les équipes', description: 'Permet de créer/modifier/supprimer les équipes', enabled: false, category: 'Équipes' },
+    { id: 'managePersonnel', name: 'Gérer le personnel', description: 'Permet de gérer la liste du personnel', enabled: false, category: 'Équipes' },
+    
+    // Paramètres
+    { id: 'viewSettings', name: 'Accéder aux paramètres', description: 'Permet d\'accéder à la page de paramètres', enabled: true, category: 'Paramètres' },
+    { id: 'editCompanySettings', name: 'Modifier les infos entreprise', description: 'Permet de modifier les informations de l\'entreprise', enabled: false, category: 'Paramètres' },
+    { id: 'manageUsers', name: 'Gérer les utilisateurs', description: 'Permet de créer/modifier/supprimer des utilisateurs', enabled: false, category: 'Paramètres' },
+    { id: 'manageBackup', name: 'Gérer les sauvegardes', description: 'Permet d\'effectuer des sauvegardes/restaurations', enabled: false, category: 'Paramètres' },
   ];
+  
+  // Grouper les permissions par catégorie
+  const permissionsByCategory = availablePermissions.reduce((acc, permission) => {
+    if (!acc[permission.category]) {
+      acc[permission.category] = [];
+    }
+    acc[permission.category].push(permission);
+    return acc;
+  }, {} as Record<string, Permission[]>);
   
   // Initialisation des permissions utilisateur
   useEffect(() => {
@@ -83,10 +122,6 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
       })
     );
     
-    // Mettre à jour les permissions dans le contexte
-    const updatedPermissions = userPermissions.find(up => up.userId === userId)?.permissions || {};
-    updatedPermissions[permissionId] = value;
-    
     try {
       // Update the user permissions in settings
       const updatedUsers = (settings?.users || []).map(user => {
@@ -118,13 +153,16 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Contrôle d'accès</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+          Contrôle d'accès par modules
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-1 border rounded p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1 border rounded p-4">
             <h3 className="text-sm font-medium mb-3">Utilisateurs</h3>
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[400px]">
               <div className="space-y-1">
                 {userPermissions.map(userPerm => (
                   <Button
@@ -141,29 +179,38 @@ const AccessControl = ({ isAdmin }: AccessControlProps) => {
             </ScrollArea>
           </div>
           
-          <div className="md:col-span-2 border rounded p-4">
+          <div className="lg:col-span-2 border rounded p-4">
             <h3 className="text-sm font-medium mb-3">Permissions de {selectedUser?.userName}</h3>
             {selectedUser ? (
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {availablePermissions.map(permission => (
-                    <div key={permission.id} className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-sm font-medium">{permission.name}</Label>
-                        <p className="text-xs text-muted-foreground">{permission.description}</p>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-6">
+                  {Object.entries(permissionsByCategory).map(([category, permissions]) => (
+                    <div key={category} className="space-y-3">
+                      <h4 className="text-sm font-semibold text-green-800 border-b border-green-200 pb-1">
+                        {category}
+                      </h4>
+                      <div className="space-y-3 pl-2">
+                        {permissions.map(permission => (
+                          <div key={permission.id} className="flex items-center justify-between py-2">
+                            <div className="flex-1">
+                              <Label className="text-sm font-medium">{permission.name}</Label>
+                              <p className="text-xs text-muted-foreground mt-1">{permission.description}</p>
+                            </div>
+                            <Switch
+                              checked={selectedUser.permissions[permission.id] || false}
+                              onCheckedChange={(checked) => 
+                                handleUpdatePermission(selectedUser.userId, permission.id, checked)
+                              }
+                            />
+                          </div>
+                        ))}
                       </div>
-                      <Switch
-                        checked={selectedUser.permissions[permission.id] || false}
-                        onCheckedChange={(checked) => 
-                          handleUpdatePermission(selectedUser.userId, permission.id, checked)
-                        }
-                      />
                     </div>
                   ))}
                 </div>
               </ScrollArea>
             ) : (
-              <div className="flex items-center justify-center h-[300px]">
+              <div className="flex items-center justify-center h-[400px]">
                 <p className="text-muted-foreground">Sélectionnez un utilisateur pour gérer ses permissions</p>
               </div>
             )}
