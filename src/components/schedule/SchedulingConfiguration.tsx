@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useScheduling } from '@/context/SchedulingContext';
 import { toast } from 'sonner';
 import { SchedulingRule } from './configuration/types';
 import ConfigurationTabs from './configuration/ConfigurationTabs';
 
 const SchedulingConfiguration: React.FC = () => {
   const { projectInfos } = useApp();
+  const { rules, addRule } = useScheduling();
   const [selectedProject, setSelectedProject] = useState<string>('');
-  const [rules, setRules] = useState<SchedulingRule[]>([]);
   const [currentRule, setCurrentRule] = useState<Partial<SchedulingRule>>({
     intervalType: 'weeks',
     intervalValue: 2,
@@ -35,7 +36,7 @@ const SchedulingConfiguration: React.FC = () => {
       ...currentRule as SchedulingRule
     };
 
-    setRules([...rules, newRule]);
+    addRule(newRule);
     setCurrentRule({
       intervalType: 'weeks',
       intervalValue: 2,
@@ -48,7 +49,7 @@ const SchedulingConfiguration: React.FC = () => {
       autoAdjust: true
     });
     
-    toast.success("Règle de planification sauvegardée");
+    toast.success("Règle de planification sauvegardée et appliquée à l'agenda");
   };
 
   const togglePreferredDay = (day: string) => {

@@ -1,26 +1,41 @@
 
 import React from 'react';
 import { ProjectsProvider } from './ProjectsContext';
-import { WorkLogsProvider } from './WorkLogsContext/WorkLogsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
-import { AuthProvider } from './AuthContext';
-import { AppProvider } from './AppContext';
+import { WorkLogsProvider } from './WorkLogsContext/WorkLogsContext';
+import { SchedulingProvider } from './SchedulingContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+interface AppProvidersProps {
+  children: React.ReactNode;
+}
+
+const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <SettingsProvider>
-      <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <SettingsProvider>
         <TeamsProvider>
-          <WorkLogsProvider>
-            <ProjectsProvider>
-              <AppProvider>
+          <ProjectsProvider>
+            <WorkLogsProvider>
+              <SchedulingProvider>
                 {children}
-              </AppProvider>
-            </ProjectsProvider>
-          </WorkLogsProvider>
+              </SchedulingProvider>
+            </WorkLogsProvider>
+          </ProjectsProvider>
         </TeamsProvider>
-      </AuthProvider>
-    </SettingsProvider>
+      </SettingsProvider>
+    </QueryClientProvider>
   );
 };
+
+export default AppProviders;
