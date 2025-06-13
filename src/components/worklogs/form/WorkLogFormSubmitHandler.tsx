@@ -45,25 +45,36 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       const currentUser = getCurrentUser();
       const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
-      // Préparation des données
-      const structuredNotes = isBlankWorksheet ? 
-        formatStructuredNotes(formData) : 
-        formData.notes || '';
-      
-      const validatedConsumables = validateConsumables(formData.consumables || []);
-      
-      // Création de l'objet WorkLog
-      const workLogData = createWorkLogFromFormData(
-        formData,
-        existingWorkLogId,
-        workLogs,
-        structuredNotes,
-        validatedConsumables,
-        currentUserName
-      );
-      
-      // Définir explicitement si c'est une fiche vierge
-      workLogData.isBlankWorksheet = isBlankWorksheet;
+      // Préparation des données pour WorkLog
+      const workLogData: WorkLog = {
+        id: existingWorkLogId || crypto.randomUUID(),
+        projectId: formData.projectId,
+        date: formData.date.toISOString().split('T')[0],
+        personnel: formData.personnel,
+        timeTracking: {
+          departure: formData.departure || '',
+          arrival: formData.arrival || '',
+          end: formData.end || '',
+          breakTime: formData.breakTime || '',
+          totalHours: formData.totalHours || 0
+        },
+        duration: formData.duration || 0,
+        waterConsumption: formData.waterConsumption || 0,
+        wasteManagement: formData.wasteManagement || 'none',
+        tasks: formData.tasks || '',
+        notes: formData.notes || '',
+        consumables: formData.consumables || [],
+        invoiced: formData.invoiced || false,
+        isArchived: false,
+        tasksPerformed: {
+          watering: formData.watering || 'none',
+          customTasks: formData.customTasks || {},
+          tasksProgress: formData.tasksProgress || {}
+        },
+        isBlankWorksheet: isBlankWorksheet,
+        createdAt: new Date(),
+        createdBy: currentUserName
+      };
       
       console.log('WorkLog data before submission:', workLogData);
       

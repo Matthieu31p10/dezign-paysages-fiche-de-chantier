@@ -22,7 +22,7 @@ export const useWorkLogFormState = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData ? {
-      projectId: initialData.projectId,
+      projectId: initialData.projectId || '',
       date: new Date(initialData.date),
       duration: initialData.duration !== undefined ? initialData.duration : 0,
       personnel: initialData.personnel || [],
@@ -54,6 +54,11 @@ export const useWorkLogFormState = ({
       duration: 0,
       totalHours: 0,
       waterConsumption: 0,
+      departure: '',
+      arrival: '',
+      end: '',
+      breakTime: '',
+      notes: '',
     }
   });
 
