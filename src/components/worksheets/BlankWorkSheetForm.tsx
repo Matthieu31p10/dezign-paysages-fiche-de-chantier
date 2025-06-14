@@ -25,7 +25,6 @@ import ClientSignatureSection from './form/ClientSignatureSection';
 import ConsumablesSection from './ConsumablesSection';
 import FinancialSummarySection from './form/FinancialSummarySection';
 import RecurringClientSection from './form/RecurringClientSection';
-import WorkLogFormSubmitHandler from '../worklogs/form/WorkLogFormSubmitHandler';
 import WorksheetSummary from './WorksheetSummary';
 import { useProjectLinkHook } from './form/useProjectLinkHook';
 import ProjectLinkSection from './form/ProjectLinkSection';
@@ -71,11 +70,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   
   return (
     <FormProvider {...form}>
-      <WorkLogFormSubmitHandler 
-        onSuccess={onSuccess} 
-        existingWorkLogId={initialData?.id || editingWorkLogId}
-        isBlankWorksheet={isBlankWorksheet}
-      >
+      <form onSubmit={handleSubmit} className="w-full">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
             <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
@@ -139,6 +134,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
               isEditing={!!initialData}
+              isBlankWorksheet={isBlankWorksheet}
             />
           </div>
           
@@ -149,7 +145,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
             />
           </div>
         </div>
-      </WorkLogFormSubmitHandler>
+      </form>
     </FormProvider>
   );
 };
