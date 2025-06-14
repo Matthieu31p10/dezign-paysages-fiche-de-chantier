@@ -25,7 +25,7 @@ import ClientSignatureSection from './form/ClientSignatureSection';
 import ConsumablesSection from './ConsumablesSection';
 import FinancialSummarySection from './form/FinancialSummarySection';
 import RecurringClientSection from './form/RecurringClientSection';
-import WorkLogFormSubmitHandler from './form/WorkLogFormSubmitHandler';
+import WorkLogFormSubmitHandler from '../worklogs/form/WorkLogFormSubmitHandler';
 import WorksheetSummary from './WorksheetSummary';
 import { useProjectLinkHook } from './form/useProjectLinkHook';
 import ProjectLinkSection from './form/ProjectLinkSection';
