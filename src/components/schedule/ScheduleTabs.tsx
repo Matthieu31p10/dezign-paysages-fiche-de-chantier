@@ -1,11 +1,11 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDaysIcon, Users, List } from 'lucide-react';
+import { CalendarDaysIcon, Users, List, Clock } from 'lucide-react';
 import ScheduleCalendar from './ScheduleCalendar';
 import TeamSchedules from './TeamSchedules';
 import MonthlyDistribution from './MonthlyDistribution';
 import ProjectScheduleList from './ProjectScheduleList';
+import LastVisitsOverview from './last-visits/LastVisitsOverview';
 import ScheduleControls from './ScheduleControls';
 import { useApp } from '@/context/AppContext';
 
@@ -49,7 +49,7 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:flex">
+        <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:flex">
           <TabsTrigger value="planning" className="flex items-center gap-2">
             <CalendarDaysIcon className="h-4 w-4" />
             <span>Planning</span>
@@ -61,6 +61,10 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
           <TabsTrigger value="distribution" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span>Distribution</span>
+          </TabsTrigger>
+          <TabsTrigger value="derniers-passages" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span>Derniers passages</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -144,6 +148,29 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
           projects={projectInfos} 
           teams={teams}
         />
+      </TabsContent>
+      
+      <TabsContent value="derniers-passages" className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-gray-900">Suivi des derniers passages</h2>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <select 
+              value={selectedTeam} 
+              onChange={(e) => onTeamChange(e.target.value)}
+              className="h-8 px-3 bg-white border border-gray-300 rounded-md text-sm"
+            >
+              <option value="all">Toutes les équipes</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>{team.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        <LastVisitsOverview selectedTeam={selectedTeam} />
       </TabsContent>
     </Tabs>
   );
