@@ -21,7 +21,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   isBlankWorksheet = false
 }) => {
   const methods = useFormContext<FormValues>();
-  const { addWorkLog, updateWorkLog, workLogs } = useWorkLogs();
+  const { addWorkLog, updateWorkLog } = useWorkLogs();
   const { getCurrentUser } = useApp();
   
   const handleFormSubmit = async (formData: FormValues) => {
@@ -77,7 +77,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         duration: Number(formData.duration) || 0,
         waterConsumption: Number(formData.waterConsumption) || 0,
         wasteManagement: formData.wasteManagement || 'none',
-        tasks: '', // Champ requis mais non utilisé dans ce formulaire
+        tasks: '', // Champ requis pour la compatibilité
         notes: formData.notes || '',
         consumables: validatedConsumables,
         invoiced: Boolean(formData.invoiced),
@@ -113,12 +113,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
     } catch (error) {
       console.error('Error submitting form:', error);
       
-      // Messages d'erreur plus détaillés selon le type d'erreur
       let errorMessage = 'Erreur inconnue';
       if (error instanceof Error) {
         errorMessage = error.message;
         
-        // Messages spécifiques pour les erreurs courantes de Supabase
         if (errorMessage.includes('duplicate key')) {
           errorMessage = 'Cette fiche existe déjà';
         } else if (errorMessage.includes('foreign key')) {

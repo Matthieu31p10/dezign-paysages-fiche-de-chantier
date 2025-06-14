@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { WorkLog } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -82,15 +81,13 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
         ...workLog,
         id: data.id,
         createdAt: new Date(data.created_at),
-        createdBy: data.created_by
+        createdBy: data.created_by || workLog.createdBy
       };
 
       setWorkLogs((prev) => [newWorkLog, ...prev]);
-      toast.success('Fiche de suivi créée avec succès');
       return newWorkLog;
     } catch (error) {
       console.error("Error adding work log:", error);
-      toast.error(`Erreur lors de la création: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       throw error;
     }
   };

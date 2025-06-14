@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { useApp } from '@/context/AppContext';
 import { WorkLog, Consumable } from '@/types/models';
-import { createWorkLogFromFormData, formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
-import { generateUniqueBlankSheetId, isBlankWorksheet } from './utils/generateUniqueIds';
+import { formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
+import { generateUniqueBlankSheetId } from './utils/generateUniqueIds';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -41,28 +41,46 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       
       // Format data for storage
       const structuredNotes = formatStructuredNotes(formData);
-      const validatedConsumables = validateConsumables(formData.consumables);
+      const validatedConsumables = validateConsumables(formData.consumables || []);
       
       // Create the workLog object
-      const workLog = createWorkLogFromFormData(
-        formData, 
-        existingWorkLogId, 
-        workLogs, 
-        structuredNotes, 
-        validatedConsumables,
-        currentUserName
-      );
-      
-      // For new blank worksheets, ensure we use a specific format for projectId
-      if (!existingWorkLogId) {
-        workLog.projectId = generateUniqueBlankSheetId(workLogs);
-      }
-      
-      // Marquer explicitement comme fiche vierge
-      workLog.isBlankWorksheet = true;
-      
-      // Always ensure createdAt is a Date object
-      workLog.createdAt = new Date();
+      const workLog: WorkLog = {
+        id: existingWorkLogId || crypto.randomUUID(),
+        projectId: existingWorkLogId ? formData.projectId || '' : generateUniqueBlankSheetId(workLogs),
+        date: formData.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        personnel: formData.personnel,
+        timeTracking: {
+          departure: formData.departure || '',
+          arrival: formData.arrival || '',
+          end: formData.end || '',
+          breakTime: formData.breakTime || '',
+          totalHours: Number(formData.totalHours) || 0
+        },
+        duration: Number(formData.duration) || 0,
+        waterConsumption: Number(formData.waterConsumption) || 0,
+        wasteManagement: formData.wasteManagement || 'none',
+        tasks: '',
+        notes: structuredNotes,
+        consumables: validatedConsumables,
+        invoiced: Boolean(formData.invoiced),
+        isArchived: false,
+        tasksPerformed: {
+          watering: formData.watering || 'none',
+          customTasks: formData.customTasks || {},
+          tasksProgress: formData.tasksProgress || {}
+        },
+        isBlankWorksheet: true,
+        createdAt: new Date(),
+        createdBy: currentUserName,
+        hourlyRate: formData.hourlyRate,
+        signedQuoteAmount: formData.signedQuoteAmount,
+        isQuoteSigned: formData.isQuoteSigned,
+        clientName: formData.clientName,
+        address: formData.address,
+        contactPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail,
+        clientSignature: formData.clientSignature
+      };
       
       console.log('WorkLog data before submission:', workLog);
       
