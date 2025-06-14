@@ -5,12 +5,8 @@ import { Consumable } from '@/types/models';
 export const formatStructuredNotes = (formData: BlankWorkSheetValues): string => {
   const sections = [];
   
-  if (formData.interventionDetails) {
-    sections.push(`Détails de l'intervention: ${formData.interventionDetails}`);
-  }
-  
-  if (formData.additionalNotes) {
-    sections.push(`Notes additionnelles: ${formData.additionalNotes}`);
+  if (formData.notes) {
+    sections.push(`Notes: ${formData.notes}`);
   }
   
   return sections.join('\n\n');

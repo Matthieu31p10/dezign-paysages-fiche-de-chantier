@@ -46,7 +46,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // Create the workLog object
       const workLog: WorkLog = {
         id: existingWorkLogId || crypto.randomUUID(),
-        projectId: existingWorkLogId ? formData.projectId || '' : generateUniqueBlankSheetId(workLogs),
+        projectId: existingWorkLogId ? '' : generateUniqueBlankSheetId(workLogs),
         date: formData.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
         personnel: formData.personnel,
         timeTracking: {
@@ -56,8 +56,8 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
           breakTime: formData.breakTime || '',
           totalHours: Number(formData.totalHours) || 0
         },
-        duration: Number(formData.duration) || 0,
-        waterConsumption: Number(formData.waterConsumption) || 0,
+        duration: 0,
+        waterConsumption: 0,
         wasteManagement: formData.wasteManagement || 'none',
         tasks: '',
         notes: structuredNotes,
@@ -65,9 +65,9 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         invoiced: Boolean(formData.invoiced),
         isArchived: false,
         tasksPerformed: {
-          watering: formData.watering || 'none',
-          customTasks: formData.customTasks || {},
-          tasksProgress: formData.tasksProgress || {}
+          watering: 'none',
+          customTasks: {},
+          tasksProgress: {}
         },
         isBlankWorksheet: true,
         createdAt: new Date(),

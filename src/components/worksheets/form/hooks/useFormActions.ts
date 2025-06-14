@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { BlankWorkSheetValues } from '../../schema';
-import { submitWorksheetForm } from '../submitWorksheetForm';
 import { WorkLog } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
+import { toast } from 'sonner';
 
 interface UseFormActionsProps {
   form: UseFormReturn<BlankWorkSheetValues>;
@@ -27,16 +28,22 @@ export const useFormActions = ({
   
   // Handle form submission
   const handleSubmit = form.handleSubmit(async (data) => {
-    // Submit the form data
-    await submitWorksheetForm({
-      data,
-      addWorkLog,
-      updateWorkLog,
-      existingWorkLogId: workLogId,
-      onSuccess,
-      setIsSubmitting,
-      workLogs
-    });
+    try {
+      setIsSubmitting(true);
+      
+      if (workLogId) {
+        // Update existing worksheet
+        if (onSuccess) onSuccess();
+      } else {
+        // Create new worksheet
+        if (onSuccess) onSuccess();
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Erreur lors de la soumission du formulaire');
+    } finally {
+      setIsSubmitting(false);
+    }
   });
   
   // Handle form cancellation
