@@ -61,6 +61,10 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
             <List className="h-4 w-4" />
             <span>Prévisions</span>
           </TabsTrigger>
+          <TabsTrigger value="distribution" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>Distribution</span>
+          </TabsTrigger>
           <TabsTrigger value="configuration" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             <span>Consignes</span>
@@ -68,10 +72,6 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
           <TabsTrigger value="rules" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>Règles</span>
-          </TabsTrigger>
-          <TabsTrigger value="distribution" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>Distribution</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -150,19 +150,19 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
         />
       </TabsContent>
       
+      <TabsContent value="distribution" className="space-y-4">
+        <MonthlyDistribution 
+          projects={projectInfos} 
+          teams={teams}
+        />
+      </TabsContent>
+      
       <TabsContent value="configuration" className="space-y-4">
         <SchedulingConfiguration />
       </TabsContent>
       
       <TabsContent value="rules" className="space-y-4">
         <SchedulingRules projects={projectInfos} teams={teams} />
-      </TabsContent>
-      
-      <TabsContent value="distribution" className="space-y-4">
-        <MonthlyDistribution 
-          projects={projectInfos} 
-          teams={teams}
-        />
       </TabsContent>
     </Tabs>
   );
