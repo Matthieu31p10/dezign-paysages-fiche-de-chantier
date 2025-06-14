@@ -66,7 +66,7 @@ export const useFormActions = ({
       // Préparation des données pour WorkLog
       const workLogData: WorkLog = {
         id: workLogId || crypto.randomUUID(),
-        projectId: data.linkedProjectId || '',
+        projectId: data.linkedProjectId || '', // Use linkedProjectId or empty string for blank worksheets
         date: data.date.toISOString().split('T')[0],
         personnel: data.personnel,
         timeTracking: {

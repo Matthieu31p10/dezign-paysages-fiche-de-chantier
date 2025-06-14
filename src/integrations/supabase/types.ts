@@ -51,6 +51,13 @@ export type Database = {
             referencedRelation: "work_logs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_consumables_work_log_id"
+            columns: ["work_log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
         ]
       }
       custom_tasks: {
@@ -324,7 +331,7 @@ export type Database = {
           linked_project_id: string | null
           notes: string | null
           personnel: string[]
-          project_id: string
+          project_id: string | null
           signed_quote_amount: number | null
           tasks: string | null
           total_hours: number
@@ -353,7 +360,7 @@ export type Database = {
           linked_project_id?: string | null
           notes?: string | null
           personnel: string[]
-          project_id: string
+          project_id?: string | null
           signed_quote_amount?: number | null
           tasks?: string | null
           total_hours?: number
@@ -382,14 +389,29 @@ export type Database = {
           linked_project_id?: string | null
           notes?: string | null
           personnel?: string[]
-          project_id?: string
+          project_id?: string | null
           signed_quote_amount?: number | null
           tasks?: string | null
           total_hours?: number
           waste_management?: string | null
           water_consumption?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_work_logs_linked_project_id"
+            columns: ["linked_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_work_logs_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

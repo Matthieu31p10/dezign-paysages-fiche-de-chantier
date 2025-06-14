@@ -32,7 +32,7 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         const formattedWorkLogs: WorkLog[] = data.map(log => ({
           id: log.id,
-          projectId: log.project_id,
+          projectId: log.project_id || '', // Handle NULL project_id for blank worksheets
           date: log.date,
           personnel: log.personnel,
           timeTracking: {
