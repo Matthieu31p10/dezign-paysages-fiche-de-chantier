@@ -45,6 +45,24 @@ export const useFormActions = ({
       const currentUser = getCurrentUser();
       const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
+      // Traiter les consommables en s'assurant qu'ils ont tous un id
+      const processedConsumables = (data.consumables || [])
+        .filter(consumable => 
+          consumable && 
+          consumable.product && 
+          consumable.product.trim() !== '' &&
+          consumable.quantity > 0
+        )
+        .map(consumable => ({
+          id: consumable.id || crypto.randomUUID(),
+          supplier: consumable.supplier || '',
+          product: consumable.product || '',
+          unit: consumable.unit || 'unité',
+          quantity: Number(consumable.quantity) || 0,
+          unitPrice: Number(consumable.unitPrice) || 0,
+          totalPrice: Number(consumable.totalPrice) || 0
+        }));
+      
       // Préparation des données pour WorkLog
       const workLogData: WorkLog = {
         id: workLogId || crypto.randomUUID(),
@@ -63,7 +81,7 @@ export const useFormActions = ({
         wasteManagement: data.wasteManagement || 'none',
         tasks: data.tasks || '',
         notes: data.notes || '',
-        consumables: data.consumables || [],
+        consumables: processedConsumables,
         invoiced: Boolean(data.invoiced),
         isArchived: false,
         tasksPerformed: {
