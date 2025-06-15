@@ -28,11 +28,11 @@ const AppProviders = ({ children }: AppProvidersProps) => {
         <SupabaseAuthProvider>
           <AuthProvider>
             <TeamsProvider>
-              <ProjectsProvider>
-                <WorkLogsProvider>
+              <WorkLogsProvider>
+                <ProjectsProvider>
                   {children}
-                </WorkLogsProvider>
-              </ProjectsProvider>
+                </ProjectsProvider>
+              </WorkLogsProvider>
             </TeamsProvider>
           </AuthProvider>
         </SupabaseAuthProvider>
