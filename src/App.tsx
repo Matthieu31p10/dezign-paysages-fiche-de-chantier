@@ -13,9 +13,9 @@ import WorkLogEdit from './pages/WorkLogEdit';
 import WorkLogDetail from './components/worklogs/detail/WorkLogDetail';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
-import Login from './components/auth/Login';
+import SecureLogin from './components/auth/SecureLogin';
 import Unauthorized from './pages/Unauthorized';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import SecureProtectedRoute from './components/auth/SecureProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import BlankWorkSheets from './pages/BlankWorkSheets';
@@ -30,11 +30,11 @@ function App() {
       <Router>
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<SecureLogin />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           
           {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
+          <Route element={<SecureProtectedRoute />}>
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
               <Route path="projects" element={<Projects />} />
@@ -51,8 +51,8 @@ function App() {
               <Route path="worklogs/:id/edit" element={<WorkLogEdit />} />
               
               {/* Blank worksheets routes */}
-              <Route path="blank-worksheets" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheets />} />} />
-              <Route path="blank-worksheets/new" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheetNew />} />} />
+              <Route path="blank-worksheets" element={<BlankWorkSheets />} />
+              <Route path="blank-worksheets/new" element={<BlankWorkSheetNew />} />
               
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
