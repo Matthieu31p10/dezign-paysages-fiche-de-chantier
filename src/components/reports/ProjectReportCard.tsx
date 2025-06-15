@@ -20,20 +20,26 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
     ? Math.min(100, Math.round((visitsCompleted / project.annualVisits) * 100))
     : 0;
   
-  const totalHours = workLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
+  // Calculate total team hours instead of individual hours
+  const totalTeamHours = workLogs.reduce((sum, log) => {
+    const individualHours = log.timeTracking?.totalHours || 0;
+    const personnelCount = log.personnel?.length || 1;
+    return sum + (individualHours * personnelCount);
+  }, 0);
+  
   const hoursProgress = project.annualTotalHours > 0
-    ? Math.min(100, Math.round((totalHours / project.annualTotalHours) * 100))
+    ? Math.min(100, Math.round((totalTeamHours / project.annualTotalHours) * 100))
     : 0;
   
   // Fix: pass workLogs as array instead of string
   const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
-  // Calculate average hours per visit directly
-  const averageHoursPerVisit = workLogs.length > 0 ? totalHours / workLogs.length : 0;
+  // Calculate average hours per visit using team hours
+  const averageHoursPerVisit = workLogs.length > 0 ? totalTeamHours / workLogs.length : 0;
   
   // Calculate remaining hours and visits
   const remainingVisits = Math.max(0, project.annualVisits - visitsCompleted);
-  const remainingHours = Math.max(0, project.annualTotalHours - totalHours);
+  const remainingHours = Math.max(0, project.annualTotalHours - totalTeamHours);
   const averageHoursPerRemainingVisit = remainingVisits > 0 
     ? remainingHours / remainingVisits 
     : 0;
@@ -113,7 +119,7 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
           <div className="space-y-1">
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Heures utilisées:</span>
-              <span className="font-medium">{totalHours.toFixed(1)} / {project.annualTotalHours}</span>
+              <span className="font-medium">{totalTeamHours.toFixed(1)} / {project.annualTotalHours}</span>
             </div>
             <Progress value={hoursProgress} className="h-2" />
           </div>

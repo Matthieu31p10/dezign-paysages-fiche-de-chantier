@@ -1,14 +1,20 @@
 import { WorkLog, ProjectInfo, CustomTask } from '@/types/models';
 
-// Calculate average hours per visit
+// Calculate average hours per visit using team hours
 export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
   if (workLogs.length === 0) return 0;
   
-  const totalHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
-  return Math.round((totalHours / workLogs.length) * 100) / 100;
+  // Calculate total team hours instead of individual hours
+  const totalTeamHours = workLogs.reduce((sum, log) => {
+    const individualHours = log.timeTracking.totalHours;
+    const personnelCount = log.personnel?.length || 1;
+    return sum + (individualHours * personnelCount);
+  }, 0);
+  
+  return Math.round((totalTeamHours / workLogs.length) * 100) / 100;
 };
 
-// Calculate time deviation between expected and actual hours
+// Calculate time deviation between expected and actual hours using team hours
 export interface TimeDeviation {
   value: number;
   display: string;

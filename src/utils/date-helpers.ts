@@ -1,4 +1,3 @@
-
 // Date utility functions
 
 import { format, addMonths, subMonths, differenceInDays, parse } from 'date-fns';
@@ -60,16 +59,18 @@ export const getDaysSinceLastEntry = (workLogs: WorkLog[]): number | null => {
   return dayDiff;
 };
 
-// Calculate average hours per visit
+// Calculate average hours per visit for a project using team hours
 export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
   if (workLogs.length === 0) return 0;
   
-  const totalHours = workLogs.reduce((sum, log) => {
-    const hours = log.timeTracking?.totalHours || 0;
-    return sum + (typeof hours === 'string' ? parseFloat(hours) : hours);
+  // Calculate total team hours instead of individual hours
+  const totalTeamHours = workLogs.reduce((sum, log) => {
+    const individualHours = log.timeTracking?.totalHours || 0;
+    const personnelCount = log.personnel?.length || 1;
+    return sum + (individualHours * personnelCount);
   }, 0);
   
-  return totalHours / workLogs.length;
+  return Math.round((totalTeamHours / workLogs.length) * 100) / 100;
 };
 
 // Group work logs by month
