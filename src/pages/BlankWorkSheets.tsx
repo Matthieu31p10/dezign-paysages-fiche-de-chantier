@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -124,7 +125,7 @@ const BlankWorkSheets: React.FC = () => {
             onSuccess={handleFormSuccess}
             isBlankWorksheet={true}
             projectInfos={projectInfos}
-            existingWorkLogs={[]} {/* Correction : inutile, car BlankWorkSheet utilise blankWorksheets, pas WorkLog */}
+            existingWorkLogs={[]}
           />
         </BlankWorkSheetTabContent>
       </Tabs>
