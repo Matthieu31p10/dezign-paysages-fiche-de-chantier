@@ -1,185 +1,71 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole, AuthState } from '@/types/models';
+import { User, AuthState, UserRole } from '@/types/models';
 import { AuthContextType } from './types';
-import { toast } from 'sonner';
-import { useSettings } from './SettingsContext';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Local storage key
-const AUTH_STORAGE_KEY = 'landscaping-auth';
-
-// Default admin user
-const DEFAULT_ADMIN: User = {
-  id: 'admin-default',
-  username: 'admin',
-  password: 'admin',
-  role: 'admin',
-  createdAt: new Date(),
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [auth, setAuth] = useState<AuthState>({
-    currentUser: null,
     isAuthenticated: false,
+    currentUser: null
   });
-  const { settings, updateSettings } = useSettings();
 
-  // Ensure default admin user exists
-  useEffect(() => {
-    const currentUsers = settings.users || [];
-    if (currentUsers.length === 0) {
-      updateSettings({
-        users: [DEFAULT_ADMIN]
-      });
-    }
-  }, [settings, updateSettings]);
-
-  // Load auth data from localStorage on initial render
-  useEffect(() => {
-    try {
-      const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        const parsedAuth = JSON.parse(storedAuth);
-        // Vérifier si l'utilisateur existe toujours dans les paramètres
-        const users = settings.users || [];
-        if (parsedAuth.currentUser && users.some(u => u.id === parsedAuth.currentUser.id)) {
-          setAuth(parsedAuth);
-        } else {
-          // Si l'utilisateur n'existe plus, déconnexion
-          localStorage.removeItem(AUTH_STORAGE_KEY);
-        }
+  const [users, setUsers] = useState<User[]>([
+    {
+      id: 'admin-default',
+      username: 'admin',
+      password: 'admin',
+      role: 'admin',
+      name: 'Administrateur',
+      email: 'admin@example.com',
+      createdAt: new Date(),
+      permissions: {
+        admin: true,
+        projects: true,
+        worklogs: true,
+        reports: true,
+        blanksheets: true
       }
-    } catch (error) {
-      console.error('Error loading auth from localStorage:', error);
-      // En cas d'erreur, supprimer les données potentiellement corrompues
-      localStorage.removeItem(AUTH_STORAGE_KEY);
     }
-  }, [settings.users]);
+  ]);
 
-  // Save auth data to localStorage whenever it changes
+  // Check for existing session on mount
   useEffect(() => {
-    if (auth.isAuthenticated && auth.currentUser) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
-    } else if (!auth.isAuthenticated) {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
+    const savedAuth = localStorage.getItem('authState');
+    if (savedAuth) {
+      try {
+        const parsedAuth = JSON.parse(savedAuth);
+        setAuth(parsedAuth);
+      } catch (error) {
+        console.error('Error parsing saved auth state:', error);
+      }
     }
+  }, []);
+
+  // Save auth state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('authState', JSON.stringify(auth));
   }, [auth]);
 
   const login = (username: string, password: string): boolean => {
-    if (!username || !password) {
-      toast.error('Veuillez remplir tous les champs');
-      return false;
-    }
-    
-    const users = settings.users || [];
-    const user = users.find(
-      (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
-    );
-
+    const user = users.find(u => u.username === username && u.password === password);
     if (user) {
       setAuth({
-        currentUser: user,
         isAuthenticated: true,
+        currentUser: user
       });
-      toast.success(`Bienvenue, ${user.name || user.username}`);
       return true;
     }
-
-    toast.error('Identifiant ou mot de passe incorrect');
     return false;
   };
 
   const logout = () => {
     setAuth({
-      currentUser: null,
       isAuthenticated: false,
+      currentUser: null
     });
-    toast.success('Déconnexion réussie');
-  };
-
-  const addUser = (userData: Omit<User, 'id' | 'createdAt'>): User | null => {
-    if (!userData.username || !userData.password) {
-      toast.error('Le nom d\'utilisateur et le mot de passe sont obligatoires');
-      return null;
-    }
-    
-    const users = settings.users || [];
-    if (users.some((u) => u.username.toLowerCase() === userData.username.toLowerCase())) {
-      toast.error('Ce nom d\'utilisateur existe déjà');
-      return null;
-    }
-
-    const newUser: User = {
-      ...userData,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    };
-
-    const updatedUsers = [...users, newUser];
-    updateSettings({
-      users: updatedUsers,
-    });
-
-    toast.success('Utilisateur ajouté avec succès');
-    return newUser;
-  };
-
-  const updateUser = (updatedUser: User) => {
-    if (!updatedUser.username) {
-      toast.error('Le nom d\'utilisateur est obligatoire');
-      return;
-    }
-    
-    const users = settings.users || [];
-    // Vérifier si le nom d'utilisateur existe déjà pour un autre utilisateur
-    const usernameTaken = users.some(
-      (u) => u.id !== updatedUser.id && u.username.toLowerCase() === updatedUser.username.toLowerCase()
-    );
-    
-    if (usernameTaken) {
-      toast.error('Ce nom d\'utilisateur existe déjà');
-      return;
-    }
-
-    const updatedUsers = users.map((user) =>
-      user.id === updatedUser.id ? updatedUser : user
-    );
-
-    updateSettings({
-      users: updatedUsers,
-    });
-
-    if (auth.currentUser && auth.currentUser.id === updatedUser.id) {
-      setAuth({
-        ...auth,
-        currentUser: updatedUser,
-      });
-    }
-
-    toast.success('Utilisateur mis à jour avec succès');
-  };
-
-  const deleteUser = (id: string) => {
-    if (id === 'admin-default') {
-      toast.error('Impossible de supprimer l\'administrateur par défaut');
-      return;
-    }
-
-    if (auth.currentUser && auth.currentUser.id === id) {
-      toast.error('Impossible de supprimer votre propre compte');
-      return;
-    }
-
-    const users = settings.users || [];
-    const updatedUsers = users.filter((user) => user.id !== id);
-
-    updateSettings({
-      users: updatedUsers,
-    });
-
-    toast.success('Utilisateur supprimé avec succès');
+    localStorage.removeItem('authState');
   };
 
   const getCurrentUser = (): User | null => {
@@ -187,22 +73,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const canUserAccess = (requiredRole: UserRole): boolean => {
-    if (!auth.isAuthenticated || !auth.currentUser) {
-      return false;
+    const currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Admin a accès à tout
+    if (currentUser.role === 'admin') return true;
+    
+    // Vérifier les permissions spécifiques
+    return currentUser.permissions?.[requiredRole] === true;
+  };
+
+  const addUser = (userData: Omit<User, 'id' | 'createdAt'>): User | null => {
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = users.find(u => u.username === userData.username);
+    if (existingUser) {
+      return null;
     }
 
-    const userRole = auth.currentUser.role;
+    const newUser: User = {
+      ...userData,
+      id: crypto.randomUUID(),
+      createdAt: new Date()
+    };
 
-    switch (requiredRole) {
-      case 'user':
-        return true;
-      case 'manager':
-        return userRole === 'manager' || userRole === 'admin';
-      case 'admin':
-        return userRole === 'admin';
-      default:
-        return false;
-    }
+    setUsers(prev => [...prev, newUser]);
+    return newUser;
+  };
+
+  const updateUser = (user: User) => {
+    setUsers(prev => prev.map(u => u.id === user.id ? user : u));
+  };
+
+  const deleteUser = (id: string) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+  };
+
+  const updateUserPermissions = (userId: string, permissions: Record<string, boolean>) => {
+    setUsers(prev => prev.map(u => 
+      u.id === userId ? { ...u, permissions: { ...u.permissions, ...permissions } } : u
+    ));
   };
 
   return (
@@ -216,6 +125,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteUser,
         getCurrentUser,
         canUserAccess,
+        users,
+        updateUserPermissions,
       }}
     >
       {children}
