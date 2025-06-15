@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -9,7 +10,6 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { BlankWorksheet } from '@/types/blankWorksheet';
 
-// Correction des usages du type WorkLog → BlankWorksheet
 const BlankWorkSheetEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -80,6 +80,7 @@ const BlankWorkSheetEdit: React.FC = () => {
             toast.success('Fiche vierge modifiée avec succès');
             handleReturn();
           }}
+          existingWorkLogs={blankWorksheets}
         />
       </Card>
     </div>

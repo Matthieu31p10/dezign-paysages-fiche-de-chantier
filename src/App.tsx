@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
@@ -7,15 +8,15 @@ import { WorkLogsProvider } from '@/context/WorkLogsContext/WorkLogsContext';
 import { BlankWorksheetsProvider } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Layout from '@/components/layout/Layout';
-import Login from './pages/Login'; // FIX: Chemin relatif
-import Dashboard from './pages/Home'; // Home = Dashboard
+import Login from '@/components/auth/Login';
+import Dashboard from './pages/Home';
 import Projects from './pages/Projects';
 import ProjectNew from './pages/ProjectNew';
-import ProjectDetail from './pages/ProjectDetail';
+import ProjectDetail from '@/components/projects/ProjectDetail';
 import ProjectEdit from './pages/ProjectEdit';
 import WorkLogs from './pages/WorkLogs';
 import WorkLogNew from './pages/WorkLogNew';
-import WorkLogDetail from './components/worklogs/WorkLogDetail';
+import WorkLogDetail from '@/components/worklogs/detail/WorkLogDetail';
 import WorkLogEdit from './pages/WorkLogEdit';
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
@@ -40,9 +41,7 @@ function App() {
                     <Route
                       path="/*"
                       element={
-                        <ProtectedRoute>
-                          <Layout />
-                        </ProtectedRoute>
+                        <ProtectedRoute element={<Layout />} />
                       }
                     />
                     <Route path="/" element={<ProtectedRoute element={<Dashboard />} />} />
@@ -52,7 +51,6 @@ function App() {
                     <Route path="/projects/:id/edit" element={<ProtectedRoute element={<ProjectEdit />} />} />
                     <Route path="/worklogs" element={<ProtectedRoute element={<WorkLogs />} />} />
                     <Route path="/worklogs/new" element={<ProtectedRoute element={<WorkLogNew />} />} />
-                    {/* Utilisation du composant WorkLogDetail wrapper */}
                     <Route path="/worklogs/:id" element={<ProtectedRoute element={<WorkLogDetail />} />} />
                     <Route path="/worklogs/:id/edit" element={<ProtectedRoute element={<WorkLogEdit />} />} />
                     <Route path="/blank-worksheets" element={<ProtectedRoute element={<BlankWorkSheets />} />} />

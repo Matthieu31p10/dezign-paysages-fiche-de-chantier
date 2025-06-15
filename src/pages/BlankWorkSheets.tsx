@@ -121,11 +121,11 @@ const BlankWorkSheets: React.FC = () => {
         <BlankWorkSheetTabContent value="new">
           <BlankWorkSheetForm
             initialData={initialData}
-            editingWorksheetId={editingWorksheetId}
+            editingWorkLogId={editingWorksheetId}
             onSuccess={handleFormSuccess}
             isBlankWorksheet={true}
             projectInfos={projectInfos}
-            existingWorkLogs={[]}
+            existingWorkLogs={blankWorksheets}
           />
         </BlankWorkSheetTabContent>
       </Tabs>

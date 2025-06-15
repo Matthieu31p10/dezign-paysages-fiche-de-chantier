@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,7 +50,12 @@ const WorkLogDetail = () => {
   }
   
   return (
-    <WorkLogDetailProvider value={contextValues}>
+    <WorkLogDetailProvider value={{
+      ...contextValues,
+      handleExportToPDF: async () => {
+        await contextValues.handleExportToPDF();
+      }
+    }}>
       <div className="animate-fade-in space-y-6">
         <div className="flex justify-between items-start">
           <DetailHeader />

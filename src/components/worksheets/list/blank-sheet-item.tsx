@@ -15,7 +15,6 @@ interface BlankSheetItemProps {
   onPrint?: () => void;
 }
 
-// Correction : toutes les références au type WorkLog => BlankWorksheet, suppression de projectId
 const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   sheet,
   onEdit,
