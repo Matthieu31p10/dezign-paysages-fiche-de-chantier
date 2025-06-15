@@ -11,7 +11,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     companyName: '',
     companyLogo: '',
     loginBackgroundImage: '',
-    companyAddress: '',
     companyManagerName: '',
     companyPhone: '',
     companyEmail: '',
@@ -46,8 +45,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const addCustomTask = async (taskName: string): Promise<CustomTask> => {
     const newTask: CustomTask = {
       id: crypto.randomUUID(),
-      name: taskName,
-      createdAt: new Date()
+      name: taskName
     };
 
     setSettings(prev => ({
@@ -70,8 +68,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id: crypto.randomUUID(),
       name,
       position: position || '',
-      active: true,
-      createdAt: new Date()
+      active: true
     };
 
     setSettings(prev => ({

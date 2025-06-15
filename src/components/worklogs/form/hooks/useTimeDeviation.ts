@@ -24,27 +24,29 @@ export const useTimeDeviation = ({
   const end = form.watch('end');
   const breakTime = form.watch('breakTime');
 
-  // Calculate the time deviation based on historical data
+  // Calculate the time deviation based on historical data using the correct formula
   const calculateProjectTimeDeviation = (project: ProjectInfo) => {
     if (!project) return;
     
     const projectLogs = existingWorkLogs.filter(log => log.projectId === project.id);
-    const completedVisits = projectLogs.length;
+    const numberOfVisits = projectLogs.length;
     
-    if (completedVisits === 0) {
+    if (numberOfVisits === 0) {
       setTimeDeviation("Pas d'historique");
       setTimeDeviationClass('text-gray-600');
       return;
     }
     
-    const totalHoursCompleted = projectLogs.reduce((total, log) => {
+    // Calculer le total des heures effectuées pour ce projet
+    const totalHours = projectLogs.reduce((total, log) => {
       if (log.timeTracking && typeof log.timeTracking.totalHours === 'number') {
         return total + log.timeTracking.totalHours;
       }
       return total;
     }, 0);
     
-    const averageHoursPerVisit = totalHoursCompleted / completedVisits;
+    // Moyenne des heures par passage
+    const averageHoursPerVisit = totalHours / numberOfVisits;
     
     if (!project.visitDuration) {
       setTimeDeviation("Durée non définie");
@@ -52,17 +54,19 @@ export const useTimeDeviation = ({
       return;
     }
     
-    const difference = project.visitDuration - averageHoursPerVisit;
+    // Calcul selon la formule: Durée prévue - (Heures effectuées / nombre de passages)
+    const deviation = project.visitDuration - averageHoursPerVisit;
     
-    let deviationText = difference === 0 
+    let deviationText = deviation === 0 
       ? "Pas d'écart" 
-      : `${difference > 0 ? '+' : ''}${difference.toFixed(1)}h`;
+      : `${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}h`;
     
-    let deviationClass = difference === 0 
+    let deviationClass = deviation === 0 
       ? 'text-gray-600' 
-      : (difference > 0 ? 'text-amber-600' : 'text-red-600');
+      : (deviation > 0 ? 'text-green-600' : 'text-red-600');
     
-    if (Math.abs(difference) <= (project.visitDuration * 0.1)) {
+    // Tolérance de 10%
+    if (Math.abs(deviation) <= (project.visitDuration * 0.1)) {
       deviationClass = 'text-green-600';
     }
     
@@ -90,7 +94,7 @@ export const useTimeDeviation = ({
         
         if (selectedProject) {
           const expectedDuration = selectedProject.visitDuration || 0;
-          const deviation = totalHours - expectedDuration;
+          const deviation = expectedDuration - totalHours; // Inverser pour correspondre à la formule
           
           let deviationText = deviation === 0 
             ? "Pas d'écart" 
@@ -98,7 +102,7 @@ export const useTimeDeviation = ({
           
           let deviationClass = deviation === 0 
             ? 'text-gray-600' 
-            : (deviation > 0 ? 'text-amber-600' : 'text-red-600');
+            : (deviation > 0 ? 'text-green-600' : 'text-red-600');
           
           if (Math.abs(deviation) <= (expectedDuration * 0.1)) {
             deviationClass = 'text-green-600';
