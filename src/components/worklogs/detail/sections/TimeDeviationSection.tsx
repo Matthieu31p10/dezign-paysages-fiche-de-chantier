@@ -3,6 +3,7 @@ import React from 'react';
 import { Clock, AlertCircle } from 'lucide-react';
 import { useWorkLogDetail } from '../WorkLogDetailContext';
 import { useApp } from '@/context/AppContext';
+import { calculateTimeDeviation } from '@/utils/statistics';
 
 const TimeDeviationSection: React.FC = () => {
   const { workLog, project } = useWorkLogDetail();
@@ -19,34 +20,8 @@ const TimeDeviationSection: React.FC = () => {
   // Get all work logs for this project to calculate deviation
   const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
   
-  // Calculate average team hours per visit (same calculation as in reports)
-  const totalTeamHours = projectWorkLogs.reduce((sum, log) => {
-    const individualHours = log.timeTracking?.totalHours || 0;
-    const personnelCount = log.personnel?.length || 1;
-    return sum + (individualHours * personnelCount);
-  }, 0);
-  
-  const averageTeamHoursPerVisit = projectWorkLogs.length > 0 
-    ? totalTeamHours / projectWorkLogs.length 
-    : 0;
-  
-  // Calculate deviation: expected duration - average team hours per visit
-  const difference = project.visitDuration - averageTeamHoursPerVisit;
-  
-  let deviationDisplay = "N/A";
-  let deviationClass = "text-gray-600";
-  
-  if (projectWorkLogs.length > 0 && project.visitDuration) {
-    deviationDisplay = `${difference >= 0 ? '+' : ''}${difference.toFixed(1)}h`;
-    
-    if (Math.abs(difference) <= (project.visitDuration * 0.1)) {
-      deviationClass = 'text-green-600 font-bold'; // Dans la tolérance (±10%)
-    } else if (difference > 0) {
-      deviationClass = 'text-amber-600 font-bold'; // Plus rapide que prévu
-    } else {
-      deviationClass = 'text-red-600 font-bold'; // Plus lent que prévu
-    }
-  }
+  // Use the statistics utility to calculate time deviation
+  const timeDeviation = calculateTimeDeviation(project.visitDuration || 0, projectWorkLogs);
 
   return (
     <div className="p-4 border rounded-md bg-gradient-to-r from-orange-50 to-white border-orange-200">
@@ -64,14 +39,21 @@ const TimeDeviationSection: React.FC = () => {
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Temps moyen (équipe):</span>
           <span className="font-medium">
-            {averageTeamHoursPerVisit.toFixed(1)} h
+            {projectWorkLogs.length > 0 
+              ? ((projectWorkLogs.reduce((sum, log) => {
+                  const individualHours = log.timeTracking?.totalHours || 0;
+                  const personnelCount = log.personnel?.length || 1;
+                  return sum + (individualHours * personnelCount);
+                }, 0) / projectWorkLogs.length).toFixed(2))
+              : '0.00'
+            } h
           </span>
         </div>
         
         <div className="flex items-center justify-between pt-2 border-t border-orange-200">
           <span className="text-sm font-medium">Écart:</span>
-          <span className={deviationClass}>
-            {deviationDisplay}
+          <span className={`font-bold ${timeDeviation.className}`}>
+            {timeDeviation.display}
           </span>
         </div>
       </div>

@@ -39,33 +39,17 @@ const ProjectTypeIcon: React.FC<{ projectType: string }> = ({ projectType }) => 
 
 const TimeDeviation: React.FC<{ 
   project: ProjectInfo, 
-  projectLogs: WorkLog[]
-}> = ({ project, projectLogs }) => {
-  if (!project.visitDuration || projectLogs.length === 0) {
-    return <span className="text-muted-foreground">N/A</span>;
+  averageHoursPerVisit: number 
+}> = ({ project, averageHoursPerVisit }) => {
+  if (!project.visitDuration) {
+    return <span>N/A</span>;
   }
   
-  // Calculate average team hours per visit (same logic as in the form)
-  const totalTeamHours = projectLogs.reduce((sum, log) => {
-    const individualHours = log.timeTracking?.totalHours || 0;
-    const personnelCount = log.personnel?.length || 1;
-    return sum + (individualHours * personnelCount);
-  }, 0);
-  
-  const averageTeamHoursPerVisit = totalTeamHours / projectLogs.length;
-  
-  // Calculate deviation: expected duration - average team hours per visit
-  const difference = project.visitDuration - averageTeamHoursPerVisit;
-  const display = `${difference >= 0 ? '+' : ''}${difference.toFixed(1)}h`;
-  
-  let className = 'font-medium';
-  if (Math.abs(difference) <= (project.visitDuration * 0.1)) {
-    className += ' text-green-600'; // Dans la tolérance (±10%)
-  } else if (difference > 0) {
-    className += ' text-amber-600'; // Plus rapide que prévu
-  } else {
-    className += ' text-red-600'; // Plus lent que prévu
-  }
+  const difference = project.visitDuration - averageHoursPerVisit;
+  const display = `${difference >= 0 ? '+' : ''}${difference.toFixed(2)} h`;
+  const className = difference >= 0 
+    ? 'text-green-600 font-medium' 
+    : 'text-red-600 font-medium';
     
   return <span className={className}>{display}</span>;
 };
@@ -126,10 +110,8 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
               return sum + (individualHours * personnelCount);
             }, 0);
             
-            // Calculate average team hours per visit
-            const averageTeamHours = projectLogs.length > 0 
-              ? totalTeamHours / projectLogs.length 
-              : 0;
+            // Calculate average hours - avoid division by zero
+            const averageHours = calculateAverageHoursPerVisit(projectLogs);
             
             // Get the date of last visit with proper typing
             const lastVisitDate = projectLogs.length > 0 
@@ -165,13 +147,13 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
                 </TableCell>
                 
                 <TableCell className="text-center">
-                  <span className="font-medium">{averageTeamHours.toFixed(1)} h</span>
+                  <span className="font-medium">{averageHours.toFixed(1)} h</span>
                 </TableCell>
                 
                 <TableCell className="text-center">
                   <TimeDeviation 
                     project={project} 
-                    projectLogs={projectLogs}
+                    averageHoursPerVisit={averageHours} 
                   />
                 </TableCell>
                 
