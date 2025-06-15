@@ -147,27 +147,27 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
             </div>
           </div>
           
-          {project.contactName && (
+          {project.contact?.name && (
             <div className="flex items-start">
               <User className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
               <div>
                 <span className="text-sm font-medium">Contact:</span>
-                <p className="text-sm">{project.contactName}</p>
+                <p className="text-sm">{project.contact.name}</p>
               </div>
             </div>
           )}
           
-          {project.contactPhone && (
+          {project.contact?.phone && (
             <div className="flex items-center">
               <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
-              <span className="text-sm">{project.contactPhone}</span>
+              <span className="text-sm">{project.contact.phone}</span>
             </div>
           )}
           
-          {project.contactEmail && (
+          {project.contact?.email && (
             <div className="flex items-center">
               <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
-              <span className="text-sm">{project.contactEmail}</span>
+              <span className="text-sm">{project.contact.email}</span>
             </div>
           )}
         </CardContent>
@@ -209,7 +209,7 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
       </Card>
 
       {/* Contract Information */}
-      {project.contractDetails && (
+      {project.contract?.details && (
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -218,7 +218,7 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">{project.contractDetails}</p>
+            <p className="text-sm">{project.contract.details}</p>
           </CardContent>
         </Card>
       )}
