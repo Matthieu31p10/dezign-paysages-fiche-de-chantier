@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from '@/context/AppContext';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
-import { WorkLog } from '@/types/models';
+import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
 import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHeader';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
@@ -12,20 +11,16 @@ import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkShee
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
 import { generatePDF } from '@/utils/pdf';
-import { isBlankWorksheet } from '@/components/worksheets/form/utils/generateUniqueIds';
 
 const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
   const { projectInfos = [] } = useApp();
-  const { workLogs = [] } = useWorkLogs();
+  const { blankWorksheets = [], getBlankWorksheetById } = useBlankWorksheets();
   const [activeTab, setActiveTab] = useState<string>("list");
   const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
   const [pdfOptionsOpen, setPdfOptionsOpen] = useState<boolean>(false);
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
-  
-  // Filter only blank worksheets using our consistent helper function
-  const blankWorksheets = workLogs.filter(log => isBlankWorksheet(log.projectId));
   
   const handleCreateNew = () => {
     setEditingWorkLogId(null);
@@ -42,14 +37,6 @@ const BlankWorkSheets: React.FC = () => {
     setActiveTab("list");
   };
   
-  const getWorkLogById = (id: string) => {
-    const workLog = workLogs.find(log => log.id === id);
-    if (!workLog) {
-      throw new Error(`WorkLog with ID ${id} not found`);
-    }
-    return workLog;
-  };
-  
   // Function to handle PDF export
   const handleExportPDF = async (id: string) => {
     try {
@@ -63,11 +50,12 @@ const BlankWorkSheets: React.FC = () => {
   // Function to handle Print
   const handlePrint = async (id: string) => {
     try {
-      const workLog = getWorkLogById(id);
+      const worksheet = getBlankWorksheetById(id);
+      if (!worksheet) throw new Error('Worksheet not found');
       
       setIsExporting(true);
       await generatePDF({
-        workLog,
+        workLog: worksheet,
         action: 'print',
         config: {
           includeCompanyHeader: true,
@@ -87,11 +75,12 @@ const BlankWorkSheets: React.FC = () => {
     if (!selectedWorkLogId) return;
     
     try {
-      const workLog = getWorkLogById(selectedWorkLogId);
+      const worksheet = getBlankWorksheetById(selectedWorkLogId);
+      if (!worksheet) throw new Error('Worksheet not found');
       
       setIsExporting(true);
       await generatePDF({
-        workLog,
+        workLog: worksheet,
         action: 'download',
         config: options
       });
@@ -106,7 +95,7 @@ const BlankWorkSheets: React.FC = () => {
   };
   
   // Get the initial data for editing
-  const initialData = editingWorkLogId ? getWorkLogById(editingWorkLogId) : undefined;
+  const initialData = editingWorkLogId ? getBlankWorksheetById(editingWorkLogId) : undefined;
   
   return (
     <div className="animate-fade-in space-y-6">
@@ -135,7 +124,7 @@ const BlankWorkSheets: React.FC = () => {
             onSuccess={handleFormSuccess}
             isBlankWorksheet={true}
             projectInfos={projectInfos}
-            existingWorkLogs={workLogs}
+            existingWorkLogs={blankWorksheets}
           />
         </BlankWorkSheetTabContent>
       </Tabs>

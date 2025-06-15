@@ -42,7 +42,7 @@ export interface ProjectInfo {
   annualTotalHours: number;
   visitDuration: number;
   additionalInfo: string;
-  team: string; // Changé de string à string pour correspondre à la DB
+  team: string;
   projectType: 'residence' | 'particular' | 'enterprise' | '';
   startDate?: Date | null;
   endDate?: Date | null;
@@ -76,7 +76,7 @@ export interface Consumable {
 
 export interface WorkLog {
   id: string;
-  projectId: string;
+  projectId: string; // Now always required for work logs
   date: string;
   personnel: string[];
   timeTracking?: {
@@ -101,7 +101,7 @@ export interface WorkLog {
     tasksProgress?: Record<string, number>;
   };
   
-  // Champs pour les fiches vierges
+  // Optional fields that may be used in some contexts
   clientName?: string;
   address?: string;
   contactPhone?: string;
@@ -110,7 +110,6 @@ export interface WorkLog {
   linkedProjectId?: string;
   signedQuoteAmount?: number;
   isQuoteSigned?: boolean;
-  isBlankWorksheet?: boolean;
   createdAt?: Date;
   createdBy?: string;
 }
