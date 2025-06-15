@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Personnel } from '@/types/models';
-import { useApp } from '@/context/AppContext';
+import { useSettings } from '@/context/SettingsContext';
 import { UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,41 +16,36 @@ interface PersonnelDialogProps {
 }
 
 const PersonnelDialog: React.FC<PersonnelDialogProps> = ({ selectedPersonnel, onChange }) => {
-  const { settings, updateSettings } = useApp();
+  const { getPersonnel, addPersonnel } = useSettings();
   const [open, setOpen] = useState(false);
-  const [personnelList, setPersonnelList] = useState<Personnel[]>(settings.personnel || []);
+  const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [newPersonnelName, setNewPersonnelName] = useState('');
   const [newPersonnelPosition, setNewPersonnelPosition] = useState('');
+  const [localSelectedPersonnel, setLocalSelectedPersonnel] = useState<string[]>(selectedPersonnel);
   
-  // Synchronize with settings when they change
+  // Charger le personnel depuis les paramètres
   useEffect(() => {
-    setPersonnelList(settings.personnel || []);
-  }, [settings.personnel]);
+    const personnel = getPersonnel();
+    setPersonnelList(personnel);
+  }, [getPersonnel]);
+  
+  // Synchroniser avec les props
+  useEffect(() => {
+    setLocalSelectedPersonnel(selectedPersonnel);
+  }, [selectedPersonnel]);
   
   const handleSave = () => {
-    // Save selected personnel to form
-    const selected = personnelList
-      .filter(person => person.active)
-      .map(person => person.name);
-    
-    onChange(selected);
-    
-    // Save personnel list to settings
-    updateSettings({
-      ...settings,
-      personnel: personnelList,
-    });
-    
+    onChange(localSelectedPersonnel);
     setOpen(false);
   };
   
-  const handleAddPersonnel = () => {
+  const handleAddPersonnel = async () => {
     if (!newPersonnelName.trim()) {
       toast.error("Le nom est requis");
       return;
     }
     
-    // Check if personnel already exists
+    // Vérifier si le personnel existe déjà
     const exists = personnelList.some(
       person => person.name.toLowerCase() === newPersonnelName.toLowerCase()
     );
@@ -60,42 +55,40 @@ const PersonnelDialog: React.FC<PersonnelDialogProps> = ({ selectedPersonnel, on
       return;
     }
     
-    const newPerson: Personnel = {
-      id: crypto.randomUUID(),
-      name: newPersonnelName.trim(),
-      position: newPersonnelPosition.trim() || undefined,
-      active: true, // New person is selected by default
-    };
-    
-    setPersonnelList([...personnelList, newPerson]);
-    setNewPersonnelName('');
-    setNewPersonnelPosition('');
-    
-    toast.success("Personnel ajouté");
-  };
-  
-  const togglePersonnel = (id: string) => {
-    setPersonnelList(
-      personnelList.map(person => 
-        person.id === id ? { ...person, active: !person.active } : person
-      )
-    );
-  };
-  
-  // When opening the dialog, mark selected personnel as active
-  const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen) {
-      const updatedList = personnelList.map(person => ({
-        ...person,
-        active: selectedPersonnel.includes(person.name)
-      }));
-      setPersonnelList(updatedList);
+    try {
+      await addPersonnel(newPersonnelName.trim(), newPersonnelPosition.trim());
+      
+      // Recharger la liste après ajout
+      const updatedPersonnel = getPersonnel();
+      setPersonnelList(updatedPersonnel);
+      
+      // Ajouter automatiquement la nouvelle personne à la sélection
+      setLocalSelectedPersonnel(prev => [...prev, newPersonnelName.trim()]);
+      
+      setNewPersonnelName('');
+      setNewPersonnelPosition('');
+      
+      toast.success("Personnel ajouté et sélectionné");
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du personnel:', error);
     }
-    setOpen(isOpen);
   };
+  
+  const togglePersonnel = (name: string) => {
+    setLocalSelectedPersonnel(prev => {
+      if (prev.includes(name)) {
+        return prev.filter(p => p !== name);
+      } else {
+        return [...prev, name];
+      }
+    });
+  };
+  
+  // Filtrer seulement le personnel actif
+  const activePersonnel = personnelList.filter(person => person.active);
   
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full justify-between">
           <span>
@@ -117,14 +110,14 @@ const PersonnelDialog: React.FC<PersonnelDialogProps> = ({ selectedPersonnel, on
         <div className="max-h-[60vh] overflow-y-auto py-4 space-y-4">
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Personnel disponible</h3>
-            {personnelList.length > 0 ? (
+            {activePersonnel.length > 0 ? (
               <div className="space-y-2">
-                {personnelList.map(person => (
+                {activePersonnel.map(person => (
                   <div key={person.id} className="flex items-center space-x-2">
                     <Checkbox 
                       id={`person-${person.id}`} 
-                      checked={person.active}
-                      onCheckedChange={() => togglePersonnel(person.id)}
+                      checked={localSelectedPersonnel.includes(person.name)}
+                      onCheckedChange={() => togglePersonnel(person.name)}
                     />
                     <Label htmlFor={`person-${person.id}`} className="flex-1">
                       {person.name}
@@ -139,7 +132,7 @@ const PersonnelDialog: React.FC<PersonnelDialogProps> = ({ selectedPersonnel, on
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Aucun personnel disponible. Ajoutez-en ci-dessous.
+                Aucun personnel actif disponible. Ajoutez-en ci-dessous.
               </p>
             )}
           </div>

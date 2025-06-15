@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { Personnel } from '@/types/models';
 import { UseFormReturn } from 'react-hook-form';
 import { FormValues } from '../schema';
-import { useApp } from '@/context/AppContext';
+import { useSettings } from '@/context/SettingsContext';
 
 interface UseWorkLogPersonnelProps {
   form: UseFormReturn<FormValues>;
@@ -14,8 +14,8 @@ export const useWorkLogPersonnel = ({
   form,
   initialSelectedPersonnel = []
 }: UseWorkLogPersonnelProps) => {
-  const { settings } = useApp();
-  const availablePersonnel = settings.personnel || [];
+  const { getPersonnel } = useSettings();
+  const availablePersonnel = getPersonnel();
   
   // Get the current selected personnel from the form
   const selectedPersonnel = form.watch('personnel') || [];

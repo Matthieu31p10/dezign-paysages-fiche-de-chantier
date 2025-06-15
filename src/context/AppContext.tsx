@@ -1,194 +1,111 @@
 
-import React, { createContext, useContext } from 'react';
-import { Team, Personnel, CustomTask, ProjectInfo, WorkLog, AppSettings, AuthState, User, UserRole } from '@/types/models';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useProjects } from './ProjectsContext';
 import { useTeams } from './TeamsContext';
 import { useSettings } from './SettingsContext';
-import { useProjects } from './ProjectsContext';
 import { useWorkLogs } from './WorkLogsContext/WorkLogsContext';
-import { useAuth } from './AuthContext';
+import { User, ProjectInfo, Team, AppSettings, WorkLog, Personnel } from '@/types/models';
 
 interface AppContextType {
+  // Projects
+  projects: ProjectInfo[];
+  getProjectById: (id: string) => ProjectInfo | undefined;
+  
   // Teams
   teams: Team[];
-  addTeam: (team: Omit<Team, 'id'>) => Promise<Team>;
-  updateTeam: (team: Team) => Promise<void>;
-  deleteTeam: (id: string) => Promise<void>;
-  
-  // Personnel et Custom Tasks
-  personnel: Personnel[];
-  customTasks: CustomTask[];
-  addPersonnel: (name: string, position?: string) => Promise<Personnel>;
-  updatePersonnel: (personnel: Personnel) => Promise<void>;
-  deletePersonnel: (id: string) => Promise<void>;
-  togglePersonnelActive: (id: string, isActive: boolean) => Promise<void>;
-  addCustomTask: (taskName: string) => Promise<CustomTask>;
-  deleteCustomTask: (id: string) => Promise<void>;
   
   // Settings
   settings: AppSettings;
-  updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
+  updateSettings: (settings: Partial<AppSettings>) => Promise<void>;
   
-  // Projects
-  projectInfos: ProjectInfo[];
-  selectedProjectId: string | null;
-  addProjectInfo: (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => Promise<ProjectInfo>;
-  updateProjectInfo: (projectInfo: ProjectInfo) => Promise<void>;
-  deleteProjectInfo: (id: string) => Promise<void>;
-  selectProject: (id: string | null) => void;
-  getProjectById: (id: string) => ProjectInfo | undefined;
-  getActiveProjects: () => ProjectInfo[];
-  getArchivedProjects: () => ProjectInfo[];
+  // Personnel from settings
+  personnel: Personnel[];
   
-  // WorkLogs
+  // Work logs
   workLogs: WorkLog[];
-  addWorkLog: (workLog: WorkLog) => Promise<WorkLog>;
-  updateWorkLog: (idOrWorkLog: string | WorkLog, partialWorkLog?: Partial<WorkLog>) => Promise<void>;
-  deleteWorkLog: (id: string) => Promise<void>;
-  deleteWorkLogsByProjectId: (projectId: string) => Promise<void>;
-  archiveWorkLogsByProjectId: (projectId: string, archived: boolean) => Promise<void>;
-  getWorkLogById: (id: string) => WorkLog | undefined;
-  getWorkLogsByProjectId: (projectId: string) => WorkLog[];
-  getTotalDuration: (projectId: string) => number;
-  getTotalVisits: (projectId: string) => number;
-  getLastVisitDate: (projectId: string) => Date | null;
   
-  // Auth
-  auth: AuthState;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
-  addUser: (user: Omit<User, 'id' | 'createdAt'>) => User | null;
-  updateUser: (user: User) => void;
-  deleteUser: (id: string) => void;
+  // User management and permissions
+  users: User[];
+  canUserAccess: (module: string) => boolean;
   getCurrentUser: () => User | null;
-  canUserAccess: (requiredRole: UserRole) => boolean;
   
-  // Loading states
-  isLoading?: boolean;
+  // Computed properties
+  projectInfos: ProjectInfo[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { teams, addTeam, updateTeam, deleteTeam } = useTeams();
-  const { 
-    settings, 
-    updateSettings, 
-    addCustomTask, 
-    deleteCustomTask, 
-    addPersonnel, 
-    updatePersonnel, 
-    deletePersonnel, 
-    getPersonnel, 
-    togglePersonnelActive, 
-    getCustomTasks 
-  } = useSettings();
-  const {
-    projectInfos,
-    selectedProjectId,
-    isLoading: projectsLoading,
-    addProjectInfo,
-    updateProjectInfo,
-    deleteProjectInfo,
-    selectProject,
-    getProjectById,
-    getActiveProjects,
-    getArchivedProjects,
-  } = useProjects();
-  const {
-    workLogs,
-    isLoading: workLogsLoading,
-    addWorkLog,
-    updateWorkLog,
-    deleteWorkLog,
-    deleteWorkLogsByProjectId,
-    archiveWorkLogsByProjectId,
-    getWorkLogById,
-    getWorkLogsByProjectId,
-    getTotalDuration,
-    getTotalVisits,
-    getLastVisitDate,
-  } = useWorkLogs();
-  const {
-    auth,
-    login,
-    logout,
-    addUser,
-    updateUser,
-    deleteUser,
-    getCurrentUser,
-    canUserAccess,
-  } = useAuth();
-
-  // Ensure custom tasks are properly included in settings
-  const enhancedSettings = {
-    ...settings,
-    customTasks: getCustomTasks()
+export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { projects, getProjectById } = useProjects();
+  const { teams } = useTeams();
+  const { settings, updateSettings, getPersonnel } = useSettings();
+  const { workLogs } = useWorkLogs();
+  
+  // Get personnel from settings
+  const personnel = getPersonnel();
+  
+  // Mock user management - à remplacer par une vraie authentification
+  const mockUsers: User[] = [
+    {
+      id: '1',
+      username: 'admin',
+      password: 'admin123',
+      role: 'admin',
+      name: 'Administrateur',
+      email: 'admin@example.com',
+      createdAt: new Date(),
+      permissions: {
+        admin: true,
+        projects: true,
+        worklogs: true,
+        reports: true,
+        blanksheets: true
+      }
+    }
+  ];
+  
+  const getCurrentUser = (): User | null => {
+    // Mock - retourne toujours l'admin pour l'instant
+    return mockUsers[0];
   };
-
-  return (
-    <AppContext.Provider
-      value={{
-        // Teams
-        teams,
-        addTeam,
-        updateTeam,
-        deleteTeam,
-        
-        // Personnel et Custom Tasks
-        personnel: getPersonnel(),
-        customTasks: getCustomTasks(),
-        addPersonnel,
-        updatePersonnel,
-        deletePersonnel,
-        togglePersonnelActive,
-        addCustomTask,
-        deleteCustomTask,
-        
-        // Settings
-        settings: enhancedSettings,
-        updateSettings,
-        
-        // Projects
-        projectInfos,
-        selectedProjectId,
-        addProjectInfo,
-        updateProjectInfo,
-        deleteProjectInfo,
-        selectProject,
-        getProjectById,
-        getActiveProjects,
-        getArchivedProjects,
-        
-        // WorkLogs
-        workLogs,
-        addWorkLog,
-        updateWorkLog,
-        deleteWorkLog,
-        deleteWorkLogsByProjectId,
-        archiveWorkLogsByProjectId,
-        getWorkLogById,
-        getWorkLogsByProjectId,
-        getTotalDuration,
-        getTotalVisits,
-        getLastVisitDate,
-        
-        // Auth
-        auth,
-        login,
-        logout,
-        addUser,
-        updateUser,
-        deleteUser,
-        getCurrentUser,
-        canUserAccess,
-        
-        // Loading states
-        isLoading: projectsLoading || workLogsLoading,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+  
+  const canUserAccess = (module: string): boolean => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Admin a accès à tout
+    if (currentUser.role === 'admin') return true;
+    
+    // Vérifier les permissions spécifiques
+    return currentUser.permissions?.[module] === true;
+  };
+  
+  const value: AppContextType = {
+    // Projects
+    projects,
+    getProjectById,
+    projectInfos: projects,
+    
+    // Teams
+    teams,
+    
+    // Settings
+    settings,
+    updateSettings,
+    
+    // Personnel
+    personnel,
+    
+    // Work logs
+    workLogs,
+    
+    // User management
+    users: mockUsers,
+    canUserAccess,
+    getCurrentUser,
+  };
+  
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export const useApp = () => {
