@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AppSettings, CustomTask, Personnel } from '@/types/models';
 import { SettingsContextType } from './types';
@@ -11,7 +10,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     companyName: '',
     companyLogo: '',
     loginBackgroundImage: '',
-    companyManagerName: '',
     companyPhone: '',
     companyEmail: '',
     customTasks: [],
