@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { BlankWorkSheetValues, BlankWorkSheetSchema } from '../schema';
 import { useEffect, useState } from 'react';
@@ -120,13 +119,10 @@ export const useBlankWorksheetForm = ({
   
   // Handle form submission and cancellation
   const formActions = useFormActions({
-    form,
-    workLogId: initialData?.id,
     onSuccess,
-    workLogs,
-    handleClearProject
+    isEditing: !!initialData?.id,
   });
-  
+
   return {
     form,
     loadWorkLogData,

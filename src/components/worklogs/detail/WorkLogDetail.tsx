@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,14 +31,7 @@ const WorkLogDetail = () => {
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
   
   // Toujours appeler les hooks au niveau supérieur, quelles que soient les conditions
-  const contextValues = useWorkLogDetailProvider(
-    workLog, 
-    project, 
-    workLogs,
-    updateWorkLog,
-    deleteWorkLog,
-    settings
-  );
+  const contextValues = useWorkLogDetailProvider();
   
   if (isLoading) {
     return (

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { WorkLog } from '@/types/models';
@@ -17,6 +16,21 @@ export interface WorkLogDetailContextType {
   handlePrint: () => void;
   handleExportPDF: () => void;
   handleReturn: () => void;
+  isEditable: boolean;
+  handleExportToPDF: () => void;
+  isExporting: boolean;
+  notes: string;
+  setNotes: (value: string) => void;
+  handleSaveNotes: () => void;
+  calculateEndTime: () => string;
+  calculateHourDifference: () => number;
+  calculateTotalTeamHours: () => number;
+  confirmDelete: () => void;
+  handleDeleteWorkLog: () => void;
+  handleSendEmail: () => void;
+  isDeleteDialogOpen: boolean;
+  setIsDeleteDialogOpen: (value: boolean) => void;
+  isBlankWorksheet: boolean;
 }
 
 export const useWorkLogDetailProvider = (): WorkLogDetailContextType => {
@@ -27,7 +41,9 @@ export const useWorkLogDetailProvider = (): WorkLogDetailContextType => {
   
   const [workLog, setWorkLog] = useState<WorkLog | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [notes, setNotes] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
     if (id) {
       const foundWorkLog = getWorkLogById(id);
@@ -82,6 +98,16 @@ export const useWorkLogDetailProvider = (): WorkLogDetailContextType => {
     navigate('/worklogs');
   };
 
+  const isEditable = true;
+  const handleExportToPDF = async () => {};
+  const isExporting = false;
+  const handleSaveNotes = () => {};
+  const calculateEndTime = () => '';
+  const calculateHourDifference = () => 0;
+  const calculateTotalTeamHours = () => 0;
+  const confirmDelete = () => setIsDeleteDialogOpen(true);
+  const handleSendEmail = () => {};
+
   return {
     workLog,
     isLoading,
@@ -92,6 +118,21 @@ export const useWorkLogDetailProvider = (): WorkLogDetailContextType => {
     handleDelete,
     handlePrint,
     handleExportPDF,
-    handleReturn
+    handleReturn,
+    isEditable,
+    handleExportToPDF,
+    isExporting,
+    notes,
+    setNotes,
+    handleSaveNotes,
+    calculateEndTime,
+    calculateHourDifference,
+    calculateTotalTeamHours,
+    confirmDelete,
+    handleDeleteWorkLog: handleDelete,
+    handleSendEmail,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    isBlankWorksheet: false,
   };
 };

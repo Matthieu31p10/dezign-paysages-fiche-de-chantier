@@ -1,6 +1,5 @@
-
 import React, { ReactNode } from 'react';
-import { useWorkLogFormContext } from './WorkLogFormContext';
+import { useWorkLogForm } from './WorkLogFormContext';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -20,7 +19,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   existingWorkLogId,
   isBlankWorksheet = false
 }) => {
-  const { form, existingWorkLogs } = useWorkLogFormContext();
+  const { form, existingWorkLogs } = useWorkLogForm();
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   const { getCurrentUser } = useApp();
   const navigate = useNavigate();

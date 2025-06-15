@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +10,7 @@ import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkShee
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
 import { generatePDF } from '@/utils/pdf';
+import { BlankWorksheet } from '@/types/blankWorksheet';
 
 const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ const BlankWorkSheets: React.FC = () => {
   };
   
   // Get the initial data for editing
-  const initialData = editingWorksheetId ? getBlankWorksheetById(editingWorksheetId) : undefined;
+  const initialData: BlankWorksheet | undefined = editingWorksheetId ? getBlankWorksheetById(editingWorksheetId) : undefined;
   
   return (
     <div className="animate-fade-in space-y-6">

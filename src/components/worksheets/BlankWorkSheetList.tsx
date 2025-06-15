@@ -1,68 +1,74 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BlankWorksheet } from '@/types/blankWorksheet';
-import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
-import BlankSheetItem from './list/blank-sheet-item';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, FileText } from 'lucide-react';
+import BlankSheetItem from './blank-sheet-item';
+import { useProjects } from '@/context/ProjectsContext';
+import BlankSheetFilters from './BlankSheetFilters';
 import { groupWorkLogsByMonth } from '@/utils/date-helpers';
 import { sortMonths } from '../worklogs/list/utils';
-import BlankSheetFilters from './BlankSheetFilters';
 
-export interface BlankWorkSheetListProps {
-  sheets: BlankWorksheet[];
-  onCreateNew: () => void;
-  onEdit: (worksheetId: string) => void;
-  onExportPDF: (id: string) => Promise<void>;
-  onPrint: (id: string) => Promise<void>;
+interface BlankWorkSheetListProps {
+  sheets?: BlankWorksheet[];
+  onSelectSheet?: (id: string) => void;
+  onCreateNew?: () => void;
+  onEdit?: (id: string) => void;
+  onExportPDF?: (id: string) => void;
+  onPrint?: (id: string) => void;
 }
 
-const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
-  sheets,
+const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({ 
+  sheets = [], 
+  onSelectSheet,
   onCreateNew,
   onEdit,
-  onExportPDF,
-  onPrint
+  onExportPDF = () => {},
+  onPrint = () => {}
 }) => {
   const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
+  const { getProjectById } = useProjects();
   
-  // Filter worksheets
-  const filteredSheets = sheets.filter(sheet => {
-    // Apply search filter
-    const matchesSearch = !search || (
-      (sheet.client_name?.toLowerCase().includes(search.toLowerCase())) ||
-      (sheet.notes?.toLowerCase().includes(search.toLowerCase()))
-    );
-    
-    // Apply invoiced filter
-    const matchesInvoiced = invoicedFilter === 'all' || 
-      (invoicedFilter === 'invoiced' && sheet.invoiced) ||
-      (invoicedFilter === 'not-invoiced' && !sheet.invoiced);
-    
-    return matchesSearch && matchesInvoiced;
-  });
+  // Safety check for data
+  const validSheets = Array.isArray(sheets) ? sheets : [];
   
-  // If there are no worksheets after filtering, show empty state
-  if (!filteredSheets || filteredSheets.length === 0) {
-    return search || invoicedFilter !== 'all' ? (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Aucune fiche ne correspond à vos critères de recherche.</p>
-      </div>
-    ) : (
-      <EmptyBlankWorkSheetState onCreateNew={onCreateNew} />
-    );
-  }
+  // Fonction de filtrage améliorée
+  const filteredSheets = useMemo(() => {
+    return validSheets.filter(sheet => {
+      // Recherche multichamp (notes, personnel, client)
+      const searchLower = search.toLowerCase().trim();
+      const matchesSearch = !searchLower ? true : (
+        (sheet.notes?.toLowerCase().includes(searchLower) || false) ||
+        (sheet.personnel?.some(person => person.toLowerCase().includes(searchLower)) || false) ||
+        (sheet.client_name?.toLowerCase().includes(searchLower) || false)
+      );
+      
+      // Filtre par statut de facturation
+      const matchesInvoiced = invoicedFilter === 'all' || 
+        (invoicedFilter === 'invoiced' && sheet.invoiced === true) ||
+        (invoicedFilter === 'not-invoiced' && sheet.invoiced !== true);
+      
+      return matchesSearch && matchesInvoiced;
+    });
+  }, [validSheets, search, invoicedFilter]);
   
-  // Group worksheets by month
-  const sheetsByMonth = groupWorkLogsByMonth(filteredSheets.map(sheet => ({
-    ...sheet,
-    projectId: sheet.linked_project_id || '',
-    timeTracking: {
-      totalHours: sheet.total_hours
-    }
-  })));
+  const handleSelectSheet = (id: string) => {
+    if (onSelectSheet) onSelectSheet(id);
+  };
+
+  const handleEdit = (id: string) => {
+    if (onEdit) onEdit(id);
+  };
   
-  // Sort months in reverse chronological order
-  const sortedMonths = sortMonths(Object.keys(sheetsByMonth), 'date-desc');
+  const handleExportPDF = (id: string) => {
+    if (onExportPDF) onExportPDF(id);
+  };
+  
+  const handlePrint = (id: string) => {
+    if (onPrint) onPrint(id);
+  };
   
   return (
     <div className="space-y-8 animate-fade-in">
@@ -77,32 +83,34 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
           setInvoicedFilter('all');
         }}
       />
-      
-      {sortedMonths.map(month => (
-        <div key={month} className="space-y-4">
-          <h2 className="text-xl font-semibold text-green-800 border-b border-green-100 pb-2">
-            {month}
-          </h2>
-          
-          <div className="grid grid-cols-1 gap-4">
-            {sheetsByMonth[month].map((item: any) => {
-              // Find the original sheet
-              const sheet = filteredSheets.find(s => s.id === item.id);
-              if (!sheet) return null;
-              
-              return (
-                <BlankSheetItem
-                  key={sheet.id}
-                  sheet={sheet}
-                  onEdit={() => onEdit(sheet.id)}
-                  onExportPDF={() => onExportPDF(sheet.id)}
-                  onPrint={() => onPrint(sheet.id)}
-                />
-              );
-            })}
-          </div>
+      {filteredSheets.length === 0 ? (
+        <Card>
+          <CardContent className="py-10">
+            <div className="text-center">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Aucune fiche trouvée</h3>
+              <p className="text-muted-foreground">
+                {search || invoicedFilter !== 'all' 
+                  ? "Aucune fiche ne correspond à vos critères de recherche." 
+                  : "Vous n'avez pas encore créé de fiches vierges."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredSheets.map((sheet) => (
+            <BlankSheetItem
+              key={sheet.id}
+              sheet={sheet}
+              linkedProject={sheet.linked_project_id ? getProjectById(sheet.linked_project_id) : null}
+              onEdit={() => handleEdit(sheet.id)}
+              onExportPDF={() => handleExportPDF(sheet.id)}
+              onPrint={() => handlePrint(sheet.id)}
+            />
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { BlankWorksheet } from '@/types/blankWorksheet';
 
 const BlankWorkSheetEdit: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const BlankWorkSheetEdit: React.FC = () => {
   const { blankWorksheets, getBlankWorksheetById } = useBlankWorksheets();
   const [isLoading, setIsLoading] = useState(true);
   
-  const worksheet = id ? getBlankWorksheetById(id) : undefined;
+  const worksheet: BlankWorksheet | undefined = id ? getBlankWorksheetById(id) : undefined;
   
   useEffect(() => {
     const timer = setTimeout(() => {
