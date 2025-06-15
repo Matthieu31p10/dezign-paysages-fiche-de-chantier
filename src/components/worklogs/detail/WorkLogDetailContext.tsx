@@ -20,7 +20,6 @@ export interface PDFOptions {
 interface WorkLogDetailContextType {
   workLog: WorkLog | null;
   project: ProjectInfo | null;
-  workLogs: WorkLog[]; // Ajout de la liste complète des work logs
   isLoading: boolean;
   isEditable: boolean;
   handleExportToPDF: (options: PDFOptions & { theme?: string }) => Promise<void>;
