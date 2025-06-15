@@ -13,7 +13,7 @@ const WorkLogList: React.FC<WorkLogListProps> = ({ workLogs }) => {
   const { getProjectById } = useApp();
   
   if (workLogs.length === 0) {
-    return <EmptyState />;
+    return <EmptyState message="Aucune fiche de suivi trouvée" />;
   }
   
   return (

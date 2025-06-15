@@ -35,7 +35,7 @@ const ProjectWorkLogsTab: React.FC<ProjectWorkLogsTabProps> = ({ project, workLo
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <WorkLogList workLogs={workLogs} projectId={project.id} />
+        <WorkLogList workLogs={workLogs} />
       </CardContent>
     </Card>
   );
