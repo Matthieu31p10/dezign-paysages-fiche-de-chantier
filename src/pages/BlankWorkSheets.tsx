@@ -124,7 +124,7 @@ const BlankWorkSheets: React.FC = () => {
             onSuccess={handleFormSuccess}
             isBlankWorksheet={true}
             projectInfos={projectInfos}
-            existingWorkLogs={blankWorksheets}
+            existingWorkLogs={[]} {/* Correction : inutile, car BlankWorkSheet utilise blankWorksheets, pas WorkLog */}
           />
         </BlankWorkSheetTabContent>
       </Tabs>

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { BlankWorksheet } from '@/types/blankWorksheet';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, FileText } from 'lucide-react';
 import BlankSheetItem from './blank-sheet-item';
 import { useProjects } from '@/context/ProjectsContext';
+import BlankSheetFilters from '@/components/worksheets/BlankSheetFilters';
+import { groupWorkLogsByMonth } from '@/utils/date-helpers';
+import { sortMonths } from '@/components/worklogs/list/utils';
 
 interface BlankWorkSheetListProps {
   sheets?: BlankWorksheet[];
@@ -26,7 +28,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   onPrint = () => {}
 }) => {
   const [search, setSearch] = useState('');
-  const [filterInvoiced, setFilterInvoiced] = useState<string>('all');
+  const [invoicedFilter, setInvoicedFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
   const { getProjectById } = useProjects();
   
   // Safety check for data
@@ -44,13 +46,13 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
       );
       
       // Filtre par statut de facturation
-      const matchesInvoiced = filterInvoiced === 'all' || 
-        (filterInvoiced === 'invoiced' && sheet.invoiced === true) ||
-        (filterInvoiced === 'not-invoiced' && sheet.invoiced !== true);
+      const matchesInvoiced = invoicedFilter === 'all' || 
+        (invoicedFilter === 'invoiced' && sheet.invoiced === true) ||
+        (invoicedFilter === 'not-invoiced' && sheet.invoiced !== true);
       
       return matchesSearch && matchesInvoiced;
     });
-  }, [validSheets, search, filterInvoiced]);
+  }, [validSheets, search, invoicedFilter]);
   
   const handleSelectSheet = (id: string) => {
     if (onSelectSheet) onSelectSheet(id);
@@ -69,33 +71,18 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   };
   
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative w-full sm:w-auto flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher une fiche par client, personnel..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        
-        <Select
-          value={filterInvoiced}
-          onValueChange={setFilterInvoiced}
-        >
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Facturation" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous</SelectItem>
-            <SelectItem value="invoiced">Facturé</SelectItem>
-            <SelectItem value="not-invoiced">Non facturé</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      
+    <div className="space-y-8 animate-fade-in">
+      <BlankSheetFilters
+        search={search}
+        onSearchChange={(e) => setSearch(e.target.value)}
+        invoicedFilter={invoicedFilter}
+        onInvoicedFilterChange={setInvoicedFilter}
+        hasFilters={search !== '' || invoicedFilter !== 'all'}
+        onClearFilters={() => {
+          setSearch('');
+          setInvoicedFilter('all');
+        }}
+      />
       {filteredSheets.length === 0 ? (
         <Card>
           <CardContent className="py-10">
@@ -103,7 +90,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Aucune fiche trouvée</h3>
               <p className="text-muted-foreground">
-                {search || filterInvoiced !== 'all' 
+                {search || invoicedFilter !== 'all' 
                   ? "Aucune fiche ne correspond à vos critères de recherche." 
                   : "Vous n'avez pas encore créé de fiches vierges."}
               </p>
@@ -116,10 +103,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
             <BlankSheetItem
               key={sheet.id}
               sheet={sheet}
-              linkedProject={sheet.linked_project_id ? getProjectById(sheet.linked_project_id) : null}
-              onEdit={handleEdit}
-              onExportPDF={handleExportPDF}
-              onPrint={handlePrint}
+              onEdit={onEdit ? () => onEdit(sheet.id) : undefined}
+              onExportPDF={onExportPDF ? () => onExportPDF(sheet.id) : undefined}
+              onPrint={onPrint ? () => onPrint(sheet.id) : undefined}
             />
           ))}
         </div>

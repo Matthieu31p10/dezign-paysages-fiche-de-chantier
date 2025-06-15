@@ -10,11 +10,12 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BlankSheetItemProps {
   sheet: BlankWorksheet;
-  onEdit: () => void;
-  onExportPDF: () => void;
-  onPrint: () => void;
+  onEdit?: () => void;
+  onExportPDF?: () => void;
+  onPrint?: () => void;
 }
 
+// Correction : toutes les références au type WorkLog => BlankWorksheet, suppression de projectId
 const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   sheet,
   onEdit,

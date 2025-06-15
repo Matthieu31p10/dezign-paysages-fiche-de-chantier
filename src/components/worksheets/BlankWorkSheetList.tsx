@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, FileText } from 'lucide-react';
-import BlankSheetItem from './blank-sheet-item';
+import BlankSheetItem from './list/blank-sheet-item';
 import { useProjects } from '@/context/ProjectsContext';
 import BlankSheetFilters from './BlankSheetFilters';
 import { groupWorkLogsByMonth } from '@/utils/date-helpers';
@@ -103,10 +103,9 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
             <BlankSheetItem
               key={sheet.id}
               sheet={sheet}
-              linkedProject={sheet.linked_project_id ? getProjectById(sheet.linked_project_id) : null}
-              onEdit={() => handleEdit(sheet.id)}
-              onExportPDF={() => handleExportPDF(sheet.id)}
-              onPrint={() => handlePrint(sheet.id)}
+              onEdit={onEdit ? () => onEdit(sheet.id) : undefined}
+              onExportPDF={onExportPDF ? () => onExportPDF(sheet.id) : undefined}
+              onPrint={onPrint ? () => onPrint(sheet.id) : undefined}
             />
           ))}
         </div>

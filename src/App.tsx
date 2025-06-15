@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
@@ -16,7 +15,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import ProjectEdit from './pages/ProjectEdit';
 import WorkLogs from './pages/WorkLogs';
 import WorkLogNew from './pages/WorkLogNew';
-import WorkLogDetail from './pages/WorkLogDetail';
+import WorkLogDetail from './components/worklogs/WorkLogDetail';
 import WorkLogEdit from './pages/WorkLogEdit';
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
@@ -46,102 +45,26 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
-                    <Route path="/" element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/projects" element={
-                      <ProtectedRoute>
-                        <Projects />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/projects/new" element={
-                      <ProtectedRoute>
-                        <ProjectNew />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/projects/:id" element={
-                      <ProtectedRoute>
-                        <ProjectDetail />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/projects/:id/edit" element={
-                      <ProtectedRoute>
-                        <ProjectEdit />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/worklogs" element={
-                      <ProtectedRoute>
-                        <WorkLogs />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/worklogs/new" element={
-                      <ProtectedRoute>
-                        <WorkLogNew />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/worklogs/:id" element={
-                      <ProtectedRoute>
-                        <WorkLogDetail />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/worklogs/:id/edit" element={
-                      <ProtectedRoute>
-                        <WorkLogEdit />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/blank-worksheets" element={
-                      <ProtectedRoute>
-                        <BlankWorkSheets />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/blank-worksheets/new" element={
-                      <ProtectedRoute>
-                        <BlankWorkSheetNew />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/blank-worksheets/:id" element={
-                      <ProtectedRoute>
-                        <BlankWorkSheetDetail />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/blank-worksheets/:id/edit" element={
-                      <ProtectedRoute>
-                        <BlankWorkSheetEdit />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/reports" element={
-                      <ProtectedRoute>
-                        <Reports />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/settings" element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    } />
-                    {/* Toutes les routes Settings donnent vers la même page */}
-                    <Route path="/settings/personnel" element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/settings/teams" element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/settings/custom-tasks" element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/settings/company" element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    } />
+                    <Route path="/" element={<ProtectedRoute element={<Dashboard />} />} />
+                    <Route path="/projects" element={<ProtectedRoute element={<Projects />} />} />
+                    <Route path="/projects/new" element={<ProtectedRoute element={<ProjectNew />} />} />
+                    <Route path="/projects/:id" element={<ProtectedRoute element={<ProjectDetail />} />} />
+                    <Route path="/projects/:id/edit" element={<ProtectedRoute element={<ProjectEdit />} />} />
+                    <Route path="/worklogs" element={<ProtectedRoute element={<WorkLogs />} />} />
+                    <Route path="/worklogs/new" element={<ProtectedRoute element={<WorkLogNew />} />} />
+                    {/* Utilisation du composant WorkLogDetail wrapper */}
+                    <Route path="/worklogs/:id" element={<ProtectedRoute element={<WorkLogDetail />} />} />
+                    <Route path="/worklogs/:id/edit" element={<ProtectedRoute element={<WorkLogEdit />} />} />
+                    <Route path="/blank-worksheets" element={<ProtectedRoute element={<BlankWorkSheets />} />} />
+                    <Route path="/blank-worksheets/new" element={<ProtectedRoute element={<BlankWorkSheetNew />} />} />
+                    <Route path="/blank-worksheets/:id" element={<ProtectedRoute element={<BlankWorkSheetDetail />} />} />
+                    <Route path="/blank-worksheets/:id/edit" element={<ProtectedRoute element={<BlankWorkSheetEdit />} />} />
+                    <Route path="/reports" element={<ProtectedRoute element={<Reports />} />} />
+                    <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
+                    <Route path="/settings/personnel" element={<ProtectedRoute element={<Settings />} />} />
+                    <Route path="/settings/teams" element={<ProtectedRoute element={<Settings />} />} />
+                    <Route path="/settings/custom-tasks" element={<ProtectedRoute element={<Settings />} />} />
+                    <Route path="/settings/company" element={<ProtectedRoute element={<Settings />} />} />
                   </Routes>
                   <Toaster position="top-right" />
                 </div>

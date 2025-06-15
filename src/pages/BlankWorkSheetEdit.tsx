@@ -9,27 +9,28 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { BlankWorksheet } from '@/types/blankWorksheet';
 
+// Correction des usages du type WorkLog → BlankWorksheet
 const BlankWorkSheetEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { projectInfos } = useApp();
   const { blankWorksheets, getBlankWorksheetById } = useBlankWorksheets();
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const worksheet: BlankWorksheet | undefined = id ? getBlankWorksheetById(id) : undefined;
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, [id, worksheet]);
-  
+
   const handleReturn = () => {
     navigate(`/blank-worksheets/${id}`, { replace: false });
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -37,7 +38,7 @@ const BlankWorkSheetEdit: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!worksheet) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -52,7 +53,7 @@ const BlankWorkSheetEdit: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -74,14 +75,11 @@ const BlankWorkSheetEdit: React.FC = () => {
       
       <Card className="p-6 border-blue-200 shadow-md">
         <BlankWorkSheetForm 
-          initialData={worksheet} 
+          initialData={worksheet}
           onSuccess={() => {
             toast.success('Fiche vierge modifiée avec succès');
             handleReturn();
-          }} 
-          projectInfos={projectInfos}
-          existingWorkLogs={blankWorksheets}
-          isBlankWorksheet={true}
+          }}
         />
       </Card>
     </div>
