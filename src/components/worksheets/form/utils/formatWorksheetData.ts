@@ -1,6 +1,6 @@
 
 import { BlankWorkSheetValues } from '../../schema';
-import { Consumable } from '@/types/models';
+import { BlankWorksheetConsumable } from '@/types/blankWorksheet';
 
 export const formatStructuredNotes = (formData: BlankWorkSheetValues): string => {
   const sections = [];
@@ -12,7 +12,7 @@ export const formatStructuredNotes = (formData: BlankWorkSheetValues): string =>
   return sections.join('\n\n');
 };
 
-export const validateConsumables = (consumables: any[]): Consumable[] => {
+export const validateConsumables = (consumables: any[]): BlankWorksheetConsumable[] => {
   return consumables
     .filter(consumable => 
       consumable && 
@@ -26,7 +26,8 @@ export const validateConsumables = (consumables: any[]): Consumable[] => {
       product: consumable.product || '',
       unit: consumable.unit || 'unité',
       quantity: Number(consumable.quantity) || 0,
-      unitPrice: Number(consumable.unitPrice) || 0,
-      totalPrice: Number(consumable.totalPrice) || 0
+      unit_price: Number(consumable.unitPrice) || 0,
+      total_price: Number(consumable.totalPrice) || 0,
+      saved_for_reuse: Boolean(consumable.saved_for_reuse)
     }));
 };

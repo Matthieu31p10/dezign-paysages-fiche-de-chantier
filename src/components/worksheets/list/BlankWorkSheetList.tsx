@@ -1,16 +1,15 @@
 
 import React, { useState, useMemo } from 'react';
-import { WorkLog } from '@/types/models';
+import { BlankWorksheet } from '@/types/blankWorksheet';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, FileText } from 'lucide-react';
 import BlankSheetItem from './blank-sheet-item';
 import { useProjects } from '@/context/ProjectsContext';
-import { isBlankWorksheet } from '../form/utils/generateUniqueIds';
 
 interface BlankWorkSheetListProps {
-  sheets?: WorkLog[];
+  sheets?: BlankWorksheet[];
   onSelectSheet?: (id: string) => void;
   onCreateNew?: () => void;
   onEdit?: (id: string) => void;
@@ -33,21 +32,15 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   // Safety check for data
   const validSheets = Array.isArray(sheets) ? sheets : [];
   
-  // Filter to only include blank worksheets
-  const blankSheets = useMemo(() => {
-    return validSheets.filter(sheet => sheet.isBlankWorksheet === true);
-  }, [validSheets]);
-  
   // Fonction de filtrage améliorée
   const filteredSheets = useMemo(() => {
-    return blankSheets.filter(sheet => {
-      // Recherche multichamp (projet, notes, personnel, client)
+    return validSheets.filter(sheet => {
+      // Recherche multichamp (notes, personnel, client)
       const searchLower = search.toLowerCase().trim();
       const matchesSearch = !searchLower ? true : (
-        (sheet.projectId?.toLowerCase().includes(searchLower) || false) ||
         (sheet.notes?.toLowerCase().includes(searchLower) || false) ||
         (sheet.personnel?.some(person => person.toLowerCase().includes(searchLower)) || false) ||
-        (sheet.clientName?.toLowerCase().includes(searchLower) || false)
+        (sheet.client_name?.toLowerCase().includes(searchLower) || false)
       );
       
       // Filtre par statut de facturation
@@ -57,7 +50,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
       
       return matchesSearch && matchesInvoiced;
     });
-  }, [blankSheets, search, filterInvoiced]);
+  }, [validSheets, search, filterInvoiced]);
   
   const handleSelectSheet = (id: string) => {
     if (onSelectSheet) onSelectSheet(id);
@@ -81,7 +74,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
         <div className="relative w-full sm:w-auto flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher une fiche par client, personnel, projet..."
+            placeholder="Rechercher une fiche par client, personnel..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -123,7 +116,7 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
             <BlankSheetItem
               key={sheet.id}
               sheet={sheet}
-              linkedProject={sheet.linkedProjectId ? getProjectById(sheet.linkedProjectId) : null}
+              linkedProject={sheet.linked_project_id ? getProjectById(sheet.linked_project_id) : null}
               onEdit={handleEdit}
               onExportPDF={handleExportPDF}
               onPrint={handlePrint}

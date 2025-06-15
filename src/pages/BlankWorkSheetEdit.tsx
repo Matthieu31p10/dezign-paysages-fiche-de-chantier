@@ -2,55 +2,50 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
-import WorkLogForm from '@/components/worklogs/WorkLogForm';
+import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
+import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 
-const WorkLogEdit: React.FC = () => {
+const BlankWorkSheetEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { projectInfos } = useApp();
-  const { workLogs, getWorkLogById } = useWorkLogs();
+  const { blankWorksheets, getBlankWorksheetById } = useBlankWorksheets();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Find the workLog by ID
-  const workLog = id ? getWorkLogById(id) : undefined;
+  const worksheet = id ? getBlankWorksheetById(id) : undefined;
   
   useEffect(() => {
-    console.log("WorkLogEdit - Loading workLog:", id);
-    
-    // Small delay to ensure data is available
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [id, workLog]);
+  }, [id, worksheet]);
   
   const handleReturn = () => {
-    // Naviguer vers la fiche de détail sans perdre l'historique
-    navigate(`/worklogs/${id}`, { replace: false });
+    navigate(`/blank-worksheets/${id}`, { replace: false });
   };
   
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
   
-  if (!workLog) {
+  if (!worksheet) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <h2 className="text-xl font-medium mb-4 text-green-800">Fiche de suivi non trouvée</h2>
+        <h2 className="text-xl font-medium mb-4 text-blue-800">Fiche vierge non trouvée</h2>
         <p className="text-muted-foreground mb-6">
-          La fiche de suivi que vous cherchez n'existe pas ou a été supprimée.
+          La fiche vierge que vous cherchez n'existe pas ou a été supprimée.
         </p>
-        <Button onClick={() => navigate('/worklogs')} className="bg-green-600 hover:bg-green-700">
+        <Button onClick={() => navigate('/blank-worksheets')} className="bg-blue-600 hover:bg-blue-700">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à la liste
         </Button>
@@ -65,32 +60,32 @@ const WorkLogEdit: React.FC = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 px-2 mr-2 text-green-700 hover:text-green-800 hover:bg-green-100"
+            className="h-8 px-2 mr-2 text-blue-700 hover:text-blue-800 hover:bg-blue-100"
             onClick={handleReturn}
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Retour
           </Button>
-          <h1 className="text-2xl font-semibold text-green-800">
-            Modifier la fiche de suivi
+          <h1 className="text-2xl font-semibold text-blue-800">
+            Modifier la fiche vierge
           </h1>
         </div>
       </div>
       
-      <Card className="p-6 border-green-200 shadow-md">
-        <WorkLogForm 
-          initialData={workLog} 
+      <Card className="p-6 border-blue-200 shadow-md">
+        <BlankWorkSheetForm 
+          initialData={worksheet} 
           onSuccess={() => {
-            toast.success('Fiche de suivi modifiée avec succès');
+            toast.success('Fiche vierge modifiée avec succès');
             handleReturn();
           }} 
           projectInfos={projectInfos}
-          existingWorkLogs={workLogs}
-          isBlankWorksheet={false}
+          existingWorkLogs={blankWorksheets}
+          isBlankWorksheet={true}
         />
       </Card>
     </div>
   );
 };
 
-export default WorkLogEdit;
+export default BlankWorkSheetEdit;

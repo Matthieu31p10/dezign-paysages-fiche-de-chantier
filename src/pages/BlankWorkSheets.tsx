@@ -17,30 +17,30 @@ const BlankWorkSheets: React.FC = () => {
   const { projectInfos = [] } = useApp();
   const { blankWorksheets = [], getBlankWorksheetById } = useBlankWorksheets();
   const [activeTab, setActiveTab] = useState<string>("list");
-  const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null);
+  const [editingWorksheetId, setEditingWorksheetId] = useState<string | null>(null);
   const [pdfOptionsOpen, setPdfOptionsOpen] = useState<boolean>(false);
-  const [selectedWorkLogId, setSelectedWorkLogId] = useState<string | null>(null);
+  const [selectedWorksheetId, setSelectedWorksheetId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   
   const handleCreateNew = () => {
-    setEditingWorkLogId(null);
+    setEditingWorksheetId(null);
     setActiveTab("new");
   };
   
-  const handleEdit = (workLogId: string) => {
-    setEditingWorkLogId(workLogId);
+  const handleEdit = (worksheetId: string) => {
+    setEditingWorksheetId(worksheetId);
     setActiveTab("new");
   };
 
   const handleFormSuccess = () => {
-    setEditingWorkLogId(null);
+    setEditingWorksheetId(null);
     setActiveTab("list");
   };
   
   // Function to handle PDF export
   const handleExportPDF = async (id: string) => {
     try {
-      setSelectedWorkLogId(id);
+      setSelectedWorksheetId(id);
       setPdfOptionsOpen(true);
     } catch (error) {
       console.error('Error preparing PDF export:', error);
@@ -72,10 +72,10 @@ const BlankWorkSheets: React.FC = () => {
   
   // Function to generate PDF with selected options
   const generateWorkSheetPDF = async (options: any) => {
-    if (!selectedWorkLogId) return;
+    if (!selectedWorksheetId) return;
     
     try {
-      const worksheet = getBlankWorksheetById(selectedWorkLogId);
+      const worksheet = getBlankWorksheetById(selectedWorksheetId);
       if (!worksheet) throw new Error('Worksheet not found');
       
       setIsExporting(true);
@@ -87,7 +87,7 @@ const BlankWorkSheets: React.FC = () => {
       
       setPdfOptionsOpen(false);
       setIsExporting(false);
-      setSelectedWorkLogId(null);
+      setSelectedWorksheetId(null);
     } catch (error) {
       console.error('Error generating PDF:', error);
       setIsExporting(false);
@@ -95,7 +95,7 @@ const BlankWorkSheets: React.FC = () => {
   };
   
   // Get the initial data for editing
-  const initialData = editingWorkLogId ? getBlankWorksheetById(editingWorkLogId) : undefined;
+  const initialData = editingWorksheetId ? getBlankWorksheetById(editingWorksheetId) : undefined;
   
   return (
     <div className="animate-fade-in space-y-6">
@@ -120,7 +120,7 @@ const BlankWorkSheets: React.FC = () => {
         <BlankWorkSheetTabContent value="new">
           <BlankWorkSheetForm
             initialData={initialData}
-            editingWorkLogId={editingWorkLogId}
+            editingWorksheetId={editingWorksheetId}
             onSuccess={handleFormSuccess}
             isBlankWorksheet={true}
             projectInfos={projectInfos}
