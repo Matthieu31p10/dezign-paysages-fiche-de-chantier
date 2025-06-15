@@ -1,50 +1,62 @@
 
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
+import { useWorkLogDetail } from './WorkLogDetailContext';
+
+// Import sections
+import WorkLogSummarySection from './sections/WorkLogSummarySection';
 import BasicInfoSection from './sections/BasicInfoSection';
-import TimeDeviationSection from './sections/TimeDeviationSection';
-import WasteManagementSection from './sections/WasteManagementSection';
-import WaterConsumptionSection from './sections/WaterConsumptionSection';
 import PersonnelSection from './sections/PersonnelSection';
 import TimeTrackingSection from './sections/TimeTrackingSection';
-import FinancialSection from './sections/FinancialSection';
-import ConsumablesSection from './sections/ConsumablesSection';
-import { useWorkLogDetail } from './WorkLogDetailContext';
+import TasksSection from './sections/TasksSection';
+import WaterConsumptionSection from './sections/WaterConsumptionSection';
+import TimeDeviationSection from './sections/TimeDeviationSection';
 
 const WorkLogDetails: React.FC = () => {
   const { workLog } = useWorkLogDetail();
   
+  if (!workLog) {
+    return <div>Aucune donnée disponible</div>;
+  }
+  
   return (
     <div className="space-y-6">
+      {/* Summary Section - Always shown first */}
+      <WorkLogSummarySection />
+      
+      <Separator />
+      
+      {/* Basic Information */}
       <BasicInfoSection />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <TimeDeviationSection />
-        <WasteManagementSection />
-      </div>
-      
-      <WaterConsumptionSection />
-      
       <Separator />
       
-      <PersonnelSection />
-      
-      <Separator />
-      
-      <TimeTrackingSection />
-      
-      {/* Sections pour les fiches vierges uniquement */}
-      {workLog.signedQuoteAmount > 0 && (
+      {/* Personnel Section */}
+      {workLog.personnel && workLog.personnel.length > 0 && (
         <>
+          <PersonnelSection />
           <Separator />
-          <FinancialSection />
         </>
       )}
       
-      {workLog.consumables && workLog.consumables.length > 0 && (
+      {/* Time Tracking Section */}
+      <TimeTrackingSection />
+      
+      <Separator />
+      
+      {/* Time Deviation Section */}
+      <TimeDeviationSection />
+      
+      <Separator />
+      
+      {/* Tasks Section */}
+      <TasksSection />
+      
+      {/* Water Consumption Section */}
+      {workLog.waterConsumption !== undefined && workLog.waterConsumption > 0 && (
         <>
           <Separator />
-          <ConsumablesSection />
+          <WaterConsumptionSection />
         </>
       )}
     </div>

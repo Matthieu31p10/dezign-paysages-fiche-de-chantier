@@ -1,39 +1,65 @@
 
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, AlertCircle } from 'lucide-react';
 import { useWorkLogDetail } from '../WorkLogDetailContext';
+import { useApp } from '@/context/AppContext';
+import { calculateTimeDeviation } from '@/utils/statistics';
 
 const TimeDeviationSection: React.FC = () => {
-  const { workLog, calculateHourDifference } = useWorkLogDetail();
+  const { workLog, project } = useWorkLogDetail();
+  const { workLogs } = useApp();
 
   // Vérifier si c'est une fiche vierge
   const isBlankWorksheet = workLog?.projectId && 
     (workLog.projectId.startsWith('blank-') || workLog.projectId.startsWith('DZFV'));
 
-  if (isBlankWorksheet) {
+  if (isBlankWorksheet || !project) {
     return null;
   }
 
-  // Utiliser duration au lieu de plannedDuration qui n'existe pas
-  const plannedHours = workLog?.duration || 0;
-  const actualHours = workLog?.timeTracking?.totalHours || 0;
-  const hourDifference = calculateHourDifference(plannedHours, actualHours);
-  const isPositive = hourDifference > 0;
-  const hourDifferenceText = isPositive ? `+${hourDifference}` : `${hourDifference}`;
+  // Get all work logs for this project to calculate deviation
+  const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
+  
+  // Use the statistics utility to calculate time deviation
+  const timeDeviation = calculateTimeDeviation(project.visitDuration || 0, projectWorkLogs);
 
   return (
-    <div className="p-3 border rounded-md bg-gray-50">
-      <h3 className="text-sm font-medium mb-2">Écart du temps de passage</h3>
-      <div className="flex items-center">
-        <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-        <span className={`font-medium ${
-          isPositive ? 'text-green-600' : 'text-red-600'
-        }`}>
-          {hourDifferenceText}
-        </span>
+    <div className="p-4 border rounded-md bg-gradient-to-r from-orange-50 to-white border-orange-200">
+      <h3 className="text-sm font-medium mb-3 flex items-center text-orange-800">
+        <AlertCircle className="w-4 h-4 mr-2" />
+        Écart du temps de passage
+      </h3>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Durée prévue:</span>
+          <span className="font-medium">{project.visitDuration} h</span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Temps moyen (équipe):</span>
+          <span className="font-medium">
+            {projectWorkLogs.length > 0 
+              ? ((projectWorkLogs.reduce((sum, log) => {
+                  const individualHours = log.timeTracking?.totalHours || 0;
+                  const personnelCount = log.personnel?.length || 1;
+                  return sum + (individualHours * personnelCount);
+                }, 0) / projectWorkLogs.length).toFixed(2))
+              : '0.00'
+            } h
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between pt-2 border-t border-orange-200">
+          <span className="text-sm font-medium">Écart:</span>
+          <span className={`font-bold ${timeDeviation.className}`}>
+            {timeDeviation.display}
+          </span>
+        </div>
       </div>
-      <p className="text-xs text-muted-foreground mt-1">
-        Durée prévue - (heures effectuées / nombre de passages)
+      
+      <p className="text-xs text-muted-foreground mt-2">
+        Écart = Durée prévue - Temps moyen par passage (calculé sur {projectWorkLogs.length} passage{projectWorkLogs.length > 1 ? 's' : ''})
       </p>
     </div>
   );

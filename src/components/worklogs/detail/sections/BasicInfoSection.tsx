@@ -39,7 +39,7 @@ const BasicInfoSection: React.FC = () => {
           </p>
         </div>
         
-        {workLog.hourlyRate > 0 && (
+        {workLog.hourlyRate && workLog.hourlyRate > 0 && (
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-gray-500">Taux horaire</h3>
             <p className="flex items-center">

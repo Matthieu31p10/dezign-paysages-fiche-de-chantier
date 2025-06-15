@@ -1,14 +1,11 @@
+
 import React from 'react';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { ProjectInfo } from '@/types/models';
-import { Phone, Mail, Users, Calendar, Clock, FileText, Building, Tag } from 'lucide-react';
-import { formatNumber } from '@/utils/helpers';
-import { Button } from '@/components/ui/button';
-import { File } from 'lucide-react';
-import ProjectProgressCard from './ProjectProgressCard';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Building2, Calendar, Clock, Phone, Mail, User, FileText, MapPin, Wrench, Scissors, Info } from 'lucide-react';
+import { ProjectInfo, WorkLog } from '@/types/models';
+import { useApp } from '@/context/AppContext';
+import { formatDate } from '@/utils/helpers';
 
 interface ProjectDetailsTabProps {
   project: ProjectInfo;
@@ -16,236 +13,215 @@ interface ProjectDetailsTabProps {
 }
 
 const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName }) => {
-  const { getTotalVisits, getWorkLogsByProjectId } = useWorkLogs();
+  const { workLogs } = useApp();
   
-  // Calculate remaining hours using team hours
-  const workLogs = getWorkLogsByProjectId(project.id);
-  const totalVisits = getTotalVisits(project.id);
+  // Filter work logs for this project
+  const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
   
-  // Calculer le temps total équipe au lieu des heures individuelles
-  const totalTeamHoursUsed = workLogs.reduce((total, log) => {
+  // Calculate progress metrics using team hours
+  const visitsCompleted = projectWorkLogs.length;
+  const visitProgress = project.annualVisits > 0 
+    ? Math.min(100, Math.round((visitsCompleted / project.annualVisits) * 100))
+    : 0;
+  
+  // Calculate total team hours instead of individual hours
+  const totalTeamHours = projectWorkLogs.reduce((sum, log) => {
     const individualHours = log.timeTracking?.totalHours || 0;
     const personnelCount = log.personnel?.length || 1;
-    return total + (individualHours * personnelCount);
+    return sum + (individualHours * personnelCount);
   }, 0);
   
-  const annualRemainingHours = Math.max(0, project.annualTotalHours - totalTeamHoursUsed);
-  
-  // Get project type label
-  const getProjectTypeLabel = (type: string): string => {
+  const hoursProgress = project.annualTotalHours > 0
+    ? Math.min(100, Math.round((totalTeamHours / project.annualTotalHours) * 100))
+    : 0;
+
+  const getProjectTypeDisplay = (type: string) => {
     switch (type) {
-      case 'residence': return 'Résidence';
-      case 'particular': return 'Particulier';
-      case 'enterprise': return 'Entreprise';
-      default: return 'Non spécifié';
+      case 'residence':
+        return 'Résidence';
+      case 'particular':
+        return 'Particulier';
+      case 'enterprise':
+        return 'Entreprise';
+      default:
+        return type;
     }
   };
-  
-  // Get irrigation type label
-  const getIrrigationLabel = (irrigation?: string): string => {
-    switch (irrigation) {
-      case 'irrigation': return 'Active';
-      case 'disabled': return 'Désactivée';
-      case 'none': return 'Aucune';
-      default: return 'Non spécifiée';
-    }
-  };
-  
-  // Get mower type label
-  const getMowerTypeLabel = (type?: string): string => {
-    switch (type) {
-      case 'large': return 'Grande';
-      case 'small': return 'Petite';
-      case 'both': return 'Les deux';
-      default: return 'Non spécifié';
-    }
-  };
-  
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 space-y-6">
-        <Card className="border-green-100">
-          <CardHeader className="bg-green-50 rounded-t-lg">
-            <CardTitle className="text-lg text-green-800">Informations générales</CardTitle>
-            <CardDescription>Détails principaux du chantier</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 p-5">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Progress Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Building2 className="w-5 h-5 mr-2 text-green-600" />
+            Avancement du projet
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Passages effectués</span>
+              <span className="text-sm text-muted-foreground">{visitsCompleted} / {project.annualVisits}</span>
+            </div>
+            <Progress value={visitProgress} className="h-2" />
+            <p className="text-xs text-muted-foreground">{visitProgress}% des passages annuels</p>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Heures effectuées (équipe)</span>
+              <span className="text-sm text-muted-foreground">{totalTeamHours.toFixed(1)} / {project.annualTotalHours}</span>
+            </div>
+            <Progress value={hoursProgress} className="h-2" />
+            <p className="text-xs text-muted-foreground">{hoursProgress}% des heures annuelles</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Project Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Info className="w-5 h-5 mr-2 text-green-600" />
+            Détails du projet
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-3">
+            <div className="flex items-center">
+              <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm font-medium mr-2">Type:</span>
+              <span className="text-sm">{getProjectTypeDisplay(project.projectType)}</span>
+            </div>
+            
+            <div className="flex items-center">
+              <User className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm font-medium mr-2">Équipe:</span>
+              <span className="text-sm">{teamName}</span>
+            </div>
+            
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm font-medium mr-2">Début:</span>
+              <span className="text-sm">{project.startDate ? formatDate(project.startDate) : 'Non défini'}</span>
+            </div>
+            
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm font-medium mr-2">Fin:</span>
+              <span className="text-sm">{project.endDate ? formatDate(project.endDate) : 'Non défini'}</span>
+            </div>
+            
+            <div className="flex items-center">
+              <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm font-medium mr-2">Durée par passage:</span>
+              <span className="text-sm">{project.visitDuration} heures</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <User className="w-5 h-5 mr-2 text-green-600" />
+            Informations client
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-start">
+            <User className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
             <div>
-              <div className="flex items-center mb-4">
-                <Badge variant="outline" className="mr-2 bg-green-50 text-green-700 border-green-200">
-                  <Building className="w-3.5 h-3.5 mr-1" />
-                  {getProjectTypeLabel(project.projectType)}
-                </Badge>
-                
-                {project.irrigation && (
-                  <Badge variant="outline" className="mr-2 bg-blue-50 text-blue-700 border-blue-200">
-                    <Tag className="w-3.5 h-3.5 mr-1" />
-                    Irrigation: {getIrrigationLabel(project.irrigation)}
-                  </Badge>
-                )}
-                
-                {project.mowerType && (
-                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                    <Tag className="w-3.5 h-3.5 mr-1" />
-                    Tondeuse: {getMowerTypeLabel(project.mowerType)}
-                  </Badge>
-                )}
-              </div>
-            
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Contact</h3>
-                    <div className="mt-1 space-y-1">
-                      {project.contact.phone && (
-                        <p className="flex items-center text-sm">
-                          <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
-                          {project.contact.phone}
-                        </p>
-                      )}
-                      {project.contact.email && (
-                        <p className="flex items-center text-sm">
-                          <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
-                          {project.contact.email}
-                        </p>
-                      )}
-                      {!project.contact.phone && !project.contact.email && (
-                        <p className="text-sm text-muted-foreground">Aucune information de contact</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Équipe responsable</h3>
-                    <p className="mt-1 flex items-center text-sm">
-                      <Users className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {teamName}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Adresse</h3>
-                    <p className="mt-1 text-sm whitespace-pre-line">
-                      {project.address || "Aucune adresse spécifiée"}
-                    </p>
-                  </div>
-                  
-                  {project.contact.name && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Nom du contact</h3>
-                      <p className="mt-1 text-sm">
-                        {project.contact.name}
-                      </p>
-                    </div>
-                  )}
-                </div>
+              <span className="text-sm font-medium">Client:</span>
+              <p className="text-sm">{project.clientName || 'Non renseigné'}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start">
+            <MapPin className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
+            <div>
+              <span className="text-sm font-medium">Adresse:</span>
+              <p className="text-sm">{project.address}</p>
+            </div>
+          </div>
+          
+          {project.contactName && (
+            <div className="flex items-start">
+              <User className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
+              <div>
+                <span className="text-sm font-medium">Contact:</span>
+                <p className="text-sm">{project.contactName}</p>
               </div>
             </div>
-            
-            <Separator className="bg-green-100" />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-green-700">Informations de planification</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
-                    <p className="text-xs text-green-600 mb-1">Passages par an</p>
-                    <p className="flex items-center text-sm font-medium">
-                      <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                      {project.annualVisits}
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
-                    <p className="text-xs text-green-600 mb-1">Heures par passage</p>
-                    <p className="flex items-center text-sm font-medium">
-                      <Clock className="w-4 h-4 mr-2 text-green-600" />
-                      {formatNumber(project.visitDuration)}
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
-                    <p className="text-xs text-green-600 mb-1">Heures totales par an</p>
-                    <p className="flex items-center text-sm font-medium">
-                      <Clock className="w-4 h-4 mr-2 text-green-600" />
-                      {formatNumber(project.annualTotalHours)}
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 border border-green-100 rounded-md bg-green-50">
-                    <p className="text-xs text-green-600 mb-1">Heures restantes</p>
-                    <p className="flex items-center text-sm font-medium">
-                      <Clock className="w-4 h-4 mr-2 text-emerald-500" />
-                      {formatNumber(annualRemainingHours)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-500">Informations du contrat</h3>
-                <div className="mt-1">
-                  <p className="text-sm whitespace-pre-line">
-                    {project.contract.details || "Aucune information sur le contrat"}
-                  </p>
-                  
-                  {project.contract.documentUrl && (
-                    <div className="mt-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={project.contract.documentUrl} target="_blank" rel="noopener noreferrer">
-                          <File className="w-4 h-4 mr-2" />
-                          Voir le document
-                        </a>
-                      </Button>
-                    </div>
-                  )}
-                </div>
+          )}
+          
+          {project.contactPhone && (
+            <div className="flex items-center">
+              <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm">{project.contactPhone}</span>
+            </div>
+          )}
+          
+          {project.contactEmail && (
+            <div className="flex items-center">
+              <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="text-sm">{project.contactEmail}</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Site Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Wrench className="w-5 h-5 mr-2 text-green-600" />
+            Détails du site
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center">
+            <Scissors className="w-4 h-4 mr-2 text-muted-foreground" />
+            <span className="text-sm font-medium mr-2">Type de tondeuse:</span>
+            <span className="text-sm">{project.mowerType || 'Non spécifié'}</span>
+          </div>
+          
+          <div className="flex items-start">
+            <Wrench className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
+            <div>
+              <span className="text-sm font-medium">Irrigation:</span>
+              <p className="text-sm">{project.irrigation || 'Non spécifié'}</p>
+            </div>
+          </div>
+          
+          {project.additionalInfo && (
+            <div className="flex items-start">
+              <Info className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
+              <div>
+                <span className="text-sm font-medium">Informations additionnelles:</span>
+                <p className="text-sm">{project.additionalInfo}</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Contract Information */}
+      {project.contractDetails && (
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Informations complémentaires</CardTitle>
+            <CardTitle className="flex items-center">
+              <FileText className="w-5 h-5 mr-2 text-green-600" />
+              Détails du contrat
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm whitespace-pre-line">
-              {project.additionalInfo || "Aucune information complémentaire"}
-            </p>
+            <p className="text-sm">{project.contractDetails}</p>
           </CardContent>
         </Card>
-      </div>
-      
-      <div className="space-y-6">
-        <ProjectProgressCard project={project} />
-        
-        <Card className="border-green-100">
-          <CardHeader className="bg-green-50 rounded-t-lg">
-            <CardTitle className="text-sm text-green-700">Suivi des heures</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Visites effectuées</span>
-                <span className="font-medium">{totalVisits} / {project.annualVisits}</span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Heures utilisées (équipe)</span>
-                <span className="font-medium">{formatNumber(totalTeamHoursUsed)} / {formatNumber(project.annualTotalHours)}</span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Heures restantes</span>
-                <span className="font-medium text-emerald-600">{formatNumber(annualRemainingHours)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 };
