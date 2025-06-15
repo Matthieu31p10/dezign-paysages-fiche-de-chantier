@@ -1,160 +1,108 @@
 
-import { useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { BlankWorkSheetValues } from '../../schema';
-import { WorkLog } from '@/types/models';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { toast } from 'sonner';
+import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
+import { BlankWorksheet } from '@/types/blankWorksheet';
+import { validateConsumables, formatStructuredNotes } from '../utils/formatWorksheetData';
 import { useApp } from '@/context/AppContext';
 
 interface UseFormActionsProps {
-  form: UseFormReturn<BlankWorkSheetValues>;
-  workLogId?: string | null;
   onSuccess?: () => void;
-  workLogs?: WorkLog[];
-  handleClearProject: () => void;
+  isEditing?: boolean;
 }
 
-export const useFormActions = ({
-  form,
-  workLogId,
-  onSuccess,
-  workLogs = [],
-  handleClearProject
-}: UseFormActionsProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export const useFormActions = ({ onSuccess, isEditing }: UseFormActionsProps) => {
   const navigate = useNavigate();
-  const { addWorkLog, updateWorkLog } = useWorkLogs();
+  const { addBlankWorksheet, updateBlankWorksheet } = useBlankWorksheets();
   const { getCurrentUser } = useApp();
-  
-  // Handle form submission
-  const handleSubmit = async (data: BlankWorkSheetValues) => {
-    console.log('Form submission started with data:', data);
-    
+
+  const handleCancel = useCallback(() => {
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      navigate('/blank-worksheets');
+    }
+  }, [navigate, onSuccess]);
+
+  const handleSubmit = useCallback(async (data: any, worksheetId?: string) => {
     try {
-      setIsSubmitting(true);
+      console.log('Submitting blank worksheet:', data);
       
-      // Validation de base
-      if (!data.personnel || data.personnel.length === 0) {
-        toast.error("Veuillez sélectionner au moins une personne");
-        return;
+      // Format structured notes
+      const structuredNotes = formatStructuredNotes(data);
+      
+      // Validate consumables
+      const validatedConsumables = validateConsumables(data.consumables || []);
+      
+      // Calculate total hours if not provided
+      let totalHours = data.totalHours || 0;
+      if (data.departure && data.arrival && data.end) {
+        const departure = new Date(`1970-01-01T${data.departure}:00`);
+        const arrival = new Date(`1970-01-01T${data.arrival}:00`);
+        const end = new Date(`1970-01-01T${data.end}:00`);
+        const breakTime = data.breakTime ? parseFloat(data.breakTime) : 0;
+        
+        const workTimeMs = end.getTime() - arrival.getTime();
+        const workTimeHours = workTimeMs / (1000 * 60 * 60);
+        totalHours = Math.max(0, workTimeHours - breakTime);
       }
-      
-      // Récupérer l'utilisateur actuel
+
+      // Get current user
       const currentUser = getCurrentUser();
-      const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
-      // Traiter les consommables en s'assurant qu'ils ont tous un id
-      const processedConsumables = (data.consumables || [])
-        .filter(consumable => 
-          consumable && 
-          consumable.product && 
-          consumable.product.trim() !== '' &&
-          consumable.quantity > 0
-        )
-        .map(consumable => ({
-          id: consumable.id || crypto.randomUUID(),
-          supplier: consumable.supplier || '',
-          product: consumable.product || '',
-          unit: consumable.unit || 'unité',
-          quantity: Number(consumable.quantity) || 0,
-          unitPrice: Number(consumable.unitPrice) || 0,
-          totalPrice: Number(consumable.totalPrice) || 0
-        }));
-      
-      // Préparation des données pour WorkLog
-      const workLogData: WorkLog = {
-        id: workLogId || crypto.randomUUID(),
-        projectId: data.linkedProjectId || '', // Use linkedProjectId or empty string for blank worksheets
+      // Create blank worksheet object
+      const worksheetData: BlankWorksheet = {
+        id: worksheetId || crypto.randomUUID(),
         date: data.date.toISOString().split('T')[0],
-        personnel: data.personnel,
-        timeTracking: {
-          departure: data.departure || '',
-          arrival: data.arrival || '',
-          end: data.end || '',
-          breakTime: data.breakTime || '',
-          totalHours: Number(data.totalHours) || 0
-        },
-        duration: Number(data.totalHours) || 0,
-        waterConsumption: 0,
-        wasteManagement: data.wasteManagement || 'none',
-        tasks: data.tasks || '',
-        notes: data.notes || '',
-        consumables: processedConsumables,
-        invoiced: Boolean(data.invoiced),
-        isArchived: false,
-        tasksPerformed: {
-          watering: 'none',
-          customTasks: {},
-          tasksProgress: {}
-        },
-        isBlankWorksheet: true,
-        createdAt: new Date(),
-        createdBy: currentUserName,
-        clientName: data.clientName,
+        personnel: data.personnel || [],
+        departure: data.departure,
+        arrival: data.arrival,
+        end_time: data.end,
+        break_time: data.breakTime,
+        total_hours: totalHours,
+        water_consumption: data.waterConsumption,
+        waste_management: data.wasteManagement || 'none',
+        tasks: data.tasks,
+        notes: structuredNotes,
+        consumables: validatedConsumables,
+        invoiced: data.invoiced || false,
+        is_archived: false,
+        client_name: data.clientName,
         address: data.address,
-        contactPhone: data.contactPhone,
-        contactEmail: data.contactEmail,
-        hourlyRate: data.hourlyRate,
-        signedQuoteAmount: data.signedQuoteAmount,
-        isQuoteSigned: data.isQuoteSigned,
-        linkedProjectId: data.linkedProjectId,
-        clientSignature: data.clientSignature
+        contact_phone: data.contactPhone,
+        contact_email: data.contactEmail,
+        hourly_rate: data.hourlyRate,
+        signed_quote_amount: data.signedQuoteAmount,
+        is_quote_signed: data.isQuoteSigned,
+        linked_project_id: data.linkedProjectId,
+        created_at: new Date(),
+        created_by: currentUser?.name
       };
+
+      console.log('Final worksheet data:', worksheetData);
       
-      console.log('WorkLog data prepared for submission:', workLogData);
-      
-      // Soumission des données
-      if (workLogId) {
-        console.log('Updating existing worklog');
-        await updateWorkLog(workLogData);
-        toast.success('Fiche vierge mise à jour avec succès');
+      if (isEditing && worksheetId) {
+        await updateBlankWorksheet(worksheetData);
+        toast.success('Fiche vierge modifiée avec succès');
       } else {
-        console.log('Creating new worklog');
-        const result = await addWorkLog(workLogData);
-        console.log('Worklog created successfully:', result);
-        toast.success('Fiche vierge enregistrée avec succès');
+        await addBlankWorksheet(worksheetData);
+        toast.success('Fiche vierge créée avec succès');
       }
       
       if (onSuccess) {
-        console.log('Calling onSuccess callback');
         onSuccess();
+      } else {
+        navigate('/blank-worksheets');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      
-      let errorMessage = 'Erreur inconnue';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        
-        if (errorMessage.includes('duplicate key')) {
-          errorMessage = 'Cette fiche existe déjà';
-        } else if (errorMessage.includes('foreign key')) {
-          errorMessage = 'Projet ou données liées non trouvées';
-        } else if (errorMessage.includes('not null')) {
-          errorMessage = 'Certains champs obligatoires sont manquants';
-        } else if (errorMessage.includes('permission denied')) {
-          errorMessage = 'Permissions insuffisantes pour cette action';
-        }
-      }
-      
-      toast.error(`Erreur lors de l'enregistrement: ${errorMessage}`);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Erreur lors de l\'enregistrement:', error);
+      toast.error('Erreur lors de l\'enregistrement de la fiche');
     }
-  };
-  
-  // Handle form cancellation
-  const handleCancel = () => {
-    form.reset();
-    handleClearProject();
-    navigate(-1);
-  };
-  
+  }, [addBlankWorksheet, updateBlankWorksheet, navigate, onSuccess, isEditing, getCurrentUser]);
+
   return {
-    isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit),
-    handleCancel
+    handleCancel,
+    handleSubmit
   };
 };

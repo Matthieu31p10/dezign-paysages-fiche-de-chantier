@@ -9,7 +9,7 @@ import { BlankWorksheetsProvider } from '@/context/BlankWorksheetsContext/BlankW
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Layout from '@/components/layout/Layout';
 import Login from '@/pages/Login';
-import Dashboard from '@/pages/Dashboard';
+import Dashboard from '@/pages/Home';
 import Projects from '@/pages/Projects';
 import ProjectNew from '@/pages/ProjectNew';
 import ProjectDetail from '@/pages/ProjectDetail';
@@ -24,10 +24,10 @@ import BlankWorkSheetDetail from '@/pages/BlankWorkSheetDetail';
 import BlankWorkSheetEdit from '@/pages/BlankWorkSheetEdit';
 import Reports from '@/pages/Reports';
 import Settings from '@/pages/Settings';
-import SettingsPersonnel from '@/pages/SettingsPersonnel';
-import SettingsTeams from '@/pages/SettingsTeams';
-import SettingsCustomTasks from '@/pages/SettingsCustomTasks';
-import SettingsCompany from '@/pages/SettingsCompany';
+import SettingsPersonnel from '@/pages/Settings';
+import SettingsTeams from '@/pages/Settings';
+import SettingsCustomTasks from '@/pages/Settings';
+import SettingsCompany from '@/pages/Settings';
 import './App.css';
 
 function App() {

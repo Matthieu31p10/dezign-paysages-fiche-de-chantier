@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { WorkLog } from '@/types/models';
+import { BlankWorksheet } from '@/types/blankWorksheet';
 import EmptyBlankWorkSheetState from './EmptyBlankWorkSheetState';
 import BlankSheetItem from './list/blank-sheet-item';
 import { groupWorkLogsByMonth } from '@/utils/date-helpers';
@@ -8,9 +8,9 @@ import { sortMonths } from '../worklogs/list/utils';
 import BlankSheetFilters from './BlankSheetFilters';
 
 export interface BlankWorkSheetListProps {
-  sheets: WorkLog[];
+  sheets: BlankWorksheet[];
   onCreateNew: () => void;
-  onEdit: (workLogId: string) => void;
+  onEdit: (worksheetId: string) => void;
   onExportPDF: (id: string) => Promise<void>;
   onPrint: (id: string) => Promise<void>;
 }
@@ -25,20 +25,15 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
   
-  // Filter to only include blank worksheets
+  // Filter worksheets
   const filteredSheets = sheets.filter(sheet => {
-    // First check if it's marked as a blank worksheet
-    const isBlank = sheet.isBlankWorksheet === true;
-    if (!isBlank) return false;
-    
-    // Then apply search filter if needed
+    // Apply search filter
     const matchesSearch = !search || (
-      (sheet.clientName?.toLowerCase().includes(search.toLowerCase())) ||
-      (sheet.projectId?.toLowerCase().includes(search.toLowerCase())) ||
+      (sheet.client_name?.toLowerCase().includes(search.toLowerCase())) ||
       (sheet.notes?.toLowerCase().includes(search.toLowerCase()))
     );
     
-    // Then apply invoiced filter
+    // Apply invoiced filter
     const matchesInvoiced = invoicedFilter === 'all' || 
       (invoicedFilter === 'invoiced' && sheet.invoiced) ||
       (invoicedFilter === 'not-invoiced' && !sheet.invoiced);
@@ -58,7 +53,13 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
   }
   
   // Group worksheets by month
-  const sheetsByMonth = groupWorkLogsByMonth(filteredSheets);
+  const sheetsByMonth = groupWorkLogsByMonth(filteredSheets.map(sheet => ({
+    ...sheet,
+    projectId: sheet.linked_project_id || '',
+    timeTracking: {
+      totalHours: sheet.total_hours
+    }
+  })));
   
   // Sort months in reverse chronological order
   const sortedMonths = sortMonths(Object.keys(sheetsByMonth), 'date-desc');
@@ -84,15 +85,21 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
           </h2>
           
           <div className="grid grid-cols-1 gap-4">
-            {sheetsByMonth[month].map(sheet => (
-              <BlankSheetItem
-                key={sheet.id}
-                sheet={sheet}
-                onEdit={() => onEdit(sheet.id)}
-                onExportPDF={() => onExportPDF(sheet.id)}
-                onPrint={() => onPrint(sheet.id)}
-              />
-            ))}
+            {sheetsByMonth[month].map((item: any) => {
+              // Find the original sheet
+              const sheet = filteredSheets.find(s => s.id === item.id);
+              if (!sheet) return null;
+              
+              return (
+                <BlankSheetItem
+                  key={sheet.id}
+                  sheet={sheet}
+                  onEdit={() => onEdit(sheet.id)}
+                  onExportPDF={() => onExportPDF(sheet.id)}
+                  onPrint={() => onPrint(sheet.id)}
+                />
+              );
+            })}
           </div>
         </div>
       ))}
