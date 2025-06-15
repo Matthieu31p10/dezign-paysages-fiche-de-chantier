@@ -101,12 +101,13 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
           {projects.map(project => {
             const projectLogs = workLogs.filter(log => log.projectId === project.id);
             const teamName = teams.find(t => t.id === project.team)?.name;
-            // Fix: pass projectLogs as array
             const daysSinceLastVisit = getDaysSinceLastEntry(projectLogs);
             
-            // Calculate hours with proper types
-            const totalHours = projectLogs.reduce((sum, log) => {
-              return sum + (log.timeTracking?.totalHours || 0);
+            // Calculer le temps total équipe au lieu des heures individuelles
+            const totalTeamHours = projectLogs.reduce((sum, log) => {
+              const individualHours = log.timeTracking?.totalHours || 0;
+              const personnelCount = log.personnel?.length || 1;
+              return sum + (individualHours * personnelCount);
             }, 0);
             
             // Calculate average hours - avoid division by zero
@@ -142,7 +143,7 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
                 </TableCell>
                 
                 <TableCell className="text-center">
-                  <span className="font-medium">{totalHours.toFixed(1)} / {project.annualTotalHours}</span>
+                  <span className="font-medium">{totalTeamHours.toFixed(1)} / {project.annualTotalHours}</span>
                 </TableCell>
                 
                 <TableCell className="text-center">

@@ -1,4 +1,3 @@
-
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { formatDate } from '../date';
 import jsPDF from 'jspdf';
@@ -32,9 +31,14 @@ export const generateReportPDF = async (projects: ProjectInfo[], workLogs: WorkL
     pdf.text(`Nombre de chantiers: ${projects.length}`, 20, 40);
     pdf.text(`Nombre de fiches de suivi: ${workLogs.length}`, 20, 50);
     
-    // Calculate total hours worked
-    const totalHours = workLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
-    pdf.text(`Heures totales travaillées: ${totalHours.toFixed(2)}h`, 20, 60);
+    // Calculate total team hours worked
+    const totalTeamHours = workLogs.reduce((sum, log) => {
+      const individualHours = log.timeTracking.totalHours;
+      const personnelCount = log.personnel?.length || 1;
+      return sum + (individualHours * personnelCount);
+    }, 0);
+    
+    pdf.text(`Heures totales travaillées (équipe): ${totalTeamHours.toFixed(2)}h`, 20, 60);
     
     // Add projects summary (one per page)
     let currentY = 80;
@@ -47,7 +51,13 @@ export const generateReportPDF = async (projects: ProjectInfo[], workLogs: WorkL
       }
       
       const projectWorkLogs = workLogs.filter(log => log.projectId === project.id);
-      const projectTotalHours = projectWorkLogs.reduce((sum, log) => sum + log.timeTracking.totalHours, 0);
+      
+      // Calculer le temps total équipe pour ce projet
+      const projectTotalTeamHours = projectWorkLogs.reduce((sum, log) => {
+        const individualHours = log.timeTracking.totalHours;
+        const personnelCount = log.personnel?.length || 1;
+        return sum + (individualHours * personnelCount);
+      }, 0);
       
       pdf.setFont('helvetica', 'bold');
       pdf.text(`${index + 1}. ${project.name}`, 20, currentY);
@@ -57,7 +67,7 @@ export const generateReportPDF = async (projects: ProjectInfo[], workLogs: WorkL
       pdf.text(`Visites: ${projectWorkLogs.length}/${project.annualVisits}`, 25, currentY);
       currentY += 7;
       
-      pdf.text(`Heures travaillées: ${projectTotalHours.toFixed(2)}h / ${project.annualTotalHours}h`, 25, currentY);
+      pdf.text(`Heures travaillées (équipe): ${projectTotalTeamHours.toFixed(2)}h / ${project.annualTotalHours}h`, 25, currentY);
       currentY += 7;
       
       if (projectWorkLogs.length > 0) {

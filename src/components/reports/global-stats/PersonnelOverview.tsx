@@ -41,8 +41,12 @@ const PersonnelOverview = ({ filteredLogs }: PersonnelOverviewProps) => {
   const sortedPersonnel = personnelHours.sort((a, b) => b.hours - a.hours);
   const personWithMostHours = sortedPersonnel[0] || { name: '', hours: 0 };
   
-  // Calculate total hours worked
-  const totalCompletedHours = filteredLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
+  // Calculate total team hours worked (not individual hours)
+  const totalTeamHours = filteredLogs.reduce((sum, log) => {
+    const individualHours = log.timeTracking?.totalHours || 0;
+    const personnelCount = log.personnel?.length || 1;
+    return sum + (individualHours * personnelCount);
+  }, 0);
   
   // Progress list items for personnel
   const personnelProgressItems = sortedPersonnel.map(person => ({
@@ -62,8 +66,8 @@ const PersonnelOverview = ({ filteredLogs }: PersonnelOverviewProps) => {
         />
         
         <StatCard 
-          title="Heures totales travaillées" 
-          value={formatNumber(totalCompletedHours)}
+          title="Heures totales travaillées (équipe)" 
+          value={formatNumber(totalTeamHours)}
           subtitle="Sur tous les chantiers"
         />
         

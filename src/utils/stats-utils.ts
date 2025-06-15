@@ -2,17 +2,19 @@
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { filterWorkLogsByYear } from './date-helpers';
 
-// Calculate total hours for a specific year
+// Calculate total team hours for a specific year
 export const calculateTotalHoursForYear = (workLogs: WorkLog[], year: number): number => {
   const logsForYear = filterWorkLogsByYear(workLogs, year);
   
   return logsForYear.reduce((total, log) => {
-    const hours = log.timeTracking?.totalHours || 0;
-    return total + (typeof hours === 'string' ? parseFloat(hours) : hours);
+    const individualHours = log.timeTracking?.totalHours || 0;
+    const personnelCount = log.personnel?.length || 1;
+    // Calculer le temps total équipe (heures individuelles * nombre de personnel)
+    return total + (individualHours * personnelCount);
   }, 0);
 };
 
-// Calculate completion percentage for a project
+// Calculate completion percentage for a project based on team hours
 export const calculateProjectCompletion = (
   project: ProjectInfo, 
   workLogs: WorkLog[], 
@@ -28,15 +30,16 @@ export const calculateProjectCompletion = (
     projectLogs = filterWorkLogsByYear(projectLogs, year);
   }
   
-  // Calculate total hours
-  const totalHours = projectLogs.reduce((sum, log) => {
-    const hours = log.timeTracking?.totalHours || 0;
-    return sum + (typeof hours === 'string' ? parseFloat(hours) : hours);
+  // Calculate total team hours
+  const totalTeamHours = projectLogs.reduce((sum, log) => {
+    const individualHours = log.timeTracking?.totalHours || 0;
+    const personnelCount = log.personnel?.length || 1;
+    return sum + (individualHours * personnelCount);
   }, 0);
   
   // Calculate percentage based on annual total hours
   const targetHours = project.annualTotalHours || 0;
   if (targetHours === 0) return 0;
   
-  return Math.min(100, Math.round((totalHours / targetHours) * 100));
+  return Math.min(100, Math.round((totalTeamHours / targetHours) * 100));
 };

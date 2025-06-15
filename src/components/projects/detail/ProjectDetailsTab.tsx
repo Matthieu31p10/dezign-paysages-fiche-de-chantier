@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProjectInfo } from '@/types/models';
@@ -19,11 +18,18 @@ interface ProjectDetailsTabProps {
 const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName }) => {
   const { getTotalVisits, getWorkLogsByProjectId } = useWorkLogs();
   
-  // Calculate remaining hours
+  // Calculate remaining hours using team hours
   const workLogs = getWorkLogsByProjectId(project.id);
   const totalVisits = getTotalVisits(project.id);
-  const totalHoursUsed = workLogs.reduce((total, log) => total + (log.timeTracking?.totalHours || 0), 0);
-  const annualRemainingHours = Math.max(0, project.annualTotalHours - totalHoursUsed);
+  
+  // Calculer le temps total équipe au lieu des heures individuelles
+  const totalTeamHoursUsed = workLogs.reduce((total, log) => {
+    const individualHours = log.timeTracking?.totalHours || 0;
+    const personnelCount = log.personnel?.length || 1;
+    return total + (individualHours * personnelCount);
+  }, 0);
+  
+  const annualRemainingHours = Math.max(0, project.annualTotalHours - totalTeamHoursUsed);
   
   // Get project type label
   const getProjectTypeLabel = (type: string): string => {
@@ -228,8 +234,8 @@ const ProjectDetailsTab: React.FC<ProjectDetailsTabProps> = ({ project, teamName
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Heures utilisées</span>
-                <span className="font-medium">{formatNumber(totalHoursUsed)} / {formatNumber(project.annualTotalHours)}</span>
+                <span className="text-sm text-muted-foreground">Heures utilisées (équipe)</span>
+                <span className="font-medium">{formatNumber(totalTeamHoursUsed)} / {formatNumber(project.annualTotalHours)}</span>
               </div>
               
               <div className="flex justify-between items-center">
