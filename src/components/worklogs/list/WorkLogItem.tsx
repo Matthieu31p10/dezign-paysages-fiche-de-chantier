@@ -3,10 +3,11 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Users, MapPin, Eye, Edit, FileText } from 'lucide-react';
+import { Calendar, Clock, Users, MapPin, Eye, Edit, FileText, Building2, User } from 'lucide-react';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { formatDate } from '@/utils/helpers';
 import { useNavigate } from 'react-router-dom';
+import { useApp } from '@/context/AppContext';
 
 interface WorkLogItemProps {
   workLog: WorkLog;
@@ -22,6 +23,7 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({
   onExportPDF
 }) => {
   const navigate = useNavigate();
+  const { teams } = useApp();
   
   const handleView = () => {
     navigate(`/worklogs/${workLog.id}`);
@@ -43,6 +45,9 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({
   
   const totalTeamHours = (workLog.timeTracking?.totalHours || 0) * (workLog.personnel?.length || 1);
   
+  // Get team name
+  const teamName = project && teams.find(team => team.id === project.team)?.name;
+  
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleView}>
       <CardContent className="p-3">
@@ -56,8 +61,21 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({
                   <Badge variant="outline" className="text-xs bg-blue-50">Fiche vierge</Badge>
                 )}
               </div>
+            </div>
+            
+            {/* Project and team info */}
+            <div className="flex flex-col gap-1">
               {project && (
-                <Badge variant="secondary" className="text-xs">{project.name}</Badge>
+                <div className="flex items-center gap-1">
+                  <Building2 className="h-3 w-3 text-gray-500" />
+                  <span className="text-xs text-gray-600">{project.name}</span>
+                </div>
+              )}
+              {teamName && (
+                <div className="flex items-center gap-1">
+                  <User className="h-3 w-3 text-gray-500" />
+                  <span className="text-xs text-gray-600">Équipe {teamName}</span>
+                </div>
               )}
             </div>
             
