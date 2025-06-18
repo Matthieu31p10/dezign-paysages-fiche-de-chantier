@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useApp } from '@/context/AppContext';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
+import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
 import { ProjectInfo } from '@/types/models';
 import { BlankWorksheet } from '@/types/blankWorksheet';
 import { Separator } from '@/components/ui/separator';
@@ -50,7 +50,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   editingWorkLogId = null
 }: BlankWorkSheetFormProps) => {
   const { teams } = useApp();
-  const { workLogs } = useWorkLogs();
+  const { blankWorksheets } = useBlankWorksheets();
   const [activeTab, setActiveTab] = useState(initialData?.linked_project_id ? 'project' : 'adhoc');
   const [isSubmitting, setIsSubmitting] = useState(false);
   

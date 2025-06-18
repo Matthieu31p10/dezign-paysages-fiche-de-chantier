@@ -3,13 +3,13 @@ import React, { useEffect } from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { FilePlus, Loader2 } from 'lucide-react';
-import { WorkLog } from '@/types/models';
+import { BlankWorksheet } from '@/types/blankWorksheet';
 import OriginalBlankWorkSheetForm from '../BlankWorkSheetForm';
 import { toast } from 'sonner';
 
 interface BlankWorkSheetFormProps {
   editingWorkLogId: string | null;
-  getWorkLogById: (id: string) => WorkLog;
+  getWorkLogById: (id: string) => BlankWorksheet;
   handleFormSuccess: () => void;
   isBlankWorksheet?: boolean;
 }
@@ -21,7 +21,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   isBlankWorksheet = true
 }) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [workLogData, setWorkLogData] = React.useState<WorkLog | undefined>(undefined);
+  const [workLogData, setWorkLogData] = React.useState<BlankWorksheet | undefined>(undefined);
 
   // Fetch work log data if editing
   useEffect(() => {
