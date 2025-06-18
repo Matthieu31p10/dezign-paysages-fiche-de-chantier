@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
 import { generatePDF } from '@/utils/pdf';
 import { BlankWorksheet } from '@/types/blankWorksheet';
+import { convertBlankWorksheetToWorkLog } from '@/utils/typeConverters';
 
 const BlankWorkSheets: React.FC = () => {
   const navigate = useNavigate();
@@ -57,31 +58,7 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       
       // Convert BlankWorksheet to WorkLog format for PDF generation
-      const workLogFormat = {
-        ...worksheet,
-        projectId: worksheet.linked_project_id || '',
-        timeTracking: {
-          totalHours: worksheet.total_hours
-        },
-        personnel: worksheet.personnel || [],
-        hourlyRate: worksheet.hourly_rate,
-        signedQuoteAmount: worksheet.signed_quote_amount || 0,
-        isQuoteSigned: worksheet.is_quote_signed,
-        invoiced: worksheet.invoiced,
-        address: worksheet.address,
-        createdAt: worksheet.created_at,
-        clientName: worksheet.client_name,
-        // Convert consumables to WorkLog format
-        consumables: worksheet.consumables?.map(c => ({
-          id: c.id,
-          supplier: c.supplier,
-          product: c.product,
-          unit: c.unit,
-          quantity: c.quantity,
-          unitPrice: c.unit_price,
-          totalPrice: c.total_price
-        })) || []
-      };
+      const workLogFormat = convertBlankWorksheetToWorkLog(worksheet);
       
       await generatePDF({
         workLog: workLogFormat,
@@ -110,31 +87,7 @@ const BlankWorkSheets: React.FC = () => {
       setIsExporting(true);
       
       // Convert BlankWorksheet to WorkLog format for PDF generation
-      const workLogFormat = {
-        ...worksheet,
-        projectId: worksheet.linked_project_id || '',
-        timeTracking: {
-          totalHours: worksheet.total_hours
-        },
-        personnel: worksheet.personnel || [],
-        hourlyRate: worksheet.hourly_rate,
-        signedQuoteAmount: worksheet.signed_quote_amount || 0,
-        isQuoteSigned: worksheet.is_quote_signed,
-        invoiced: worksheet.invoiced,
-        address: worksheet.address,
-        createdAt: worksheet.created_at,
-        clientName: worksheet.client_name,
-        // Convert consumables to WorkLog format
-        consumables: worksheet.consumables?.map(c => ({
-          id: c.id,
-          supplier: c.supplier,
-          product: c.product,
-          unit: c.unit,
-          quantity: c.quantity,
-          unitPrice: c.unit_price,
-          totalPrice: c.total_price
-        })) || []
-      };
+      const workLogFormat = convertBlankWorksheetToWorkLog(worksheet);
       
       await generatePDF({
         workLog: workLogFormat,

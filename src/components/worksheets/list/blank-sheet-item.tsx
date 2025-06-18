@@ -7,6 +7,7 @@ import BlankSheetContent from './blank-sheet-item/BlankSheetContent';
 import BlankSheetStats from './blank-sheet-item/BlankSheetStats';
 import BlankSheetActions from './blank-sheet-item/BlankSheetActions';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { convertBlankWorksheetToWorkLog } from '@/utils/typeConverters';
 
 interface BlankSheetItemProps {
   sheet: BlankWorksheet;
@@ -24,31 +25,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   const isMobile = useIsMobile();
 
   // Convert BlankWorksheet to WorkLog-like structure for compatibility
-  const workLogSheet = {
-    ...sheet,
-    projectId: sheet.linked_project_id || '',
-    timeTracking: {
-      totalHours: sheet.total_hours
-    },
-    personnel: sheet.personnel || [],
-    hourlyRate: sheet.hourly_rate,
-    signedQuoteAmount: sheet.signed_quote_amount || 0,
-    isQuoteSigned: sheet.is_quote_signed,
-    invoiced: sheet.invoiced,
-    address: sheet.address,
-    createdAt: sheet.created_at,
-    clientName: sheet.client_name,
-    // Convert consumables to WorkLog format
-    consumables: sheet.consumables?.map(c => ({
-      id: c.id,
-      supplier: c.supplier,
-      product: c.product,
-      unit: c.unit,
-      quantity: c.quantity,
-      unitPrice: c.unit_price,
-      totalPrice: c.total_price
-    })) || []
-  };
+  const workLogSheet = convertBlankWorksheetToWorkLog(sheet);
 
   return (
     <Card className="border hover:shadow-md transition-all duration-200 hover:border-primary/20">
