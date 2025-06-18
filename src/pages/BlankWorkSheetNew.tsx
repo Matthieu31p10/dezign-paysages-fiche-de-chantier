@@ -45,7 +45,6 @@ const BlankWorkSheetNew = () => {
         <BlankWorkSheetForm 
           onSuccess={handleSuccess}
           projectInfos={projectInfos}
-          existingWorkLogs={blankWorksheets}
           isBlankWorksheet={true}
         />
       </Card>

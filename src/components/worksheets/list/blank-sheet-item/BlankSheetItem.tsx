@@ -91,6 +91,7 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
           
           <BlankSheetContent 
             sheet={sheetData}
+            linkedProject={linkedProject}
           />
           
           <BlankSheetStats 

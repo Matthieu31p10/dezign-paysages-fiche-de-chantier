@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 interface BlankWorkSheetFormProps {
   editingWorkLogId: string | null;
-  getWorkLogById: (id: string) => BlankWorksheet;
+  getWorkLogById: (id: string) => BlankWorksheet | undefined;
   handleFormSuccess: () => void;
   isBlankWorksheet?: boolean;
 }
@@ -28,7 +28,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
     if (editingWorkLogId) {
       try {
         const data = getWorkLogById(editingWorkLogId);
-        setWorkLogData(data);
+        if (data) {
+          setWorkLogData(data);
+        } else {
+          toast.error("Fiche introuvable");
+        }
       } catch (error) {
         console.error("Error fetching work log:", error);
         toast.error("Erreur lors du chargement de la fiche");
