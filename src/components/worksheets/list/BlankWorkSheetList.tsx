@@ -2,14 +2,10 @@
 import React, { useState, useMemo } from 'react';
 import { BlankWorksheet } from '@/types/blankWorksheet';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FileText } from 'lucide-react';
-import BlankSheetItem from './blank-sheet-item';
+import { FileText } from 'lucide-react';
+import BlankSheetItem from './BlankSheetItem';
 import { useProjects } from '@/context/ProjectsContext';
 import BlankSheetFilters from '@/components/worksheets/BlankSheetFilters';
-import { groupWorkLogsByMonth } from '@/utils/date-helpers';
-import { sortMonths } from '@/components/worklogs/list/utils';
 
 interface BlankWorkSheetListProps {
   sheets?: BlankWorksheet[];
@@ -30,7 +26,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [invoicedFilter, setInvoicedFilter] = useState<'all' | 'invoiced' | 'not-invoiced'>('all');
-  const { getProjectById } = useProjects();
   
   // Safety check for data
   const validSheets = Array.isArray(sheets) ? sheets : [];
@@ -54,22 +49,6 @@ const BlankWorkSheetList: React.FC<BlankWorkSheetListProps> = ({
       return matchesSearch && matchesInvoiced;
     });
   }, [validSheets, search, invoicedFilter]);
-  
-  const handleSelectSheet = (id: string) => {
-    if (onSelectSheet) onSelectSheet(id);
-  };
-
-  const handleEdit = (id: string) => {
-    if (onEdit) onEdit(id);
-  };
-  
-  const handleExportPDF = (id: string) => {
-    if (onExportPDF) onExportPDF(id);
-  };
-  
-  const handlePrint = (id: string) => {
-    if (onPrint) onPrint(id);
-  };
   
   return (
     <div className="space-y-8 animate-fade-in">
