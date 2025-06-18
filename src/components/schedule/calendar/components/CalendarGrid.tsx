@@ -12,18 +12,28 @@ interface CalendarEvent {
   totalPassages: number;
 }
 
+interface LockedDay {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  type: 'maintenance' | 'holiday' | 'formation' | 'autre';
+}
+
 interface CalendarGridProps {
   days: Date[];
   startDayOfWeek: number;
   showWeekends: boolean;
   getEventsForDay: (date: Date) => CalendarEvent[];
+  lockedDays?: LockedDay[];
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({ 
   days, 
   startDayOfWeek, 
   showWeekends, 
-  getEventsForDay 
+  getEventsForDay,
+  lockedDays = []
 }) => {
   const getGridColumns = () => {
     return showWeekends ? 'grid-cols-7' : 'grid-cols-5';
@@ -53,6 +63,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             day={day}
             events={dateEvents}
             showWeekends={showWeekends}
+            lockedDays={lockedDays}
           />
         );
       })}
