@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { WorkLog } from '@/types/models';
+import { WorkLog, ProjectInfo } from '@/types/models';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import TeamBadge from '@/components/ui/team-badge';
@@ -27,7 +27,14 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({ workLog }) => {
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-3">
             <div className="flex items-start justify-between">
-              <BlankSheetHeader workLog={workLog} />
+              <BlankSheetHeader 
+                sheet={workLog}
+                clientName={workLog.clientName}
+                projectId={workLog.projectId}
+                date={workLog.date}
+                registrationTime={workLog.createdAt}
+                invoiced={workLog.invoiced}
+              />
               <div className="flex items-center gap-2">
                 {team && <TeamBadge teamName={team.name} teamColor={team.color} />}
                 {workLog.invoiced && (
@@ -43,11 +50,18 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({ workLog }) => {
               </div>
             </div>
 
-            <BlankSheetContent workLog={workLog} linkedProject={linkedProject} />
-            <BlankSheetStats workLog={workLog} />
+            <BlankSheetContent 
+              sheet={workLog}
+              linkedProject={linkedProject}
+            />
+            <BlankSheetStats 
+              sheet={workLog}
+            />
           </div>
 
-          <BlankSheetActions workLog={workLog} />
+          <BlankSheetActions 
+            sheet={workLog}
+          />
         </div>
       </CardContent>
     </Card>
