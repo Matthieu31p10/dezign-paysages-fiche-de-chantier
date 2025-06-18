@@ -5,6 +5,8 @@ import { useCalendarData } from './calendar/hooks/useCalendarData';
 import CalendarHeader from './calendar/components/CalendarHeader';
 import CalendarGrid from './calendar/components/CalendarGrid';
 import LockedDaysManager from './calendar/components/LockedDaysManager';
+import ProjectLocksManager from './project-locks/components/ProjectLocksManager';
+import { useApp } from '@/context/AppContext';
 
 interface LockedDay {
   id: string;
@@ -23,6 +25,7 @@ interface ScheduleCalendarProps {
 
 const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId, showWeekends = true }) => {
   const [lockedDays, setLockedDays] = useState<LockedDay[]>([]);
+  const { projectInfos } = useApp();
   
   const { daysOfWeek, days, startDayOfWeek, getEventsForDay } = useCalendarData(
     month, 
@@ -33,7 +36,8 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
   
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <ProjectLocksManager projects={projectInfos} />
         <LockedDaysManager
           month={month}
           year={year}

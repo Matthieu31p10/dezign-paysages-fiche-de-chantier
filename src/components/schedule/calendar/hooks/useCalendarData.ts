@@ -3,9 +3,11 @@ import { useMemo } from 'react';
 import { startOfMonth, endOfMonth, eachDayOfInterval, getDay, format, isWeekend } from 'date-fns';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from './useYearlyPassageSchedule';
+import { useProjectLocks } from '../../project-locks/hooks/useProjectLocks';
 
 export const useCalendarData = (month: number, year: number, teamId: string, showWeekends: boolean) => {
   const { projectInfos } = useApp();
+  const { isProjectLockedOnDay } = useProjectLocks();
 
   const daysOfWeek = useMemo(() => {
     if (showWeekends) {
@@ -47,8 +49,14 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
     const yearlySchedule = getYearlyPassageSchedule(year);
+    const dayOfWeek = getDay(date) === 0 ? 7 : getDay(date); // Convert Sunday from 0 to 7
     
     teamProjects.forEach(project => {
+      // Check if this project is locked on this day of the week
+      if (isProjectLockedOnDay(project.id, dayOfWeek)) {
+        return; // Skip this project for this day
+      }
+
       const passageNumber = yearlySchedule[project.id]?.[dateString];
       
       if (passageNumber) {
