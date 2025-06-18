@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 import { ProjectInfo } from '@/types/models';
 import { ProjectLockFormData } from '../types';
 import { DAYS_OF_WEEK } from '../constants';
@@ -26,6 +28,9 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
     reason: '',
     description: '',
   });
+
+  const selectedProject = projects.find(p => p.id === formData.projectId);
+  const selectedDay = DAYS_OF_WEEK.find(d => d.value === formData.dayOfWeek);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,13 +86,26 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
         </Select>
       </div>
 
+      {selectedProject && selectedDay && (
+        <Alert className="border-orange-200 bg-orange-50">
+          <Info className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <strong>Impact du verrouillage :</strong><br />
+            Tous les passages du chantier "<strong>{selectedProject.name}</strong>" 
+            seront bloqués pour tous les <strong>{selectedDay.label.toLowerCase()}s</strong> de l'année.
+            <br />
+            <em>Cela concerne tous les passages programmés ({selectedProject.annualVisits || 12} passages/an).</em>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div>
         <Label htmlFor="reason">Motif du verrouillage</Label>
         <Input
           id="reason"
           value={formData.reason}
           onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-          placeholder="Ex: Maintenance, Fermeture client, etc."
+          placeholder="Ex: Maintenance, Fermeture client, Congés du client..."
           required
         />
       </div>
@@ -98,14 +116,14 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
           id="description"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Détails supplémentaires..."
+          placeholder="Détails supplémentaires sur la consigne..."
           rows={3}
         />
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" className="flex-1">
-          Ajouter le verrouillage
+        <Button type="submit" className="flex-1 bg-orange-600 hover:bg-orange-700">
+          Verrouiller tous les passages
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler

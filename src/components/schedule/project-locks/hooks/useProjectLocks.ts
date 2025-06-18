@@ -18,15 +18,40 @@ export const useProjectLocks = () => {
     };
 
     setProjectLocks(prev => [...prev, newLock]);
-    toast.success('Verrouillage de jour ajouté avec succès');
+    
+    const dayNames = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
+    const dayName = dayNames[formData.dayOfWeek] || 'jours';
+    
+    toast.success(
+      `Verrouillage créé avec succès`,
+      {
+        description: `Tous les passages de ce chantier sont maintenant bloqués les ${dayName}.`,
+        duration: 4000,
+      }
+    );
   };
 
   const removeProjectLock = (lockId: string) => {
+    const lock = projectLocks.find(l => l.id === lockId);
     setProjectLocks(prev => prev.filter(lock => lock.id !== lockId));
-    toast.success('Verrouillage supprimé');
+    
+    if (lock) {
+      const dayNames = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
+      const dayName = dayNames[lock.dayOfWeek] || 'jours';
+      
+      toast.success(
+        'Verrouillage supprimé',
+        {
+          description: `Les passages les ${dayName} sont maintenant déverrouillés.`,
+          duration: 3000,
+        }
+      );
+    }
   };
 
   const toggleProjectLock = (lockId: string) => {
+    const lock = projectLocks.find(l => l.id === lockId);
+    
     setProjectLocks(prev => 
       prev.map(lock => 
         lock.id === lockId 
@@ -34,6 +59,20 @@ export const useProjectLocks = () => {
           : lock
       )
     );
+
+    if (lock) {
+      const dayNames = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
+      const dayName = dayNames[lock.dayOfWeek] || 'jours';
+      const action = lock.isActive ? 'désactivé' : 'activé';
+      
+      toast.info(
+        `Verrouillage ${action}`,
+        {
+          description: `Le verrouillage des ${dayName} a été ${action}.`,
+          duration: 3000,
+        }
+      );
+    }
   };
 
   const getLocksForProject = (projectId: string) => {
