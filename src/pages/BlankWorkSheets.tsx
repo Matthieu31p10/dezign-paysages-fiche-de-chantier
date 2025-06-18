@@ -70,7 +70,17 @@ const BlankWorkSheets: React.FC = () => {
         invoiced: worksheet.invoiced,
         address: worksheet.address,
         createdAt: worksheet.created_at,
-        clientName: worksheet.client_name
+        clientName: worksheet.client_name,
+        // Convert consumables to WorkLog format
+        consumables: worksheet.consumables?.map(c => ({
+          id: c.id,
+          supplier: c.supplier,
+          product: c.product,
+          unit: c.unit,
+          quantity: c.quantity,
+          unitPrice: c.unit_price,
+          totalPrice: c.total_price
+        })) || []
       };
       
       await generatePDF({
@@ -113,7 +123,17 @@ const BlankWorkSheets: React.FC = () => {
         invoiced: worksheet.invoiced,
         address: worksheet.address,
         createdAt: worksheet.created_at,
-        clientName: worksheet.client_name
+        clientName: worksheet.client_name,
+        // Convert consumables to WorkLog format
+        consumables: worksheet.consumables?.map(c => ({
+          id: c.id,
+          supplier: c.supplier,
+          product: c.product,
+          unit: c.unit,
+          quantity: c.quantity,
+          unitPrice: c.unit_price,
+          totalPrice: c.total_price
+        })) || []
       };
       
       await generatePDF({

@@ -37,7 +37,17 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
     invoiced: sheet.invoiced,
     address: sheet.address,
     createdAt: sheet.created_at,
-    clientName: sheet.client_name
+    clientName: sheet.client_name,
+    // Convert consumables to WorkLog format
+    consumables: sheet.consumables?.map(c => ({
+      id: c.id,
+      supplier: c.supplier,
+      product: c.product,
+      unit: c.unit,
+      quantity: c.quantity,
+      unitPrice: c.unit_price,
+      totalPrice: c.total_price
+    })) || []
   };
 
   return (
