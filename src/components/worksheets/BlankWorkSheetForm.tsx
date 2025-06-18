@@ -65,7 +65,6 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   } = useBlankWorksheetForm({
     initialData,
     onSuccess,
-    workLogs: existingWorkLogs || [],
     projectInfos
   });
 
