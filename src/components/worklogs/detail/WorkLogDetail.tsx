@@ -32,7 +32,14 @@ const WorkLogDetail = () => {
   const project = workLog ? getProjectById(workLog.projectId) : undefined;
   
   // Toujours appeler les hooks au niveau supérieur, quelles que soient les conditions
-  const contextValues = useWorkLogDetailProvider();
+  const contextValues = useWorkLogDetailProvider(
+    workLog, 
+    project, 
+    workLogs,
+    updateWorkLog,
+    deleteWorkLog,
+    settings
+  );
   
   if (isLoading) {
     return (
@@ -50,12 +57,7 @@ const WorkLogDetail = () => {
   }
   
   return (
-    <WorkLogDetailProvider value={{
-      ...contextValues,
-      handleExportToPDF: async () => {
-        await contextValues.handleExportToPDF();
-      }
-    }}>
+    <WorkLogDetailProvider value={contextValues}>
       <div className="animate-fade-in space-y-6">
         <div className="flex justify-between items-start">
           <DetailHeader />

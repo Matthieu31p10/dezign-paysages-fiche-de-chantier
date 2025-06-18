@@ -1,61 +1,54 @@
 
 import React from 'react';
-import { BlankWorksheet } from '@/types/blankWorksheet';
 import { Card } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
 import BlankSheetHeader from './blank-sheet-item/BlankSheetHeader';
 import BlankSheetContent from './blank-sheet-item/BlankSheetContent';
 import BlankSheetStats from './blank-sheet-item/BlankSheetStats';
 import BlankSheetActions from './blank-sheet-item/BlankSheetActions';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { convertBlankWorksheetToWorkLog } from '@/utils/typeConverters';
-import { useProjects } from '@/context/ProjectsContext';
+import { WorkLog, ProjectInfo } from '@/types/models';
 
 interface BlankSheetItemProps {
-  sheet: BlankWorksheet;
-  onEdit?: () => void;
-  onExportPDF?: () => void;
-  onPrint?: () => void;
+  sheet: WorkLog;
+  linkedProject: ProjectInfo | null;
+  onEdit: (id: string) => void;
+  onExportPDF: (id: string) => void;
+  onPrint: (id: string) => void;
 }
 
 const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
   sheet,
+  linkedProject,
   onEdit,
   onExportPDF,
   onPrint
 }) => {
   const isMobile = useIsMobile();
-  const { getProjectById } = useProjects();
-
-  // Convert BlankWorksheet to WorkLog-like structure for compatibility
-  const workLogSheet = convertBlankWorksheetToWorkLog(sheet);
   
-  // Get linked project if available
-  const linkedProject = sheet.linked_project_id ? getProjectById(sheet.linked_project_id) : null;
-
   return (
     <Card className="border hover:shadow-md transition-all duration-200 hover:border-primary/20">
       <div className={`p-4 ${isMobile ? 'space-y-4' : 'flex items-start'}`}>
         <div className={`${isMobile ? 'w-full' : 'flex-grow pr-4'}`}>
-          <BlankSheetHeader
+          <BlankSheetHeader 
             date={sheet.date}
-            clientName={sheet.client_name}
-            projectId={sheet.linked_project_id}
-            registrationTime={sheet.created_at}
+            clientName={sheet.clientName}
+            projectId={sheet.projectId}
+            registrationTime={sheet.createdAt}
             invoiced={sheet.invoiced}
           />
-
-          <BlankSheetContent
-            sheet={workLogSheet}
+          
+          <BlankSheetContent 
+            sheet={sheet}
             linkedProject={linkedProject}
           />
-
-          <BlankSheetStats
-            sheet={workLogSheet}
+          
+          <BlankSheetStats 
+            sheet={sheet}
           />
         </div>
-
-        <BlankSheetActions
-          sheet={workLogSheet}
+        
+        <BlankSheetActions 
+          sheet={sheet}
           onEdit={onEdit}
           onExportPDF={onExportPDF}
           onPrint={onPrint}

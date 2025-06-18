@@ -1,83 +1,139 @@
-import React, { ReactNode } from 'react';
-import { useWorkLogForm } from './WorkLogFormContext';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
-import { useNavigate } from 'react-router-dom';
+
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
+import { FormValues } from './schema';
 import { toast } from 'sonner';
-import { createWorkLogFromFormData, formatStructuredNotes, validateConsumables } from './utils/formatWorksheetData';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { useApp } from '@/context/AppContext';
+import { WorkLog, Consumable } from '@/types/models';
 
 interface WorkLogFormSubmitHandlerProps {
-  children: ReactNode;
+  children: React.ReactNode;
   onSuccess?: () => void;
-  existingWorkLogId?: string;
+  existingWorkLogId?: string | null;
   isBlankWorksheet?: boolean;
 }
 
-const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
-  children,
+const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({ 
+  children, 
   onSuccess,
   existingWorkLogId,
   isBlankWorksheet = false
 }) => {
-  const { form, existingWorkLogs } = useWorkLogForm();
+  const methods = useFormContext<FormValues>();
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   const { getCurrentUser } = useApp();
-  const navigate = useNavigate();
-
-  const onSubmit = async (data: any) => {
+  
+  const handleFormSubmit = async (formData: FormValues) => {
+    console.log('Form submission started with data:', formData);
+    
     try {
-      console.log('Submitting form data:', data);
-      
-      // Validate required fields for work logs (not blank worksheets)
-      if (!isBlankWorksheet && !data.projectId) {
-        toast.error('Veuillez sélectionner un projet');
+      // Validation de base
+      if (!isBlankWorksheet && !formData.projectId) {
+        toast.error("Veuillez sélectionner un projet");
         return;
       }
-
-      // Format structured notes
-      const structuredNotes = formatStructuredNotes(data);
       
-      // Validate consumables
-      const validatedConsumables = validateConsumables(data.consumables || []);
+      if (!formData.personnel || formData.personnel.length === 0) {
+        toast.error("Veuillez sélectionner au moins une personne");
+        return;
+      }
       
-      // Get current user
+      // Récupérer l'utilisateur actuel
       const currentUser = getCurrentUser();
+      const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
-      // Create work log object
-      const workLogData = createWorkLogFromFormData(
-        data,
-        existingWorkLogId,
-        existingWorkLogs,
-        structuredNotes,
-        validatedConsumables,
-        currentUser?.name
-      );
-
-      console.log('Final workLog data:', workLogData);
+      // Valider et formater les consumables
+      const validatedConsumables: Consumable[] = (formData.consumables || [])
+        .filter(consumable => 
+          consumable && 
+          consumable.product && 
+          consumable.product.trim() !== '' &&
+          consumable.quantity && consumable.quantity > 0
+        )
+        .map(consumable => ({
+          id: consumable.id || crypto.randomUUID(),
+          supplier: consumable.supplier || '',
+          product: consumable.product || '',
+          unit: consumable.unit || 'unité',
+          quantity: Number(consumable.quantity) || 0,
+          unitPrice: Number(consumable.unitPrice) || 0,
+          totalPrice: Number(consumable.totalPrice) || 0
+        }));
       
+      // Préparation des données pour WorkLog
+      const workLogData: WorkLog = {
+        id: existingWorkLogId || crypto.randomUUID(),
+        projectId: formData.projectId || '',
+        date: formData.date.toISOString().split('T')[0],
+        personnel: formData.personnel,
+        timeTracking: {
+          departure: formData.departure || '',
+          arrival: formData.arrival || '',
+          end: formData.end || '',
+          breakTime: formData.breakTime || '',
+          totalHours: Number(formData.totalHours) || 0
+        },
+        duration: Number(formData.duration) || 0,
+        waterConsumption: Number(formData.waterConsumption) || 0,
+        wasteManagement: formData.wasteManagement || 'none',
+        tasks: '', // Champ requis pour la compatibilité
+        notes: formData.notes || '',
+        consumables: validatedConsumables,
+        invoiced: Boolean(formData.invoiced),
+        isArchived: false,
+        tasksPerformed: {
+          watering: formData.watering || 'none',
+          customTasks: formData.customTasks || {},
+          tasksProgress: formData.tasksProgress || {}
+        },
+        isBlankWorksheet: isBlankWorksheet,
+        createdAt: new Date(),
+        createdBy: currentUserName
+      };
+      
+      console.log('WorkLog data prepared for submission:', workLogData);
+      
+      // Soumission des données
       if (existingWorkLogId) {
-        // Update existing work log
+        console.log('Updating existing worklog');
         await updateWorkLog(workLogData);
-        toast.success('Fiche de suivi modifiée avec succès');
+        toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} mise à jour avec succès`);
       } else {
-        // Create new work log
-        await addWorkLog(workLogData);
-        toast.success('Fiche de suivi créée avec succès');
+        console.log('Creating new worklog');
+        const result = await addWorkLog(workLogData);
+        console.log('Worklog created successfully:', result);
+        toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);
       }
       
       if (onSuccess) {
+        console.log('Calling onSuccess callback');
         onSuccess();
-      } else {
-        navigate('/worklogs');
       }
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement:', error);
-      toast.error('Erreur lors de l\'enregistrement de la fiche');
+      console.error('Error submitting form:', error);
+      
+      let errorMessage = 'Erreur inconnue';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        if (errorMessage.includes('duplicate key')) {
+          errorMessage = 'Cette fiche existe déjà';
+        } else if (errorMessage.includes('foreign key')) {
+          errorMessage = 'Projet ou données liées non trouvées';
+        } else if (errorMessage.includes('not null')) {
+          errorMessage = 'Certains champs obligatoires sont manquants';
+        } else if (errorMessage.includes('permission denied')) {
+          errorMessage = 'Permissions insuffisantes pour cette action';
+        }
+      }
+      
+      toast.error(`Erreur lors de l'enregistrement: ${errorMessage}`);
     }
   };
-
+  
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={methods.handleSubmit(handleFormSubmit)} className="w-full">
       {children}
     </form>
   );

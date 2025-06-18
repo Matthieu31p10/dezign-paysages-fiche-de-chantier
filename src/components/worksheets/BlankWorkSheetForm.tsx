@@ -2,9 +2,8 @@
 import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useApp } from '@/context/AppContext';
-import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
-import { ProjectInfo } from '@/types/models';
-import { BlankWorksheet } from '@/types/blankWorksheet';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
+import { ProjectInfo, WorkLog } from '@/types/models';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -33,10 +32,10 @@ import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
 import { PersonnelSection } from './time-tracking/PersonnelSection';
 
 interface BlankWorkSheetFormProps {
-  initialData?: BlankWorksheet;
+  initialData?: WorkLog;
   onSuccess?: () => void;
   projectInfos?: ProjectInfo[];
-  existingWorkLogs?: BlankWorksheet[];
+  existingWorkLogs?: WorkLog[];
   isBlankWorksheet?: boolean;
   editingWorkLogId?: string | null;
 }
@@ -50,9 +49,8 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   editingWorkLogId = null
 }: BlankWorkSheetFormProps) => {
   const { teams } = useApp();
-  const { blankWorksheets } = useBlankWorksheets();
-  const [activeTab, setActiveTab] = useState(initialData?.linked_project_id ? 'project' : 'adhoc');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { workLogs } = useWorkLogs();
+  const [activeTab, setActiveTab] = useState(initialData?.linkedProjectId ? 'project' : 'adhoc');
   
   const {
     form,
@@ -60,26 +58,19 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
     selectedProject,
     handleProjectSelect,
     handleClearProject,
-    handleSubmit: formHandleSubmit,
+    isSubmitting,
+    handleSubmit,
     handleCancel
   } = useBlankWorksheetForm({
     initialData,
     onSuccess,
+    workLogs: existingWorkLogs || workLogs,
     projectInfos
   });
-
-  const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
-    try {
-      await formHandleSubmit(data);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
   
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full">
+      <form onSubmit={handleSubmit} className="w-full">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
             <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>

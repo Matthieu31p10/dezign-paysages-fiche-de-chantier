@@ -21,7 +21,7 @@ export const formatWorkLogFromDatabase = (dbWorkLog: any, dbConsumables: any[] =
   // Format the work log object with correct structure
   return {
     id: dbWorkLog.id,
-    projectId: dbWorkLog.project_id,
+    projectId: dbWorkLog.project_id || '', // Handle NULL project_id for blank worksheets
     date: dbWorkLog.date,
     personnel: dbWorkLog.personnel,
     timeTracking: {
@@ -48,6 +48,7 @@ export const formatWorkLogFromDatabase = (dbWorkLog: any, dbConsumables: any[] =
     linkedProjectId: dbWorkLog.linked_project_id,
     signedQuoteAmount: dbWorkLog.signed_quote_amount,
     isQuoteSigned: dbWorkLog.is_quote_signed,
+    isBlankWorksheet: dbWorkLog.is_blank_worksheet,
     createdBy: dbWorkLog.created_by
   };
 };
@@ -58,7 +59,7 @@ export const formatWorkLogFromDatabase = (dbWorkLog: any, dbConsumables: any[] =
 export const formatWorkLogForDatabase = (workLog: WorkLog) => {
   return {
     id: workLog.id,
-    project_id: workLog.projectId,
+    project_id: workLog.projectId || null, // NULL for blank worksheets
     date: workLog.date,
     personnel: workLog.personnel,
     departure: workLog.timeTracking?.departure,
@@ -81,6 +82,7 @@ export const formatWorkLogForDatabase = (workLog: WorkLog) => {
     linked_project_id: workLog.linkedProjectId || null,
     signed_quote_amount: workLog.signedQuoteAmount,
     is_quote_signed: workLog.isQuoteSigned,
+    is_blank_worksheet: workLog.isBlankWorksheet,
     created_at: workLog.createdAt?.toISOString() || new Date().toISOString(),
     created_by: workLog.createdBy
   };

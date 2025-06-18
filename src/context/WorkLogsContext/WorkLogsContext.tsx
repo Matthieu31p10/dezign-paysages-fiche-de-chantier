@@ -18,24 +18,21 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const queryOperations = useWorkLogQueries(workLogs);
   const bulkOperations = useWorkLogBulkOperations(setWorkLogs);
 
-  // Load work logs from Supabase on mount (excluding blank worksheets now)
+  // Load work logs from Supabase on mount
   useEffect(() => {
     const fetchWorkLogs = async () => {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
           .from('work_logs')
-          .select(`
-            *,
-            consumables (*)
-          `)
+          .select('*')
           .order('date', { ascending: false });
 
         if (error) throw error;
 
         const formattedWorkLogs: WorkLog[] = data.map(log => ({
           id: log.id,
-          projectId: log.project_id,
+          projectId: log.project_id || '', // Handle NULL project_id for blank worksheets
           date: log.date,
           personnel: log.personnel,
           timeTracking: {
@@ -60,17 +57,9 @@ export const WorkLogsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           linkedProjectId: log.linked_project_id,
           signedQuoteAmount: log.signed_quote_amount,
           isQuoteSigned: log.is_quote_signed,
+          isBlankWorksheet: log.is_blank_worksheet,
           createdAt: new Date(log.created_at),
-          createdBy: log.created_by,
-          consumables: log.consumables?.map(c => ({
-            id: c.id,
-            supplier: c.supplier,
-            product: c.product,
-            unit: c.unit,
-            quantity: Number(c.quantity),
-            unitPrice: Number(c.unit_price),
-            totalPrice: Number(c.total_price)
-          })) || []
+          createdBy: log.created_by
         }));
 
         setWorkLogs(formattedWorkLogs);

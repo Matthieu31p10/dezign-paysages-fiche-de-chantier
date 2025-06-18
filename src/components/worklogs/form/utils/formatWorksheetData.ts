@@ -59,6 +59,7 @@ export const createWorkLogFromFormData = (
     signedQuoteAmount: formData.signedQuoteAmount,
     isQuoteSigned: formData.isQuoteSigned,
     linkedProjectId: formData.linkedProjectId,
+    isBlankWorksheet: false,
     createdAt: new Date(),
     createdBy: currentUserName
   };

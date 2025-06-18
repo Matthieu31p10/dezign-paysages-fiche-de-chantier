@@ -11,18 +11,18 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
       // Formatter les données pour Supabase
       const workLogForDB = {
         id: workLog.id,
-        project_id: workLog.projectId, // project_id est maintenant obligatoire
+        project_id: workLog.projectId || '',
         date: workLog.date,
         personnel: workLog.personnel || [],
-        departure: workLog.timeTracking?.departure || null,
-        arrival: workLog.timeTracking?.arrival || null,
-        end_time: workLog.timeTracking?.end || null,
-        break_time: workLog.timeTracking?.breakTime || null,
+        departure: workLog.timeTracking?.departure || '',
+        arrival: workLog.timeTracking?.arrival || '',
+        end_time: workLog.timeTracking?.end || '',
+        break_time: workLog.timeTracking?.breakTime || '',
         total_hours: Number(workLog.timeTracking?.totalHours || 0),
         water_consumption: Number(workLog.waterConsumption || 0),
         waste_management: workLog.wasteManagement || 'none',
-        tasks: workLog.tasks || null,
-        notes: workLog.notes || null,
+        tasks: workLog.tasks || '',
+        notes: workLog.notes || '',
         invoiced: Boolean(workLog.invoiced),
         is_archived: Boolean(workLog.isArchived),
         client_signature: workLog.clientSignature || null,
@@ -34,6 +34,7 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
         linked_project_id: workLog.linkedProjectId || null,
         signed_quote_amount: workLog.signedQuoteAmount ? Number(workLog.signedQuoteAmount) : null,
         is_quote_signed: Boolean(workLog.isQuoteSigned),
+        is_blank_worksheet: Boolean(workLog.isBlankWorksheet),
         created_by: workLog.createdBy || null
       };
 
@@ -134,6 +135,7 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
           linked_project_id: workLogToUpdate.linkedProjectId,
           signed_quote_amount: workLogToUpdate.signedQuoteAmount,
           is_quote_signed: workLogToUpdate.isQuoteSigned || false,
+          is_blank_worksheet: workLogToUpdate.isBlankWorksheet || false,
           created_by: workLogToUpdate.createdBy
         })
         .eq('id', id);

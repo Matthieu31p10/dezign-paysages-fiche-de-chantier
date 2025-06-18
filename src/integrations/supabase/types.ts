@@ -9,134 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      blank_worksheet_consumables: {
-        Row: {
-          blank_worksheet_id: string | null
-          id: string
-          product: string
-          quantity: number
-          saved_for_reuse: boolean | null
-          supplier: string
-          total_price: number
-          unit: string
-          unit_price: number
-        }
-        Insert: {
-          blank_worksheet_id?: string | null
-          id?: string
-          product: string
-          quantity: number
-          saved_for_reuse?: boolean | null
-          supplier: string
-          total_price: number
-          unit: string
-          unit_price: number
-        }
-        Update: {
-          blank_worksheet_id?: string | null
-          id?: string
-          product?: string
-          quantity?: number
-          saved_for_reuse?: boolean | null
-          supplier?: string
-          total_price?: number
-          unit?: string
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blank_worksheet_consumables_blank_worksheet_id_fkey"
-            columns: ["blank_worksheet_id"]
-            isOneToOne: false
-            referencedRelation: "blank_worksheets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      blank_worksheets: {
-        Row: {
-          address: string | null
-          arrival: string | null
-          break_time: string | null
-          client_name: string | null
-          client_signature: string | null
-          contact_email: string | null
-          contact_phone: string | null
-          created_at: string | null
-          created_by: string | null
-          date: string
-          departure: string | null
-          end_time: string | null
-          hourly_rate: number | null
-          id: string
-          invoiced: boolean | null
-          is_archived: boolean | null
-          is_quote_signed: boolean | null
-          linked_project_id: string | null
-          notes: string | null
-          personnel: string[]
-          signed_quote_amount: number | null
-          tasks: string | null
-          total_hours: number
-          waste_management: string | null
-          water_consumption: number | null
-        }
-        Insert: {
-          address?: string | null
-          arrival?: string | null
-          break_time?: string | null
-          client_name?: string | null
-          client_signature?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          date: string
-          departure?: string | null
-          end_time?: string | null
-          hourly_rate?: number | null
-          id?: string
-          invoiced?: boolean | null
-          is_archived?: boolean | null
-          is_quote_signed?: boolean | null
-          linked_project_id?: string | null
-          notes?: string | null
-          personnel?: string[]
-          signed_quote_amount?: number | null
-          tasks?: string | null
-          total_hours?: number
-          waste_management?: string | null
-          water_consumption?: number | null
-        }
-        Update: {
-          address?: string | null
-          arrival?: string | null
-          break_time?: string | null
-          client_name?: string | null
-          client_signature?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          date?: string
-          departure?: string | null
-          end_time?: string | null
-          hourly_rate?: number | null
-          id?: string
-          invoiced?: boolean | null
-          is_archived?: boolean | null
-          is_quote_signed?: boolean | null
-          linked_project_id?: string | null
-          notes?: string | null
-          personnel?: string[]
-          signed_quote_amount?: number | null
-          tasks?: string | null
-          total_hours?: number
-          waste_management?: string | null
-          water_consumption?: number | null
-        }
-        Relationships: []
-      }
       consumables: {
         Row: {
           id: string
@@ -454,11 +326,12 @@ export type Database = {
           id: string
           invoiced: boolean | null
           is_archived: boolean | null
+          is_blank_worksheet: boolean | null
           is_quote_signed: boolean | null
           linked_project_id: string | null
           notes: string | null
           personnel: string[]
-          project_id: string
+          project_id: string | null
           signed_quote_amount: number | null
           tasks: string | null
           total_hours: number
@@ -482,11 +355,12 @@ export type Database = {
           id?: string
           invoiced?: boolean | null
           is_archived?: boolean | null
+          is_blank_worksheet?: boolean | null
           is_quote_signed?: boolean | null
           linked_project_id?: string | null
           notes?: string | null
           personnel: string[]
-          project_id: string
+          project_id?: string | null
           signed_quote_amount?: number | null
           tasks?: string | null
           total_hours?: number
@@ -510,11 +384,12 @@ export type Database = {
           id?: string
           invoiced?: boolean | null
           is_archived?: boolean | null
+          is_blank_worksheet?: boolean | null
           is_quote_signed?: boolean | null
           linked_project_id?: string | null
           notes?: string | null
           personnel?: string[]
-          project_id?: string
+          project_id?: string | null
           signed_quote_amount?: number | null
           tasks?: string | null
           total_hours?: number

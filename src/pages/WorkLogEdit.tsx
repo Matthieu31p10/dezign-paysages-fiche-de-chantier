@@ -58,6 +58,8 @@ const WorkLogEdit: React.FC = () => {
     );
   }
   
+  const isBlankWorksheet = workLog.isBlankWorksheet || false;
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -72,7 +74,7 @@ const WorkLogEdit: React.FC = () => {
             Retour
           </Button>
           <h1 className="text-2xl font-semibold text-green-800">
-            Modifier la fiche de suivi
+            Modifier la fiche {isBlankWorksheet ? 'vierge' : 'de suivi'}
           </h1>
         </div>
       </div>
@@ -81,12 +83,12 @@ const WorkLogEdit: React.FC = () => {
         <WorkLogForm 
           initialData={workLog} 
           onSuccess={() => {
-            toast.success('Fiche de suivi modifiée avec succès');
+            toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} modifiée avec succès`);
             handleReturn();
           }} 
           projectInfos={projectInfos}
           existingWorkLogs={workLogs}
-          isBlankWorksheet={false}
+          isBlankWorksheet={isBlankWorksheet}
         />
       </Card>
     </div>

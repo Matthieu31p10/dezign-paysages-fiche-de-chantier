@@ -3,13 +3,13 @@ import React, { useEffect } from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { FilePlus, Loader2 } from 'lucide-react';
-import { BlankWorksheet } from '@/types/blankWorksheet';
+import { WorkLog } from '@/types/models';
 import OriginalBlankWorkSheetForm from '../BlankWorkSheetForm';
 import { toast } from 'sonner';
 
 interface BlankWorkSheetFormProps {
   editingWorkLogId: string | null;
-  getWorkLogById: (id: string) => BlankWorksheet | undefined;
+  getWorkLogById: (id: string) => WorkLog;
   handleFormSuccess: () => void;
   isBlankWorksheet?: boolean;
 }
@@ -21,18 +21,14 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   isBlankWorksheet = true
 }) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [workLogData, setWorkLogData] = React.useState<BlankWorksheet | undefined>(undefined);
+  const [workLogData, setWorkLogData] = React.useState<WorkLog | undefined>(undefined);
 
   // Fetch work log data if editing
   useEffect(() => {
     if (editingWorkLogId) {
       try {
         const data = getWorkLogById(editingWorkLogId);
-        if (data) {
-          setWorkLogData(data);
-        } else {
-          toast.error("Fiche introuvable");
-        }
+        setWorkLogData(data);
       } catch (error) {
         console.error("Error fetching work log:", error);
         toast.error("Erreur lors du chargement de la fiche");

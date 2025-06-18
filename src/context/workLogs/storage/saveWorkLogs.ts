@@ -14,22 +14,19 @@ export const saveWorkLogsToStorage = async (workLogs: WorkLog[]): Promise<void> 
     
     // For each work log, upsert to database
     for (const workLog of workLogs) {
-      // Validate that projectId exists and is not empty
-      if (!workLog.projectId || workLog.projectId === '') {
-        console.warn(`Work log ${workLog.id} missing projectId, skipping`);
-        continue;
-      }
-      
-      // Check if project exists
-      const { data: projectExists } = await supabase
-        .from('projects')
-        .select('id')
-        .eq('id', workLog.projectId)
-        .single();
-      
-      if (!projectExists) {
-        console.warn(`Project ${workLog.projectId} not found, skipping work log ${workLog.id}`);
-        continue;
+      // Validate that projectId is either a valid UUID or null for blank worksheets
+      if (workLog.projectId && workLog.projectId !== '' && !workLog.isBlankWorksheet) {
+        // Check if project exists
+        const { data: projectExists } = await supabase
+          .from('projects')
+          .select('id')
+          .eq('id', workLog.projectId)
+          .single();
+        
+        if (!projectExists) {
+          console.warn(`Project ${workLog.projectId} not found, setting to null`);
+          workLog.projectId = '';
+        }
       }
       
       // Prepare work log data for database

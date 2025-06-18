@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { Card } from '@/components/ui/card';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 const BlankWorkSheetNew = () => {
   const navigate = useNavigate();
   const { projectInfos } = useApp();
-  const { blankWorksheets } = useBlankWorksheets();
+  const { workLogs } = useWorkLogs();
   
   const handleReturn = () => {
     navigate('/blank-worksheets', { replace: false });
@@ -45,6 +45,7 @@ const BlankWorkSheetNew = () => {
         <BlankWorkSheetForm 
           onSuccess={handleSuccess}
           projectInfos={projectInfos}
+          existingWorkLogs={workLogs}
           isBlankWorksheet={true}
         />
       </Card>

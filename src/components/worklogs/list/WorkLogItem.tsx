@@ -57,6 +57,9 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-green-600" />
                 <span className="font-medium text-sm">{formatDate(workLog.date)}</span>
+                {workLog.isBlankWorksheet && (
+                  <Badge variant="outline" className="text-xs bg-blue-50">Fiche vierge</Badge>
+                )}
               </div>
             </div>
             
