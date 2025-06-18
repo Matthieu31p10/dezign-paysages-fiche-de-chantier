@@ -23,6 +23,23 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
 }) => {
   const isMobile = useIsMobile();
 
+  // Convert BlankWorksheet to WorkLog-like structure for compatibility
+  const workLogSheet = {
+    ...sheet,
+    projectId: sheet.linked_project_id || '',
+    timeTracking: {
+      totalHours: sheet.total_hours
+    },
+    personnel: sheet.personnel || [],
+    hourlyRate: sheet.hourly_rate,
+    signedQuoteAmount: sheet.signed_quote_amount || 0,
+    isQuoteSigned: sheet.is_quote_signed,
+    invoiced: sheet.invoiced,
+    address: sheet.address,
+    createdAt: sheet.created_at,
+    clientName: sheet.client_name
+  };
+
   return (
     <Card className="border hover:shadow-md transition-all duration-200 hover:border-primary/20">
       <div className={`p-4 ${isMobile ? 'space-y-4' : 'flex items-start'}`}>
@@ -35,16 +52,16 @@ const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
           />
 
           <BlankSheetContent
-            sheet={sheet}
+            sheet={workLogSheet}
           />
 
           <BlankSheetStats
-            sheet={sheet}
+            sheet={workLogSheet}
           />
         </div>
 
         <BlankSheetActions
-          sheet={sheet}
+          sheet={workLogSheet}
           onEdit={onEdit}
           onExportPDF={onExportPDF}
           onPrint={onPrint}

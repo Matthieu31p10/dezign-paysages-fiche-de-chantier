@@ -55,8 +55,26 @@ const BlankWorkSheets: React.FC = () => {
       if (!worksheet) throw new Error('Worksheet not found');
       
       setIsExporting(true);
+      
+      // Convert BlankWorksheet to WorkLog format for PDF generation
+      const workLogFormat = {
+        ...worksheet,
+        projectId: worksheet.linked_project_id || '',
+        timeTracking: {
+          totalHours: worksheet.total_hours
+        },
+        personnel: worksheet.personnel || [],
+        hourlyRate: worksheet.hourly_rate,
+        signedQuoteAmount: worksheet.signed_quote_amount || 0,
+        isQuoteSigned: worksheet.is_quote_signed,
+        invoiced: worksheet.invoiced,
+        address: worksheet.address,
+        createdAt: worksheet.created_at,
+        clientName: worksheet.client_name
+      };
+      
       await generatePDF({
-        workLog: worksheet,
+        workLog: workLogFormat,
         action: 'print',
         config: {
           includeCompanyHeader: true,
@@ -80,8 +98,26 @@ const BlankWorkSheets: React.FC = () => {
       if (!worksheet) throw new Error('Worksheet not found');
       
       setIsExporting(true);
+      
+      // Convert BlankWorksheet to WorkLog format for PDF generation
+      const workLogFormat = {
+        ...worksheet,
+        projectId: worksheet.linked_project_id || '',
+        timeTracking: {
+          totalHours: worksheet.total_hours
+        },
+        personnel: worksheet.personnel || [],
+        hourlyRate: worksheet.hourly_rate,
+        signedQuoteAmount: worksheet.signed_quote_amount || 0,
+        isQuoteSigned: worksheet.is_quote_signed,
+        invoiced: worksheet.invoiced,
+        address: worksheet.address,
+        createdAt: worksheet.created_at,
+        clientName: worksheet.client_name
+      };
+      
       await generatePDF({
-        workLog: worksheet,
+        workLog: workLogFormat,
         action: 'download',
         config: options
       });
