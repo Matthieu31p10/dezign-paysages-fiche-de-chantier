@@ -25,14 +25,20 @@ const LastVisitCard: React.FC<LastVisitCardProps> = ({ visitInfo }) => {
   const completedVisits = projectWorkLogs.length;
   const plannedVisits = project?.annualVisits || 0;
   
-  // Calculate time deviation
+  // Calculate time deviation using team hours (same calculation as in reports)
   let timeDeviation = null;
   let timeDeviationClass = 'text-gray-600';
   
   if (project && project.visitDuration && projectWorkLogs.length > 0) {
-    const totalHours = projectWorkLogs.reduce((sum, log) => sum + (log.timeTracking?.totalHours || 0), 0);
-    const averageHours = totalHours / projectWorkLogs.length;
-    const deviation = averageHours - project.visitDuration;
+    // Calculate total team hours instead of individual hours
+    const totalTeamHours = projectWorkLogs.reduce((sum, log) => {
+      const individualHours = log.timeTracking?.totalHours || 0;
+      const personnelCount = log.personnel?.length || 1;
+      return sum + (individualHours * personnelCount);
+    }, 0);
+    
+    const averageTeamHoursPerVisit = totalTeamHours / projectWorkLogs.length;
+    const deviation = project.visitDuration - averageTeamHoursPerVisit;
     
     timeDeviation = deviation === 0 
       ? "Pas d'écart" 
@@ -40,7 +46,7 @@ const LastVisitCard: React.FC<LastVisitCardProps> = ({ visitInfo }) => {
     
     timeDeviationClass = deviation === 0 
       ? 'text-gray-600' 
-      : (deviation > 0 ? 'text-amber-600' : 'text-green-600');
+      : (deviation > 0 ? 'text-amber-600' : 'text-red-600');
     
     if (Math.abs(deviation) <= (project.visitDuration * 0.1)) {
       timeDeviationClass = 'text-green-600';
@@ -80,7 +86,7 @@ const LastVisitCard: React.FC<LastVisitCardProps> = ({ visitInfo }) => {
               </div>
             )}
             
-            {/* New: Time deviation display */}
+            {/* Time deviation display */}
             {timeDeviation && (
               <div className="flex items-center gap-2 text-sm mb-1">
                 <Clock className="h-4 w-4 text-gray-500" />
@@ -91,7 +97,7 @@ const LastVisitCard: React.FC<LastVisitCardProps> = ({ visitInfo }) => {
               </div>
             )}
             
-            {/* New: Visits count display */}
+            {/* Visits count display */}
             <div className="flex items-center gap-2 text-sm">
               <Target className="h-4 w-4 text-gray-500" />
               <span className="text-gray-600">Passages :</span>
