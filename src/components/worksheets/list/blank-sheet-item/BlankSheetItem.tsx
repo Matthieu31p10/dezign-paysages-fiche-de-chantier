@@ -1,112 +1,55 @@
 
 import React from 'react';
-import { WorkLog, ProjectInfo } from '@/types/models';
-import { Card } from '@/components/ui/card';
-import BlankSheetContent from './BlankSheetContent';
-import BlankSheetActions from './BlankSheetActions';
+import { WorkLog } from '@/types/models';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import TeamBadge from '@/components/ui/team-badge';
+import { useApp } from '@/context/AppContext';
 import BlankSheetHeader from './BlankSheetHeader';
+import BlankSheetContent from './BlankSheetContent';
 import BlankSheetStats from './BlankSheetStats';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import BlankSheetActions from './BlankSheetActions';
 
-export interface BlankSheetItemProps {
-  sheet?: WorkLog;
-  worklog?: WorkLog;
-  linkedProject?: ProjectInfo | null;
-  onEdit?: (id: string) => void;
-  onExportPDF?: (id: string) => void;
-  onPrint?: (id: string) => void;
+interface BlankSheetItemProps {
+  workLog: WorkLog;
 }
 
-const BlankSheetItem: React.FC<BlankSheetItemProps> = ({
-  sheet,
-  worklog,
-  linkedProject,
-  onEdit,
-  onExportPDF,
-  onPrint
-}) => {
-  const { updateWorkLog } = useWorkLogs();
-  const isMobile = useIsMobile();
+const BlankSheetItem: React.FC<BlankSheetItemProps> = ({ workLog }) => {
+  const { teams, getProjectById } = useApp();
   
-  // Use either sheet or worklog prop (for backwards compatibility)
-  const sheetData = sheet || worklog;
-  
-  if (!sheetData) return null;
-  
-  const handleInvoicedChange = async (checked: boolean) => {
-    if (sheetData.id) {
-      await updateWorkLog({
-        ...sheetData,
-        invoiced: checked
-      });
-    }
-  };
-  
-  const handleEdit = () => {
-    if (onEdit && sheetData.id) {
-      onEdit(sheetData.id);
-    }
-  };
-  
-  const handleExportPDF = () => {
-    if (onExportPDF && sheetData.id) {
-      onExportPDF(sheetData.id);
-    }
-  };
-  
-  const handlePrint = () => {
-    if (onPrint && sheetData.id) {
-      onPrint(sheetData.id);
-    }
-  };
+  const linkedProject = workLog.linkedProjectId ? getProjectById(workLog.linkedProjectId) : undefined;
+  const team = linkedProject ? teams.find(t => t.id === linkedProject.team) : undefined;
   
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow animate-fade-in">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-4 mb-4">
-            <Checkbox
-              checked={sheetData.invoiced || false}
-              onCheckedChange={handleInvoicedChange}
-              id={`invoiced-${sheetData.id}`}
-            />
-            <label 
-              htmlFor={`invoiced-${sheetData.id}`}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Facturée
-            </label>
+    <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" 
+          style={{ borderLeftColor: team?.color || '#6B7280' }}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 space-y-3">
+            <div className="flex items-start justify-between">
+              <BlankSheetHeader workLog={workLog} />
+              <div className="flex items-center gap-2">
+                {team && <TeamBadge teamName={team.name} teamColor={team.color} />}
+                {workLog.invoiced && (
+                  <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                    Facturé
+                  </Badge>
+                )}
+                {workLog.isQuoteSigned && (
+                  <Badge variant="default" className="bg-blue-100 text-blue-800 text-xs">
+                    Devis signé
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <BlankSheetContent workLog={workLog} linkedProject={linkedProject} />
+            <BlankSheetStats workLog={workLog} />
           </div>
-          
-          <BlankSheetHeader 
-            sheet={sheetData}
-            clientName={sheetData.clientName}
-            projectId={sheetData.projectId}
-            date={sheetData.date}
-            registrationTime={sheetData.createdAt}
-            invoiced={sheetData.invoiced}
-          />
-          
-          <BlankSheetContent 
-            sheet={sheetData}
-          />
-          
-          <BlankSheetStats 
-            sheet={sheetData}
-          />
+
+          <BlankSheetActions workLog={workLog} />
         </div>
-        
-        <div className="flex items-center gap-2 md:ml-auto">
-          <BlankSheetActions 
-            sheet={sheetData}
-            onEdit={handleEdit}
-            onExportPDF={handleExportPDF}
-            onPrint={handlePrint}
-          />
-        </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

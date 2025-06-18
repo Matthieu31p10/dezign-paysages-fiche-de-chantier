@@ -420,16 +420,19 @@ export type Database = {
       }
       teams: {
         Row: {
+          color: string | null
           created_at: string | null
           id: string
           name: string
         }
         Insert: {
+          color?: string | null
           created_at?: string | null
           id?: string
           name: string
         }
         Update: {
+          color?: string | null
           created_at?: string | null
           id?: string
           name?: string

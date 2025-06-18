@@ -1,114 +1,118 @@
 
 import React from 'react';
+import { WorkLog, ProjectInfo } from '@/types/models';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Users, MapPin, Eye, Edit, FileText, Building2, User } from 'lucide-react';
-import { WorkLog, ProjectInfo } from '@/types/models';
-import { formatDate } from '@/utils/helpers';
-import { useNavigate } from 'react-router-dom';
+import TeamBadge from '@/components/ui/team-badge';
 import { useApp } from '@/context/AppContext';
+import { useNavigate } from 'react-router-dom';
+import { formatDate } from '@/utils/date';
+import { 
+  Calendar, 
+  Clock, 
+  User, 
+  MapPin, 
+  Eye,
+  FileText,
+  Banknote
+} from 'lucide-react';
 
 interface WorkLogItemProps {
   workLog: WorkLog;
   project?: ProjectInfo;
-  onEdit?: (id: string) => void;
-  onExportPDF?: (id: string) => void;
 }
 
-const WorkLogItem: React.FC<WorkLogItemProps> = ({
-  workLog,
-  project,
-  onEdit,
-  onExportPDF
-}) => {
+const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
   const navigate = useNavigate();
   const { teams } = useApp();
+  
+  const team = teams.find(t => t.id === project?.team);
+  const isBlankWorksheet = workLog.isBlankWorksheet || !project;
   
   const handleView = () => {
     navigate(`/worklogs/${workLog.id}`);
   };
-  
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onEdit && workLog.id) {
-      onEdit(workLog.id);
-    }
-  };
-  
-  const handleExportPDF = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onExportPDF && workLog.id) {
-      onExportPDF(workLog.id);
-    }
-  };
-  
-  const totalTeamHours = (workLog.timeTracking?.totalHours || 0) * (workLog.personnel?.length || 1);
-  
-  // Get team name
-  const teamName = project && teams.find(team => team.id === project.team)?.name;
-  
+
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleView}>
-      <CardContent className="p-3">
-        <div className="flex justify-between items-start gap-3">
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center justify-between">
+    <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" 
+          style={{ borderLeftColor: team?.color || '#10B981' }}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 space-y-3">
+            {/* Header with project name and badges */}
+            <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-sm">{formatDate(workLog.date)}</span>
-                {workLog.isBlankWorksheet && (
-                  <Badge variant="outline" className="text-xs bg-blue-50">Fiche vierge</Badge>
+                <h3 className="font-semibold text-lg text-gray-900">
+                  {isBlankWorksheet ? (
+                    workLog.clientName || 'Fiche vierge sans nom'
+                  ) : (
+                    project?.name || 'Chantier inconnu'
+                  )}
+                </h3>
+                {isBlankWorksheet && (
+                  <Badge variant="secondary" className="text-xs">
+                    <FileText className="h-3 w-3 mr-1" />
+                    Fiche vierge
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {team && <TeamBadge teamName={team.name} teamColor={team.color} />}
+                {workLog.invoiced && (
+                  <Badge variant="default" className="bg-green-100 text-green-800">
+                    <Banknote className="h-3 w-3 mr-1" />
+                    Facturé
+                  </Badge>
                 )}
               </div>
             </div>
-            
-            {/* Project and team info */}
-            <div className="flex flex-col gap-1">
-              {project && (
-                <div className="flex items-center gap-1">
-                  <Building2 className="h-3 w-3 text-gray-500" />
-                  <span className="text-xs text-gray-600">{project.name}</span>
-                </div>
-              )}
-              {teamName && (
-                <div className="flex items-center gap-1">
-                  <User className="h-3 w-3 text-gray-500" />
-                  <span className="text-xs text-gray-600">Équipe {teamName}</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+
+            {/* Project info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                <span>{workLog.personnel?.length || 0} personne(s)</span>
+                <Calendar className="h-4 w-4" />
+                <span>{formatDate(new Date(workLog.date))}</span>
               </div>
+              
               <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{totalTeamHours.toFixed(1)}h équipe</span>
+                <Clock className="h-4 w-4" />
+                <span>{workLog.timeTracking?.totalHours || workLog.duration || 0}h</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                <span>{workLog.personnel.length} personne{workLog.personnel.length > 1 ? 's' : ''}</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                <span className="truncate">
+                  {workLog.address || project?.address || 'Adresse non renseignée'}
+                </span>
               </div>
             </div>
-            
+
+            {/* Notes preview */}
             {workLog.notes && (
-              <p className="text-xs text-gray-500 truncate">{workLog.notes}</p>
+              <p className="text-sm text-gray-600 line-clamp-2">
+                {workLog.notes}
+              </p>
             )}
           </div>
-          
-          <div className="flex gap-1">
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleView}>
-              <Eye className="h-3 w-3" />
+
+          {/* Action button */}
+          <div className="ml-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleView}
+              className="hover:bg-green-50 hover:border-green-300"
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              Voir
             </Button>
-            {onEdit && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleEdit}>
-                <Edit className="h-3 w-3" />
-              </Button>
-            )}
-            {onExportPDF && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleExportPDF}>
-                <FileText className="h-3 w-3" />
-              </Button>
-            )}
           </div>
         </div>
       </CardContent>

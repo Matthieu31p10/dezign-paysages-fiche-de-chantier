@@ -118,6 +118,7 @@ export interface WorkLog {
 export interface Team {
   id: string;
   name: string;
+  color: string;
 }
 
 export interface CompanyInfo {

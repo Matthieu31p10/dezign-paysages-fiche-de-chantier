@@ -25,7 +25,8 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const formattedTeams: Team[] = data.map(team => ({
           id: team.id,
-          name: team.name
+          name: team.name,
+          color: team.color || '#10B981'
         }));
 
         setTeams(formattedTeams);
@@ -44,7 +45,7 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const { data, error } = await supabase
         .from('teams')
-        .insert([{ name: team.name }])
+        .insert([{ name: team.name, color: team.color }])
         .select()
         .single();
 
@@ -52,7 +53,8 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const newTeam: Team = {
         id: data.id,
-        name: data.name
+        name: data.name,
+        color: data.color || '#10B981'
       };
 
       setTeams((prev) => [...prev, newTeam]);
@@ -69,7 +71,7 @@ export const TeamsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const { error } = await supabase
         .from('teams')
-        .update({ name: team.name })
+        .update({ name: team.name, color: team.color })
         .eq('id', team.id);
 
       if (error) throw error;

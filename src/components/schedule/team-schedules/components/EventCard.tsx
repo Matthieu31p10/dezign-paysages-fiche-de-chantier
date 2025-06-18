@@ -1,16 +1,22 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import TeamBadge from '@/components/ui/team-badge';
 import { Clock, MapPin } from 'lucide-react';
 import { TeamEvent } from '../types';
+import { useApp } from '@/context/AppContext';
 
 interface EventCardProps {
   event: TeamEvent;
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
+  const { teams } = useApp();
+  const team = teams.find(t => t.id === event.team);
+  
   return (
-    <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-lg border border-green-100 hover:shadow-md transition-shadow">
+    <div className="bg-gradient-to-r from-green-50 to-white p-4 rounded-lg border border-green-100 hover:shadow-md transition-shadow"
+         style={{ borderLeftColor: team?.color || '#10B981', borderLeftWidth: '4px' }}>
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -18,6 +24,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
               #{event.passageNumber}/{event.totalPassages}
             </Badge>
             <h4 className="font-bold text-green-800 text-lg">{event.projectName}</h4>
+            {team && <TeamBadge teamName={team.name} teamColor={team.color} size="sm" />}
           </div>
           <div className="flex items-center gap-2 text-gray-600">
             <MapPin className="h-4 w-4" />

@@ -25,11 +25,24 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+const TEAM_COLORS = [
+  '#10B981', // green
+  '#3B82F6', // blue
+  '#8B5CF6', // purple
+  '#F59E0B', // amber
+  '#EF4444', // red
+  '#EC4899', // pink
+  '#06B6D4', // cyan
+  '#6B7280', // gray
+];
+
 const TeamsManagement = () => {
   const { teams, addTeam, updateTeam, deleteTeam } = useTeams();
   const [newTeamName, setNewTeamName] = useState('');
+  const [newTeamColor, setNewTeamColor] = useState('#10B981');
   const [editingTeam, setEditingTeam] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [editColor, setEditColor] = useState('');
   const [deletingTeam, setDeletingTeam] = useState<string | null>(null);
   
   const handleAddTeam = () => {
@@ -38,18 +51,21 @@ const TeamsManagement = () => {
       return;
     }
     
-    addTeam({ name: newTeamName.trim() });
+    addTeam({ name: newTeamName.trim(), color: newTeamColor });
     setNewTeamName('');
+    setNewTeamColor('#10B981');
   };
   
-  const startEditing = (teamId: string, name: string) => {
+  const startEditing = (teamId: string, name: string, color: string) => {
     setEditingTeam(teamId);
     setEditName(name);
+    setEditColor(color);
   };
   
   const cancelEditing = () => {
     setEditingTeam(null);
     setEditName('');
+    setEditColor('');
   };
   
   const saveTeamEdit = (teamId: string) => {
@@ -60,7 +76,7 @@ const TeamsManagement = () => {
     
     const team = teams.find(t => t.id === teamId);
     if (team) {
-      updateTeam({ ...team, name: editName.trim() });
+      updateTeam({ ...team, name: editName.trim(), color: editColor });
       cancelEditing();
     }
   };
@@ -87,19 +103,35 @@ const TeamsManagement = () => {
             className="border-green-300 focus-visible:ring-green-500"
           />
         </div>
-        <Button 
-          onClick={handleAddTeam}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Ajouter
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            {TEAM_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={`w-8 h-8 rounded-full border-2 ${
+                  newTeamColor === color ? 'border-gray-400' : 'border-gray-200'
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => setNewTeamColor(color)}
+              />
+            ))}
+          </div>
+          <Button 
+            onClick={handleAddTeam}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Ajouter
+          </Button>
+        </div>
       </div>
       
       <Card className="border-green-200">
         <Table>
           <TableHeader className="bg-green-50">
             <TableRow>
+              <TableHead className="text-green-800">Couleur</TableHead>
               <TableHead className="text-green-800">Nom de l'équipe</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
@@ -107,13 +139,35 @@ const TeamsManagement = () => {
           <TableBody>
             {teams.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
                   Aucune équipe n'a été créée
                 </TableCell>
               </TableRow>
             ) : (
               teams.map((team) => (
                 <TableRow key={team.id}>
+                  <TableCell>
+                    {editingTeam === team.id ? (
+                      <div className="flex gap-1">
+                        {TEAM_COLORS.map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            className={`w-6 h-6 rounded-full border-2 ${
+                              editColor === color ? 'border-gray-400' : 'border-gray-200'
+                            }`}
+                            style={{ backgroundColor: color }}
+                            onClick={() => setEditColor(color)}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        className="w-6 h-6 rounded-full border border-gray-200"
+                        style={{ backgroundColor: team.color }}
+                      />
+                    )}
+                  </TableCell>
                   <TableCell>
                     {editingTeam === team.id ? (
                       <Input
@@ -151,7 +205,7 @@ const TeamsManagement = () => {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => startEditing(team.id, team.name)}
+                            onClick={() => startEditing(team.id, team.name, team.color)}
                             className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                           >
                             <Edit2 className="h-4 w-4" />
