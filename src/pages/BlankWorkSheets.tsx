@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { useBlankWorksheets } from '@/context/BlankWorksheetsContext/BlankWorksheetsContext';
 import BlankWorkSheetHeader from '@/components/worksheets/page/BlankWorkSheetHeader';
 import BlankWorkSheetForm from '@/components/worksheets/BlankWorkSheetForm';
-import BlankWorkSheetList from '@/components/worksheets/BlankWorkSheetList';
+import BlankWorkSheetList from '@/components/worksheets/list/BlankWorkSheetList';
 import BlankWorkSheetTabContent from '@/components/worksheets/page/BlankWorkSheetTabContent';
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BlankSheetPDFOptionsDialog from '@/components/worksheets/BlankSheetPDFOptionsDialog';
