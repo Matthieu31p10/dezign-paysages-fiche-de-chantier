@@ -30,10 +30,10 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <AppProvider>
-        <ProjectsProvider>
-          <WorkLogsProvider>
-            <BlankWorksheetsProvider>
+      <ProjectsProvider>
+        <WorkLogsProvider>
+          <BlankWorksheetsProvider>
+            <AppProvider>
               <Router>
                 <div className="App">
                   <Routes>
@@ -67,10 +67,10 @@ function App() {
                   <Toaster position="top-right" />
                 </div>
               </Router>
-            </BlankWorksheetsProvider>
-          </WorkLogsProvider>
-        </ProjectsProvider>
-      </AppProvider>
+            </AppProvider>
+          </BlankWorksheetsProvider>
+        </WorkLogsProvider>
+      </ProjectsProvider>
     </AuthProvider>
   );
 }
