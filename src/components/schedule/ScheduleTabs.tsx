@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -184,26 +183,39 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
 
           <TabsContent value="distribution" className="mt-0">
             <MonthlyDistribution
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              selectedTeam={selectedTeam}
+              projects={projectInfos}
+              teams={teams}
             />
           </TabsContent>
 
           <TabsContent value="teams" className="mt-0">
             <TeamSchedules
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              selectedTeam={selectedTeam}
+              month={selectedMonth}
+              year={selectedYear}
+              teamId={selectedTeam}
+              teams={teams}
+              projects={projectInfos}
             />
           </TabsContent>
 
           <TabsContent value="last-visits" className="mt-0">
-            <LastVisitsOverview />
+            <LastVisitsOverview
+              selectedTeam={selectedTeam}
+            />
           </TabsContent>
 
           <TabsContent value="configuration" className="mt-0">
-            <ConfigurationTabs />
+            <ConfigurationTabs
+              projectInfos={projectInfos}
+              rules={[]}
+              selectedProject=""
+              currentRule={{}}
+              onProjectChange={() => {}}
+              onRuleChange={() => {}}
+              onSaveRule={() => {}}
+              onTogglePreferredDay={() => {}}
+              onTogglePreferredTime={() => {}}
+            />
           </TabsContent>
         </div>
       </Tabs>
