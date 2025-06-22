@@ -1,14 +1,14 @@
-
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Calendar, MapPin, Clock, Users, ChevronDown, ChevronUp, Minimize2, Maximize2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Calendar, MapPin, Clock, Users, ChevronDown, ChevronUp, Minimize2, Maximize2, Lock } from 'lucide-react';
+import { format, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from './calendar/hooks/useYearlyPassageSchedule';
+import { useProjectLocks } from './project-locks/hooks/useProjectLocks';
 import TeamBadge from '@/components/ui/team-badge';
 
 interface ProjectScheduleListProps {
@@ -25,6 +25,7 @@ interface ScheduledEvent {
   totalPassages: number;
   address: string;
   visitDuration: number;
+  isLocked?: boolean;
 }
 
 interface TeamGroup {
@@ -39,6 +40,7 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
   selectedTeam
 }) => {
   const { projectInfos, teams } = useApp();
+  const { isProjectLockedOnDay } = useProjectLocks();
   const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>({});
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
 
@@ -54,26 +56,36 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
     const events: ScheduledEvent[] = [];
     const yearlySchedule = getYearlyPassageSchedule(selectedYear);
 
+    console.log('Generating scheduled events with lock checking...');
+
     filteredProjects.forEach(project => {
       const projectSchedule = yearlySchedule[project.id];
       if (projectSchedule) {
         Object.entries(projectSchedule).forEach(([date, passageNumber]) => {
-          events.push({
-            projectId: project.id,
-            projectName: project.name,
-            team: project.team,
-            date,
-            passageNumber,
-            totalPassages: project.annualVisits || 12,
-            address: project.address,
-            visitDuration: project.visitDuration
-          });
+          const dayOfWeek = getDay(new Date(date)) === 0 ? 7 : getDay(new Date(date));
+          const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
+          
+          if (!isLocked) {
+            events.push({
+              projectId: project.id,
+              projectName: project.name,
+              team: project.team,
+              date,
+              passageNumber,
+              totalPassages: project.annualVisits || 12,
+              address: project.address,
+              visitDuration: project.visitDuration,
+              isLocked: false
+            });
+          } else {
+            console.log(`Skipping locked event for ${project.name} on ${date} (day ${dayOfWeek})`);
+          }
         });
       }
     });
 
     return events.sort((a, b) => a.date.localeCompare(b.date));
-  }, [filteredProjects, getYearlyPassageSchedule, selectedYear]);
+  }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay]);
 
   const groupedByTeam = useMemo(() => {
     const teamGroups: Record<string, TeamGroup> = {};
@@ -247,17 +259,22 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
                                   {events.map((event) => (
                                     <div
                                       key={`${event.projectId}-${event.date}`}
-                                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                                        event.isLocked 
+                                          ? 'bg-red-50 border-red-200' 
+                                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                                      }`}
                                     >
                                       <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-2 text-green-600">
+                                        <div className={`flex items-center gap-2 ${event.isLocked ? 'text-red-600' : 'text-green-600'}`}>
+                                          {event.isLocked && <Lock className="h-4 w-4" />}
                                           <Calendar className="h-4 w-4" />
                                           <span className="font-semibold">
                                             {format(new Date(event.date), "EEEE d MMMM yyyy", { locale: fr })}
                                           </span>
                                         </div>
-                                        <Badge variant="secondary" className="bg-green-50 text-green-700">
-                                          Passage {event.passageNumber}/{event.totalPassages}
+                                        <Badge variant="secondary" className={event.isLocked ? 'bg-red-100 text-red-700' : 'bg-green-50 text-green-700'}>
+                                          {event.isLocked ? 'Verrouillé' : `Passage ${event.passageNumber}/${event.totalPassages}`}
                                         </Badge>
                                       </div>
                                       <div className="flex items-center gap-2 text-gray-600">

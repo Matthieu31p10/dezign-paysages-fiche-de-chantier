@@ -1,13 +1,19 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDaysIcon, Users, List, Clock } from 'lucide-react';
-import ScheduleCalendar from './ScheduleCalendar';
-import TeamSchedules from './TeamSchedules';
-import MonthlyDistribution from './MonthlyDistribution';
-import ProjectScheduleList from './ProjectScheduleList';
-import LastVisitsOverview from './last-visits/LastVisitsOverview';
-import ScheduleControls from './ScheduleControls';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ChevronLeft, ChevronRight, Calendar, List } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import ScheduleCalendar from './ScheduleCalendar';
+import ProjectScheduleList from './ProjectScheduleList';
+import MonthlyDistribution from './MonthlyDistribution';
+import TeamSchedules from './TeamSchedules';
+import ConfigurationTabs from './configuration/ConfigurationTabs';
+import LastVisitsOverview from './last-visits/LastVisitsOverview';
+import ProjectLocksManager from './project-locks/components/ProjectLocksManager';
 
 interface ScheduleTabsProps {
   selectedMonth: number;
@@ -44,135 +50,164 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
   onNavigateMonth,
   onTabChange,
 }) => {
-  const { projectInfos, teams } = useApp();
+  const { teams, projectInfos } = useApp();
+
+  const activeProjects = projectInfos.filter(p => !p.isArchived);
 
   return (
-    <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:flex">
-          <TabsTrigger value="planning" className="flex items-center gap-2">
-            <CalendarDaysIcon className="h-4 w-4" />
-            <span>Planning</span>
-          </TabsTrigger>
-          <TabsTrigger value="previsions" className="flex items-center gap-2">
-            <List className="h-4 w-4" />
-            <span>Prévisions</span>
-          </TabsTrigger>
-          <TabsTrigger value="distribution" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>Distribution</span>
-          </TabsTrigger>
-          <TabsTrigger value="derniers-passages" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span>Derniers passages</span>
-          </TabsTrigger>
-        </TabsList>
-      </div>
-      
-      <TabsContent value="planning" className="space-y-4">
-        <ScheduleControls
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          selectedTeam={selectedTeam}
-          showWeekends={showWeekends}
-          viewMode={viewMode}
-          teams={teams}
-          months={months}
-          years={years}
-          onMonthChange={onMonthChange}
-          onYearChange={onYearChange}
-          onTeamChange={onTeamChange}
-          onShowWeekendsChange={onShowWeekendsChange}
-          onViewModeChange={onViewModeChange}
-          onNavigateMonth={onNavigateMonth}
-        />
-        
-        <div className="transition-all duration-300">
-          {viewMode === 'calendar' ? (
-            <ScheduleCalendar 
-              month={selectedMonth} 
-              year={selectedYear} 
-              teamId={selectedTeam}
-              showWeekends={showWeekends}
-            />
-          ) : (
-            <TeamSchedules
-              month={selectedMonth}
-              year={selectedYear}
-              teamId={selectedTeam}
-              teams={teams}
-              projects={projectInfos}
-            />
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-6 gap-1">
+              <TabsTrigger value="planning" className="text-sm">Planning</TabsTrigger>
+              <TabsTrigger value="distribution" className="text-sm">Répartition</TabsTrigger>
+              <TabsTrigger value="teams" className="text-sm">Équipes</TabsTrigger>
+              <TabsTrigger value="last-visits" className="text-sm">Derniers passages</TabsTrigger>
+              <TabsTrigger value="configuration" className="text-sm">Configuration</TabsTrigger>
+            </TabsList>
+
+            {activeTab === 'planning' && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <ProjectLocksManager projects={activeProjects} />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewModeChange(viewMode === 'calendar' ? 'list' : 'calendar')}
+                    className="flex items-center gap-2"
+                  >
+                    {viewMode === 'calendar' ? <List className="h-4 w-4" /> : <Calendar className="h-4 w-4" />}
+                    {viewMode === 'calendar' ? 'Vue liste' : 'Vue calendrier'}
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="show-weekends"
+                    checked={showWeekends}
+                    onCheckedChange={onShowWeekendsChange}
+                  />
+                  <Label htmlFor="show-weekends" className="text-sm">Week-ends</Label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {(activeTab === 'planning' || activeTab === 'distribution' || activeTab === 'teams') && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateMonth('prev')}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <Select value={selectedMonth.toString()} onValueChange={(value) => onMonthChange(parseInt(value))}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(parseInt(value))}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateMonth('next')}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="team-select" className="text-sm font-medium">Équipe:</Label>
+                <Select value={selectedTeam} onValueChange={onTeamChange}>
+                  <SelectTrigger className="w-40" id="team-select">
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les équipes</SelectItem>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           )}
         </div>
-      </TabsContent>
-      
-      <TabsContent value="previsions" className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border">
-          <div className="flex items-center gap-3">
-            <select 
-              value={selectedYear} 
-              onChange={(e) => onYearChange(parseInt(e.target.value))}
-              className="h-8 px-3 bg-white border border-gray-300 rounded-md text-sm"
-            >
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <select 
-              value={selectedTeam} 
-              onChange={(e) => onTeamChange(e.target.value)}
-              className="h-8 px-3 bg-white border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Toutes les équipes</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>{team.name}</option>
-              ))}
-            </select>
-          </div>
+
+        <div className="p-6">
+          <TabsContent value="planning" className="mt-0">
+            {viewMode === 'calendar' ? (
+              <ScheduleCalendar
+                month={selectedMonth}
+                year={selectedYear}
+                teamId={selectedTeam}
+                showWeekends={showWeekends}
+              />
+            ) : (
+              <ProjectScheduleList
+                selectedYear={selectedYear}
+                selectedTeam={selectedTeam}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="distribution" className="mt-0">
+            <MonthlyDistribution
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              selectedTeam={selectedTeam}
+            />
+          </TabsContent>
+
+          <TabsContent value="teams" className="mt-0">
+            <TeamSchedules
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              selectedTeam={selectedTeam}
+            />
+          </TabsContent>
+
+          <TabsContent value="last-visits" className="mt-0">
+            <LastVisitsOverview />
+          </TabsContent>
+
+          <TabsContent value="configuration" className="mt-0">
+            <ConfigurationTabs />
+          </TabsContent>
         </div>
-        
-        <ProjectScheduleList 
-          selectedYear={selectedYear}
-          selectedTeam={selectedTeam}
-        />
-      </TabsContent>
-      
-      <TabsContent value="distribution" className="space-y-4">
-        <MonthlyDistribution 
-          projects={projectInfos} 
-          teams={teams}
-        />
-      </TabsContent>
-      
-      <TabsContent value="derniers-passages" className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">Suivi des derniers passages</h2>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <select 
-              value={selectedTeam} 
-              onChange={(e) => onTeamChange(e.target.value)}
-              className="h-8 px-3 bg-white border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Toutes les équipes</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>{team.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        
-        <LastVisitsOverview selectedTeam={selectedTeam} />
-      </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 };
 

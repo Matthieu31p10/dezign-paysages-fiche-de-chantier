@@ -35,8 +35,8 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     }
     
     const teamProjects = teamId === 'all'
-      ? projectInfos
-      : projectInfos.filter(project => project.team === teamId);
+      ? projectInfos.filter(p => !p.isArchived)
+      : projectInfos.filter(project => project.team === teamId && !project.isArchived);
     
     return { monthStart, monthEnd, days, startDayOfWeek, teamProjects };
   }, [month, year, teamId, projectInfos, showWeekends]);
@@ -51,15 +51,22 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     const yearlySchedule = getYearlyPassageSchedule(year);
     const dayOfWeek = getDay(date) === 0 ? 7 : getDay(date); // Convert Sunday from 0 to 7
     
+    console.log(`Checking events for ${dateString}, day of week: ${dayOfWeek}`);
+    
     teamProjects.forEach(project => {
       // Check if this project is locked on this day of the week
-      if (isProjectLockedOnDay(project.id, dayOfWeek)) {
+      const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
+      console.log(`Project ${project.name} locked on day ${dayOfWeek}:`, isLocked);
+      
+      if (isLocked) {
+        console.log(`Skipping project ${project.name} for ${dateString} due to lock`);
         return; // Skip this project for this day
       }
 
       const passageNumber = yearlySchedule[project.id]?.[dateString];
       
       if (passageNumber) {
+        console.log(`Adding event for project ${project.name} on ${dateString}, passage ${passageNumber}`);
         events.push({
           id: `${project.id}-${dateString}`,
           projectId: project.id,
@@ -72,6 +79,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
       }
     });
     
+    console.log(`Total events for ${dateString}:`, events.length);
     return events;
   };
 
