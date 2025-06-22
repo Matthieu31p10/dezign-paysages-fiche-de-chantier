@@ -71,7 +71,7 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
   }, [refreshLocks]);
 
   if (locksError) {
-    return <ErrorState error={locksError} onRetry={handleRetry} />;
+    return <ErrorState error={new Error(locksError)} onRetry={handleRetry} />;
   }
 
   if (locksLoading) {
