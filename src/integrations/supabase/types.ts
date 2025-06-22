@@ -230,6 +230,39 @@ export type Database = {
         }
         Relationships: []
       }
+      project_day_locks: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          description: string | null
+          id: string
+          is_active: boolean
+          project_id: string
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          project_id: string
+          reason: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          project_id?: string
+          reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_documents: {
         Row: {
           created_at: string | null
