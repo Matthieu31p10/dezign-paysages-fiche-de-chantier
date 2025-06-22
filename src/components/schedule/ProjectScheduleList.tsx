@@ -38,7 +38,8 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
       : projectInfos.filter(p => p.team === selectedTeam && !p.isArchived);
   }, [projectInfos, selectedTeam]);
 
-  const getYearlyPassageSchedule = useYearlyPassageSchedule(filteredProjects, selectedYear, true);
+  // Pass the lock checking function to useYearlyPassageSchedule
+  const getYearlyPassageSchedule = useYearlyPassageSchedule(filteredProjects, selectedYear, true, isProjectLockedOnDay);
 
   const scheduledEvents = useScheduledEvents(
     filteredProjects,

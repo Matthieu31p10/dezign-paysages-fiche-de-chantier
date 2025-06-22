@@ -41,7 +41,8 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     return { monthStart, monthEnd, days, startDayOfWeek, teamProjects };
   }, [month, year, teamId, projectInfos, showWeekends]);
 
-  const getYearlyPassageSchedule = useYearlyPassageSchedule(teamProjects, year, showWeekends);
+  // Pass the lock checking function to useYearlyPassageSchedule
+  const getYearlyPassageSchedule = useYearlyPassageSchedule(teamProjects, year, showWeekends, isProjectLockedOnDay);
   
   const getEventsForDay = (date: Date) => {
     if (!showWeekends && isWeekend(date)) return [];
