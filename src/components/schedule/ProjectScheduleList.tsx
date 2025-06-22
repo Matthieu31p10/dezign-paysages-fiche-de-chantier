@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { getDay } from 'date-fns';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from './calendar/hooks/useYearlyPassageSchedule';
@@ -117,21 +117,21 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
     return Object.values(teamGroups).sort((a, b) => a.teamName.localeCompare(b.teamName));
   }, [scheduledEvents, teams]);
 
-  const toggleTeamExpansion = (teamId: string) => {
+  const toggleTeamExpansion = useCallback((teamId: string) => {
     setExpandedTeams(prev => ({
       ...prev,
       [teamId]: !prev[teamId]
     }));
-  };
+  }, []);
 
-  const toggleProjectExpansion = (projectId: string) => {
+  const toggleProjectExpansion = useCallback((projectId: string) => {
     setExpandedProjects(prev => ({
       ...prev,
       [projectId]: !prev[projectId]
     }));
-  };
+  }, []);
 
-  const toggleAllProjects = (teamId: string, expand: boolean) => {
+  const toggleAllProjects = useCallback((teamId: string, expand: boolean) => {
     const teamGroup = groupedByTeam.find(g => g.teamId === teamId);
     if (teamGroup) {
       const updates: Record<string, boolean> = {};
@@ -140,7 +140,7 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
       });
       setExpandedProjects(prev => ({ ...prev, ...updates }));
     }
-  };
+  }, [groupedByTeam]);
 
   if (groupedByTeam.length === 0) {
     return <EmptyState />;
