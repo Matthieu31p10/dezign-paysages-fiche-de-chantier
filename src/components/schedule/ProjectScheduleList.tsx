@@ -1,12 +1,15 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Clock, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Calendar, MapPin, Clock, Users, ChevronDown, ChevronUp, Minimize2, Maximize2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from './calendar/hooks/useYearlyPassageSchedule';
+import TeamBadge from '@/components/ui/team-badge';
 
 interface ProjectScheduleListProps {
   selectedYear: number;
@@ -24,11 +27,20 @@ interface ScheduledEvent {
   visitDuration: number;
 }
 
+interface TeamGroup {
+  teamId: string;
+  teamName: string;
+  teamColor: string;
+  projects: Record<string, ScheduledEvent[]>;
+}
+
 const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
   selectedYear,
   selectedTeam
 }) => {
   const { projectInfos, teams } = useApp();
+  const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>({});
+  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
 
   const filteredProjects = useMemo(() => {
     return selectedTeam === 'all' 
@@ -63,25 +75,66 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
     return events.sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredProjects, getYearlyPassageSchedule, selectedYear]);
 
-  const groupedByProject = useMemo(() => {
-    const grouped: Record<string, ScheduledEvent[]> = {};
+  const groupedByTeam = useMemo(() => {
+    const teamGroups: Record<string, TeamGroup> = {};
     
     scheduledEvents.forEach(event => {
-      if (!grouped[event.projectId]) {
-        grouped[event.projectId] = [];
+      const team = teams.find(t => t.id === event.team);
+      const teamName = team ? team.name : 'Équipe inconnue';
+      const teamColor = team ? team.color : '#6B7280';
+      
+      if (!teamGroups[event.team]) {
+        teamGroups[event.team] = {
+          teamId: event.team,
+          teamName,
+          teamColor,
+          projects: {}
+        };
       }
-      grouped[event.projectId].push(event);
+      
+      if (!teamGroups[event.team].projects[event.projectId]) {
+        teamGroups[event.team].projects[event.projectId] = [];
+      }
+      
+      teamGroups[event.team].projects[event.projectId].push(event);
     });
 
-    return grouped;
-  }, [scheduledEvents]);
+    // Trier les projets dans chaque équipe par nom
+    Object.values(teamGroups).forEach(teamGroup => {
+      Object.keys(teamGroup.projects).forEach(projectId => {
+        teamGroup.projects[projectId].sort((a, b) => a.date.localeCompare(b.date));
+      });
+    });
 
-  const getTeamName = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    return team ? team.name : teamId;
+    return Object.values(teamGroups).sort((a, b) => a.teamName.localeCompare(b.teamName));
+  }, [scheduledEvents, teams]);
+
+  const toggleTeamExpansion = (teamId: string) => {
+    setExpandedTeams(prev => ({
+      ...prev,
+      [teamId]: !prev[teamId]
+    }));
   };
 
-  if (Object.keys(groupedByProject).length === 0) {
+  const toggleProjectExpansion = (projectId: string) => {
+    setExpandedProjects(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+  };
+
+  const toggleAllProjects = (teamId: string, expand: boolean) => {
+    const teamGroup = groupedByTeam.find(g => g.teamId === teamId);
+    if (teamGroup) {
+      const updates: Record<string, boolean> = {};
+      Object.keys(teamGroup.projects).forEach(projectId => {
+        updates[projectId] = expand;
+      });
+      setExpandedProjects(prev => ({ ...prev, ...updates }));
+    }
+  };
+
+  if (groupedByTeam.length === 0) {
     return (
       <Card className="shadow-lg border-0">
         <CardContent className="p-12 text-center">
@@ -99,63 +152,131 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
 
   return (
     <div className="space-y-6">
-      {Object.entries(groupedByProject).map(([projectId, events]) => {
-        const project = filteredProjects.find(p => p.id === projectId);
-        if (!project) return null;
+      {groupedByTeam.map((teamGroup) => {
+        const totalPassages = Object.values(teamGroup.projects).reduce((sum, events) => sum + events.length, 0);
+        const isTeamExpanded = expandedTeams[teamGroup.teamId] ?? true;
 
         return (
-          <Card key={projectId} className="shadow-lg border-0 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-50 via-blue-25 to-white border-b border-blue-100">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <MapPin className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{project.name}</h3>
-                    <p className="text-sm text-gray-600 font-normal flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      {getTeamName(project.team)}
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 font-semibold">
-                  {events.length} passage{events.length !== 1 ? 's' : ''}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid gap-4">
-                {events.map((event, index) => (
-                  <div
-                    key={`${event.projectId}-${event.date}`}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-blue-600">
-                        <Calendar className="h-4 w-4" />
-                        <span className="font-semibold">
-                          {format(new Date(event.date), "EEEE d MMMM yyyy", { locale: fr })}
+          <Card key={teamGroup.teamId} className="shadow-lg border-0 overflow-hidden">
+            <Collapsible open={isTeamExpanded} onOpenChange={() => toggleTeamExpansion(teamGroup.teamId)}>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="bg-gradient-to-r from-blue-50 via-blue-25 to-white border-b border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Users className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <TeamBadge teamName={teamGroup.teamName} teamColor={teamGroup.teamColor} size="md" />
+                        <span className="text-lg font-bold text-gray-900">
+                          {Object.keys(teamGroup.projects).length} chantier{Object.keys(teamGroup.projects).length !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                        Passage {event.passageNumber}/{event.totalPassages}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 font-semibold">
+                        {totalPassages} passage{totalPassages !== 1 ? 's' : ''}
                       </Badge>
+                      {isTeamExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">{event.visitDuration}h</span>
-                    </div>
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <CardContent className="p-6">
+                  <div className="flex justify-end gap-2 mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleAllProjects(teamGroup.teamId, true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                      Tout déplier
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleAllProjects(teamGroup.teamId, false)}
+                      className="flex items-center gap-2"
+                    >
+                      <Minimize2 className="h-4 w-4" />
+                      Tout replier
+                    </Button>
                   </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600 flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  {project.address}
-                </p>
-              </div>
-            </CardContent>
+
+                  <div className="space-y-4">
+                    {Object.entries(teamGroup.projects).map(([projectId, events]) => {
+                      const project = filteredProjects.find(p => p.id === projectId);
+                      if (!project) return null;
+
+                      const isProjectExpanded = expandedProjects[projectId] ?? true;
+
+                      return (
+                        <Card key={projectId} className="border border-gray-200">
+                          <Collapsible open={isProjectExpanded} onOpenChange={() => toggleProjectExpansion(projectId)}>
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors">
+                                <CardTitle className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 rounded-lg">
+                                      <MapPin className="h-4 w-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                      <h4 className="text-lg font-bold text-gray-900">{project.name}</h4>
+                                      <p className="text-sm text-gray-600 font-normal flex items-center gap-2 mt-1">
+                                        <MapPin className="h-3 w-3" />
+                                        {project.address}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 font-semibold">
+                                      {events.length} passage{events.length !== 1 ? 's' : ''}
+                                    </Badge>
+                                    {isProjectExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                  </div>
+                                </CardTitle>
+                              </CardHeader>
+                            </CollapsibleTrigger>
+                            
+                            <CollapsibleContent>
+                              <CardContent className="pt-0">
+                                <div className="grid gap-3">
+                                  {events.map((event) => (
+                                    <div
+                                      key={`${event.projectId}-${event.date}`}
+                                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                                    >
+                                      <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-green-600">
+                                          <Calendar className="h-4 w-4" />
+                                          <span className="font-semibold">
+                                            {format(new Date(event.date), "EEEE d MMMM yyyy", { locale: fr })}
+                                          </span>
+                                        </div>
+                                        <Badge variant="secondary" className="bg-green-50 text-green-700">
+                                          Passage {event.passageNumber}/{event.totalPassages}
+                                        </Badge>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-gray-600">
+                                        <Clock className="h-4 w-4" />
+                                        <span className="text-sm">{event.visitDuration}h</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </CardContent>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
           </Card>
         );
       })}
