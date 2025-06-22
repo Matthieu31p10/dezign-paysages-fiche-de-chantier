@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useCallback } from 'react';
 import { getDay } from 'date-fns';
 import { useApp } from '@/context/AppContext';
@@ -6,6 +5,9 @@ import { useYearlyPassageSchedule } from './calendar/hooks/useYearlyPassageSched
 import { useProjectLocks } from './project-locks/hooks/useProjectLocks';
 import TeamGroup from './project-schedule-list/components/TeamGroup';
 import EmptyState from './project-schedule-list/components/EmptyState';
+import LoadingSkeleton from './project-schedule-list/components/LoadingSkeleton';
+import ErrorState from './project-schedule-list/components/ErrorState';
+import ErrorBoundary from '@/components/ui/error-boundary';
 
 interface ProjectScheduleListProps {
   selectedYear: number;
@@ -36,51 +38,64 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
   selectedTeam
 }) => {
   const { projectInfos, teams } = useApp();
-  const { isProjectLockedOnDay } = useProjectLocks();
+  const { isProjectLockedOnDay, isLoading: locksLoading, refreshLocks } = useProjectLocks();
   const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>({});
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<Error | null>(null);
 
   const filteredProjects = useMemo(() => {
-    return selectedTeam === 'all' 
-      ? projectInfos.filter(p => !p.isArchived)
-      : projectInfos.filter(p => p.team === selectedTeam && !p.isArchived);
+    try {
+      return selectedTeam === 'all' 
+        ? projectInfos.filter(p => !p.isArchived)
+        : projectInfos.filter(p => p.team === selectedTeam && !p.isArchived);
+    } catch (err) {
+      console.error('Error filtering projects:', err);
+      setError(err as Error);
+      return [];
+    }
   }, [projectInfos, selectedTeam]);
 
   const getYearlyPassageSchedule = useYearlyPassageSchedule(filteredProjects, selectedYear, true);
 
   const scheduledEvents = useMemo(() => {
-    const events: ScheduledEvent[] = [];
-    const yearlySchedule = getYearlyPassageSchedule(selectedYear);
+    try {
+      const events: ScheduledEvent[] = [];
+      const yearlySchedule = getYearlyPassageSchedule(selectedYear);
 
-    console.log('Generating scheduled events with lock checking...');
+      console.log('Generating scheduled events with lock checking...');
 
-    filteredProjects.forEach(project => {
-      const projectSchedule = yearlySchedule[project.id];
-      if (projectSchedule) {
-        Object.entries(projectSchedule).forEach(([date, passageNumber]) => {
-          const dayOfWeek = getDay(new Date(date)) === 0 ? 7 : getDay(new Date(date));
-          const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
-          
-          if (!isLocked) {
-            events.push({
-              projectId: project.id,
-              projectName: project.name,
-              team: project.team,
-              date,
-              passageNumber,
-              totalPassages: project.annualVisits || 12,
-              address: project.address,
-              visitDuration: project.visitDuration,
-              isLocked: false
-            });
-          } else {
-            console.log(`Skipping locked event for ${project.name} on ${date} (day ${dayOfWeek})`);
-          }
-        });
-      }
-    });
+      filteredProjects.forEach(project => {
+        const projectSchedule = yearlySchedule[project.id];
+        if (projectSchedule) {
+          Object.entries(projectSchedule).forEach(([date, passageNumber]) => {
+            const dayOfWeek = getDay(new Date(date)) === 0 ? 7 : getDay(new Date(date));
+            const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
+            
+            if (!isLocked) {
+              events.push({
+                projectId: project.id,
+                projectName: project.name,
+                team: project.team,
+                date,
+                passageNumber,
+                totalPassages: project.annualVisits || 12,
+                address: project.address,
+                visitDuration: project.visitDuration,
+                isLocked: false
+              });
+            } else {
+              console.log(`Skipping locked event for ${project.name} on ${date} (day ${dayOfWeek})`);
+            }
+          });
+        }
+      });
 
-    return events.sort((a, b) => a.date.localeCompare(b.date));
+      return events.sort((a, b) => a.date.localeCompare(b.date));
+    } catch (err) {
+      console.error('Error generating scheduled events:', err);
+      setError(err as Error);
+      return [];
+    }
   }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay]);
 
   const groupedByTeam = useMemo(() => {
@@ -142,28 +157,43 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
     }
   }, [groupedByTeam]);
 
+  const handleRetry = useCallback(() => {
+    setError(null);
+    refreshLocks();
+  }, [refreshLocks]);
+
+  if (error) {
+    return <ErrorState error={error} onRetry={handleRetry} />;
+  }
+
+  if (locksLoading) {
+    return <LoadingSkeleton />;
+  }
+
   if (groupedByTeam.length === 0) {
     return <EmptyState />;
   }
 
   return (
-    <div className="space-y-6">
-      {groupedByTeam.map((teamGroup) => (
-        <TeamGroup
-          key={teamGroup.teamId}
-          teamId={teamGroup.teamId}
-          teamName={teamGroup.teamName}
-          teamColor={teamGroup.teamColor}
-          projects={teamGroup.projects}
-          filteredProjects={filteredProjects}
-          expandedProjects={expandedProjects}
-          isExpanded={expandedTeams[teamGroup.teamId] ?? true}
-          onToggleExpansion={toggleTeamExpansion}
-          onToggleProject={toggleProjectExpansion}
-          onToggleAllProjects={toggleAllProjects}
-        />
-      ))}
-    </div>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        {groupedByTeam.map((teamGroup) => (
+          <TeamGroup
+            key={teamGroup.teamId}
+            teamId={teamGroup.teamId}
+            teamName={teamGroup.teamName}
+            teamColor={teamGroup.teamColor}
+            projects={teamGroup.projects}
+            filteredProjects={filteredProjects}
+            expandedProjects={expandedProjects}
+            isExpanded={expandedTeams[teamGroup.teamId] ?? true}
+            onToggleExpansion={toggleTeamExpansion}
+            onToggleProject={toggleProjectExpansion}
+            onToggleAllProjects={toggleAllProjects}
+          />
+        ))}
+      </div>
+    </ErrorBoundary>
   );
 };
 

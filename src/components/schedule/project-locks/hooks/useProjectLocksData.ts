@@ -7,17 +7,21 @@ import { supabase } from '@/integrations/supabase/client';
 export const useProjectLocksData = () => {
   const [projectLocks, setProjectLocks] = useState<ProjectDayLock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const loadProjectLocks = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      setError(null);
+      
+      const { data, error: supabaseError } = await supabase
         .from('project_day_locks')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Erreur lors du chargement des verrouillages:', error);
+      if (supabaseError) {
+        console.error('Erreur lors du chargement des verrouillages:', supabaseError);
+        setError(new Error(`Erreur de base de données: ${supabaseError.message}`));
         toast.error('Erreur lors du chargement des verrouillages');
         return;
       }
@@ -35,6 +39,8 @@ export const useProjectLocksData = () => {
       setProjectLocks(formattedLocks);
     } catch (error) {
       console.error('Erreur lors du chargement des verrouillages:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      setError(new Error(errorMessage));
       toast.error('Erreur lors du chargement des verrouillages');
     } finally {
       setIsLoading(false);
@@ -49,6 +55,7 @@ export const useProjectLocksData = () => {
     projectLocks,
     setProjectLocks,
     isLoading,
+    error,
     refreshLocks: loadProjectLocks,
   };
 };
