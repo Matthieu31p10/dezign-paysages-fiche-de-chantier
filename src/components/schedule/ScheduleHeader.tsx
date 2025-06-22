@@ -3,10 +3,41 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { useApp } from '@/context/AppContext';
+import { useProjectLocks } from './project-locks/hooks/useProjectLocks';
 
 const ScheduleHeader: React.FC = () => {
+  const { projectInfos } = useApp();
+  const { projectLocks } = useProjectLocks();
+
   const handleGenerateSchedule = () => {
-    toast.success("Planning généré avec succès");
+    const activeLocks = projectLocks.filter(lock => lock.isActive);
+    const affectedProjects = activeLocks.length > 0 
+      ? [...new Set(activeLocks.map(lock => lock.projectId))].length 
+      : 0;
+    
+    console.log('Génération du planning avec les contraintes suivantes:');
+    console.log('- Nombre de chantiers:', projectInfos.filter(p => !p.isArchived).length);
+    console.log('- Nombre de verrouillages actifs:', activeLocks.length);
+    console.log('- Nombre de chantiers affectés par des verrouillages:', affectedProjects);
+    
+    if (activeLocks.length > 0) {
+      activeLocks.forEach(lock => {
+        const project = projectInfos.find(p => p.id === lock.projectId);
+        const dayNames = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
+        console.log(`- Verrouillage: ${project?.name || 'Chantier inconnu'} bloqué les ${dayNames[lock.dayOfWeek]} (${lock.reason})`);
+      });
+    }
+
+    toast.success(
+      "Planning généré avec succès",
+      {
+        description: activeLocks.length > 0 
+          ? `${activeLocks.length} verrouillage${activeLocks.length > 1 ? 's' : ''} pris en compte`
+          : "Aucune contrainte de verrouillage appliquée",
+        duration: 4000,
+      }
+    );
   };
 
   return (
