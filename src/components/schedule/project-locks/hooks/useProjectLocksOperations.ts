@@ -1,4 +1,3 @@
-
 import { ProjectDayLock, ProjectLockFormData } from '../types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +15,7 @@ export const useProjectLocksOperations = (
           reason: formData.reason,
           description: formData.description || null,
           is_active: true,
+          min_days_between_visits: formData.minDaysBetweenVisits || null,
         })
         .select()
         .single();
@@ -38,6 +38,7 @@ export const useProjectLocksOperations = (
         description: data.description || '',
         isActive: data.is_active,
         createdAt: new Date(data.created_at),
+        minDaysBetweenVisits: data.min_days_between_visits,
       };
 
       setProjectLocks(prev => [newLock, ...prev]);
@@ -45,10 +46,14 @@ export const useProjectLocksOperations = (
       const dayNames = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
       const dayName = dayNames[formData.dayOfWeek] || 'jours';
       
+      const isCompleteBlock = !formData.minDaysBetweenVisits || formData.minDaysBetweenVisits === 0;
+      
       toast.success(
         `Verrouillage créé avec succès`,
         {
-          description: `Tous les passages de ce chantier sont maintenant bloqués les ${dayName}.`,
+          description: isCompleteBlock 
+            ? `Tous les passages de ce chantier sont maintenant bloqués les ${dayName}.`
+            : `Les passages les ${dayName} sont maintenant espacés d'au minimum ${formData.minDaysBetweenVisits} jour${formData.minDaysBetweenVisits > 1 ? 's' : ''}.`,
           duration: 4000,
         }
       );

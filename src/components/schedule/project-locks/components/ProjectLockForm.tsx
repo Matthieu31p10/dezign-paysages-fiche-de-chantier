@@ -27,6 +27,7 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
     dayOfWeek: 1,
     reason: '',
     description: '',
+    minDaysBetweenVisits: undefined,
   });
 
   const selectedProject = projects.find(p => p.id === formData.projectId);
@@ -43,8 +44,11 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
       dayOfWeek: 1,
       reason: '',
       description: '',
+      minDaysBetweenVisits: undefined,
     });
   };
+
+  const isCompleteBlock = !formData.minDaysBetweenVisits || formData.minDaysBetweenVisits === 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,15 +90,44 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
         </Select>
       </div>
 
+      <div>
+        <Label htmlFor="minDaysBetweenVisits">Délai minimum entre passages (jours)</Label>
+        <Input
+          id="minDaysBetweenVisits"
+          type="number"
+          min="0"
+          value={formData.minDaysBetweenVisits || ''}
+          onChange={(e) => setFormData({ 
+            ...formData, 
+            minDaysBetweenVisits: e.target.value ? parseInt(e.target.value) : undefined 
+          })}
+          placeholder="Laisser vide pour bloquer complètement"
+        />
+        <p className="text-sm text-gray-600 mt-1">
+          Laisser vide ou 0 pour bloquer complètement tous les passages ce jour-là.
+          Sinon, définir le nombre minimum de jours entre chaque passage.
+        </p>
+      </div>
+
       {selectedProject && selectedDay && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <Info className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
+        <Alert className={isCompleteBlock ? "border-red-200 bg-red-50" : "border-orange-200 bg-orange-50"}>
+          <Info className={`h-4 w-4 ${isCompleteBlock ? "text-red-600" : "text-orange-600"}`} />
+          <AlertDescription className={isCompleteBlock ? "text-red-800" : "text-orange-800"}>
             <strong>Impact du verrouillage :</strong><br />
-            Tous les passages du chantier "<strong>{selectedProject.name}</strong>" 
-            seront bloqués pour tous les <strong>{selectedDay.label.toLowerCase()}s</strong> de l'année.
+            {isCompleteBlock ? (
+              <>
+                Tous les passages du chantier "<strong>{selectedProject.name}</strong>" 
+                seront bloqués pour tous les <strong>{selectedDay.label.toLowerCase()}s</strong> de l'année.
+              </>
+            ) : (
+              <>
+                Les passages du chantier "<strong>{selectedProject.name}</strong>" 
+                les <strong>{selectedDay.label.toLowerCase()}s</strong> seront espacés d'au minimum{' '}
+                <strong>{formData.minDaysBetweenVisits} jour{formData.minDaysBetweenVisits > 1 ? 's' : ''}</strong>.
+              </>
+            )}
             <br />
-            <em>Cela concerne tous les passages programmés ({selectedProject.annualVisits || 12} passages/an).</em>
+            <em>Cela concerne la planification automatique des {selectedProject.annualVisits || 12} passages/an.</em>
           </AlertDescription>
         </Alert>
       )}
@@ -105,7 +138,7 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
           id="reason"
           value={formData.reason}
           onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-          placeholder="Ex: Maintenance, Fermeture client, Congés du client..."
+          placeholder="Ex: Espacement des passages, Maintenance, Congés du client..."
           required
         />
       </div>
@@ -123,7 +156,7 @@ const ProjectLockForm: React.FC<ProjectLockFormProps> = ({
 
       <div className="flex gap-2">
         <Button type="submit" className="flex-1 bg-orange-600 hover:bg-orange-700">
-          Verrouiller tous les passages
+          {isCompleteBlock ? 'Verrouiller complètement' : 'Appliquer le délai'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler

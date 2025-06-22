@@ -7,7 +7,7 @@ import { useProjectLocks } from '../../project-locks/hooks/useProjectLocks';
 
 export const useCalendarData = (month: number, year: number, teamId: string, showWeekends: boolean) => {
   const { projectInfos } = useApp();
-  const { isProjectLockedOnDay } = useProjectLocks();
+  const { isProjectLockedOnDay, getProjectLockDetails } = useProjectLocks();
 
   const daysOfWeek = useMemo(() => {
     if (showWeekends) {
@@ -41,8 +41,14 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     return { monthStart, monthEnd, days, startDayOfWeek, teamProjects };
   }, [month, year, teamId, projectInfos, showWeekends]);
 
-  // Pass the lock checking function to useYearlyPassageSchedule
-  const getYearlyPassageSchedule = useYearlyPassageSchedule(teamProjects, year, showWeekends, isProjectLockedOnDay);
+  // Pass both lock checking functions to useYearlyPassageSchedule
+  const getYearlyPassageSchedule = useYearlyPassageSchedule(
+    teamProjects, 
+    year, 
+    showWeekends, 
+    isProjectLockedOnDay,
+    getProjectLockDetails
+  );
   
   const getEventsForDay = (date: Date) => {
     if (!showWeekends && isWeekend(date)) return [];
@@ -60,8 +66,15 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
       console.log(`Project ${project.name} locked on day ${dayOfWeek}:`, isLocked);
       
       if (isLocked) {
-        console.log(`Skipping project ${project.name} for ${dateString} due to lock`);
-        return; // Skip this project for this day
+        const lockDetails = getProjectLockDetails(project.id, dayOfWeek);
+        const minDays = lockDetails?.minDaysBetweenVisits;
+        
+        // Si pas de délai minimum défini (ou 0), bloquer complètement
+        if (!minDays || minDays === 0) {
+          console.log(`Skipping project ${project.name} for ${dateString} due to complete lock`);
+          return; // Skip this project for this day
+        }
+        // Sinon, les passages sont gérés par la logique de génération avec délais
       }
 
       const passageNumber = yearlySchedule[project.id]?.[dateString];

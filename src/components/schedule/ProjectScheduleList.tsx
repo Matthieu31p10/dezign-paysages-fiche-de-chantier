@@ -22,7 +22,13 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
   selectedTeam
 }) => {
   const { projectInfos, teams } = useApp();
-  const { isProjectLockedOnDay, isLoading: locksLoading, refreshLocks, error: locksError } = useProjectLocks();
+  const { 
+    isProjectLockedOnDay, 
+    getProjectLockDetails,
+    isLoading: locksLoading, 
+    refreshLocks, 
+    error: locksError 
+  } = useProjectLocks();
   
   const {
     expandedTeams,
@@ -38,8 +44,14 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
       : projectInfos.filter(p => p.team === selectedTeam && !p.isArchived);
   }, [projectInfos, selectedTeam]);
 
-  // Pass the lock checking function to useYearlyPassageSchedule
-  const getYearlyPassageSchedule = useYearlyPassageSchedule(filteredProjects, selectedYear, true, isProjectLockedOnDay);
+  // Pass both lock checking functions to useYearlyPassageSchedule
+  const getYearlyPassageSchedule = useYearlyPassageSchedule(
+    filteredProjects, 
+    selectedYear, 
+    true, 
+    isProjectLockedOnDay,
+    getProjectLockDetails
+  );
 
   const scheduledEvents = useScheduledEvents(
     filteredProjects,

@@ -237,6 +237,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          min_days_between_visits: number | null
           project_id: string
           reason: string
           updated_at: string
@@ -247,6 +248,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          min_days_between_visits?: number | null
           project_id: string
           reason: string
           updated_at?: string
@@ -257,6 +259,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          min_days_between_visits?: number | null
           project_id?: string
           reason?: string
           updated_at?: string

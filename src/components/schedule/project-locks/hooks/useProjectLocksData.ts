@@ -1,61 +1,62 @@
 
-import { useState, useEffect } from 'react';
-import { ProjectDayLock } from '../types';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { ProjectDayLock } from '../types';
 
 export const useProjectLocksData = () => {
   const [projectLocks, setProjectLocks] = useState<ProjectDayLock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadProjectLocks = async () => {
+  const fetchProjectLocks = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const { data, error: supabaseError } = await supabase
+
+      const { data, error: fetchError } = await supabase
         .from('project_day_locks')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (supabaseError) {
-        console.error('Erreur lors du chargement des verrouillages:', supabaseError);
-        setError(new Error(`Erreur de base de données: ${supabaseError.message}`));
-        toast.error('Erreur lors du chargement des verrouillages');
+      if (fetchError) {
+        console.error('Erreur lors de la récupération des verrouillages:', fetchError);
+        setError('Erreur lors de la récupération des verrouillages');
         return;
       }
 
-      const formattedLocks: ProjectDayLock[] = data.map(lock => ({
-        id: lock.id,
-        projectId: lock.project_id,
-        dayOfWeek: lock.day_of_week,
-        reason: lock.reason,
-        description: lock.description || '',
-        isActive: lock.is_active,
-        createdAt: new Date(lock.created_at),
+      const locks: ProjectDayLock[] = data.map(row => ({
+        id: row.id,
+        projectId: row.project_id,
+        dayOfWeek: row.day_of_week,
+        reason: row.reason,
+        description: row.description || '',
+        isActive: row.is_active,
+        createdAt: new Date(row.created_at),
+        minDaysBetweenVisits: row.min_days_between_visits,
       }));
 
-      setProjectLocks(formattedLocks);
+      setProjectLocks(locks);
     } catch (error) {
-      console.error('Erreur lors du chargement des verrouillages:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      setError(new Error(errorMessage));
-      toast.error('Erreur lors du chargement des verrouillages');
+      console.error('Erreur lors de la récupération des verrouillages:', error);
+      setError('Erreur lors de la récupération des verrouillages');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const refreshLocks = useCallback(() => {
+    fetchProjectLocks();
+  }, [fetchProjectLocks]);
 
   useEffect(() => {
-    loadProjectLocks();
-  }, []);
+    fetchProjectLocks();
+  }, [fetchProjectLocks]);
 
   return {
     projectLocks,
     setProjectLocks,
     isLoading,
     error,
-    refreshLocks: loadProjectLocks,
+    refreshLocks,
   };
 };

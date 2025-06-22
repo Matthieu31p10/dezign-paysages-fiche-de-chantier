@@ -7,6 +7,7 @@ export interface ProjectDayLock {
   description?: string;
   isActive: boolean;
   createdAt: Date;
+  minDaysBetweenVisits?: number; // Nouveau champ pour le délai minimum
 }
 
 export interface ProjectLockFormData {
@@ -14,4 +15,5 @@ export interface ProjectLockFormData {
   dayOfWeek: number;
   reason: string;
   description: string;
+  minDaysBetweenVisits?: number; // Nouveau champ pour le délai minimum
 }
