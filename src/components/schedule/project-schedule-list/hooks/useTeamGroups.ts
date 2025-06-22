@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { TeamInfo } from '@/types/models';
+import { Team } from '@/types/models';
 
 interface ScheduledEvent {
   projectId: string;
@@ -21,7 +21,7 @@ interface TeamGroupData {
   projects: Record<string, ScheduledEvent[]>;
 }
 
-export const useTeamGroups = (scheduledEvents: ScheduledEvent[], teams: TeamInfo[]) => {
+export const useTeamGroups = (scheduledEvents: ScheduledEvent[], teams: Team[]) => {
   return useMemo(() => {
     const teamGroups: Record<string, TeamGroupData> = {};
     
