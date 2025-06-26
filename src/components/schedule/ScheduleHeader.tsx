@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/context/AppContext';
 import { useProjectLocks } from './project-locks/hooks/useProjectLocks';
+import { useScheduleUpdater } from './hooks/useScheduleUpdater';
 
 const ScheduleHeader: React.FC = () => {
   const { projectInfos } = useApp();
   const { projectLocks } = useProjectLocks();
+  const { isUpdating, updateSchedule } = useScheduleUpdater(projectInfos);
 
   const handleGenerateSchedule = () => {
     const activeLocks = projectLocks.filter(lock => lock.isActive);
@@ -49,10 +51,22 @@ const ScheduleHeader: React.FC = () => {
         </p>
       </div>
       
-      <Button onClick={handleGenerateSchedule} className="hover:scale-105 transition-transform">
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        Générer le planning
-      </Button>
+      <div className="flex gap-2">
+        <Button 
+          onClick={updateSchedule} 
+          disabled={isUpdating}
+          className="hover:scale-105 transition-transform"
+          variant="outline"
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
+          {isUpdating ? 'Mise à jour...' : 'Mettre à jour l\'agenda'}
+        </Button>
+        
+        <Button onClick={handleGenerateSchedule} className="hover:scale-105 transition-transform">
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          Générer le planning
+        </Button>
+      </div>
     </div>
   );
 };
