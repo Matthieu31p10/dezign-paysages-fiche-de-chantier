@@ -3,15 +3,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { GripVertical, Calendar } from 'lucide-react';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
+import { ProjectInfo } from '@/types/models';
 
 interface DraggableProjectItemProps {
-  project: {
-    id: string;
-    name: string;
-    type: string;
-    address: string;
-    visitDuration: number;
-  };
+  project: ProjectInfo;
 }
 
 const DraggableProjectItem: React.FC<DraggableProjectItemProps> = ({ project }) => {

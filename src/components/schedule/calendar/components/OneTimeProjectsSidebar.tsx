@@ -4,17 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DraggableProjectItem from './DraggableProjectItem';
-
-interface OneTimeProject {
-  id: string;
-  name: string;
-  address: string;
-  visitDuration: number;
-  type: string;
-}
+import { ProjectInfo } from '@/types/models';
 
 interface OneTimeProjectsSidebarProps {
-  projects: OneTimeProject[];
+  projects: ProjectInfo[];
   onAddProject?: () => void;
 }
 
@@ -22,7 +15,7 @@ const OneTimeProjectsSidebar: React.FC<OneTimeProjectsSidebarProps> = ({
   projects, 
   onAddProject 
 }) => {
-  const oneTimeProjects = projects.filter(p => p.type === 'ponctuel');
+  const oneTimeProjects = projects.filter(p => p.projectType === 'ponctuel');
 
   return (
     <Card className="w-80 h-fit">

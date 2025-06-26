@@ -60,9 +60,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         return (
           <CalendarDay
             key={day.toString()}
-            day={day}
+            date={day}
             events={dateEvents}
-            showWeekends={showWeekends}
             lockedDays={lockedDays}
           />
         );
