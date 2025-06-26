@@ -52,7 +52,8 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
   );
   
   const getEventsForDay = (date: Date) => {
-    if (!showWeekends && isWeekend(date)) return [];
+    // Ne jamais afficher d'événements les weekends, même si showWeekends est true
+    if (isWeekend(date)) return [];
     
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
@@ -79,7 +80,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
       const passageNumber = yearlySchedule[project.id]?.[dateString];
       
       if (passageNumber) {
-        console.log(`Adding event for project ${project.name} on ${dateString}, passage ${passageNumber}`);
+        console.log(`Adding event for project ${project.name} on ${dateString}, passage ${passageNumber} (weekday only)`);
         events.push({
           id: `${project.id}-${dateString}`,
           projectId: project.id,

@@ -18,16 +18,17 @@ export const useScheduleUpdater = (projects: ProjectInfo[]) => {
       const locksWithMinDays = activeLocks.filter(lock => lock.minDaysBetweenVisits && lock.minDaysBetweenVisits > 0);
       const completeBlocks = activeLocks.filter(lock => !lock.minDaysBetweenVisits || lock.minDaysBetweenVisits === 0);
       
-      console.log('Mise à jour de l\'agenda avec contraintes prioritaires:');
+      console.log('Mise à jour de l\'agenda avec contraintes prioritaires (lundi-vendredi uniquement):');
       console.log('- Nombre de chantiers:', projects.filter(p => !p.isArchived).length);
       console.log('- Verrouillages complets (priorité absolue):', completeBlocks.length);
       console.log('- Verrouillages avec délai minimum:', locksWithMinDays.length);
       console.log('- Distribution mensuelle prise en compte');
+      console.log('- Programmation uniquement en semaine (lundi-vendredi)');
       
       // Simulate schedule update process with priority logic
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      let description = 'Planning mis à jour avec priorité aux verrouillages';
+      let description = 'Planning mis à jour (lundi-vendredi) avec priorité aux verrouillages';
       if (completeBlocks.length > 0) {
         description += ` - ${completeBlocks.length} jour(s) complètement bloqué(s)`;
       }

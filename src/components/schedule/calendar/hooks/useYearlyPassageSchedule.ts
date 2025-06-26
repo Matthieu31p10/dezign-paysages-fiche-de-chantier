@@ -19,7 +19,7 @@ export const useYearlyPassageSchedule = (
       
       const yearlySchedule: Record<string, Record<string, number>> = {};
       
-      console.log('Generating yearly schedule with priority locks, minimum delays and monthly distribution...');
+      console.log('Generating yearly schedule with priority locks, minimum delays and monthly distribution (weekdays only)...');
       
       teamProjects.forEach(project => {
         const annualVisits = project.annualVisits || 12;
@@ -59,8 +59,8 @@ export const useYearlyPassageSchedule = (
           const monthEnd = endOfMonth(new Date(currentYear, month));
           const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
           
-          // Filtrer les jours disponibles selon les préférences et verrouillages
-          let availableDays = showWeekends ? monthDays : monthDays.filter(d => !isWeekend(d));
+          // TOUJOURS filtrer les weekends pour la programmation des passages
+          let availableDays = monthDays.filter(d => !isWeekend(d));
           
           // Appliquer les verrouillages avec priorité absolue
           if (isProjectLockedOnDay && getProjectLockDetails) {
@@ -84,10 +84,10 @@ export const useYearlyPassageSchedule = (
             availableDays = lockedDays;
           }
           
-          console.log(`Month ${month + 1}: ${availableDays.length} available days for ${visitsThisMonth} visits`);
+          console.log(`Month ${month + 1}: ${availableDays.length} available weekdays for ${visitsThisMonth} visits`);
           
           if (availableDays.length === 0) {
-            console.warn(`No available days for project ${project.name} in month ${month + 1}`);
+            console.warn(`No available weekdays for project ${project.name} in month ${month + 1}`);
             continue;
           }
           
@@ -151,7 +151,7 @@ export const useYearlyPassageSchedule = (
                 const dateKey = format(candidateDay, 'yyyy-MM-dd');
                 yearlySchedule[project.id][dateKey] = totalScheduled + 1;
                 
-                console.log(`✓ Scheduled visit ${totalScheduled + 1} for ${project.name} on ${dateKey} (month ${month + 1})`);
+                console.log(`✓ Scheduled visit ${totalScheduled + 1} for ${project.name} on ${dateKey} (month ${month + 1}, weekday)`);
                 
                 monthScheduled++;
                 totalScheduled++;
@@ -167,7 +167,7 @@ export const useYearlyPassageSchedule = (
           }
         }
         
-        console.log(`Final: Project ${project.name} scheduled ${totalScheduled}/${annualVisits} visits`);
+        console.log(`Final: Project ${project.name} scheduled ${totalScheduled}/${annualVisits} visits (weekdays only)`);
       });
       
       return yearlySchedule;
