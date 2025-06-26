@@ -43,7 +43,7 @@ export interface ProjectInfo {
   visitDuration: number;
   additionalInfo: string;
   team: string; // Changé de string à string pour correspondre à la DB
-  projectType: 'residence' | 'particular' | 'enterprise' | '';
+  projectType: 'residence' | 'particular' | 'enterprise' | 'ponctuel' | '';
   startDate?: Date | null;
   endDate?: Date | null;
   isArchived?: boolean;
