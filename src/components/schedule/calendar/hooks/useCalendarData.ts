@@ -41,13 +41,14 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     return { monthStart, monthEnd, days, startDayOfWeek, teamProjects };
   }, [month, year, teamId, projectInfos, showWeekends]);
 
-  // Pass both lock checking functions to useYearlyPassageSchedule
+  // Pass lock checking functions and monthly rules to useYearlyPassageSchedule
   const getYearlyPassageSchedule = useYearlyPassageSchedule(
     teamProjects, 
     year, 
     showWeekends, 
     isProjectLockedOnDay,
-    getProjectLockDetails
+    getProjectLockDetails,
+    undefined // TODO: Intégrer les règles mensuelles quand disponibles
   );
   
   const getEventsForDay = (date: Date) => {
@@ -56,23 +57,21 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     const events = [];
     const dateString = format(date, 'yyyy-MM-dd');
     const yearlySchedule = getYearlyPassageSchedule(year);
-    const dayOfWeek = getDay(date) === 0 ? 7 : getDay(date); // Convert Sunday from 0 to 7
+    const dayOfWeek = getDay(date) === 0 ? 7 : getDay(date);
     
     console.log(`Checking events for ${dateString}, day of week: ${dayOfWeek}`);
     
     teamProjects.forEach(project => {
-      // Check if this project is locked on this day of the week
+      // Les verrouillages avec délai minimum 0 bloquent complètement le jour
       const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
-      console.log(`Project ${project.name} locked on day ${dayOfWeek}:`, isLocked);
-      
       if (isLocked) {
         const lockDetails = getProjectLockDetails(project.id, dayOfWeek);
         const minDays = lockDetails?.minDaysBetweenVisits;
         
-        // Si pas de délai minimum défini (ou 0), bloquer complètement
+        // Si délai minimum 0 ou undefined, bloquer complètement
         if (!minDays || minDays === 0) {
-          console.log(`Skipping project ${project.name} for ${dateString} due to complete lock`);
-          return; // Skip this project for this day
+          console.log(`Skipping project ${project.name} for ${dateString} due to complete lock (day ${dayOfWeek})`);
+          return;
         }
         // Sinon, les passages sont gérés par la logique de génération avec délais
       }

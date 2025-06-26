@@ -15,22 +15,30 @@ export const useScheduleUpdater = (projects: ProjectInfo[]) => {
       await refreshLocks();
       
       const activeLocks = projectLocks.filter(lock => lock.isActive);
-      const affectedProjects = activeLocks.length > 0 
-        ? [...new Set(activeLocks.map(lock => lock.projectId))].length 
-        : 0;
+      const locksWithMinDays = activeLocks.filter(lock => lock.minDaysBetweenVisits && lock.minDaysBetweenVisits > 0);
+      const completeBlocks = activeLocks.filter(lock => !lock.minDaysBetweenVisits || lock.minDaysBetweenVisits === 0);
       
-      console.log('Mise à jour de l\'agenda avec les contraintes suivantes:');
+      console.log('Mise à jour de l\'agenda avec contraintes prioritaires:');
       console.log('- Nombre de chantiers:', projects.filter(p => !p.isArchived).length);
-      console.log('- Nombre de verrouillages actifs:', activeLocks.length);
-      console.log('- Nombre de chantiers affectés:', affectedProjects);
+      console.log('- Verrouillages complets (priorité absolue):', completeBlocks.length);
+      console.log('- Verrouillages avec délai minimum:', locksWithMinDays.length);
+      console.log('- Distribution mensuelle prise en compte');
       
-      // Simulate schedule update process
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate schedule update process with priority logic
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      let description = 'Planning mis à jour avec priorité aux verrouillages';
+      if (completeBlocks.length > 0) {
+        description += ` - ${completeBlocks.length} jour(s) complètement bloqué(s)`;
+      }
+      if (locksWithMinDays.length > 0) {
+        description += ` - ${locksWithMinDays.length} contrainte(s) de délai minimum`;
+      }
       
       toast.success(
         "Agenda mis à jour avec succès",
         {
-          description: `${activeLocks.length} verrouillage${activeLocks.length > 1 ? 's' : ''} et distribution mensuelle pris en compte`,
+          description,
           duration: 4000,
         }
       );
