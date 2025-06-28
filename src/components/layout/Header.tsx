@@ -16,12 +16,12 @@ import CompanyLogo from '@/components/ui/company-logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
-  { path: '/projects', label: 'Chantiers' },
-  { path: '/schedule', label: 'Agenda' },
-  { path: '/worklogs', label: 'Suivis' },
-  { path: '/blank-worksheets', label: 'Fiches vierges', requiredModule: 'blanksheets' },
-  { path: '/reports', label: 'Rapports' },
-  { path: '/settings', label: 'Paramètres', adminOnly: true }
+  { path: '/projects', label: 'Chantiers', color: 'emerald' },
+  { path: '/schedule', label: 'Agenda', color: 'green' },
+  { path: '/worklogs', label: 'Suivis', color: 'teal' },
+  { path: '/blank-worksheets', label: 'Fiches vierges', requiredModule: 'blanksheets', color: 'lime' },
+  { path: '/reports', label: 'Rapports', color: 'forest' },
+  { path: '/settings', label: 'Paramètres', adminOnly: true, color: 'sage' }
 ];
 
 const Header: React.FC = () => {
@@ -53,8 +53,35 @@ const Header: React.FC = () => {
     return true;
   });
 
+  const getButtonStyles = (item: any, isActive: boolean) => {
+    const baseStyles = "relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg border-2";
+    
+    const colorStyles = {
+      emerald: isActive 
+        ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-emerald-600 shadow-emerald-200" 
+        : "bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 border-emerald-200 hover:from-emerald-200 hover:to-emerald-100 hover:border-emerald-300",
+      green: isActive 
+        ? "bg-gradient-to-r from-green-500 to-green-600 text-white border-green-600 shadow-green-200" 
+        : "bg-gradient-to-r from-green-100 to-green-50 text-green-800 border-green-200 hover:from-green-200 hover:to-green-100 hover:border-green-300",
+      teal: isActive 
+        ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white border-teal-600 shadow-teal-200" 
+        : "bg-gradient-to-r from-teal-100 to-teal-50 text-teal-800 border-teal-200 hover:from-teal-200 hover:to-teal-100 hover:border-teal-300",
+      lime: isActive 
+        ? "bg-gradient-to-r from-lime-500 to-lime-600 text-white border-lime-600 shadow-lime-200" 
+        : "bg-gradient-to-r from-lime-100 to-lime-50 text-lime-800 border-lime-200 hover:from-lime-200 hover:to-lime-100 hover:border-lime-300",
+      forest: isActive 
+        ? "bg-gradient-to-r from-green-700 to-green-800 text-white border-green-800 shadow-green-300" 
+        : "bg-gradient-to-r from-green-50 to-green-25 text-green-900 border-green-200 hover:from-green-100 hover:to-green-50 hover:border-green-300",
+      sage: isActive 
+        ? "bg-gradient-to-r from-green-600 to-green-700 text-white border-green-700 shadow-green-200" 
+        : "bg-gradient-to-r from-green-50 to-slate-50 text-green-900 border-green-200 hover:from-green-100 hover:to-slate-100 hover:border-green-300"
+    };
+    
+    return `${baseStyles} ${colorStyles[item.color] || colorStyles.green}`;
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 shadow-sm transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 shadow-lg transition-all duration-300">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
@@ -67,23 +94,21 @@ const Header: React.FC = () => {
           </div>
 
           {!isMobile && (
-            <nav className="flex items-center space-x-1">
+            <nav className="flex items-center space-x-2">
               {filteredNavItems.map((item) => (
                 <Link 
                   key={item.path} 
                   to={item.path} 
-                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 group
-                    ${isActive(item.path) 
-                      ? 'bg-gradient-to-r from-green-100 to-green-50 text-green-800 shadow-sm border border-green-200' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
+                  className={getButtonStyles(item, isActive(item.path))}
                 >
-                  <span className="relative z-10">{item.label}</span>
-                  {item.path === '/schedule' && (
-                    <CalendarDaysIcon className="inline-block ml-1.5 w-4 h-4" />
-                  )}
-                  {!isActive(item.path) && (
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-green-50 to-green-25 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  <span className="relative z-10 flex items-center">
+                    {item.label}
+                    {item.path === '/schedule' && (
+                      <CalendarDaysIcon className="inline-block ml-1.5 w-4 h-4" />
+                    )}
+                  </span>
+                  {isActive(item.path) && (
+                    <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-lg blur opacity-75" />
                   )}
                 </Link>
               ))}
@@ -95,9 +120,9 @@ const Header: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="relative rounded-full h-10 w-10 p-0 hover:bg-gray-100 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                  className="relative rounded-full h-10 w-10 p-0 hover:bg-green-100 transition-all duration-200 hover:scale-105 hover:shadow-md"
                 >
-                  <Avatar className="h-9 w-9 ring-2 ring-green-100 ring-offset-2 transition-all duration-200">
+                  <Avatar className="h-9 w-9 ring-2 ring-green-200 ring-offset-2 transition-all duration-200">
                     <AvatarFallback className="bg-gradient-to-br from-green-100 to-green-50 text-green-700 font-semibold">
                       {userInitials}
                     </AvatarFallback>
