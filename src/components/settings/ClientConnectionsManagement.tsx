@@ -3,175 +3,75 @@ import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, Edit, Plus, UserCheck, Users, Settings, Copy, Eye, EyeOff } from 'lucide-react';
-import { ClientConnection, ClientVisibilityPermissions } from '@/types/models';
+import { Plus, Users } from 'lucide-react';
+import { ClientConnection } from '@/types/models';
 import { toast } from 'sonner';
+import ClientForm from './ClientForm';
+import ClientList from './ClientList';
 import ClientVisibilityPermissionsComponent from './ClientVisibilityPermissions';
 
 const ClientConnectionsManagement = () => {
   const { settings, updateSettings, projects } = useApp();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientConnection | null>(null);
-  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
-  const [formData, setFormData] = useState({
-    clientName: '',
-    email: '',
-    password: '',
-    assignedProjects: [] as string[],
-    isActive: true,
-    visibilityPermissions: {} as ClientVisibilityPermissions
-  });
 
   const clientConnections = settings.clientConnections || [];
-  const activeProjects = projects.filter(p => !p.isArchived);
 
-  const resetForm = () => {
-    setFormData({
-      clientName: '',
-      email: '',
-      password: '',
-      assignedProjects: [],
-      isActive: true,
-      visibilityPermissions: {
-        showProjectName: true,
-        showAddress: true,
-        showWorkLogs: true,
-        showTasks: true,
-      }
-    });
+  const handleFormSuccess = () => {
+    setIsAddDialogOpen(false);
     setEditingClient(null);
   };
 
-  const handleAddClient = async () => {
-    if (!formData.clientName.trim() || !formData.email.trim() || !formData.password.trim()) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    // Vérifier si l'email existe déjà
-    const emailExists = clientConnections.some(client => 
-      client.email === formData.email && client.id !== editingClient?.id
-    );
-    
-    if (emailExists) {
-      toast.error('Cet email est déjà utilisé');
-      return;
-    }
-
-    const newClient: ClientConnection = {
-      id: crypto.randomUUID(),
-      clientName: formData.clientName,
-      email: formData.email,
-      password: formData.password,
-      assignedProjects: formData.assignedProjects,
-      isActive: formData.isActive,
-      visibilityPermissions: formData.visibilityPermissions,
-      createdAt: new Date()
-    };
-
-    const updatedClients = editingClient 
-      ? clientConnections.map(client => 
-          client.id === editingClient.id 
-            ? { ...editingClient, ...formData } 
-            : client
-        )
-      : [...clientConnections, newClient];
-
-    await updateSettings({ 
-      clientConnections: updatedClients 
-    });
-
-    toast.success(editingClient ? 'Client mis à jour' : 'Client ajouté avec succès');
+  const handleFormCancel = () => {
     setIsAddDialogOpen(false);
-    resetForm();
+    setEditingClient(null);
   };
 
   const handleEditClient = (client: ClientConnection) => {
     setEditingClient(client);
-    setFormData({
-      clientName: client.clientName,
-      email: client.email,
-      password: client.password,
-      assignedProjects: client.assignedProjects,
-      isActive: client.isActive,
-      visibilityPermissions: client.visibilityPermissions || {
-        showProjectName: true,
-        showAddress: true,
-        showWorkLogs: true,
-        showTasks: true,
-      }
-    });
     setIsAddDialogOpen(true);
   };
 
   const handleDeleteClient = async (clientId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) return;
 
-    const updatedClients = clientConnections.filter(client => client.id !== clientId);
-    await updateSettings({ clientConnections: updatedClients });
-    toast.success('Client supprimé');
-  };
-
-  const toggleClientStatus = async (clientId: string, isActive: boolean) => {
-    const updatedClients = clientConnections.map(client =>
-      client.id === clientId ? { ...client, isActive } : client
-    );
-    await updateSettings({ clientConnections: updatedClients });
-    toast.success(`Client ${isActive ? 'activé' : 'désactivé'}`);
-  };
-
-  const getProjectName = (projectId: string) => {
-    const project = activeProjects.find(p => p.id === projectId);
-    return project?.name || 'Projet inconnu';
-  };
-
-  const handleProjectToggle = (projectId: string, isSelected: boolean) => {
-    if (isSelected) {
-      setFormData(prev => ({
-        ...prev,
-        assignedProjects: [...prev.assignedProjects, projectId]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        assignedProjects: prev.assignedProjects.filter(id => id !== projectId)
-      }));
+    try {
+      const updatedClients = clientConnections.filter((client: ClientConnection) => 
+        client.id !== clientId
+      );
+      await updateSettings({ clientConnections: updatedClients });
+      toast.success('Client supprimé avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast.error('Erreur lors de la suppression');
     }
   };
 
-  const handlePermissionChange = (key: keyof ClientVisibilityPermissions, value: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      visibilityPermissions: {
-        ...prev.visibilityPermissions,
-        [key]: value
-      }
-    }));
+  const handleToggleStatus = async (clientId: string, isActive: boolean) => {
+    try {
+      const updatedClients = clientConnections.map((client: ClientConnection) =>
+        client.id === clientId ? { ...client, isActive } : client
+      );
+      await updateSettings({ clientConnections: updatedClients });
+      toast.success(`Client ${isActive ? 'activé' : 'désactivé'} avec succès`);
+    } catch (error) {
+      console.error('Erreur lors du changement de statut:', error);
+      toast.error('Erreur lors du changement de statut');
+    }
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copié dans le presse-papier`);
-  };
-
-  const togglePasswordVisibility = (clientId: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [clientId]: !prev[clientId]
-    }));
+  const resetAndOpenDialog = () => {
+    setEditingClient(null);
+    setIsAddDialogOpen(true);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium">Clients de connexion</h3>
+          <h3 className="text-lg font-medium">Connexions clients</h3>
           <p className="text-sm text-muted-foreground">
             Gérez les accès clients pour consulter leurs chantiers
           </p>
@@ -179,247 +79,67 @@ const ClientConnectionsManagement = () => {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetAndOpenDialog}>
               <Plus className="h-4 w-4 mr-2" />
-              Ajouter un client
+              Nouveau client
             </Button>
           </DialogTrigger>
           
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingClient ? 'Modifier le client' : 'Ajouter un client'}
+                {editingClient ? 'Modifier le client' : 'Nouveau client'}
               </DialogTitle>
               <DialogDescription>
-                Créez un accès client et configurez les informations qu'il pourra consulter
+                Configurez l'accès client et les informations qu'il pourra consulter
               </DialogDescription>
             </DialogHeader>
             
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="general">Informations générales</TabsTrigger>
-                <TabsTrigger value="projects">Chantiers assignés</TabsTrigger>
+                <TabsTrigger value="general">Informations</TabsTrigger>
+                <TabsTrigger value="projects">Chantiers</TabsTrigger>
                 <TabsTrigger value="permissions">Permissions</TabsTrigger>
               </TabsList>
               
               <TabsContent value="general" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="clientName">Nom du client *</Label>
-                    <Input
-                      id="clientName"
-                      value={formData.clientName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                      placeholder="Nom du client"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="email@exemple.com"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="password">Mot de passe *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Mot de passe"
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="isActive"
-                    checked={formData.isActive}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                  />
-                  <Label htmlFor="isActive">Compte actif</Label>
-                </div>
+                <ClientForm
+                  editingClient={editingClient}
+                  onSuccess={handleFormSuccess}
+                  onCancel={handleFormCancel}
+                />
               </TabsContent>
               
               <TabsContent value="projects" className="space-y-4">
                 <div>
-                  <Label>Chantiers assignés</Label>
-                  <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                    {activeProjects.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Aucun chantier actif disponible</p>
-                    ) : (
-                      activeProjects.map(project => (
-                        <div key={project.id} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`project-${project.id}`}
-                            checked={formData.assignedProjects.includes(project.id)}
-                            onChange={(e) => handleProjectToggle(project.id, e.target.checked)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`project-${project.id}`} className="text-sm">
-                            {project.name}
-                          </Label>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                  <h4 className="font-medium mb-3">Assignation des chantiers</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Sélectionnez les chantiers auxquels ce client aura accès
+                  </p>
+                  {/* Le formulaire de projets sera géré dans ClientForm */}
                 </div>
               </TabsContent>
               
               <TabsContent value="permissions" className="space-y-4">
-                <ClientVisibilityPermissionsComponent
-                  permissions={formData.visibilityPermissions}
-                  onPermissionChange={handlePermissionChange}
-                />
+                <div>
+                  <h4 className="font-medium mb-3">Permissions de visibilité</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Configurez les informations que le client pourra voir
+                  </p>
+                  {/* Les permissions seront gérées dans ClientForm */}
+                </div>
               </TabsContent>
             </Tabs>
-            
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Annuler
-              </Button>
-              <Button onClick={handleAddClient}>
-                {editingClient ? 'Mettre à jour' : 'Ajouter'}
-              </Button>
-            </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {clientConnections.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Aucun client de connexion</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Créez des comptes clients pour leur permettre de consulter leurs chantiers
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {clientConnections.map(client => (
-            <Card key={client.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <UserCheck className="h-5 w-5 text-primary" />
-                    <div>
-                      <CardTitle className="text-lg">{client.clientName}</CardTitle>
-                      <CardDescription>{client.email}</CardDescription>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Badge variant={client.isActive ? "default" : "secondary"}>
-                      {client.isActive ? 'Actif' : 'Inactif'}
-                    </Badge>
-                    
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEditClient(client)}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => toggleClientStatus(client.id, !client.isActive)}
-                      >
-                        <Switch checked={client.isActive} className="pointer-events-none" />
-                      </Button>
-                      
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => handleDeleteClient(client.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                {/* Identifiants de connexion */}
-                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-                  <Label className="text-sm font-medium mb-3 block">Identifiants de connexion :</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Email:</span>
-                      <div className="flex items-center gap-2">
-                        <code className="bg-background px-2 py-1 rounded text-sm">{client.email}</code>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(client.email, 'Email')}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Mot de passe:</span>
-                      <div className="flex items-center gap-2">
-                        <code className="bg-background px-2 py-1 rounded text-sm">
-                          {showPasswords[client.id] ? client.password : '••••••••'}
-                        </code>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => togglePasswordVisibility(client.id)}
-                        >
-                          {showPasswords[client.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(client.password, 'Mot de passe')}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium">Chantiers assignés:</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {client.assignedProjects.length === 0 ? (
-                      <Badge variant="outline">Aucun chantier assigné</Badge>
-                    ) : (
-                      client.assignedProjects.map(projectId => (
-                        <Badge key={projectId} variant="secondary">
-                          {getProjectName(projectId)}
-                        </Badge>
-                      ))
-                    )}
-                  </div>
-                </div>
-                
-                <div className="mt-3 text-xs text-muted-foreground">
-                  Créé le {new Date(client.createdAt).toLocaleDateString('fr-FR')}
-                  {client.lastLogin && (
-                    <span> • Dernière connexion: {new Date(client.lastLogin).toLocaleDateString('fr-FR')}</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <ClientList
+        clients={clientConnections}
+        onEditClient={handleEditClient}
+        onDeleteClient={handleDeleteClient}
+        onToggleStatus={handleToggleStatus}
+      />
     </div>
   );
 };

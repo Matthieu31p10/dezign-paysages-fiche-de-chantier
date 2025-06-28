@@ -9,12 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, User, AlertCircle, UserCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import ClientAuth from './ClientAuth';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [clientPassword, setClientPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, settings } = useApp();
@@ -43,40 +42,9 @@ const Login = () => {
     }
   };
 
-  const handleClientSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const clientConnections = settings.clientConnections || [];
-      const client = clientConnections.find(c => 
-        c.email === clientEmail && 
-        c.password === clientPassword && 
-        c.isActive
-      );
-
-      if (client) {
-        // Update last login
-        const updatedClient = { ...client, lastLogin: new Date() };
-        const updatedConnections = clientConnections.map(c => 
-          c.id === client.id ? updatedClient : c
-        );
-        
-        // Store client session
-        localStorage.setItem('clientSession', JSON.stringify(updatedClient));
-        
-        // Navigate to client dashboard
-        navigate('/client-dashboard', { replace: true });
-      } else {
-        setError('Email ou mot de passe incorrect, ou compte inactif');
-      }
-    } catch (err) {
-      setError('Une erreur est survenue. Veuillez réessayer.');
-      console.error('Client login error:', err);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleClientLogin = (client: any) => {
+    // La logique de connexion client est maintenant gérée dans ClientAuth
+    console.log('Client connecté:', client.clientName);
   };
 
   const backgroundImage = settings.loginBackgroundImage;
@@ -169,49 +137,10 @@ const Login = () => {
               </TabsContent>
               
               <TabsContent value="client" className="space-y-4 mt-4">
-                <form onSubmit={handleClientSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="clientEmail">Email</Label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <Input
-                        id="clientEmail"
-                        type="email"
-                        value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
-                        className="pl-10"
-                        placeholder="Votre email"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="clientPassword">Mot de passe</Label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                        <Lock className="h-4 w-4" />
-                      </div>
-                      <Input
-                        id="clientPassword"
-                        type="password"
-                        value={clientPassword}
-                        onChange={(e) => setClientPassword(e.target.value)}
-                        className="pl-10"
-                        placeholder="Votre mot de passe"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Connexion en cours...' : 'Se connecter comme client'}
-                  </Button>
-                </form>
+                <ClientAuth 
+                  onClientLogin={handleClientLogin} 
+                  settings={settings} 
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
