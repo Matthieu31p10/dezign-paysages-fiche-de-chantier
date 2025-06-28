@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, Edit, Plus, UserCheck, Users, Settings } from 'lucide-react';
+import { Trash2, Edit, Plus, UserCheck, Users, Settings, Copy, Eye, EyeOff } from 'lucide-react';
 import { ClientConnection, ClientVisibilityPermissions } from '@/types/models';
 import { toast } from 'sonner';
 import ClientVisibilityPermissionsComponent from './ClientVisibilityPermissions';
@@ -17,6 +18,7 @@ const ClientConnectionsManagement = () => {
   const { settings, updateSettings, projects } = useApp();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientConnection | null>(null);
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({
     clientName: '',
     email: '',
@@ -150,6 +152,18 @@ const ClientConnectionsManagement = () => {
         ...prev.visibilityPermissions,
         [key]: value
       }
+    }));
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copié dans le presse-papier`);
+  };
+
+  const togglePasswordVisibility = (clientId: string) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [clientId]: !prev[clientId]
     }));
   };
 
@@ -338,6 +352,48 @@ const ClientConnectionsManagement = () => {
               </CardHeader>
               
               <CardContent>
+                {/* Identifiants de connexion */}
+                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                  <Label className="text-sm font-medium mb-3 block">Identifiants de connexion :</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Email:</span>
+                      <div className="flex items-center gap-2">
+                        <code className="bg-background px-2 py-1 rounded text-sm">{client.email}</code>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(client.email, 'Email')}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Mot de passe:</span>
+                      <div className="flex items-center gap-2">
+                        <code className="bg-background px-2 py-1 rounded text-sm">
+                          {showPasswords[client.id] ? client.password : '••••••••'}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => togglePasswordVisibility(client.id)}
+                        >
+                          {showPasswords[client.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(client.password, 'Mot de passe')}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                 <div>
                   <Label className="text-sm font-medium">Chantiers assignés:</Label>
                   <div className="flex flex-wrap gap-2 mt-2">

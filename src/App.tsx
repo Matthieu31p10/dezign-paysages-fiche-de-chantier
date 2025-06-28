@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound';
 import Login from './components/auth/Login';
 import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ClientDashboard from './pages/ClientDashboard';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import BlankWorkSheets from './pages/BlankWorkSheets';
@@ -32,6 +33,7 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/client-dashboard" element={<ClientDashboard />} />
           
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
