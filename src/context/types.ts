@@ -1,5 +1,4 @@
-
-import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask } from '@/types/models';
+import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask, ClientConnection } from '@/types/models';
 
 export interface ProjectsContextType {
   projectInfos: ProjectInfo[];
@@ -50,6 +49,10 @@ export interface SettingsContextType {
   getCustomTasks: () => CustomTask[];
   users?: User[];
   updateUserPermissions?: (userId: string, permissions: Record<string, boolean>) => void;
+  addClientConnection: (clientData: Omit<ClientConnection, 'id' | 'createdAt'>) => Promise<ClientConnection>;
+  updateClientConnection: (client: ClientConnection) => Promise<void>;
+  deleteClientConnection: (id: string) => Promise<void>;
+  getClientConnections: () => ClientConnection[];
 }
 
 export interface AuthContextType {

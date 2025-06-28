@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -136,6 +135,17 @@ export interface Personnel {
   active: boolean;
 }
 
+export interface ClientConnection {
+  id: string;
+  clientName: string;
+  email: string;
+  password: string;
+  assignedProjects: string[]; // Array of project IDs
+  isActive: boolean;
+  createdAt: Date;
+  lastLogin?: Date;
+}
+
 export interface AppSettings {
   companyName?: string;
   companyLogo?: string;
@@ -144,4 +154,5 @@ export interface AppSettings {
   users?: User[];
   personnel?: Personnel[];
   customTasks?: CustomTask[];
+  clientConnections?: ClientConnection[];
 }

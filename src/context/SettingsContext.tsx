@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppSettings, CustomTask, Personnel } from '@/types/models';
+import { AppSettings, CustomTask, Personnel, ClientConnection } from '@/types/models';
 import { SettingsContextType } from './types';
 import { toast } from 'sonner';
 
@@ -13,7 +12,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loginBackgroundImage: '',
     customTasks: [],
     personnel: [],
-    users: []
+    users: [],
+    clientConnections: []
   });
 
   // Load settings from localStorage on mount
@@ -107,6 +107,41 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return settings.customTasks || [];
   };
 
+  const addClientConnection = async (clientData: Omit<ClientConnection, 'id' | 'createdAt'>): Promise<ClientConnection> => {
+    const newClient: ClientConnection = {
+      ...clientData,
+      id: crypto.randomUUID(),
+      createdAt: new Date()
+    };
+
+    setSettings(prev => ({
+      ...prev,
+      clientConnections: [...(prev.clientConnections || []), newClient]
+    }));
+
+    return newClient;
+  };
+
+  const updateClientConnection = async (client: ClientConnection) => {
+    setSettings(prev => ({
+      ...prev,
+      clientConnections: (prev.clientConnections || []).map(c => 
+        c.id === client.id ? client : c
+      )
+    }));
+  };
+
+  const deleteClientConnection = async (id: string) => {
+    setSettings(prev => ({
+      ...prev,
+      clientConnections: (prev.clientConnections || []).filter(c => c.id !== id)
+    }));
+  };
+
+  const getClientConnections = (): ClientConnection[] => {
+    return settings.clientConnections || [];
+  };
+
   return (
     <SettingsContext.Provider
       value={{
@@ -121,6 +156,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         togglePersonnelActive,
         getCustomTasks,
         users: settings.users,
+        addClientConnection,
+        updateClientConnection,
+        deleteClientConnection,
+        getClientConnections,
       }}
     >
       {children}

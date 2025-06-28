@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +8,8 @@ import AccessControl from '@/components/settings/AccessControl';
 import LoginSettings from '@/components/settings/LoginSettings';
 import UserList from '@/components/settings/UserList';
 import AddUserDialog from '@/components/settings/AddUserDialog';
-import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound } from 'lucide-react';
+import ClientConnectionsManagement from '@/components/settings/ClientConnectionsManagement';
+import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound, UserCheck } from 'lucide-react';
 import BackupRestoreSection from '@/components/settings/BackupRestoreSection';
 import { DialogTrigger } from '@/components/ui/dialog';
 import TeamsManagement from '@/components/settings/TeamsManagement';
@@ -33,7 +33,7 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="company">
-        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-6 lg:w-auto">
+        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-7 lg:w-auto">
           <TabsTrigger value="company" className="flex items-center gap-1.5">
             <Building className="h-4 w-4" />
             <span className="hidden sm:inline">Entreprise</span>
@@ -47,6 +47,11 @@ const Settings = () => {
           <TabsTrigger value="personnel" className="flex items-center gap-1.5">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Personnel</span>
+          </TabsTrigger>
+          
+          <TabsTrigger value="clients" className="flex items-center gap-1.5">
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Clients</span>
           </TabsTrigger>
           
           <TabsTrigger value="users" disabled={!canManageUsers} className="flex items-center gap-1.5">
@@ -109,6 +114,23 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <PersonnelManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="clients" className="space-y-4">
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
+              <CardTitle className="flex items-center text-blue-800">
+                <UserCheck className="h-5 w-5 mr-2 text-blue-600" />
+                Clients de connexion
+              </CardTitle>
+              <CardDescription>
+                Gérez les accès clients pour la consultation de leurs chantiers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ClientConnectionsManagement />
             </CardContent>
           </Card>
         </TabsContent>
