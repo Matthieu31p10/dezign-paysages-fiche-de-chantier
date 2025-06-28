@@ -12,18 +12,18 @@ const Layout = () => {
   const companyName = settings.companyName || 'Vertos Chantiers';
   const currentYear = new Date().getFullYear();
   
-  // Enhanced background styles based on path
+  // Enhanced background styles based on path with more vibrant colors
   const getBackgroundStyle = () => {
     if (location.pathname.startsWith('/blank-worksheets')) {
-      return 'bg-gradient-to-br from-slate-50 via-slate-25 to-white';
+      return 'bg-gradient-to-br from-slate-100 via-slate-50 to-white';
     } else if (location.pathname.startsWith('/worklogs')) {
-      return 'bg-gradient-to-br from-green-50 via-green-25 to-white';
+      return 'bg-gradient-to-br from-green-100 via-green-50 to-white';
     } else if (location.pathname.startsWith('/schedule')) {
-      return 'bg-gradient-to-br from-blue-50 via-blue-25 to-white';
+      return 'bg-gradient-to-br from-blue-100 via-blue-50 to-white';
     } else if (location.pathname.startsWith('/projects')) {
-      return 'bg-gradient-to-br from-emerald-50 via-emerald-25 to-white';
+      return 'bg-gradient-to-br from-emerald-100 via-emerald-50 to-white';
     }
-    return 'bg-gradient-to-br from-gray-50 via-white to-gray-25';
+    return 'bg-gradient-to-br from-gray-100 via-white to-gray-50';
   };
 
   return (
@@ -38,19 +38,19 @@ const Layout = () => {
       </main>
       <footer className={`${
         isMobile ? 'px-3 py-4' : 'py-6 px-4 sm:px-6 lg:px-8'
-      } border-t border-gray-200/50 bg-white/80 backdrop-blur-sm transition-all duration-300`}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-500">
+      } border-t border-gray-300/60 bg-white/85 backdrop-blur-sm transition-all duration-300`}>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-600">
           <p className="font-medium">© {currentYear} {companyName} - Tous droits réservés</p>
           <div className="flex gap-6">
             <a 
               href="#" 
-              className="hover:text-green-600 transition-colors duration-200 hover:underline"
+              className="hover:text-green-700 transition-colors duration-200 hover:underline"
             >
               Mentions légales
             </a>
             <a 
               href="#" 
-              className="hover:text-green-600 transition-colors duration-200 hover:underline"
+              className="hover:text-green-700 transition-colors duration-200 hover:underline"
             >
               Contact
             </a>
