@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Edit, Plus, UserCheck, Users } from 'lucide-react';
-import { ClientConnection } from '@/types/models';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Trash2, Edit, Plus, UserCheck, Users, Settings } from 'lucide-react';
+import { ClientConnection, ClientVisibilityPermissions } from '@/types/models';
 import { toast } from 'sonner';
+import ClientVisibilityPermissionsComponent from './ClientVisibilityPermissions';
 
 const ClientConnectionsManagement = () => {
   const { settings, updateSettings, projects } = useApp();
@@ -22,7 +22,8 @@ const ClientConnectionsManagement = () => {
     email: '',
     password: '',
     assignedProjects: [] as string[],
-    isActive: true
+    isActive: true,
+    visibilityPermissions: {} as ClientVisibilityPermissions
   });
 
   const clientConnections = settings.clientConnections || [];
@@ -34,7 +35,13 @@ const ClientConnectionsManagement = () => {
       email: '',
       password: '',
       assignedProjects: [],
-      isActive: true
+      isActive: true,
+      visibilityPermissions: {
+        showProjectName: true,
+        showAddress: true,
+        showWorkLogs: true,
+        showTasks: true,
+      }
     });
     setEditingClient(null);
   };
@@ -59,9 +66,10 @@ const ClientConnectionsManagement = () => {
       id: crypto.randomUUID(),
       clientName: formData.clientName,
       email: formData.email,
-      password: formData.password, // En production, il faudrait hasher le mot de passe
+      password: formData.password,
       assignedProjects: formData.assignedProjects,
       isActive: formData.isActive,
+      visibilityPermissions: formData.visibilityPermissions,
       createdAt: new Date()
     };
 
@@ -89,7 +97,13 @@ const ClientConnectionsManagement = () => {
       email: client.email,
       password: client.password,
       assignedProjects: client.assignedProjects,
-      isActive: client.isActive
+      isActive: client.isActive,
+      visibilityPermissions: client.visibilityPermissions || {
+        showProjectName: true,
+        showAddress: true,
+        showWorkLogs: true,
+        showTasks: true,
+      }
     });
     setIsAddDialogOpen(true);
   };
@@ -129,6 +143,16 @@ const ClientConnectionsManagement = () => {
     }
   };
 
+  const handlePermissionChange = (key: keyof ClientVisibilityPermissions, value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      visibilityPermissions: {
+        ...prev.visibilityPermissions,
+        [key]: value
+      }
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -147,92 +171,109 @@ const ClientConnectionsManagement = () => {
             </Button>
           </DialogTrigger>
           
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingClient ? 'Modifier le client' : 'Ajouter un client'}
               </DialogTitle>
               <DialogDescription>
-                Créez un accès client pour permettre la consultation des chantiers assignés
+                Créez un accès client et configurez les informations qu'il pourra consulter
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="clientName">Nom du client *</Label>
-                  <Input
-                    id="clientName"
-                    value={formData.clientName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                    placeholder="Nom du client"
-                  />
+            <Tabs defaultValue="general" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="general">Informations générales</TabsTrigger>
+                <TabsTrigger value="projects">Chantiers assignés</TabsTrigger>
+                <TabsTrigger value="permissions">Permissions</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="general" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="clientName">Nom du client *</Label>
+                    <Input
+                      id="clientName"
+                      value={formData.clientName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
+                      placeholder="Nom du client"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="email@exemple.com"
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="password">Mot de passe *</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="email@exemple.com"
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Mot de passe"
                   />
                 </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="password">Mot de passe *</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Mot de passe"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                />
-                <Label htmlFor="isActive">Compte actif</Label>
-              </div>
-              
-              <div>
-                <Label>Chantiers assignés</Label>
-                <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                  {activeProjects.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Aucun chantier actif disponible</p>
-                  ) : (
-                    activeProjects.map(project => (
-                      <div key={project.id} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`project-${project.id}`}
-                          checked={formData.assignedProjects.includes(project.id)}
-                          onChange={(e) => handleProjectToggle(project.id, e.target.checked)}
-                          className="rounded"
-                        />
-                        <Label htmlFor={`project-${project.id}`} className="text-sm">
-                          {project.name}
-                        </Label>
-                      </div>
-                    ))
-                  )}
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isActive"
+                    checked={formData.isActive}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+                  />
+                  <Label htmlFor="isActive">Compte actif</Label>
                 </div>
-              </div>
+              </TabsContent>
               
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                  Annuler
-                </Button>
-                <Button onClick={handleAddClient}>
-                  {editingClient ? 'Mettre à jour' : 'Ajouter'}
-                </Button>
-              </div>
+              <TabsContent value="projects" className="space-y-4">
+                <div>
+                  <Label>Chantiers assignés</Label>
+                  <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                    {activeProjects.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Aucun chantier actif disponible</p>
+                    ) : (
+                      activeProjects.map(project => (
+                        <div key={project.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`project-${project.id}`}
+                            checked={formData.assignedProjects.includes(project.id)}
+                            onChange={(e) => handleProjectToggle(project.id, e.target.checked)}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`project-${project.id}`} className="text-sm">
+                            {project.name}
+                          </Label>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="permissions" className="space-y-4">
+                <ClientVisibilityPermissionsComponent
+                  permissions={formData.visibilityPermissions}
+                  onPermissionChange={handlePermissionChange}
+                />
+              </TabsContent>
+            </Tabs>
+            
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleAddClient}>
+                {editingClient ? 'Mettre à jour' : 'Ajouter'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -273,7 +314,7 @@ const ClientConnectionsManagement = () => {
                         size="icon"
                         onClick={() => handleEditClient(client)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Settings className="h-4 w-4" />
                       </Button>
                       
                       <Button

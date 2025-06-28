@@ -135,6 +135,40 @@ export interface Personnel {
   active: boolean;
 }
 
+export interface ClientVisibilityPermissions {
+  // Informations générales du projet
+  showProjectName?: boolean;
+  showClientName?: boolean;
+  showAddress?: boolean;
+  showContactInfo?: boolean;
+  showProjectType?: boolean;
+  showTeam?: boolean;
+  
+  // Informations contractuelles
+  showContractDetails?: boolean;
+  showStartEndDates?: boolean;
+  showAnnualVisits?: boolean;
+  showVisitDuration?: boolean;
+  showAdditionalInfo?: boolean;
+  
+  // Informations techniques
+  showIrrigation?: boolean;
+  showMowerType?: boolean;
+  
+  // Fiches de suivi
+  showWorkLogs?: boolean;
+  showPersonnel?: boolean;
+  showTimeTracking?: boolean;
+  showTasks?: boolean;
+  showWaterConsumption?: boolean;
+  showNotes?: boolean;
+  showConsumables?: boolean;
+  showInvoicedStatus?: boolean;
+  
+  // Documents
+  showDocuments?: boolean;
+}
+
 export interface ClientConnection {
   id: string;
   clientName: string;
@@ -144,6 +178,7 @@ export interface ClientConnection {
   isActive: boolean;
   createdAt: Date;
   lastLogin?: Date;
+  visibilityPermissions?: ClientVisibilityPermissions;
 }
 
 export interface AppSettings {
