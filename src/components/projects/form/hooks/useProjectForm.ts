@@ -8,6 +8,7 @@ import { validateProjectData } from '../utils/projectValidation';
 import { useProjectFormHandlers } from './useProjectFormHandlers';
 import { saveProjectToSupabase } from '../utils/projectSupabaseOperations';
 import { convertToProjectInfo } from '../utils/projectDataTransformers';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 
 interface UseProjectFormProps {
   initialData?: ProjectInfo;
@@ -18,6 +19,7 @@ interface UseProjectFormProps {
 export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectFormProps) => {
   const navigate = useNavigate();
   const { addProjectInfo, updateProjectInfo, teams } = useApp();
+  const { archiveWorkLogsByProjectId } = useWorkLogs();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<Omit<ProjectInfo, 'id' | 'createdAt'>>({
@@ -77,22 +79,49 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
       const projectData = convertToProjectInfo(formData);
       const projectId = initialData?.id || crypto.randomUUID();
       
+      // Vérifier si le projet doit être archivé automatiquement
+      const shouldAutoArchive = projectData.endDate && new Date(projectData.endDate) <= new Date();
+      const wasArchived = initialData?.isArchived || false;
+      
       const completeProjectInfo: ProjectInfo = {
         ...projectData,
         id: projectId,
         createdAt: initialData?.createdAt || new Date(),
+        isArchived: shouldAutoArchive || projectData.isArchived
       } as ProjectInfo;
       
       // First save to Supabase
       await saveProjectToSupabase(completeProjectInfo);
       
+      // Si le projet devient archivé (automatiquement ou manuellement)
+      if (completeProjectInfo.isArchived && !wasArchived) {
+        // Archiver toutes les fiches de suivi et fiches vierges liées
+        await archiveWorkLogsByProjectId(projectId, true);
+        
+        if (shouldAutoArchive) {
+          toast.success('Projet archivé automatiquement (date de fin atteinte) avec toutes ses fiches');
+        } else {
+          toast.success('Projet archivé avec toutes ses fiches de suivi');
+        }
+      } else if (!completeProjectInfo.isArchived && wasArchived) {
+        // Désarchiver toutes les fiches de suivi et fiches vierges liées
+        await archiveWorkLogsByProjectId(projectId, false);
+        toast.success('Projet désarchivé avec toutes ses fiches de suivi');
+      }
+      
       // Then update local state
       if (initialData) {
         updateProjectInfo(completeProjectInfo);
-        toast.success('Chantier mis à jour et sauvegardé dans Supabase');
+        if (!completeProjectInfo.isArchived || wasArchived) {
+          toast.success('Chantier mis à jour et sauvegardé dans Supabase');
+        }
       } else {
         addProjectInfo(completeProjectInfo);
-        toast.success('Chantier ajouté et sauvegardé dans Supabase');
+        if (shouldAutoArchive) {
+          toast.success('Chantier créé et archivé automatiquement (date de fin atteinte)');
+        } else {
+          toast.success('Chantier ajouté et sauvegardé dans Supabase');
+        }
       }
       
       if (onSuccess) {

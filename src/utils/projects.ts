@@ -57,3 +57,13 @@ export const shouldArchiveProject = (project: ProjectInfo): boolean => {
   
   return endDate < today;
 };
+
+// Auto-archive projects that have passed their end date
+export const getProjectsWithAutoArchive = (projects: ProjectInfo[]): ProjectInfo[] => {
+  return projects.map(project => {
+    if (shouldArchiveProject(project) && !project.isArchived) {
+      return { ...project, isArchived: true };
+    }
+    return project;
+  });
+};
