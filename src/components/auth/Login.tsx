@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -144,11 +144,6 @@ const Login = () => {
               </TabsContent>
             </Tabs>
           </CardContent>
-          <CardFooter className="flex flex-col">
-            <p className="px-6 text-center text-sm text-muted-foreground">
-              <span className="font-medium">Note:</span> L'identifiant par défaut est "admin" et le mot de passe est "admin"
-            </p>
-          </CardFooter>
         </Card>
       </div>
     </div>
