@@ -395,51 +395,6 @@
   }
 }
 
-/* Enhanced Color Utilities */
-.green-25 {
-  background-color: #f0fdf9;
-}
-
-.green-150 {
-  background-color: #bbf7d0;
-}
-
-.green-250 {
-  background-color: #86efac;
-}
-
-.blue-25 {
-  background-color: #eff6ff;
-}
-
-.blue-150 {
-  background-color: #bfdbfe;
-}
-
-.blue-250 {
-  background-color: #93c5fd;
-}
-
-.orange-25 {
-  background-color: #fff7ed;
-}
-
-.purple-25 {
-  background-color: #faf5ff;
-}
-
-.gray-25 {
-  background-color: #fafafa;
-}
-
-.gray-150 {
-  background-color: #e5e7eb;
-}
-
-.gray-250 {
-  background-color: #d1d5db;
-}
-
 /* Enhanced Layout Utilities */
 .container-fluid {
   width: 100%;
