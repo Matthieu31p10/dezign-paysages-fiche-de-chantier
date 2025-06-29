@@ -6,12 +6,14 @@ import { toast } from 'sonner';
 export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<React.SetStateAction<WorkLog[]>>) => {
   const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
     try {
-      console.log('Adding worklog to Supabase:', workLog);
+      console.log('Adding worklog to database:', workLog);
       
-      // Formatter les données pour Supabase
-      const workLogForDB = {
+      // Déterminer si c'est une fiche vierge
+      const isBlankWorksheet = workLog.isBlankWorksheet || (!workLog.projectId || workLog.projectId === '');
+      
+      // Préparer les données communes
+      const commonData = {
         id: workLog.id,
-        project_id: workLog.projectId || '',
         date: workLog.date,
         personnel: workLog.personnel || [],
         departure: workLog.timeTracking?.departure || '',
@@ -34,30 +36,54 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
         linked_project_id: workLog.linkedProjectId || null,
         signed_quote_amount: workLog.signedQuoteAmount ? Number(workLog.signedQuoteAmount) : null,
         is_quote_signed: Boolean(workLog.isQuoteSigned),
-        is_blank_worksheet: Boolean(workLog.isBlankWorksheet),
         created_by: workLog.createdBy || null
       };
 
-      console.log('Formatted data for Supabase:', workLogForDB);
+      let data;
+      let error;
 
-      const { data, error } = await supabase
-        .from('work_logs')
-        .insert([workLogForDB])
-        .select()
-        .single();
+      if (isBlankWorksheet) {
+        // Insérer dans la table blank_worksheets
+        console.log('Inserting blank worksheet:', commonData);
+        const result = await supabase
+          .from('blank_worksheets')
+          .insert([commonData])
+          .select()
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      } else {
+        // Insérer dans la table work_logs
+        const workLogData = {
+          ...commonData,
+          project_id: workLog.projectId || '',
+          is_blank_worksheet: false
+        };
+        
+        console.log('Inserting work log:', workLogData);
+        const result = await supabase
+          .from('work_logs')
+          .insert([workLogData])
+          .select()
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Database error:', error);
         throw error;
       }
 
-      console.log('Successfully inserted worklog:', data);
+      console.log('Successfully inserted:', data);
 
-      // Gérer les consumables séparément si ils existent
+      // Gérer les consumables si ils existent
       if (workLog.consumables && workLog.consumables.length > 0) {
-        const consumablesForDB = workLog.consumables.map(consumable => ({
-          id: consumable.id,
-          work_log_id: data.id,
+        const consumablesData = workLog.consumables.map(consumable => ({
+          id: consumable.id || crypto.randomUUID(),
+          [isBlankWorksheet ? 'blank_worksheet_id' : 'work_log_id']: data.id,
           supplier: consumable.supplier || '',
           product: consumable.product || '',
           unit: consumable.unit || 'unité',
@@ -67,21 +93,22 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
           saved_for_reuse: false
         }));
 
+        const tableName = isBlankWorksheet ? 'blank_worksheet_consumables' : 'consumables';
         const { error: consumablesError } = await supabase
-          .from('consumables')
-          .insert(consumablesForDB);
+          .from(tableName)
+          .insert(consumablesData);
 
         if (consumablesError) {
           console.error('Error inserting consumables:', consumablesError);
-          // Ne pas bloquer pour les consumables, juste logger l'erreur
         }
       }
 
       const newWorkLog: WorkLog = {
         ...workLog,
         id: data.id,
-        createdAt: new Date(data.created_at),
-        createdBy: data.created_by || workLog.createdBy
+        createdAt: new Date(data.created_at || new Date()),
+        createdBy: data.created_by || workLog.createdBy,
+        isBlankWorksheet
       };
 
       setWorkLogs((prev) => [newWorkLog, ...prev]);
@@ -109,41 +136,57 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
         id = workLogToUpdate.id;
       }
 
-      const { error } = await supabase
-        .from('work_logs')
-        .update({
-          project_id: workLogToUpdate.projectId,
-          date: workLogToUpdate.date,
-          personnel: workLogToUpdate.personnel,
-          departure: workLogToUpdate.timeTracking?.departure,
-          arrival: workLogToUpdate.timeTracking?.arrival,
-          end_time: workLogToUpdate.timeTracking?.end,
-          break_time: workLogToUpdate.timeTracking?.breakTime,
-          total_hours: workLogToUpdate.timeTracking?.totalHours || 0,
-          water_consumption: workLogToUpdate.waterConsumption,
-          waste_management: workLogToUpdate.wasteManagement,
-          tasks: workLogToUpdate.tasks,
-          notes: workLogToUpdate.notes,
-          invoiced: workLogToUpdate.invoiced || false,
-          is_archived: workLogToUpdate.isArchived || false,
-          client_signature: workLogToUpdate.clientSignature,
-          client_name: workLogToUpdate.clientName,
-          address: workLogToUpdate.address,
-          contact_phone: workLogToUpdate.contactPhone,
-          contact_email: workLogToUpdate.contactEmail,
-          hourly_rate: workLogToUpdate.hourlyRate,
-          linked_project_id: workLogToUpdate.linkedProjectId,
-          signed_quote_amount: workLogToUpdate.signedQuoteAmount,
-          is_quote_signed: workLogToUpdate.isQuoteSigned || false,
-          is_blank_worksheet: workLogToUpdate.isBlankWorksheet || false,
-          created_by: workLogToUpdate.createdBy
-        })
-        .eq('id', id);
+      const isBlankWorksheet = workLogToUpdate.isBlankWorksheet || (!workLogToUpdate.projectId || workLogToUpdate.projectId === '');
+      
+      const updateData = {
+        date: workLogToUpdate.date,
+        personnel: workLogToUpdate.personnel,
+        departure: workLogToUpdate.timeTracking?.departure,
+        arrival: workLogToUpdate.timeTracking?.arrival,
+        end_time: workLogToUpdate.timeTracking?.end,
+        break_time: workLogToUpdate.timeTracking?.breakTime,
+        total_hours: workLogToUpdate.timeTracking?.totalHours || 0,
+        water_consumption: workLogToUpdate.waterConsumption,
+        waste_management: workLogToUpdate.wasteManagement,
+        tasks: workLogToUpdate.tasks,
+        notes: workLogToUpdate.notes,
+        invoiced: workLogToUpdate.invoiced || false,
+        is_archived: workLogToUpdate.isArchived || false,
+        client_signature: workLogToUpdate.clientSignature,
+        client_name: workLogToUpdate.clientName,
+        address: workLogToUpdate.address,
+        contact_phone: workLogToUpdate.contactPhone,
+        contact_email: workLogToUpdate.contactEmail,
+        hourly_rate: workLogToUpdate.hourlyRate,
+        linked_project_id: workLogToUpdate.linkedProjectId,
+        signed_quote_amount: workLogToUpdate.signedQuoteAmount,
+        is_quote_signed: workLogToUpdate.isQuoteSigned || false,
+        created_by: workLogToUpdate.createdBy
+      };
+
+      let error;
+      if (isBlankWorksheet) {
+        const result = await supabase
+          .from('blank_worksheets')
+          .update(updateData)
+          .eq('id', id);
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from('work_logs')
+          .update({
+            ...updateData,
+            project_id: workLogToUpdate.projectId,
+            is_blank_worksheet: false
+          })
+          .eq('id', id);
+        error = result.error;
+      }
 
       if (error) throw error;
 
       setWorkLogs((prev) => prev.map((log) => (log.id === id ? workLogToUpdate : log)));
-      toast.success('Fiche de suivi mise à jour');
+      toast.success('Fiche mise à jour avec succès');
     } catch (error) {
       console.error("Error updating work log:", error);
       toast.error('Erreur lors de la mise à jour de la fiche');
@@ -153,15 +196,20 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
 
   const deleteWorkLog = async (id: string): Promise<void> => {
     try {
+      // Trouver la fiche pour déterminer le type
+      const workLog = workLogs.find(log => log.id === id);
+      const isBlankWorksheet = workLog?.isBlankWorksheet || (!workLog?.projectId || workLog?.projectId === '');
+      
+      const tableName = isBlankWorksheet ? 'blank_worksheets' : 'work_logs';
       const { error } = await supabase
-        .from('work_logs')
+        .from(tableName)
         .delete()
         .eq('id', id);
 
       if (error) throw error;
 
       setWorkLogs((prev) => prev.filter((log) => log.id !== id));
-      toast.success('Fiche de suivi supprimée');
+      toast.success('Fiche supprimée avec succès');
     } catch (error) {
       console.error("Error deleting work log:", error);
       toast.error('Erreur lors de la suppression de la fiche');

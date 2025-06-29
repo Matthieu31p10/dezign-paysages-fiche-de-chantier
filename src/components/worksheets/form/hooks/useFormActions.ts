@@ -28,7 +28,6 @@ export const useFormActions = ({
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   const { getCurrentUser } = useApp();
   
-  // Handle form submission
   const handleSubmit = async (data: BlankWorkSheetValues) => {
     console.log('Form submission started with data:', data);
     
@@ -45,7 +44,7 @@ export const useFormActions = ({
       const currentUser = getCurrentUser();
       const currentUserName = currentUser ? (currentUser.name || currentUser.username) : 'Utilisateur inconnu';
       
-      // Traiter les consommables en s'assurant qu'ils ont tous un id
+      // Traiter les consommables
       const processedConsumables = (data.consumables || [])
         .filter(consumable => 
           consumable && 
@@ -66,7 +65,7 @@ export const useFormActions = ({
       // Préparation des données pour WorkLog
       const workLogData: WorkLog = {
         id: workLogId || crypto.randomUUID(),
-        projectId: data.linkedProjectId || '', // Use linkedProjectId or empty string for blank worksheets
+        projectId: data.linkedProjectId || '', // Pour les fiches vierges, peut être vide
         date: data.date.toISOString().split('T')[0],
         personnel: data.personnel,
         timeTracking: {
@@ -89,7 +88,7 @@ export const useFormActions = ({
           customTasks: {},
           tasksProgress: {}
         },
-        isBlankWorksheet: true,
+        isBlankWorksheet: true, // C'est toujours une fiche vierge dans ce contexte
         createdAt: new Date(),
         createdBy: currentUserName,
         clientName: data.clientName,
@@ -107,13 +106,13 @@ export const useFormActions = ({
       
       // Soumission des données
       if (workLogId) {
-        console.log('Updating existing worklog');
+        console.log('Updating existing blank worksheet');
         await updateWorkLog(workLogData);
         toast.success('Fiche vierge mise à jour avec succès');
       } else {
-        console.log('Creating new worklog');
+        console.log('Creating new blank worksheet');
         const result = await addWorkLog(workLogData);
-        console.log('Worklog created successfully:', result);
+        console.log('Blank worksheet created successfully:', result);
         toast.success('Fiche vierge enregistrée avec succès');
       }
       
@@ -145,7 +144,6 @@ export const useFormActions = ({
     }
   };
   
-  // Handle form cancellation
   const handleCancel = () => {
     form.reset();
     handleClearProject();

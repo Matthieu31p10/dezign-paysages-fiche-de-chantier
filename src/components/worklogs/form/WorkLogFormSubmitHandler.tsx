@@ -64,7 +64,7 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       // Préparation des données pour WorkLog
       const workLogData: WorkLog = {
         id: existingWorkLogId || crypto.randomUUID(),
-        projectId: formData.projectId || '',
+        projectId: formData.projectId || '', // Pour les fiches vierges, peut être vide
         date: formData.date.toISOString().split('T')[0],
         personnel: formData.personnel,
         timeTracking: {
@@ -89,7 +89,17 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         },
         isBlankWorksheet: isBlankWorksheet,
         createdAt: new Date(),
-        createdBy: currentUserName
+        createdBy: currentUserName,
+        // Champs spécifiques aux fiches vierges
+        clientName: formData.clientName,
+        address: formData.address,
+        contactPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail,
+        hourlyRate: formData.hourlyRate,
+        signedQuoteAmount: formData.signedQuoteAmount,
+        isQuoteSigned: formData.isQuoteSigned,
+        linkedProjectId: formData.linkedProjectId,
+        clientSignature: undefined // Sera géré séparément si nécessaire
       };
       
       console.log('WorkLog data prepared for submission:', workLogData);
