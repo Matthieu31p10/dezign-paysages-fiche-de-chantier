@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, MapPin, Clock, Users, ChevronRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useModernScheduleData } from '../modern/hooks/useModernScheduleData';
-import { format, parseISO, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
+import { format, parseISO, isToday, isTomorrow, startOfWeek, endOfWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface PassagesListProps {
@@ -16,7 +16,7 @@ interface PassagesListProps {
 }
 
 const PassagesList: React.FC<PassagesListProps> = ({ selectedTeams, showWeekends }) => {
-  const { teams, projectInfos } = useApp();
+  const { teams } = useApp();
   const [timeFilter, setTimeFilter] = useState<'today' | 'tomorrow' | 'week' | 'month'>('week');
   
   const currentYear = new Date().getFullYear();
@@ -31,24 +31,28 @@ const PassagesList: React.FC<PassagesListProps> = ({ selectedTeams, showWeekends
 
   const filteredEvents = useMemo(() => {
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     let filteredByTime = scheduledEvents.filter(event => {
-      const eventDate = parseISO(event.date);
-      
-      switch (timeFilter) {
-        case 'today':
-          return isToday(eventDate);
-        case 'tomorrow':
-          return isTomorrow(eventDate);
-        case 'week':
-          const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-          const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-          return eventDate >= weekStart && eventDate <= weekEnd;
-        case 'month':
-          return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-        default:
-          return true;
+      try {
+        const eventDate = parseISO(event.date);
+        
+        switch (timeFilter) {
+          case 'today':
+            return isToday(eventDate);
+          case 'tomorrow':
+            return isTomorrow(eventDate);
+          case 'week':
+            const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+            const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+            return eventDate >= weekStart && eventDate <= weekEnd;
+          case 'month':
+            return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+          default:
+            return true;
+        }
+      } catch (error) {
+        console.error('Error parsing event date:', event.date, error);
+        return false;
       }
     });
 
@@ -65,27 +69,36 @@ const PassagesList: React.FC<PassagesListProps> = ({ selectedTeams, showWeekends
   };
 
   const getDateLabel = (dateString: string) => {
-    const date = parseISO(dateString);
-    const now = new Date();
-    
-    if (isToday(date)) {
-      return "Aujourd'hui";
-    } else if (isTomorrow(date)) {
-      return "Demain";
-    } else {
-      return format(date, 'EEEE d MMMM yyyy', { locale: fr });
+    try {
+      const date = parseISO(dateString);
+      
+      if (isToday(date)) {
+        return "Aujourd'hui";
+      } else if (isTomorrow(date)) {
+        return "Demain";
+      } else {
+        return format(date, 'EEEE d MMMM yyyy', { locale: fr });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', dateString, error);
+      return dateString;
     }
   };
 
   const getDateBadgeVariant = (dateString: string) => {
-    const date = parseISO(dateString);
-    
-    if (isToday(date)) {
-      return "default";
-    } else if (isTomorrow(date)) {
-      return "secondary";
-    } else {
-      return "outline";
+    try {
+      const date = parseISO(dateString);
+      
+      if (isToday(date)) {
+        return "default" as const;
+      } else if (isTomorrow(date)) {
+        return "secondary" as const;
+      } else {
+        return "outline" as const;
+      }
+    } catch (error) {
+      console.error('Error parsing date for badge:', dateString, error);
+      return "outline" as const;
     }
   };
 

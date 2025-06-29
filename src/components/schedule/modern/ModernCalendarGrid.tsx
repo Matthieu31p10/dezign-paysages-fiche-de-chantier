@@ -31,9 +31,7 @@ const ModernCalendarGrid: React.FC<ModernCalendarGridProps> = ({
   getEventsForDay
 }) => {
   const gridColumns = showWeekends ? 'grid-cols-7' : 'grid-cols-5';
-  const emptyStartCells = showWeekends 
-    ? startDayOfWeek - 1
-    : startDayOfWeek > 5 ? 0 : startDayOfWeek - 1;
+  const emptyStartCells = Math.max(0, startDayOfWeek);
 
   return (
     <div className="h-full flex flex-col">

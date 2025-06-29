@@ -42,12 +42,15 @@ const ModernScheduleCalendar: React.FC<ModernScheduleCalendarProps> = ({
     const filteredDays = showWeekends ? days : days.filter(day => !isWeekend(day));
     
     let startDayOfWeek = getDay(monthStart);
+    // Convert Sunday (0) to Monday-based week (7)
     if (startDayOfWeek === 0) startDayOfWeek = 7;
     
-    if (!showWeekends && startDayOfWeek > 5) {
-      startDayOfWeek = 1;
-    } else if (!showWeekends && startDayOfWeek > 1) {
-      startDayOfWeek = startDayOfWeek > 5 ? 1 : startDayOfWeek;
+    // Adjust start day for weekdays-only view
+    if (!showWeekends) {
+      // If month starts on weekend, adjust to Monday
+      if (startDayOfWeek > 5) {
+        startDayOfWeek = 1;
+      }
     }
 
     const daysOfWeek = showWeekends 
@@ -56,7 +59,7 @@ const ModernScheduleCalendar: React.FC<ModernScheduleCalendarProps> = ({
 
     return {
       filteredDays,
-      startDayOfWeek,
+      startDayOfWeek: startDayOfWeek - 1, // Convert to 0-based for grid calculation
       daysOfWeek
     };
   }, [month, year, showWeekends]);
@@ -89,13 +92,13 @@ const ModernScheduleCalendar: React.FC<ModernScheduleCalendarProps> = ({
     return (
       <CardContent className="p-6">
         <div className="animate-pulse">
-          <div className="grid grid-cols-7 gap-px mb-4">
+          <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-px mb-4`}>
             {calendarData.daysOfWeek.map((day, i) => (
               <div key={`${day}-${i}`} className="h-8 bg-gray-200 rounded"></div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-px">
-            {Array.from({ length: 35 }).map((_, i) => (
+          <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} gap-px`}>
+            {Array.from({ length: showWeekends ? 35 : 25 }).map((_, i) => (
               <div key={`skeleton-${i}`} className="h-32 bg-gray-100 rounded"></div>
             ))}
           </div>

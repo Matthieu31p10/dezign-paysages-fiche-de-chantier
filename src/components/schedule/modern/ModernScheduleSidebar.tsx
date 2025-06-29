@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -80,8 +81,9 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
   };
 
   const handleDistributionClick = () => {
-    // Navigate to schedule page with monthly distribution tab
-    navigate('/schedule?tab=monthly-distribution');
+    // Navigate to schedule page with distribution tab
+    navigate('/schedule');
+    // Note: Tab switching would need to be handled by parent component
   };
 
   const handleTeamsClick = () => {
@@ -228,7 +230,7 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
                 className="w-full justify-start"
                 onClick={() => {
                   setShowConstraintsDialog(false);
-                  navigate('/schedule?tab=project-locks');
+                  navigate('/schedule');
                 }}
               >
                 <MapPin className="h-4 w-4 mr-2" />
@@ -239,7 +241,7 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
                 className="w-full justify-start"
                 onClick={() => {
                   setShowConstraintsDialog(false);
-                  navigate('/schedule?tab=configuration');
+                  navigate('/schedule');
                 }}
               >
                 <Calendar className="h-4 w-4 mr-2" />
@@ -280,7 +282,7 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
                 className="w-full justify-start"
                 onClick={() => {
                   setShowTeamsDialog(false);
-                  navigate('/schedule?tab=team-schedules');
+                  navigate('/schedule');
                 }}
               >
                 <Calendar className="h-4 w-4 mr-2" />
