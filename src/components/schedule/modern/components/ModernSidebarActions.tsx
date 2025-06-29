@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, Settings, Calendar, Users } from 'lucide-react';
 import AnnualDistributionDialog from '../../annual-distribution/AnnualDistributionDialog';
 import { useProjects } from '@/context/ProjectsContext';
-import { useContext } from 'react';
-import { TeamsContext } from '@/context/TeamsContext';
+import { useTeams } from '@/context/TeamsContext';
 
 interface ModernSidebarActionsProps {
   onConstraintsClick: () => void;
@@ -21,7 +20,7 @@ const ModernSidebarActions: React.FC<ModernSidebarActionsProps> = ({
 }) => {
   const [showAnnualDistributionDialog, setShowAnnualDistributionDialog] = useState(false);
   const { getActiveProjects } = useProjects();
-  const { teams } = useContext(TeamsContext);
+  const { teams } = useTeams();
 
   const handleDistributionClick = () => {
     setShowAnnualDistributionDialog(true);
