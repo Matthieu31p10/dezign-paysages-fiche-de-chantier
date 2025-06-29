@@ -17,6 +17,7 @@ export const convertToProjectInfo = (data: any): Partial<ProjectInfo> => {
     annualTotalHours: data.annualTotalHours,
     visitDuration: data.visitDuration,
     additionalInfo: data.additionalInfo,
+    teams: data.teams || [],
     team: data.team,
     projectType: data.projectType,
     startDate: data.startDate,

@@ -40,6 +40,7 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
     annualTotalHours: initialData?.annualTotalHours || 0,
     visitDuration: initialData?.visitDuration || 0,
     additionalInfo: initialData?.additionalInfo || '',
+    teams: initialData?.teams || [],
     team: initialData?.team || (teams.length > 0 ? teams[0].id : ''),
     projectType: initialData?.projectType || '',
     startDate: initialData?.startDate || null,

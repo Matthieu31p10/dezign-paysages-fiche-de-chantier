@@ -1,7 +1,7 @@
 
 import { ProjectInfo } from '@/types/models';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useProjectForm } from './form';
+import { useProjectForm } from './form/hooks/useProjectForm';
 import BasicInfoSection from './form/BasicInfoSection';
 import ContactSection from './form/ContactSection';
 import ContractSection from './form/ContractSection';
@@ -30,6 +30,12 @@ const ProjectForm = ({ initialData, onSuccess, onCancel }: ProjectFormProps) => 
     handleSubmit,
     isEditing
   } = useProjectForm({ initialData, onSuccess, onCancel });
+
+  const handleTeamsChange = (teams: any[]) => {
+    // Mettre à jour les équipes dans formData
+    // Cette logique sera implémentée dans le hook useProjectForm
+    console.log('Teams changed:', teams);
+  };
   
   return (
     <form onSubmit={handleSubmit} className="animate-fade-in">
@@ -67,12 +73,9 @@ const ProjectForm = ({ initialData, onSuccess, onCancel }: ProjectFormProps) => 
 
             {/* Nouvelle section pour les équipes multiples */}
             <ProjectTeamsSection
-              projectId={formData.id}
+              projectId={initialData?.id}
               projectTeams={formData.teams || []}
-              onTeamsChange={(teams) => {
-                // Mettre à jour les équipes dans formData
-                // Cette logique sera implémentée dans le hook useProjectForm
-              }}
+              onTeamsChange={handleTeamsChange}
             />
             
             <SchedulingSection 
