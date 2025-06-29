@@ -87,3 +87,24 @@ export const loadProjects = async (): Promise<ProjectInfo[]> => {
   
   return data?.map(formatProjectFromDatabase) || [];
 };
+
+// Fonctions avec les noms attendus par ProjectsContext
+export const loadProjectsFromStorage = loadProjects;
+
+export const saveProjectsToStorage = async (projects: ProjectInfo[]): Promise<void> => {
+  for (const project of projects) {
+    await saveProject(project);
+  }
+};
+
+export const deleteProjectFromStorage = async (projectId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId);
+  
+  if (error) {
+    console.error('Error deleting project:', error);
+    throw new Error(`Failed to delete project: ${error.message}`);
+  }
+};
