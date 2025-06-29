@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,7 @@ const MonthlyDistribution: React.FC<MonthlyDistributionProps> = ({ projects, tea
 
   // Sauvegarder les modifications
   const handleSaveChanges = () => {
-    toast.success("Distribution mensuelle enregistrée");
+    toast.success("Distribution annuelle enregistrée");
     setIsEditing(false);
   };
 
@@ -72,7 +71,7 @@ const MonthlyDistribution: React.FC<MonthlyDistributionProps> = ({ projects, tea
         <CardContent>
           <div className="flex justify-between items-center mb-4">
             <div className="text-sm text-gray-600">
-              Gérez la répartition mensuelle des passages et configurez l'espacement prioritaire
+              Gérez la répartition annuelle des passages et configurez l'espacement prioritaire
             </div>
             <Button
               variant="outline"

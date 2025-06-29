@@ -27,7 +27,7 @@ const DistributionHeader: React.FC<DistributionHeaderProps> = ({
       <div className="flex items-center gap-4">
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-blue-600" />
-          Distribution mensuelle des passages
+          Distribution annuelle des passages
         </CardTitle>
         
         <Select value={selectedTeam} onValueChange={onTeamChange}>
