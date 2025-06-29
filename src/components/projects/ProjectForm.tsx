@@ -9,6 +9,7 @@ import SiteDetailsSection from './form/SiteDetailsSection';
 import SchedulingSection from './form/SchedulingSection';
 import TypeAndDateSection from './form/TypeAndDateSection';
 import AdditionalInfoSection from './form/AdditionalInfoSection';
+import ProjectTeamsSection from './form/ProjectTeamsSection';
 import FormActions from './form/FormActions';
 
 interface ProjectFormProps {
@@ -62,6 +63,16 @@ const ProjectForm = ({ initialData, onSuccess, onCancel }: ProjectFormProps) => 
               mowerType={formData.mowerType}
               team={formData.team}
               onSelectChange={handleSelectChange}
+            />
+
+            {/* Nouvelle section pour les équipes multiples */}
+            <ProjectTeamsSection
+              projectId={formData.id}
+              projectTeams={formData.teams || []}
+              onTeamsChange={(teams) => {
+                // Mettre à jour les équipes dans formData
+                // Cette logique sera implémentée dans le hook useProjectForm
+              }}
             />
             
             <SchedulingSection 

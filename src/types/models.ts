@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'user';
 
 export interface User {
@@ -17,6 +18,14 @@ export interface User {
 export interface AuthState {
   currentUser: User | null;
   isAuthenticated: boolean;
+}
+
+export interface ProjectTeam {
+  id: string;
+  projectId: string;
+  teamId: string;
+  isPrimary: boolean;
+  createdAt: Date;
 }
 
 export interface ProjectInfo {
@@ -41,7 +50,8 @@ export interface ProjectInfo {
   annualTotalHours: number;
   visitDuration: number;
   additionalInfo: string;
-  team: string; // Changé de string à string pour correspondre à la DB
+  teams: ProjectTeam[]; // Changé de string à ProjectTeam[]
+  team: string; // Maintenu pour compatibilité - sera l'équipe primaire
   projectType: 'residence' | 'particular' | 'enterprise' | 'ponctuel' | '';
   startDate?: Date | null;
   endDate?: Date | null;

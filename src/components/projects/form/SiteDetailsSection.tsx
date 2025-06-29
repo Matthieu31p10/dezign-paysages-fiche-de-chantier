@@ -2,48 +2,44 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TeamsSelect } from '@/components/teams/TeamsSelect';
+import { useTeams } from '@/context/TeamsContext';
 
 interface SiteDetailsSectionProps {
-  irrigation: string;
-  mowerType: string;
+  irrigation?: string;
+  mowerType?: string;
   team: string;
-  onSelectChange: (name: string, value: string) => void;
+  onSelectChange: (field: string, value: string) => void;
 }
 
 const SiteDetailsSection: React.FC<SiteDetailsSectionProps> = ({
   irrigation,
   mowerType,
   team,
-  onSelectChange,
+  onSelectChange
 }) => {
+  const { teams } = useTeams();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="irrigation">Irrigation</Label>
-        <Select
-          value={irrigation}
-          onValueChange={(value) => onSelectChange('irrigation', value)}
-        >
+        <Label>Arrosage</Label>
+        <Select value={irrigation || ''} onValueChange={(value) => onSelectChange('irrigation', value)}>
           <SelectTrigger>
-            <SelectValue placeholder="Sélectionner" />
+            <SelectValue placeholder="Type d'arrosage" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Aucune</SelectItem>
             <SelectItem value="irrigation">Irrigation</SelectItem>
+            <SelectItem value="none">Aucun</SelectItem>
             <SelectItem value="disabled">Désactivé</SelectItem>
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
-        <Label htmlFor="mowerType">Type de tondeuse</Label>
-        <Select
-          value={mowerType}
-          onValueChange={(value) => onSelectChange('mowerType', value)}
-        >
+        <Label>Type de tondeuse</Label>
+        <Select value={mowerType || ''} onValueChange={(value) => onSelectChange('mowerType', value)}>
           <SelectTrigger>
-            <SelectValue placeholder="Sélectionner" />
+            <SelectValue placeholder="Type de tondeuse" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="large">Grande</SelectItem>
@@ -52,13 +48,21 @@ const SiteDetailsSection: React.FC<SiteDetailsSectionProps> = ({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
-        <Label htmlFor="team">Équipe</Label>
-        <TeamsSelect
-          value={team}
-          onValueChange={(value) => onSelectChange('team', value)}
-        />
+        <Label>Équipe principale (compatibilité)</Label>
+        <Select value={team} onValueChange={(value) => onSelectChange('team', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner une équipe" />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((teamOption) => (
+              <SelectItem key={teamOption.id} value={teamOption.id}>
+                {teamOption.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
