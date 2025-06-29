@@ -51,17 +51,27 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
   const { teams, projectInfos } = useApp();
   const activeProjects = projectInfos.filter(p => !p.isArchived);
 
-  // Écouter les événements de navigation depuis la sidebar moderne
+  // Écouter les événements de navigation depuis la sidebar moderne avec gestion d'erreur
   useEffect(() => {
-    const handleNavigateToTab = (event: CustomEvent) => {
-      const { tab } = event.detail;
-      onTabChange(tab);
+    const handleNavigateToTab = (event: Event) => {
+      try {
+        const customEvent = event as CustomEvent;
+        const { tab } = customEvent.detail;
+        
+        if (typeof tab === 'string' && typeof onTabChange === 'function') {
+          onTabChange(tab);
+        } else {
+          console.error('Invalid tab navigation event:', customEvent.detail);
+        }
+      } catch (error) {
+        console.error('Error handling tab navigation:', error);
+      }
     };
 
-    window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+    window.addEventListener('navigate-to-tab', handleNavigateToTab);
 
     return () => {
-      window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+      window.removeEventListener('navigate-to-tab', handleNavigateToTab);
     };
   }, [onTabChange]);
 

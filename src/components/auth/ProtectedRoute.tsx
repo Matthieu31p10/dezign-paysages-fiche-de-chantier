@@ -13,37 +13,42 @@ const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: Prot
   const { auth, canUserAccess } = useApp();
   const location = useLocation();
 
-  // Check if the user is authenticated
-  if (!auth.isAuthenticated) {
-    // Redirect to the login page, but save the current location
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  try {
+    // Check if the user is authenticated
+    if (!auth.isAuthenticated) {
+      // Redirect to the login page, but save the current location
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
 
-  // Check if the user has the required role
-  if (requiredRole && !canUserAccess(requiredRole)) {
-    return <Navigate to="/unauthorized" replace />;
-  }
-
-  // If specific module access is required, check that too
-  if (requiredModule) {
-    // This is where we would check module-specific permissions
-    // For now, we're just using role-based permissions
-    const hasAccess = auth.currentUser?.role === 'admin' || 
-                     (auth.currentUser?.role === 'manager') ||
-                     (requiredModule === 'projects' || requiredModule === 'worklogs' || requiredModule === 'blanksheets');
-                     
-    if (!hasAccess) {
+    // Check if the user has the required role
+    if (requiredRole && !canUserAccess(requiredRole)) {
       return <Navigate to="/unauthorized" replace />;
     }
-  }
 
-  // If an element is provided, return it
-  if (element) {
-    return element;
-  }
+    // If specific module access is required, check that too
+    if (requiredModule) {
+      // This is where we would check module-specific permissions
+      // For now, we're just using role-based permissions
+      const hasAccess = auth.currentUser?.role === 'admin' || 
+                       (auth.currentUser?.role === 'manager') ||
+                       (requiredModule === 'projects' || requiredModule === 'worklogs' || requiredModule === 'blanksheets');
+                       
+      if (!hasAccess) {
+        return <Navigate to="/unauthorized" replace />;
+      }
+    }
 
-  // Otherwise, render the child routes
-  return <Outlet />;
+    // If an element is provided, return it
+    if (element) {
+      return element;
+    }
+
+    // Otherwise, render the child routes
+    return <Outlet />;
+  } catch (error) {
+    console.error('Error in ProtectedRoute:', error);
+    return <Navigate to="/login" replace />;
+  }
 };
 
 export default ProtectedRoute;
