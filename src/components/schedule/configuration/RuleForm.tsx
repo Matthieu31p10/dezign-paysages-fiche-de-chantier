@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Clock, Save } from 'lucide-react';
+import { Clock, Save, Plus, Minus } from 'lucide-react';
 import { ProjectInfo } from '@/types/models';
 import { SchedulingRule } from './types';
 import { daysOfWeek, timeSlots } from './constants';
@@ -32,6 +31,30 @@ const RuleForm: React.FC<RuleFormProps> = ({
   onTogglePreferredDay,
   onTogglePreferredTime,
 }) => {
+  const handleIntervalValueChange = (value: string) => {
+    const numValue = parseInt(value) || 1;
+    onRuleChange({
+      ...currentRule,
+      intervalValue: Math.max(1, numValue) // Assurer qu'on ne descend jamais en dessous de 1
+    });
+  };
+
+  const incrementInterval = () => {
+    const currentValue = currentRule.intervalValue || 1;
+    onRuleChange({
+      ...currentRule,
+      intervalValue: currentValue + 1
+    });
+  };
+
+  const decrementInterval = () => {
+    const currentValue = currentRule.intervalValue || 1;
+    onRuleChange({
+      ...currentRule,
+      intervalValue: Math.max(1, currentValue - 1)
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Sélection du projet */}
@@ -72,15 +95,34 @@ const RuleForm: React.FC<RuleFormProps> = ({
 
         <div className="space-y-2">
           <Label>Valeur d'intervalle</Label>
-          <Input
-            type="number"
-            min="1"
-            value={currentRule.intervalValue || 1}
-            onChange={(e) => onRuleChange({
-              ...currentRule,
-              intervalValue: parseInt(e.target.value) || 1
-            })}
-          />
+          <div className="flex items-center space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={decrementInterval}
+              className="h-10 w-10 p-0 flex-shrink-0"
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <Input
+              type="number"
+              min="1"
+              max="365"
+              value={currentRule.intervalValue || 1}
+              onChange={(e) => handleIntervalValueChange(e.target.value)}
+              className="text-center"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={incrementInterval}
+              className="h-10 w-10 p-0 flex-shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-2">
