@@ -1,5 +1,5 @@
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from '../../calendar/hooks/useYearlyPassageSchedule';
 import { useProjectLocks } from '../../project-locks/hooks/useProjectLocks';
@@ -43,6 +43,14 @@ export const useModernScheduleData = ({
   const { projectTeams } = useProjectTeams();
   const { isProjectLockedOnDay, getProjectLockDetails } = useProjectLocks();
 
+  // Memoized team lookup for performance
+  const teamLookup = useMemo(() => {
+    return teams.reduce((acc, team) => {
+      acc[team.id] = team;
+      return acc;
+    }, {} as Record<string, typeof teams[0]>);
+  }, [teams]);
+
   // Enhanced project filtering with multi-team support
   const filteredProjects = useMemo(() => {
     let projects = projectInfos.filter(p => !p.isArchived);
@@ -74,7 +82,7 @@ export const useModernScheduleData = ({
     getProjectLockDetails
   );
 
-  // Generate scheduled events with proper team assignment
+  // Memoized event generation for better performance
   const scheduledEvents = useMemo(() => {
     try {
       const events: ScheduledEvent[] = [];
@@ -88,7 +96,7 @@ export const useModernScheduleData = ({
             const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
             
             if (!isLocked) {
-              // Get teams assigned to this project
+              // Get teams assigned to this project with optimized lookup
               const projectTeamAssignments = projectTeams.filter(pt => pt.projectId === project.id);
               let projectTeamIds: string[] = [];
               
@@ -125,13 +133,13 @@ export const useModernScheduleData = ({
     }
   }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay, projectTeams]);
 
-  // Group events by team with enhanced logic
+  // Optimized team groups generation with better performance
   const teamGroups = useMemo(() => {
     const groups: Record<string, TeamGroup> = {};
     
     scheduledEvents.forEach(event => {
       event.teams.forEach(teamId => {
-        const team = teams.find(t => t.id === teamId);
+        const team = teamLookup[teamId];
         const teamName = team ? team.name : 'Équipe inconnue';
         const teamColor = team ? team.color : '#6B7280';
         
@@ -160,12 +168,32 @@ export const useModernScheduleData = ({
     });
 
     return Object.values(groups).sort((a, b) => a.teamName.localeCompare(b.teamName));
-  }, [scheduledEvents, teams]);
+  }, [scheduledEvents, teamLookup]);
+
+  // Memoized helper functions
+  const getEventsForDay = useCallback((date: Date) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    return scheduledEvents.filter(event => {
+      const matchesDate = event.date === dateString;
+      const matchesTeam = selectedTeams.includes('all') || 
+        event.teams.some(teamId => selectedTeams.includes(teamId));
+      return matchesDate && matchesTeam;
+    });
+  }, [scheduledEvents, selectedTeams]);
+
+  const getMonthEvents = useCallback((month: number, year: number) => {
+    return scheduledEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate.getMonth() === month - 1 && eventDate.getFullYear() === year;
+    });
+  }, [scheduledEvents]);
 
   return {
     filteredProjects,
     scheduledEvents,
     teamGroups,
+    getEventsForDay,
+    getMonthEvents,
     isLoading: false // TODO: Add proper loading state when integrating with backend
   };
 };

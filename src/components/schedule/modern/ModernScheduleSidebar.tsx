@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Calendar, Users, MapPin, Clock, TrendingUp, Settings } from 'lucide-react';
 
 interface ScheduledEvent {
   id: string;
@@ -33,91 +35,154 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
 }) => {
   const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleString('fr-FR', { month: 'long' });
   
-  const monthEvents = scheduledEvents.filter(event => {
-    const eventDate = new Date(event.date);
-    return eventDate.getMonth() === selectedMonth - 1 && eventDate.getFullYear() === selectedYear;
-  });
+  // Memoized calculations for better performance
+  const monthStats = useMemo(() => {
+    const monthEvents = scheduledEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate.getMonth() === selectedMonth - 1 && eventDate.getFullYear() === selectedYear;
+    });
 
-  const totalHours = monthEvents.reduce((sum, event) => sum + event.visitDuration, 0);
-  const totalProjects = new Set(monthEvents.map(event => event.projectId)).size;
+    const totalHours = monthEvents.reduce((sum, event) => sum + event.visitDuration, 0);
+    const totalProjects = new Set(monthEvents.map(event => event.projectId)).size;
+    const avgHoursPerProject = totalProjects > 0 ? Math.round((totalHours / totalProjects) * 10) / 10 : 0;
+
+    return {
+      totalEvents: monthEvents.length,
+      totalHours,
+      totalProjects,
+      avgHoursPerProject,
+      monthEvents
+    };
+  }, [scheduledEvents, selectedMonth, selectedYear]);
+
+  // Memoized project stats
+  const projectStats = useMemo(() => {
+    return filteredProjects.slice(0, 8).map(project => {
+      const projectEvents = monthStats.monthEvents.filter(e => e.projectId === project.id);
+      const projectHours = projectEvents.reduce((sum, e) => sum + e.visitDuration, 0);
+      
+      return {
+        ...project,
+        eventsCount: projectEvents.length,
+        totalHours: projectHours,
+        nextVisit: projectEvents.find(e => new Date(e.date) >= new Date())
+      };
+    });
+  }, [filteredProjects, monthStats.monthEvents]);
 
   return (
     <div className="w-80 space-y-4">
       {/* Summary Card */}
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Résumé {monthName} {selectedYear}
+            <Calendar className="h-5 w-5 text-blue-600" />
+            <span className="capitalize">{monthName} {selectedYear}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{monthEvents.length}</div>
-              <div className="text-sm text-blue-600">Passages</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+              <div className="text-2xl font-bold text-blue-700">{monthStats.totalEvents}</div>
+              <div className="text-xs text-blue-600 font-medium">Passages</div>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{totalHours}h</div>
-              <div className="text-sm text-green-600">Total</div>
+            <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+              <div className="text-2xl font-bold text-green-700">{monthStats.totalHours}h</div>
+              <div className="text-xs text-green-600 font-medium">Total</div>
             </div>
           </div>
           
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-xl font-semibold text-gray-700">{totalProjects}</div>
-            <div className="text-sm text-gray-600">Chantiers concernés</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+              <div className="text-lg font-semibold text-purple-700">{monthStats.totalProjects}</div>
+              <div className="text-xs text-purple-600 font-medium">Chantiers</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+              <div className="text-lg font-semibold text-orange-700">{monthStats.avgHoursPerProject}h</div>
+              <div className="text-xs text-orange-600 font-medium">Moy/projet</div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Projects Overview */}
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+            <MapPin className="h-5 w-5 text-green-600" />
             Chantiers actifs
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {filteredProjects.slice(0, 10).map(project => {
-              const projectEvents = monthEvents.filter(e => e.projectId === project.id);
-              return (
-                <div key={project.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
+        <CardContent className="p-0">
+          <ScrollArea className="h-64">
+            <div className="space-y-2 p-4">
+              {projectStats.map(project => (
+                <div key={project.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{project.name}</div>
                     <div className="text-xs text-gray-500 truncate">{project.address}</div>
+                    {project.nextVisit && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        Prochaine visite: {new Date(project.nextVisit.date).toLocaleDateString('fr-FR')}
+                      </div>
+                    )}
                   </div>
-                  {projectEvents.length > 0 && (
-                    <Badge variant="secondary" className="ml-2">
-                      {projectEvents.length}
-                    </Badge>
-                  )}
+                  <div className="flex flex-col items-end gap-1">
+                    {project.eventsCount > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {project.eventsCount}
+                      </Badge>
+                    )}
+                    {project.totalHours > 0 && (
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {project.totalHours}h
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+              {projectStats.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Aucun chantier actif</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5" />
+            <TrendingUp className="h-5 w-5 text-indigo-600" />
             Actions rapides
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <button className="w-full p-2 text-left text-sm rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm h-10 hover:bg-blue-50 hover:text-blue-700"
+          >
+            <Settings className="h-4 w-4 mr-2" />
             Gérer les contraintes
-          </button>
-          <button className="w-full p-2 text-left text-sm rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm h-10 hover:bg-green-50 hover:text-green-700"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
             Distribution mensuelle
-          </button>
-          <button className="w-full p-2 text-left text-sm rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-            Exporter le planning
-          </button>
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm h-10 hover:bg-purple-50 hover:text-purple-700"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Gestion des équipes
+          </Button>
         </CardContent>
       </Card>
     </div>
