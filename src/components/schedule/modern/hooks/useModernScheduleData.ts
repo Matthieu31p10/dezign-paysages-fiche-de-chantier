@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from '../../calendar/hooks/useYearlyPassageSchedule';
 import { useProjectLocks } from '../../project-locks/hooks/useProjectLocks';
+import { useProjectTeams } from '@/hooks/useProjectTeams';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, getDay } from 'date-fns';
 
 interface ScheduledEvent {
@@ -39,22 +40,30 @@ export const useModernScheduleData = ({
   showWeekends
 }: UseModernScheduleDataProps) => {
   const { projectInfos, teams } = useApp();
+  const { projectTeams } = useProjectTeams();
   const { isProjectLockedOnDay, getProjectLockDetails } = useProjectLocks();
 
-  // Filter projects based on selected teams and status
+  // Enhanced project filtering with multi-team support
   const filteredProjects = useMemo(() => {
     let projects = projectInfos.filter(p => !p.isArchived);
     
     if (!selectedTeams.includes('all')) {
       projects = projects.filter(project => {
-        // Check if project has any of the selected teams
-        const projectTeams = project.teams?.map(t => t.id) || [project.team];
-        return selectedTeams.some(teamId => projectTeams.includes(teamId));
+        // Get all teams assigned to this project
+        const projectTeamAssignments = projectTeams.filter(pt => pt.projectId === project.id);
+        
+        if (projectTeamAssignments.length > 0) {
+          // Check if any of the project's teams are in selected teams
+          return projectTeamAssignments.some(pt => selectedTeams.includes(pt.teamId));
+        } else {
+          // Fallback to legacy team field if no team assignments exist
+          return project.team && selectedTeams.includes(project.team);
+        }
       });
     }
     
     return projects;
-  }, [projectInfos, selectedTeams]);
+  }, [projectInfos, selectedTeams, projectTeams]);
 
   // Generate yearly schedule with multi-team support
   const getYearlyPassageSchedule = useYearlyPassageSchedule(
@@ -65,7 +74,7 @@ export const useModernScheduleData = ({
     getProjectLockDetails
   );
 
-  // Generate scheduled events
+  // Generate scheduled events with proper team assignment
   const scheduledEvents = useMemo(() => {
     try {
       const events: ScheduledEvent[] = [];
@@ -79,14 +88,24 @@ export const useModernScheduleData = ({
             const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
             
             if (!isLocked) {
-              // Support for multiple teams
-              const projectTeams = project.teams?.map(t => t.id) || [project.team];
+              // Get teams assigned to this project
+              const projectTeamAssignments = projectTeams.filter(pt => pt.projectId === project.id);
+              let projectTeamIds: string[] = [];
+              
+              if (projectTeamAssignments.length > 0) {
+                projectTeamIds = projectTeamAssignments.map(pt => pt.teamId);
+              } else {
+                // Fallback to legacy team field
+                if (project.team) {
+                  projectTeamIds = [project.team];
+                }
+              }
               
               events.push({
                 id: `${project.id}-${date}`,
                 projectId: project.id,
                 projectName: project.name,
-                teams: projectTeams,
+                teams: projectTeamIds,
                 date,
                 passageNumber,
                 totalPassages: project.annualVisits || 12,
@@ -104,9 +123,9 @@ export const useModernScheduleData = ({
       console.error('Error generating scheduled events:', err);
       return [];
     }
-  }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay]);
+  }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay, projectTeams]);
 
-  // Group events by team
+  // Group events by team with enhanced logic
   const teamGroups = useMemo(() => {
     const groups: Record<string, TeamGroup> = {};
     
@@ -133,7 +152,7 @@ export const useModernScheduleData = ({
       });
     });
 
-    // Sort events within each project
+    // Sort events within each project by date
     Object.values(groups).forEach(group => {
       Object.keys(group.projects).forEach(projectId => {
         group.projects[projectId].sort((a, b) => a.date.localeCompare(b.date));
@@ -147,6 +166,6 @@ export const useModernScheduleData = ({
     filteredProjects,
     scheduledEvents,
     teamGroups,
-    isLoading: false // TODO: Add proper loading state
+    isLoading: false // TODO: Add proper loading state when integrating with backend
   };
 };

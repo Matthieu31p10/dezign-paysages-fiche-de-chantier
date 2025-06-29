@@ -108,7 +108,7 @@ const ModernTeamGroup: React.FC<ModernTeamGroupProps> = ({ teamGroup }) => {
                               <div className="text-sm font-medium">
                                 {format(new Date(event.date), 'dd/MM/yyyy')}
                               </div>
-                              <Badge variant="outline" size="sm">
+                              <Badge variant="outline">
                                 Passage {event.passageNumber}/{event.totalPassages}
                               </Badge>
                             </div>
