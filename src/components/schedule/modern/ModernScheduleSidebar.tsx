@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useModernSidebarData } from './hooks/useModernSidebarData';
+import { useScheduleNavigation } from './hooks/useScheduleNavigation';
 import ModernSidebarStats from './components/ModernSidebarStats';
 import ModernSidebarProjects from './components/ModernSidebarProjects';
 import ModernSidebarActions from './components/ModernSidebarActions';
@@ -34,7 +34,6 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
   filteredProjects,
   scheduledEvents
 }) => {
-  const navigate = useNavigate();
   const [showConstraintsDialog, setShowConstraintsDialog] = useState(false);
   const [showTeamsDialog, setShowTeamsDialog] = useState(false);
   
@@ -45,16 +44,18 @@ const ModernScheduleSidebar: React.FC<ModernScheduleSidebarProps> = ({
     scheduledEvents
   });
 
+  const { navigateToDistribution, navigateToTeams, navigateToConstraints } = useScheduleNavigation();
+
   const handleConstraintsClick = () => {
-    setShowConstraintsDialog(true);
+    navigateToConstraints();
   };
 
   const handleDistributionClick = () => {
-    navigate('/schedule');
+    navigateToDistribution();
   };
 
   const handleTeamsClick = () => {
-    setShowTeamsDialog(true);
+    navigateToTeams();
   };
 
   return (

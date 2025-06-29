@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useApp } from '@/context/AppContext';
 import ScheduleCalendar from './ScheduleCalendar';
@@ -50,6 +50,20 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
 }) => {
   const { teams, projectInfos } = useApp();
   const activeProjects = projectInfos.filter(p => !p.isArchived);
+
+  // Écouter les événements de navigation depuis la sidebar moderne
+  useEffect(() => {
+    const handleNavigateToTab = (event: CustomEvent) => {
+      const { tab } = event.detail;
+      onTabChange(tab);
+    };
+
+    window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+
+    return () => {
+      window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+    };
+  }, [onTabChange]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">

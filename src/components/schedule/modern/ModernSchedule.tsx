@@ -7,6 +7,7 @@ import ModernScheduleHeader from './ModernScheduleHeader';
 import ModernScheduleCalendar from './ModernScheduleCalendar';
 import ModernScheduleList from './ModernScheduleList';
 import ModernScheduleSidebar from './ModernScheduleSidebar';
+import ScheduleTabs from '../ScheduleTabs';
 import { useModernScheduleData } from './hooks/useModernScheduleData';
 
 const ModernSchedule = () => {
@@ -16,6 +17,7 @@ const ModernSchedule = () => {
   const [selectedTeams, setSelectedTeams] = useState<string[]>(['all']);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [showWeekends, setShowWeekends] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<string>('planning');
 
   const {
     filteredProjects,
@@ -52,6 +54,39 @@ const ModernSchedule = () => {
     setSelectedMonth(newMonth);
     setSelectedYear(newYear);
   };
+
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    value: (i + 1).toString(),
+    label: new Date(2024, i).toLocaleString('fr-FR', { month: 'long' })
+  }));
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
+  // Si un onglet autre que planning est actif, afficher ScheduleTabs
+  if (activeTab !== 'planning') {
+    return (
+      <div className="h-full flex flex-col space-y-6 animate-fade-in">
+        <ScheduleTabs
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          selectedTeam={selectedTeams[0] || 'all'}
+          showWeekends={showWeekends}
+          viewMode={viewMode}
+          activeTab={activeTab}
+          months={months}
+          years={years}
+          onMonthChange={setSelectedMonth}
+          onYearChange={setSelectedYear}
+          onTeamChange={(team) => setSelectedTeams([team])}
+          onShowWeekendsChange={setShowWeekends}
+          onViewModeChange={setViewMode}
+          onNavigateMonth={navigateMonth}
+          onTabChange={setActiveTab}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col space-y-6 animate-fade-in">
