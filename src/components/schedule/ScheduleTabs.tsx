@@ -8,6 +8,7 @@ import MonthlyDistribution from './MonthlyDistribution';
 import TeamSchedules from './TeamSchedules';
 import ConfigurationTabs from './configuration/ConfigurationTabs';
 import LastVisitsOverview from './last-visits/LastVisitsOverview';
+import PassagesList from './passages/PassagesList';
 import TabsHeader from './tabs/TabsHeader';
 import PlanningControls from './tabs/PlanningControls';
 import DateNavigation from './tabs/DateNavigation';
@@ -99,6 +100,13 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
                 selectedTeam={selectedTeam}
               />
             )}
+          </TabsContent>
+
+          <TabsContent value="passages" className="mt-0">
+            <PassagesList
+              selectedTeams={selectedTeam === 'all' ? ['all'] : [selectedTeam]}
+              showWeekends={showWeekends}
+            />
           </TabsContent>
 
           <TabsContent value="distribution" className="mt-0">
