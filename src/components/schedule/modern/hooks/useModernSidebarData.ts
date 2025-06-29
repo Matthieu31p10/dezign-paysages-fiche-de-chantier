@@ -26,13 +26,16 @@ export const useModernSidebarData = ({
   filteredProjects,
   scheduledEvents
 }: UseModernSidebarDataProps) => {
-  // Memoized calculations for better performance
-  const monthStats = useMemo(() => {
-    const monthEvents = scheduledEvents.filter(event => {
+  // Memoized month events filtering for better performance
+  const monthEvents = useMemo(() => {
+    return scheduledEvents.filter(event => {
       const eventDate = new Date(event.date);
       return eventDate.getMonth() === selectedMonth - 1 && eventDate.getFullYear() === selectedYear;
     });
+  }, [scheduledEvents, selectedMonth, selectedYear]);
 
+  // Memoized month statistics calculation
+  const monthStats = useMemo(() => {
     const totalHours = monthEvents.reduce((sum, event) => sum + event.visitDuration, 0);
     const totalProjects = new Set(monthEvents.map(event => event.projectId)).size;
     const avgHoursPerProject = totalProjects > 0 ? Math.round((totalHours / totalProjects) * 10) / 10 : 0;
@@ -44,12 +47,21 @@ export const useModernSidebarData = ({
       avgHoursPerProject,
       monthEvents
     };
-  }, [scheduledEvents, selectedMonth, selectedYear]);
+  }, [monthEvents]);
 
-  // Memoized project stats
+  // Memoized project statistics with optimized calculations
   const projectStats = useMemo(() => {
+    // Create a lookup map for faster project event filtering
+    const projectEventsMap = monthEvents.reduce((acc, event) => {
+      if (!acc[event.projectId]) {
+        acc[event.projectId] = [];
+      }
+      acc[event.projectId].push(event);
+      return acc;
+    }, {} as Record<string, ScheduledEvent[]>);
+
     return filteredProjects.slice(0, 8).map(project => {
-      const projectEvents = monthStats.monthEvents.filter(e => e.projectId === project.id);
+      const projectEvents = projectEventsMap[project.id] || [];
       const projectHours = projectEvents.reduce((sum, e) => sum + e.visitDuration, 0);
       
       return {
@@ -59,9 +71,12 @@ export const useModernSidebarData = ({
         nextVisit: projectEvents.find(e => new Date(e.date) >= new Date())
       };
     });
-  }, [filteredProjects, monthStats.monthEvents]);
+  }, [filteredProjects, monthEvents]);
 
-  const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleString('fr-FR', { month: 'long' });
+  // Memoized month name calculation
+  const monthName = useMemo(() => {
+    return new Date(selectedYear, selectedMonth - 1).toLocaleString('fr-FR', { month: 'long' });
+  }, [selectedMonth, selectedYear]);
 
   return {
     monthStats,

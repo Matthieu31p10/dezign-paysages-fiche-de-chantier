@@ -1,4 +1,3 @@
-
 import { useMemo, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useYearlyPassageSchedule } from '../../calendar/hooks/useYearlyPassageSchedule';
@@ -43,7 +42,7 @@ export const useModernScheduleData = ({
   const { projectTeams } = useProjectTeams();
   const { isProjectLockedOnDay, getProjectLockDetails } = useProjectLocks();
 
-  // Memoized team lookup for performance
+  // Memoized team lookup for better performance
   const teamLookup = useMemo(() => {
     return teams.reduce((acc, team) => {
       acc[team.id] = team;
@@ -51,29 +50,37 @@ export const useModernScheduleData = ({
     }, {} as Record<string, typeof teams[0]>);
   }, [teams]);
 
-  // Enhanced project filtering with multi-team support
+  // Memoized project teams lookup
+  const projectTeamsLookup = useMemo(() => {
+    return projectTeams.reduce((acc, pt) => {
+      if (!acc[pt.projectId]) {
+        acc[pt.projectId] = [];
+      }
+      acc[pt.projectId].push(pt.teamId);
+      return acc;
+    }, {} as Record<string, string[]>);
+  }, [projectTeams]);
+
+  // Optimized project filtering with memoization
   const filteredProjects = useMemo(() => {
     let projects = projectInfos.filter(p => !p.isArchived);
     
     if (!selectedTeams.includes('all')) {
       projects = projects.filter(project => {
-        // Get all teams assigned to this project
-        const projectTeamAssignments = projectTeams.filter(pt => pt.projectId === project.id);
+        const projectTeamIds = projectTeamsLookup[project.id];
         
-        if (projectTeamAssignments.length > 0) {
-          // Check if any of the project's teams are in selected teams
-          return projectTeamAssignments.some(pt => selectedTeams.includes(pt.teamId));
+        if (projectTeamIds && projectTeamIds.length > 0) {
+          return projectTeamIds.some(teamId => selectedTeams.includes(teamId));
         } else {
-          // Fallback to legacy team field if no team assignments exist
           return project.team && selectedTeams.includes(project.team);
         }
       });
     }
     
     return projects;
-  }, [projectInfos, selectedTeams, projectTeams]);
+  }, [projectInfos, selectedTeams, projectTeamsLookup]);
 
-  // Generate yearly schedule with multi-team support
+  // Memoized yearly schedule generation
   const getYearlyPassageSchedule = useYearlyPassageSchedule(
     filteredProjects,
     selectedYear,
@@ -82,7 +89,7 @@ export const useModernScheduleData = ({
     getProjectLockDetails
   );
 
-  // Memoized event generation for better performance
+  // Optimized scheduled events generation
   const scheduledEvents = useMemo(() => {
     try {
       const events: ScheduledEvent[] = [];
@@ -90,40 +97,29 @@ export const useModernScheduleData = ({
 
       filteredProjects.forEach(project => {
         const projectSchedule = yearlySchedule[project.id];
-        if (projectSchedule) {
-          Object.entries(projectSchedule).forEach(([date, passageNumber]) => {
-            const dayOfWeek = getDay(new Date(date)) === 0 ? 7 : getDay(new Date(date));
-            const isLocked = isProjectLockedOnDay(project.id, dayOfWeek);
-            
-            if (!isLocked) {
-              // Get teams assigned to this project with optimized lookup
-              const projectTeamAssignments = projectTeams.filter(pt => pt.projectId === project.id);
-              let projectTeamIds: string[] = [];
-              
-              if (projectTeamAssignments.length > 0) {
-                projectTeamIds = projectTeamAssignments.map(pt => pt.teamId);
-              } else {
-                // Fallback to legacy team field
-                if (project.team) {
-                  projectTeamIds = [project.team];
-                }
-              }
-              
-              events.push({
-                id: `${project.id}-${date}`,
-                projectId: project.id,
-                projectName: project.name,
-                teams: projectTeamIds,
-                date,
-                passageNumber,
-                totalPassages: project.annualVisits || 12,
-                address: project.address,
-                visitDuration: project.visitDuration,
-                isLocked: false
-              });
-            }
-          });
-        }
+        if (!projectSchedule) return;
+
+        const projectTeamIds = projectTeamsLookup[project.id] || 
+          (project.team ? [project.team] : []);
+
+        Object.entries(projectSchedule).forEach(([date, passageNumber]) => {
+          const dayOfWeek = getDay(new Date(date)) === 0 ? 7 : getDay(new Date(date));
+          
+          if (!isProjectLockedOnDay(project.id, dayOfWeek)) {
+            events.push({
+              id: `${project.id}-${date}`,
+              projectId: project.id,
+              projectName: project.name,
+              teams: projectTeamIds,
+              date,
+              passageNumber,
+              totalPassages: project.annualVisits || 12,
+              address: project.address,
+              visitDuration: project.visitDuration,
+              isLocked: false
+            });
+          }
+        });
       });
 
       return events.sort((a, b) => a.date.localeCompare(b.date));
@@ -131,23 +127,21 @@ export const useModernScheduleData = ({
       console.error('Error generating scheduled events:', err);
       return [];
     }
-  }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay, projectTeams]);
+  }, [filteredProjects, getYearlyPassageSchedule, selectedYear, isProjectLockedOnDay, projectTeamsLookup]);
 
-  // Optimized team groups generation with better performance
+  // Optimized team groups with better performance
   const teamGroups = useMemo(() => {
     const groups: Record<string, TeamGroup> = {};
     
     scheduledEvents.forEach(event => {
       event.teams.forEach(teamId => {
         const team = teamLookup[teamId];
-        const teamName = team ? team.name : 'Équipe inconnue';
-        const teamColor = team ? team.color : '#6B7280';
         
         if (!groups[teamId]) {
           groups[teamId] = {
             teamId,
-            teamName,
-            teamColor,
+            teamName: team?.name || 'Équipe inconnue',
+            teamColor: team?.color || '#6B7280',
             projects: {}
           };
         }
@@ -170,7 +164,7 @@ export const useModernScheduleData = ({
     return Object.values(groups).sort((a, b) => a.teamName.localeCompare(b.teamName));
   }, [scheduledEvents, teamLookup]);
 
-  // Memoized helper functions
+  // Memoized helper functions with useCallback
   const getEventsForDay = useCallback((date: Date) => {
     const dateString = format(date, 'yyyy-MM-dd');
     return scheduledEvents.filter(event => {
@@ -194,6 +188,6 @@ export const useModernScheduleData = ({
     teamGroups,
     getEventsForDay,
     getMonthEvents,
-    isLoading: false // TODO: Add proper loading state when integrating with backend
+    isLoading: false
   };
 };

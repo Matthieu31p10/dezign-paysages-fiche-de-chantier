@@ -1,4 +1,5 @@
 
+import React, { useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import ProjectGridView from '@/components/reports/ProjectGridView';
 import ProjectReportList from '@/components/reports/ProjectReportList';
@@ -10,12 +11,23 @@ import { useProjectFiltering } from '@/hooks/useProjectFiltering';
 const ProjectsTab = () => {
   const { projectInfos, workLogs, teams } = useApp();
   
-  // Safety checks for data
-  const validProjectInfos = Array.isArray(projectInfos) ? projectInfos : [];
-  const validWorkLogs = Array.isArray(workLogs) ? workLogs : [];
-  const validTeams = Array.isArray(teams) ? teams : [];
+  // Memoized safety checks for data to avoid recalculations
+  const validProjectInfos = useMemo(() => 
+    Array.isArray(projectInfos) ? projectInfos : [], 
+    [projectInfos]
+  );
   
-  // Use our custom hook for filtering and sorting
+  const validWorkLogs = useMemo(() => 
+    Array.isArray(workLogs) ? workLogs : [], 
+    [workLogs]
+  );
+  
+  const validTeams = useMemo(() => 
+    Array.isArray(teams) ? teams : [], 
+    [teams]
+  );
+  
+  // Use our custom hook for filtering and sorting with memoized data
   const {
     selectedTeam,
     selectedProjectType,
