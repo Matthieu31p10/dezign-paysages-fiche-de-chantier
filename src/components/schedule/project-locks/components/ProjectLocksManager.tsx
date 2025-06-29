@@ -19,17 +19,29 @@ const ProjectLocksManager: React.FC<ProjectLocksManagerProps> = ({ projects }) =
   const [showForm, setShowForm] = useState(false);
   const {
     projectLocks,
+    isLoading,
+    error,
     addProjectLock,
     removeProjectLock,
     toggleProjectLock,
   } = useProjectLocks();
 
+  console.log('ProjectLocksManager: Projects received:', projects.length);
+  console.log('ProjectLocksManager: Project locks:', projectLocks.length);
+  console.log('ProjectLocksManager: Loading state:', isLoading);
+  console.log('ProjectLocksManager: Error state:', error);
+
   const activeLocks = projectLocks.filter(lock => lock.isActive);
 
   const handleAddLock = (formData: any) => {
+    console.log('Adding new project lock:', formData);
     addProjectLock(formData);
     setShowForm(false);
   };
+
+  if (isLoading) {
+    console.log('ProjectLocksManager: Still loading...');
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -48,6 +60,12 @@ const ProjectLocksManager: React.FC<ProjectLocksManagerProps> = ({ projects }) =
         <DialogHeader>
           <DialogTitle>Gestion des verrouillages par jour</DialogTitle>
         </DialogHeader>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
         
         <div className="space-y-6">
           {/* Add new lock */}
@@ -79,15 +97,24 @@ const ProjectLocksManager: React.FC<ProjectLocksManagerProps> = ({ projects }) =
           {/* List of locks */}
           <Card>
             <CardHeader>
-              <CardTitle>Verrouillages existants</CardTitle>
+              <CardTitle>
+                Verrouillages existants 
+                {isLoading && <span className="text-sm text-gray-500 ml-2">(Chargement...)</span>}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <ProjectLocksList
-                locks={projectLocks}
-                projects={projects}
-                onToggle={toggleProjectLock}
-                onDelete={removeProjectLock}
-              />
+              {projects.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">
+                  <p>Aucun projet disponible pour les verrouillages</p>
+                </div>
+              ) : (
+                <ProjectLocksList
+                  locks={projectLocks}
+                  projects={projects}
+                  onToggle={toggleProjectLock}
+                  onDelete={removeProjectLock}
+                />
+              )}
             </CardContent>
           </Card>
         </div>

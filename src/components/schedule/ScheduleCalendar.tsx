@@ -35,6 +35,9 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
     showWeekends
   );
   
+  console.log('ScheduleCalendar: Projects available for locking:', projectInfos.length);
+  console.log('ScheduleCalendar: Sample project:', projectInfos[0]);
+  
   return (
     <div className="flex gap-6">
       <div className="flex-1 space-y-4">
@@ -65,7 +68,6 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
       <OneTimeProjectsSidebar 
         projects={projectInfos}
         onAddProject={() => {
-          // This could open a dialog to add a new one-time project
           console.log('Ajouter un nouveau chantier ponctuel');
         }}
       />
