@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Settings, Calendar, Users } from 'lucide-react';
 import AnnualDistributionDialog from '../../annual-distribution/AnnualDistributionDialog';
+import ProjectLocksManager from '../../project-locks/components/ProjectLocksManager';
 import { useProjects } from '@/context/ProjectsContext';
 import { useTeams } from '@/context/TeamsContext';
+import { useApp } from '@/context/AppContext';
 
 interface ModernSidebarActionsProps {
   onConstraintsClick: () => void;
@@ -19,11 +21,17 @@ const ModernSidebarActions: React.FC<ModernSidebarActionsProps> = ({
   onTeamsClick
 }) => {
   const [showAnnualDistributionDialog, setShowAnnualDistributionDialog] = useState(false);
+  const [showConstraintsDialog, setShowConstraintsDialog] = useState(false);
   const { getActiveProjects } = useProjects();
   const { teams } = useTeams();
+  const { projectInfos } = useApp();
 
   const handleDistributionClick = () => {
     setShowAnnualDistributionDialog(true);
+  };
+
+  const handleConstraintsClick = () => {
+    setShowConstraintsDialog(true);
   };
 
   return (
@@ -39,7 +47,7 @@ const ModernSidebarActions: React.FC<ModernSidebarActionsProps> = ({
           <Button 
             variant="ghost" 
             className="w-full justify-start text-sm h-10 hover:bg-blue-50 hover:text-blue-700"
-            onClick={onConstraintsClick}
+            onClick={handleConstraintsClick}
           >
             <Settings className="h-4 w-4 mr-2" />
             Gérer les contraintes
@@ -69,6 +77,14 @@ const ModernSidebarActions: React.FC<ModernSidebarActionsProps> = ({
         projects={getActiveProjects()}
         teams={teams}
       />
+
+      {showConstraintsDialog && (
+        <ProjectLocksManager 
+          projects={projectInfos}
+          open={showConstraintsDialog}
+          onOpenChange={setShowConstraintsDialog}
+        />
+      )}
     </>
   );
 };
