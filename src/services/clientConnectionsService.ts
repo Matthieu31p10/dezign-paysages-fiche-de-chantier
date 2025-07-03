@@ -41,12 +41,12 @@ export const clientConnectionsService = {
         password: clientData.password,
         assigned_projects: clientData.assignedProjects,
         is_active: clientData.isActive,
-        visibility_permissions: clientData.visibilityPermissions || {
+        visibility_permissions: (clientData.visibilityPermissions || {
           showProjectName: true,
           showAddress: true,
           showWorkLogs: true,
           showTasks: true
-        }
+        }) as any
       })
       .select()
       .single();
@@ -82,7 +82,7 @@ export const clientConnectionsService = {
     if (clientData.password !== undefined) updateData.password = clientData.password;
     if (clientData.assignedProjects !== undefined) updateData.assigned_projects = clientData.assignedProjects;
     if (clientData.isActive !== undefined) updateData.is_active = clientData.isActive;
-    if (clientData.visibilityPermissions !== undefined) updateData.visibility_permissions = clientData.visibilityPermissions;
+    if (clientData.visibilityPermissions !== undefined) updateData.visibility_permissions = clientData.visibilityPermissions as any;
     if (clientData.lastLogin !== undefined) updateData.last_login = clientData.lastLogin;
 
     const { error } = await supabase
