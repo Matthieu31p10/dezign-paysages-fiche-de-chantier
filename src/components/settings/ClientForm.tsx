@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
@@ -71,10 +70,8 @@ const ClientForm = ({
           data: sanitizedData 
         });
       } else {
-        createClient({
-          ...sanitizedData,
-          createdAt: new Date()
-        });
+        // Ne pas inclure createdAt car il est géré par la base de données
+        createClient(sanitizedData);
       }
 
       onSuccess();

@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ClientConnection } from '@/types/models';
+import { ClientConnection, ClientVisibilityPermissions } from '@/types/models';
 
 export const clientConnectionsService = {
   async getAll(): Promise<ClientConnection[]> {
@@ -21,7 +21,7 @@ export const clientConnectionsService = {
       password: item.password,
       assignedProjects: item.assigned_projects || [],
       isActive: item.is_active,
-      visibilityPermissions: item.visibility_permissions || {
+      visibilityPermissions: (item.visibility_permissions as ClientVisibilityPermissions) || {
         showProjectName: true,
         showAddress: true,
         showWorkLogs: true,
@@ -35,7 +35,7 @@ export const clientConnectionsService = {
   async create(clientData: Omit<ClientConnection, 'id' | 'createdAt'>): Promise<ClientConnection> {
     const { data, error } = await supabase
       .from('client_connections')
-      .insert([{
+      .insert({
         client_name: clientData.clientName,
         email: clientData.email,
         password: clientData.password,
@@ -47,7 +47,7 @@ export const clientConnectionsService = {
           showWorkLogs: true,
           showTasks: true
         }
-      }])
+      })
       .select()
       .single();
 
@@ -63,7 +63,12 @@ export const clientConnectionsService = {
       password: data.password,
       assignedProjects: data.assigned_projects || [],
       isActive: data.is_active,
-      visibilityPermissions: data.visibility_permissions,
+      visibilityPermissions: (data.visibility_permissions as ClientVisibilityPermissions) || {
+        showProjectName: true,
+        showAddress: true,
+        showWorkLogs: true,
+        showTasks: true
+      },
       createdAt: new Date(data.created_at),
       lastLogin: data.last_login ? new Date(data.last_login) : undefined
     };
@@ -128,7 +133,12 @@ export const clientConnectionsService = {
       password: data.password,
       assignedProjects: data.assigned_projects || [],
       isActive: data.is_active,
-      visibilityPermissions: data.visibility_permissions,
+      visibilityPermissions: (data.visibility_permissions as ClientVisibilityPermissions) || {
+        showProjectName: true,
+        showAddress: true,
+        showWorkLogs: true,
+        showTasks: true
+      },
       createdAt: new Date(data.created_at),
       lastLogin: data.last_login ? new Date(data.last_login) : undefined
     };
