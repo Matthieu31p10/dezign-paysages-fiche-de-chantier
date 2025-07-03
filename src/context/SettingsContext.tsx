@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppSettings, CustomTask, Personnel, ClientConnection } from '@/types/models';
+import { AppSettings, CustomTask, Personnel } from '@/types/models';
 import { SettingsContextType } from './types';
 import { toast } from 'sonner';
+import { useClientConnections } from '@/hooks/useClientConnections';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -16,26 +17,38 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     clientConnections: []
   });
 
-  // Load settings from localStorage on mount
+  const { clientConnections } = useClientConnections();
+
+  // Load settings from localStorage on mount (except clientConnections)
   useEffect(() => {
     const savedSettings = localStorage.getItem('appSettings');
     if (savedSettings) {
       try {
         const parsedSettings = JSON.parse(savedSettings);
-        setSettings(parsedSettings);
+        // Remove client connections from localStorage settings as they're now in Supabase
+        const { clientConnections: _, ...settingsWithoutClients } = parsedSettings;
+        setSettings(prev => ({ ...prev, ...settingsWithoutClients }));
       } catch (error) {
         console.error('Error parsing saved settings:', error);
       }
     }
   }, []);
 
-  // Save settings to localStorage whenever they change
+  // Update settings with clientConnections from Supabase
   useEffect(() => {
-    localStorage.setItem('appSettings', JSON.stringify(settings));
+    setSettings(prev => ({ ...prev, clientConnections }));
+  }, [clientConnections]);
+
+  // Save settings to localStorage whenever they change (except clientConnections)
+  useEffect(() => {
+    const { clientConnections: _, ...settingsToSave } = settings;
+    localStorage.setItem('appSettings', JSON.stringify(settingsToSave));
   }, [settings]);
 
   const updateSettings = async (newSettings: Partial<AppSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    // Don't allow updating clientConnections through this method
+    const { clientConnections: _, ...settingsToUpdate } = newSettings;
+    setSettings(prev => ({ ...prev, ...settingsToUpdate }));
     toast.success('Paramètres mis à jour');
   };
 
@@ -107,38 +120,23 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return settings.customTasks || [];
   };
 
-  const addClientConnection = async (clientData: Omit<ClientConnection, 'id' | 'createdAt'>): Promise<ClientConnection> => {
-    const newClient: ClientConnection = {
-      ...clientData,
-      id: crypto.randomUUID(),
-      createdAt: new Date()
-    };
-
-    setSettings(prev => ({
-      ...prev,
-      clientConnections: [...(prev.clientConnections || []), newClient]
-    }));
-
-    return newClient;
+  // Deprecated methods - now handled by useClientConnections hook
+  const addClientConnection = async () => {
+    console.warn('addClientConnection is deprecated - use useClientConnections hook');
+    throw new Error('Use useClientConnections hook instead');
   };
 
-  const updateClientConnection = async (client: ClientConnection) => {
-    setSettings(prev => ({
-      ...prev,
-      clientConnections: (prev.clientConnections || []).map(c => 
-        c.id === client.id ? client : c
-      )
-    }));
+  const updateClientConnection = async () => {
+    console.warn('updateClientConnection is deprecated - use useClientConnections hook');
+    throw new Error('Use useClientConnections hook instead');
   };
 
-  const deleteClientConnection = async (id: string) => {
-    setSettings(prev => ({
-      ...prev,
-      clientConnections: (prev.clientConnections || []).filter(c => c.id !== id)
-    }));
+  const deleteClientConnection = async () => {
+    console.warn('deleteClientConnection is deprecated - use useClientConnections hook');
+    throw new Error('Use useClientConnections hook instead');
   };
 
-  const getClientConnections = (): ClientConnection[] => {
+  const getClientConnections = () => {
     return settings.clientConnections || [];
   };
 

@@ -7,16 +7,25 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ClientConnection, ClientVisibilityPermissions } from '@/types/models';
 import { isValidEmail, sanitizeInput, isValidPassword } from '@/utils/security';
-import { toast } from 'sonner';
 
 interface ClientFormProps {
   editingClient?: ClientConnection | null;
   onSuccess: () => void;
   onCancel: () => void;
+  createClient: (data: Omit<ClientConnection, 'id' | 'createdAt'>) => void;
+  updateClient: (params: { id: string; data: Partial<ClientConnection> }) => void;
+  isSubmitting?: boolean;
 }
 
-const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => {
-  const { settings, updateSettings, projects } = useApp();
+const ClientForm = ({ 
+  editingClient, 
+  onSuccess, 
+  onCancel,
+  createClient,
+  updateClient,
+  isSubmitting = false
+}: ClientFormProps) => {
+  const { projects } = useApp();
   const [formData, setFormData] = useState({
     clientName: editingClient?.clientName || '',
     email: editingClient?.email || '',
@@ -31,7 +40,6 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
     } as ClientVisibilityPermissions
   });
 
-  const clientConnections = settings.clientConnections || [];
   const activeProjects = projects.filter(p => !p.isArchived);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,28 +47,14 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
     
     // Validation
     if (!formData.clientName.trim()) {
-      toast.error('Le nom du client est requis');
       return;
     }
 
     if (!isValidEmail(formData.email)) {
-      toast.error('Format d\'email invalide');
       return;
     }
 
     if (!isValidPassword(formData.password)) {
-      toast.error('Le mot de passe doit contenir au moins 8 caractères');
-      return;
-    }
-
-    // Vérifier l'unicité de l'email
-    const emailExists = clientConnections.some((client: ClientConnection) => 
-      client.email.toLowerCase() === formData.email.toLowerCase() && 
-      client.id !== editingClient?.id
-    );
-    
-    if (emailExists) {
-      toast.error('Cet email est déjà utilisé');
       return;
     }
 
@@ -72,29 +66,20 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
       };
 
       if (editingClient) {
-        const updatedClients = clientConnections.map((client: ClientConnection) => 
-          client.id === editingClient.id 
-            ? { ...editingClient, ...sanitizedData } 
-            : client
-        );
-        await updateSettings({ clientConnections: updatedClients });
-        toast.success('Client mis à jour avec succès');
+        updateClient({ 
+          id: editingClient.id, 
+          data: sanitizedData 
+        });
       } else {
-        const newClient: ClientConnection = {
-          id: crypto.randomUUID(),
+        createClient({
           ...sanitizedData,
           createdAt: new Date()
-        };
-        await updateSettings({ 
-          clientConnections: [...clientConnections, newClient] 
         });
-        toast.success('Client créé avec succès');
       }
 
       onSuccess();
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      toast.error('Erreur lors de la sauvegarde');
     }
   };
 
@@ -112,6 +97,7 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
             }))}
             placeholder="Nom du client"
             required
+            disabled={isSubmitting}
           />
         </div>
         
@@ -127,6 +113,7 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
             }))}
             placeholder="email@exemple.com"
             required
+            disabled={isSubmitting}
           />
         </div>
       </div>
@@ -144,6 +131,7 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
           placeholder="Mot de passe sécurisé"
           minLength={8}
           required
+          disabled={isSubmitting}
         />
       </div>
       
@@ -155,16 +143,17 @@ const ClientForm = ({ editingClient, onSuccess, onCancel }: ClientFormProps) => 
             ...prev, 
             isActive: checked 
           }))}
+          disabled={isSubmitting}
         />
         <Label htmlFor="isActive">Compte actif</Label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Annuler
         </Button>
-        <Button type="submit">
-          {editingClient ? 'Mettre à jour' : 'Créer'}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Enregistrement...' : (editingClient ? 'Mettre à jour' : 'Créer')}
         </Button>
       </div>
     </form>

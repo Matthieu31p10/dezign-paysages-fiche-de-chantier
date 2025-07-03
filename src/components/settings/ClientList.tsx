@@ -14,9 +14,16 @@ interface ClientListProps {
   onEditClient: (client: ClientConnection) => void;
   onDeleteClient: (clientId: string) => void;
   onToggleStatus: (clientId: string, isActive: boolean) => void;
+  isDeleting?: boolean;
 }
 
-const ClientList = ({ clients, onEditClient, onDeleteClient, onToggleStatus }: ClientListProps) => {
+const ClientList = ({ 
+  clients, 
+  onEditClient, 
+  onDeleteClient, 
+  onToggleStatus,
+  isDeleting = false
+}: ClientListProps) => {
   const { projects } = useApp();
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
@@ -92,6 +99,7 @@ const ClientList = ({ clients, onEditClient, onDeleteClient, onToggleStatus }: C
                     size="icon"
                     onClick={() => onDeleteClient(client.id)}
                     title="Supprimer"
+                    disabled={isDeleting}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

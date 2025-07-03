@@ -1,23 +1,29 @@
 
 import { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ClientConnection } from '@/types/models';
-import { toast } from 'sonner';
 import ClientForm from './ClientForm';
 import ClientList from './ClientList';
-import ClientVisibilityPermissionsComponent from './ClientVisibilityPermissions';
+import { useClientConnections } from '@/hooks/useClientConnections';
 
 const ClientConnectionsManagement = () => {
-  const { settings, updateSettings, projects } = useApp();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientConnection | null>(null);
 
-  const clientConnections = settings.clientConnections || [];
+  const {
+    clientConnections,
+    isLoading,
+    createClient,
+    updateClient,
+    deleteClient,
+    isCreating,
+    isUpdating,
+    isDeleting
+  } = useClientConnections();
 
   const handleFormSuccess = () => {
     setIsAddDialogOpen(false);
@@ -36,36 +42,32 @@ const ClientConnectionsManagement = () => {
 
   const handleDeleteClient = async (clientId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) return;
-
-    try {
-      const updatedClients = clientConnections.filter((client: ClientConnection) => 
-        client.id !== clientId
-      );
-      await updateSettings({ clientConnections: updatedClients });
-      toast.success('Client supprimé avec succès');
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      toast.error('Erreur lors de la suppression');
-    }
+    deleteClient(clientId);
   };
 
   const handleToggleStatus = async (clientId: string, isActive: boolean) => {
-    try {
-      const updatedClients = clientConnections.map((client: ClientConnection) =>
-        client.id === clientId ? { ...client, isActive } : client
-      );
-      await updateSettings({ clientConnections: updatedClients });
-      toast.success(`Client ${isActive ? 'activé' : 'désactivé'} avec succès`);
-    } catch (error) {
-      console.error('Erreur lors du changement de statut:', error);
-      toast.error('Erreur lors du changement de statut');
-    }
+    updateClient({ id: clientId, data: { isActive } });
   };
 
   const resetAndOpenDialog = () => {
     setEditingClient(null);
     setIsAddDialogOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Chargement des clients...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -79,7 +81,7 @@ const ClientConnectionsManagement = () => {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetAndOpenDialog}>
+            <Button onClick={resetAndOpenDialog} disabled={isCreating}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau client
             </Button>
@@ -107,6 +109,9 @@ const ClientConnectionsManagement = () => {
                   editingClient={editingClient}
                   onSuccess={handleFormSuccess}
                   onCancel={handleFormCancel}
+                  createClient={createClient}
+                  updateClient={updateClient}
+                  isSubmitting={isCreating || isUpdating}
                 />
               </TabsContent>
               
@@ -116,7 +121,6 @@ const ClientConnectionsManagement = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Sélectionnez les chantiers auxquels ce client aura accès
                   </p>
-                  {/* Le formulaire de projets sera géré dans ClientForm */}
                 </div>
               </TabsContent>
               
@@ -126,7 +130,6 @@ const ClientConnectionsManagement = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Configurez les informations que le client pourra voir
                   </p>
-                  {/* Les permissions seront gérées dans ClientForm */}
                 </div>
               </TabsContent>
             </Tabs>
@@ -139,6 +142,7 @@ const ClientConnectionsManagement = () => {
         onEditClient={handleEditClient}
         onDeleteClient={handleDeleteClient}
         onToggleStatus={handleToggleStatus}
+        isDeleting={isDeleting}
       />
     </div>
   );

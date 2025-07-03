@@ -1,16 +1,17 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientConnection } from '@/types/models';
 import { isValidEmail, sanitizeInput } from '@/utils/security';
 import { toast } from 'sonner';
+import { clientConnectionsService } from '@/services/clientConnectionsService';
 
 interface ClientAuthProps {
   onClientLogin: (client: ClientConnection) => void;
   settings: any;
 }
 
-const ClientAuth = ({ onClientLogin, settings }: ClientAuthProps) => {
+const ClientAuth = ({ onClientLogin }: ClientAuthProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,16 +33,19 @@ const ClientAuth = ({ onClientLogin, settings }: ClientAuthProps) => {
     setIsLoading(true);
 
     try {
-      const clientConnections = settings.clientConnections || [];
       const sanitizedEmail = sanitizeInput(email.toLowerCase());
       
-      const client = clientConnections.find((c: ClientConnection) => 
-        c.email.toLowerCase() === sanitizedEmail && 
-        c.password === password && 
-        c.isActive
+      const client = await clientConnectionsService.findByEmailAndPassword(
+        sanitizedEmail, 
+        password
       );
 
       if (client) {
+        // Mettre à jour la date de dernière connexion
+        await clientConnectionsService.update(client.id, {
+          lastLogin: new Date()
+        });
+
         const updatedClient = { 
           ...client, 
           lastLogin: new Date() 

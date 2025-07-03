@@ -137,6 +137,42 @@ export type Database = {
         }
         Relationships: []
       }
+      client_connections: {
+        Row: {
+          assigned_projects: string[] | null
+          client_name: string
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          last_login: string | null
+          password: string
+          visibility_permissions: Json | null
+        }
+        Insert: {
+          assigned_projects?: string[] | null
+          client_name: string
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          password: string
+          visibility_permissions?: Json | null
+        }
+        Update: {
+          assigned_projects?: string[] | null
+          client_name?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          password?: string
+          visibility_permissions?: Json | null
+        }
+        Relationships: []
+      }
       consumables: {
         Row: {
           id: string
