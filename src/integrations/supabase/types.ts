@@ -242,6 +242,30 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_passage_distributions: {
+        Row: {
+          created_at: string
+          id: string
+          monthly_visits: Json
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          monthly_visits?: Json
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          monthly_visits?: Json
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       personnel: {
         Row: {
           active: boolean | null

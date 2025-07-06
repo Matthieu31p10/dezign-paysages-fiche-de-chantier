@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Calendar, Save, Building2 } from 'lucide-react';
 import { months } from '../monthly-distribution/constants';
+import { monthlyDistributionService } from '@/services/monthlyDistributionService';
 
 interface AnnualDistributionDialogProps {
   open: boolean;
@@ -25,6 +26,8 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [monthlyDistribution, setMonthlyDistribution] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
@@ -35,21 +38,42 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
     return team ? team.name : "Équipe non assignée";
   };
 
+  const loadProjectDistribution = async (projectId: string) => {
+    setIsLoading(true);
+    try {
+      const distribution = await monthlyDistributionService.getByProjectId(projectId);
+      
+      if (distribution && Object.keys(distribution.monthlyVisits).length > 0) {
+        // Charger la distribution sauvegardée
+        setMonthlyDistribution(distribution.monthlyVisits);
+        console.log('Distribution chargée depuis la base:', distribution.monthlyVisits);
+      } else {
+        // Générer une distribution par défaut
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          const baseVisitsPerMonth = Math.floor((project.annualVisits || 12) / 12);
+          const extraVisits = (project.annualVisits || 12) % 12;
+          
+          const defaultDistribution: Record<string, number> = {};
+          months.forEach((_, index) => {
+            defaultDistribution[index.toString()] = baseVisitsPerMonth + (index < extraVisits ? 1 : 0);
+          });
+          
+          setMonthlyDistribution(defaultDistribution);
+          console.log('Distribution par défaut générée:', defaultDistribution);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de la distribution:', error);
+      toast.error('Erreur lors du chargement de la distribution');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleProjectSelect = (projectId: string) => {
     setSelectedProjectId(projectId);
-    // Initialiser avec une distribution équitable
-    const project = projects.find(p => p.id === projectId);
-    if (project) {
-      const baseVisitsPerMonth = Math.floor((project.annualVisits || 12) / 12);
-      const extraVisits = (project.annualVisits || 12) % 12;
-      
-      const distribution: Record<string, number> = {};
-      months.forEach((_, index) => {
-        distribution[index.toString()] = baseVisitsPerMonth + (index < extraVisits ? 1 : 0);
-      });
-      
-      setMonthlyDistribution(distribution);
-    }
+    loadProjectDistribution(projectId);
   };
 
   const handleMonthChange = (monthIndex: string, value: string) => {
@@ -64,23 +88,52 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
     return Object.values(monthlyDistribution).reduce((sum, val) => sum + val, 0);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedProject) {
       toast.error("Veuillez sélectionner un chantier");
       return;
     }
 
-    const total = getTotalPassages();
-    toast.success(`Distribution sauvegardée pour ${selectedProject.name} (${total} passages/an)`);
-    onOpenChange(false);
+    setIsSaving(true);
+    try {
+      await monthlyDistributionService.saveDistribution(selectedProject.id, monthlyDistribution);
+      
+      const total = getTotalPassages();
+      toast.success(`Distribution sauvegardée pour ${selectedProject.name} (${total} passages/an)`);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast.error('Erreur lors de la sauvegarde de la distribution');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
     if (selectedProjectId) {
-      handleProjectSelect(selectedProjectId);
-      toast.info("Distribution réinitialisée");
+      const project = projects.find(p => p.id === selectedProjectId);
+      if (project) {
+        const baseVisitsPerMonth = Math.floor((project.annualVisits || 12) / 12);
+        const extraVisits = (project.annualVisits || 12) % 12;
+        
+        const distribution: Record<string, number> = {};
+        months.forEach((_, index) => {
+          distribution[index.toString()] = baseVisitsPerMonth + (index < extraVisits ? 1 : 0);
+        });
+        
+        setMonthlyDistribution(distribution);
+        toast.info("Distribution réinitialisée");
+      }
     }
   };
+
+  // Réinitialiser quand le dialogue se ferme
+  useEffect(() => {
+    if (!open) {
+      setSelectedProjectId('');
+      setMonthlyDistribution({});
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,6 +196,7 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
               <CardHeader>
                 <CardTitle className="text-lg">
                   Répartition mensuelle
+                  {isLoading && <span className="text-sm text-gray-500 ml-2">(Chargement...)</span>}
                 </CardTitle>
                 <div className="text-sm text-gray-600">
                   Définissez le nombre de passages pour chaque mois de l'année
@@ -163,6 +217,7 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
                           value={monthlyDistribution[index.toString()] || 0}
                           onChange={(e) => handleMonthChange(index.toString(), e.target.value)}
                           className="text-center"
+                          disabled={isLoading}
                         />
                       </div>
                     ))}
@@ -178,7 +233,7 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
                         / {selectedProject.annualVisits || 12} prévus
                       </span>
                     </div>
-                    <Button variant="outline" size="sm" onClick={handleReset}>
+                    <Button variant="outline" size="sm" onClick={handleReset} disabled={isLoading}>
                       Réinitialiser
                     </Button>
                   </div>
@@ -189,12 +244,12 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
               Annuler
             </Button>
-            <Button onClick={handleSave} disabled={!selectedProject}>
+            <Button onClick={handleSave} disabled={!selectedProject || isSaving || isLoading}>
               <Save className="mr-2 h-4 w-4" />
-              Enregistrer
+              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </div>
         </div>
