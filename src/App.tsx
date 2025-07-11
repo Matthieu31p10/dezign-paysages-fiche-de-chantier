@@ -19,6 +19,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import ClientDashboard from './pages/ClientDashboard';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Schedule from './pages/Schedule';
@@ -27,9 +28,10 @@ import './App.css';
 
 function App() {
   return (
-    <AppProviders>
-      <Router>
-        <Routes>
+    <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
+      <AppProviders>
+        <Router>
+          <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
@@ -61,11 +63,12 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Route>
           </Route>
-        </Routes>
-      </Router>
-      <Toaster />
-      <SonnerToaster position="top-right" richColors />
-    </AppProviders>
+          </Routes>
+        </Router>
+        <Toaster />
+        <SonnerToaster position="top-right" richColors />
+      </AppProviders>
+    </ErrorBoundary>
   );
 }
 

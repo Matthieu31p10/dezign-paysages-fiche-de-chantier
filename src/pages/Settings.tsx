@@ -9,11 +9,12 @@ import LoginSettings from '@/components/settings/LoginSettings';
 import UserList from '@/components/settings/UserList';
 import AddUserDialog from '@/components/settings/AddUserDialog';
 import ClientConnectionsManagement from '@/components/settings/ClientConnectionsManagement';
-import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound, UserCheck } from 'lucide-react';
+import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound, UserCheck, Bug } from 'lucide-react';
 import BackupRestoreSection from '@/components/settings/BackupRestoreSection';
 import { DialogTrigger } from '@/components/ui/dialog';
 import TeamsManagement from '@/components/settings/TeamsManagement';
 import PersonnelManagement from '@/components/settings/PersonnelManagement';
+import ErrorDashboard from '@/components/error/ErrorDashboard';
 
 const Settings = () => {
   const { canUserAccess } = useApp();
@@ -33,7 +34,7 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="company">
-        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-7 lg:w-auto">
+        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-8 lg:w-auto">
           <TabsTrigger value="company" className="flex items-center gap-1.5">
             <Building className="h-4 w-4" />
             <span className="hidden sm:inline">Entreprise</span>
@@ -68,6 +69,13 @@ const Settings = () => {
             <Database className="h-4 w-4" />
             <span className="hidden sm:inline">Sauvegarde</span>
           </TabsTrigger>
+          
+          {process.env.NODE_ENV === 'development' && (
+            <TabsTrigger value="errors" className="flex items-center gap-1.5">
+              <Bug className="h-4 w-4" />
+              <span className="hidden sm:inline">Erreurs</span>
+            </TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="company" className="space-y-4">
@@ -177,6 +185,25 @@ const Settings = () => {
         <TabsContent value="backup" className="space-y-4">
           <BackupRestoreSection />
         </TabsContent>
+        
+        {process.env.NODE_ENV === 'development' && (
+          <TabsContent value="errors" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bug className="h-5 w-5 text-destructive" />
+                  Monitoring des erreurs
+                </CardTitle>
+                <CardDescription>
+                  Visualisez et gérez les erreurs de l'application (mode développement)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ErrorDashboard />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
       
       <AddUserDialog
