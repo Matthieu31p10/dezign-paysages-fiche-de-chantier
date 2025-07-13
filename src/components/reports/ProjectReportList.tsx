@@ -17,9 +17,9 @@ import {
 } from 'lucide-react';
 import { ProjectInfo, WorkLog, Team } from '@/types/models';
 import { 
-  getDaysSinceLastEntry, 
+  getDaysSinceLastVisit, 
   calculateAverageHoursPerVisit,
-} from '@/utils/date-helpers';
+} from '@/utils/helpers';
 import { formatDate } from '@/utils/date';
 import { cn } from '@/lib/utils';
 
@@ -117,7 +117,7 @@ const ProjectReportList: React.FC<ProjectReportListProps> = ({
           {projects.map(project => {
             const projectLogs = workLogs.filter(log => log.projectId === project.id);
             const teamName = teams.find(t => t.id === project.team)?.name;
-            const daysSinceLastVisit = getDaysSinceLastEntry(projectLogs);
+            const daysSinceLastVisit = getDaysSinceLastVisit(projectLogs);
             
             // Calculer le temps total équipe au lieu des heures individuelles
             const totalTeamHours = projectLogs.reduce((sum, log) => {

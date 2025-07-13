@@ -1,92 +1,85 @@
+// Note extraction utilities for parsing work log notes
 
-// Utility to extract information from notes
-
-// Extract client name from notes
-export const extractClientName = (notes: string): string | null => {
-  if (!notes) return null;
+export const extractClientName = (notes: string): string => {
+  if (!notes) return '';
   
-  const clientRegex = /client\s*:\s*([^,\n]+)/i;
-  const match = notes.match(clientRegex);
-  
-  return match ? match[1].trim() : null;
+  const clientMatch = notes.match(/client[\s:]*([^\n\r.;,]+)/i);
+  return clientMatch ? clientMatch[1].trim() : '';
 };
 
-// Extract address from notes
-export const extractAddress = (notes: string): string | null => {
-  if (!notes) return null;
+export const extractAddress = (notes: string): string => {
+  if (!notes) return '';
   
-  const addressRegex = /adresse\s*:\s*([^,\n]+)/i;
-  const match = notes.match(addressRegex);
-  
-  return match ? match[1].trim() : null;
+  const addressMatch = notes.match(/adresse[\s:]*([^\n\r.;]+)/i);
+  return addressMatch ? addressMatch[1].trim() : '';
 };
 
-// Extract description from notes
-export const extractDescription = (notes: string): string | null => {
-  if (!notes) return null;
+export const extractDescription = (notes: string): string => {
+  if (!notes) return '';
   
-  const descRegex = /description\s*:\s*([^,\n]+)/i;
-  const match = notes.match(descRegex);
+  // Extract everything that doesn't look like structured data
+  const lines = notes.split('\n').filter(line => {
+    const lower = line.toLowerCase().trim();
+    return !lower.startsWith('client:') &&
+           !lower.startsWith('adresse:') &&
+           !lower.startsWith('projet:') &&
+           !lower.startsWith('taux:') &&
+           !lower.startsWith('devis:');
+  });
   
-  return match ? match[1].trim() : null;
+  return lines.join('\n').trim();
 };
 
-// Extract linked project ID from notes
-export const extractLinkedProjectId = (notes: string): string | null => {
-  if (!notes) return null;
+export const extractLinkedProjectId = (notes: string): string => {
+  if (!notes) return '';
   
-  const idRegex = /projet\s*:\s*([a-f0-9-]+)/i;
-  const match = notes.match(idRegex);
-  
-  return match ? match[1].trim() : null;
+  const projectMatch = notes.match(/projet[\s:]*([a-zA-Z0-9-]+)/i);
+  return projectMatch ? projectMatch[1].trim() : '';
 };
 
-// Extract registration time from notes
-export const extractRegistrationTime = (notes: string): string | null => {
-  if (!notes) return null;
+export const extractRegistrationTime = (notes: string): string => {
+  if (!notes) return '';
   
-  const timeRegex = /heure\s*:\s*(\d{1,2}[hH]\d{0,2})/i;
-  const match = notes.match(timeRegex);
-  
-  return match ? match[1].trim() : null;
+  const timeMatch = notes.match(/enregistr[eé][\s:]*([0-9]{1,2}[h:][0-9]{1,2})/i);
+  return timeMatch ? timeMatch[1].trim() : '';
 };
 
-// Extract hourly rate from notes
-export const extractHourlyRate = (notes: string): number | null => {
-  if (!notes) return null;
+export const extractHourlyRate = (notes: string): number => {
+  if (!notes) return 0;
   
-  const rateRegex = /taux\s*horaire\s*:\s*(\d+[\.,]?\d*)/i;
-  const match = notes.match(rateRegex);
+  const rateMatch = notes.match(/taux[\s:]*([0-9,\.]+)/i);
+  if (rateMatch) {
+    return parseFloat(rateMatch[1].replace(',', '.')) || 0;
+  }
   
-  return match ? parseFloat(match[1].replace(',', '.')) : null;
+  return 0;
 };
 
-// Extract quote value from notes
-export const extractQuoteValue = (notes: string): number | null => {
-  if (!notes) return null;
+export const extractQuoteValue = (notes: string): number => {
+  if (!notes) return 0;
   
-  const quoteRegex = /devis\s*:\s*(\d+[\.,]?\d*)/i;
-  const match = notes.match(quoteRegex);
+  const quoteMatch = notes.match(/devis[\s:]*([0-9,\.]+)/i);
+  if (quoteMatch) {
+    return parseFloat(quoteMatch[1].replace(',', '.')) || 0;
+  }
   
-  return match ? parseFloat(match[1].replace(',', '.')) : null;
+  return 0;
 };
 
-// Extract signed quote amount from notes
-export const extractSignedQuote = (notes: string): number | null => {
-  if (!notes) return null;
+export const extractSignedQuote = (notes: string): boolean => {
+  if (!notes) return false;
   
-  const signedRegex = /signé\s*:\s*(\d+[\.,]?\d*)/i;
-  const match = notes.match(signedRegex);
-  
-  return match ? parseFloat(match[1].replace(',', '.')) : null;
+  const signedMatch = notes.match(/devis[\s:]*sign[eé]/i);
+  return !!signedMatch;
 };
 
-// Extract VAT rate from notes
-export const extractVatRate = (notes: string): number | null => {
-  if (!notes) return null;
+export const extractVatRate = (notes: string): number => {
+  if (!notes) return 20; // Default VAT rate
   
-  const vatRegex = /tva\s*:\s*(\d+[\.,]?\d*)/i;
-  const match = notes.match(vatRegex);
+  const vatMatch = notes.match(/tva[\s:]*([0-9,\.]+)/i);
+  if (vatMatch) {
+    return parseFloat(vatMatch[1].replace(',', '.')) || 20;
+  }
   
-  return match ? parseFloat(match[1].replace(',', '.')) : null;
+  return 20;
 };

@@ -18,6 +18,8 @@ export {
   getLastNMonths,
   getDaysBetweenDates,
   getDaysSinceLastEntry,
+  getDaysSinceLastVisit,
+  getLastVisitDate,
   calculateAverageHoursPerVisit,
   filterWorkLogsByYear,
   groupWorkLogsByMonth,

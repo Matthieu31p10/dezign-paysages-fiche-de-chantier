@@ -1,7 +1,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { ProjectInfo, WorkLog } from '@/types/models';
-import { getDaysSinceLastEntry } from '@/utils/date-helpers';
+import { getDaysSinceLastVisit } from '@/utils/helpers';
 
 export const useProjectFiltering = (projectInfos: ProjectInfo[], workLogs: WorkLog[]) => {
   const [isPending, startTransition] = useTransition();
@@ -37,8 +37,8 @@ export const useProjectFiltering = (projectInfos: ProjectInfo[], workLogs: WorkL
         const logsB = workLogs.filter(log => log.projectId === b.id);
         
         // Fix: use correct types with getDaysSinceLastEntry
-        const daysA = getDaysSinceLastEntry(logsA);
-        const daysB = getDaysSinceLastEntry(logsB);
+        const daysA = getDaysSinceLastVisit(logsA);
+        const daysB = getDaysSinceLastVisit(logsB);
         
         // Make sure daysA and daysB are numbers before the operation
         const numDaysA = typeof daysA === 'number' ? daysA : Number.MAX_SAFE_INTEGER;

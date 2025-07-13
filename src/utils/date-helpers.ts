@@ -1,149 +1,139 @@
 // Date utility functions
 
-import { format, addMonths, subMonths, differenceInDays, parse } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { WorkLog } from '@/types/models';
-
-// Current year and month helpers
 export const getCurrentYear = (): number => {
   return new Date().getFullYear();
 };
 
 export const getCurrentMonth = (): number => {
-  return new Date().getMonth() + 1; // getMonth() returns 0-11, so +1 for 1-12
+  return new Date().getMonth();
 };
 
-// Month name helper
 export const getMonthName = (monthIndex: number): string => {
-  const date = new Date();
-  date.setMonth(monthIndex - 1); // monthIndex is 1-12, setMonth expects 0-11
-  return date.toLocaleString('fr-FR', { month: 'long' });
+  const months = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ];
+  return months[monthIndex] || '';
 };
 
-// Get last N months
-export const getLastNMonths = (n: number): { month: number; year: number }[] => {
-  const result = [];
+export const getLastNMonths = (n: number): Array<{ year: number; month: number; name: string }> => {
+  const months = [];
   const now = new Date();
   
   for (let i = 0; i < n; i++) {
-    const date = subMonths(now, i);
-    result.push({
-      month: date.getMonth() + 1,
-      year: date.getFullYear()
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      year: date.getFullYear(),
+      month: date.getMonth(),
+      name: getMonthName(date.getMonth())
     });
   }
   
-  return result;
+  return months;
 };
 
-// Calculate days between dates
-export const getDaysBetweenDates = (startDate: Date, endDate: Date): number => {
-  return differenceInDays(endDate, startDate);
+export const getDaysBetweenDates = (startDate: Date | string, endDate: Date | string): number => {
+  const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+  const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+  
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-// Calculate days since last entry
-export const getDaysSinceLastEntry = (workLogs: WorkLog[]): number | null => {
-  if (!workLogs.length) return null;
+export const getDaysSinceLastEntry = (lastDate: Date | string | null): number => {
+  if (!lastDate) return 0;
   
-  // Get dates from all work logs
-  const dates = workLogs.map(log => new Date(log.date));
+  const last = typeof lastDate === 'string' ? new Date(lastDate) : lastDate;
+  const now = new Date();
   
-  // Find most recent date
-  const mostRecent = new Date(Math.max(...dates.map(date => date.getTime())));
-  
-  // Calculate days since that date
-  const today = new Date();
-  const timeDiff = today.getTime() - mostRecent.getTime();
-  const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-  
-  return dayDiff;
+  return getDaysBetweenDates(last, now);
 };
 
-// Calculate average hours per visit for a project using team hours
-export const calculateAverageHoursPerVisit = (workLogs: WorkLog[]): number => {
-  if (workLogs.length === 0) return 0;
-  
-  // Calculate total team hours instead of individual hours
-  const totalTeamHours = workLogs.reduce((sum, log) => {
-    const individualHours = log.timeTracking?.totalHours || 0;
-    const personnelCount = log.personnel?.length || 1;
-    return sum + (individualHours * personnelCount);
-  }, 0);
-  
-  return Math.round((totalTeamHours / workLogs.length) * 100) / 100;
+export const calculateAverageHoursPerVisit = (totalHours: number, visitCount: number): number => {
+  if (visitCount === 0) return 0;
+  return totalHours / visitCount;
 };
 
-// Group work logs by month
-export const groupWorkLogsByMonth = (workLogs: WorkLog[]): Record<string, WorkLog[]> => {
-  const grouped: Record<string, WorkLog[]> = {};
-  
-  workLogs.forEach(log => {
-    if (!log.date) return;
-    
+export const filterWorkLogsByYear = (workLogs: any[], year: number): any[] => {
+  return workLogs.filter(log => {
+    const logDate = new Date(log.date);
+    return logDate.getFullYear() === year;
+  });
+};
+
+export const groupWorkLogsByMonth = (workLogs: any[]): Record<string, any[]> => {
+  return workLogs.reduce((groups, log) => {
     const date = new Date(log.date);
-    const monthName = date.toLocaleString('fr-FR', { month: 'long' });
-    const year = date.getFullYear();
-    const key = `${monthName} ${year}`;
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
     
-    if (!grouped[key]) {
-      grouped[key] = [];
+    if (!groups[key]) {
+      groups[key] = [];
     }
     
-    grouped[key].push(log);
-  });
-  
-  return grouped;
+    groups[key].push(log);
+    return groups;
+  }, {});
 };
 
-// Filter work logs by year
-export const filterWorkLogsByYear = (workLogs: WorkLog[], year: number): WorkLog[] => {
-  return workLogs.filter(log => {
-    if (!log.date) return false;
-    return new Date(log.date).getFullYear() === year;
-  });
-};
-
-// Get years from work logs
-export const getYearsFromWorkLogs = (workLogs: WorkLog[]): number[] => {
+export const getYearsFromWorkLogs = (workLogs: any[]): number[] => {
   const years = new Set<number>();
   
   workLogs.forEach(log => {
-    if (log.date) {
-      const year = new Date(log.date).getFullYear();
-      years.add(year);
-    }
+    const year = new Date(log.date).getFullYear();
+    years.add(year);
   });
   
-  return Array.from(years).sort((a, b) => b - a); // Sort descending
+  return Array.from(years).sort((a, b) => b - a);
 };
 
-// Parse time string to hours and minutes
-export const parseTimeString = (timeString: string): { hours: number; minutes: number } => {
-  const [hours, minutes] = timeString.split(':').map(Number);
-  return { hours, minutes };
+export const parseTimeString = (timeString: string): number => {
+  if (!timeString) return 0;
+  
+  // Parse formats like "08:30", "8:30", "8h30", "8.5"
+  const cleanTime = timeString.trim().toLowerCase();
+  
+  // Handle decimal format (8.5)
+  if (cleanTime.includes('.') && !cleanTime.includes(':')) {
+    return parseFloat(cleanTime) || 0;
+  }
+  
+  // Handle colon format (08:30) or h format (8h30)
+  const parts = cleanTime.split(/[h:]/).map(part => part.replace(/[^\d]/g, ''));
+  
+  if (parts.length >= 2) {
+    const hours = parseInt(parts[0]) || 0;
+    const minutes = parseInt(parts[1]) || 0;
+    return hours + (minutes / 60);
+  }
+  
+  // Handle single number (assume hours)
+  return parseFloat(parts[0]) || 0;
 };
 
-// Calculate hours between two time strings
-export const calculateHoursBetween = (
-  startTime: string, 
-  endTime: string, 
-  breakTimeInMinutes: number = 0
-): number => {
+export const calculateHoursBetween = (startTime: string, endTime: string): number => {
+  if (!startTime || !endTime) return 0;
+  
   const start = parseTimeString(startTime);
   const end = parseTimeString(endTime);
   
-  const startInMinutes = start.hours * 60 + start.minutes;
-  const endInMinutes = end.hours * 60 + end.minutes;
+  if (end <= start) {
+    // Handle case where end time is next day
+    return (24 - start) + end;
+  }
   
-  // Adjust if end time is on the next day
-  const adjustedEndInMinutes = endInMinutes < startInMinutes
-    ? endInMinutes + 24 * 60
-    : endInMinutes;
-  
-  const totalMinutes = adjustedEndInMinutes - startInMinutes - breakTimeInMinutes;
-  
-  return totalMinutes / 60;
+  return end - start;
 };
 
-// Re-export the extractRegistrationTime function from notes-extraction
-export { extractRegistrationTime } from './notes-extraction';
+export const getLastVisitDate = (workLogs: any[]): Date | null => {
+  if (!workLogs || workLogs.length === 0) return null;
+  
+  const sortedLogs = workLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return new Date(sortedLogs[0].date);
+};
+
+export const getDaysSinceLastVisit = (workLogs: any[]): number => {
+  const lastVisitDate = getLastVisitDate(workLogs);
+  if (!lastVisitDate) return Number.MAX_SAFE_INTEGER; // Return very large number if no visits
+  
+  return getDaysSinceLastEntry(lastVisitDate);
+};
