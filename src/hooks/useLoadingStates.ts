@@ -19,6 +19,18 @@ export const useLoadingStates = () => {
     return loadingStates[key] || false;
   }, [loadingStates]);
 
+  const isAnyLoading = useCallback(() => {
+    return Object.values(loadingStates).some(loading => loading);
+  }, [loadingStates]);
+
+  const getLoadingKeys = useCallback(() => {
+    return Object.keys(loadingStates).filter(key => loadingStates[key]);
+  }, [loadingStates]);
+
+  const clearAllLoading = useCallback(() => {
+    setLoadingStates({});
+  }, []);
+
   const withLoading = useCallback(async <T>(
     key: string, 
     asyncOperation: () => Promise<T>
@@ -26,10 +38,20 @@ export const useLoadingStates = () => {
     setLoading(key, true);
     try {
       return await asyncOperation();
+    } catch (error) {
+      throw error;
     } finally {
       setLoading(key, false);
     }
   }, [setLoading]);
 
-  return { setLoading, isLoading, withLoading };
+  return { 
+    setLoading, 
+    isLoading, 
+    isAnyLoading,
+    getLoadingKeys,
+    clearAllLoading,
+    withLoading,
+    loadingStates 
+  };
 };
