@@ -4,7 +4,8 @@ import { ThemeProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/SupabaseAuthContext';
-import { AppProvider } from '@/context/AppContext';
+import AppProviders from '@/context/AppProviders';
+
 import { ErrorBoundary } from '@/components/error';
 
 // Pages and components
@@ -27,7 +28,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <AppProvider>
+            <AppProviders>
               <Router>
                 <Routes>
                   {/* Public routes */}
@@ -99,7 +100,7 @@ function App() {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Router>
-            </AppProvider>
+            </AppProviders>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

@@ -4,7 +4,6 @@ import { ProjectsProvider } from './ProjectsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
 import { WorkLogsProvider } from './WorkLogsContext/WorkLogsContext';
-import { AppProvider } from './AppContext';
 import { AuthProvider } from './AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -29,9 +28,7 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
           <TeamsProvider>
             <WorkLogsProvider>
               <ProjectsProvider>
-                <AppProvider>
-                  {children}
-                </AppProvider>
+                {children}
               </ProjectsProvider>
             </WorkLogsProvider>
           </TeamsProvider>
