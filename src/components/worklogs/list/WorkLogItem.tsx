@@ -8,6 +8,7 @@ import TeamBadge from '@/components/ui/team-badge';
 import { useApp } from '@/context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '@/utils/date';
+import { formatCurrency } from '@/utils/format-utils';
 import { 
   Calendar, 
   Clock, 
@@ -15,7 +16,10 @@ import {
   MapPin, 
   Eye,
   FileText,
-  Banknote
+  Banknote,
+  FileBarChart,
+  Tag,
+  CheckCircle
 } from 'lucide-react';
 
 interface WorkLogItemProps {
@@ -29,74 +33,163 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
   
   const team = teams.find(t => t.id === project?.team);
   const isBlankWorksheet = workLog.isBlankWorksheet || !project;
+  const totalHours = workLog.timeTracking?.totalHours || workLog.duration || 0;
+  const personnelCount = workLog.personnel?.length || 1;
+  const totalTeamHours = totalHours * personnelCount;
   
   const handleView = () => {
     navigate(`/worklogs/${workLog.id}`);
   };
 
+  // Calcul du coût total si taux horaire disponible
+  const totalCost = workLog.hourlyRate ? totalTeamHours * workLog.hourlyRate : 0;
+
   return (
     <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" 
-          style={{ borderLeftColor: team?.color || '#10B981' }}>
+          style={{ borderLeftColor: team?.color || (isBlankWorksheet ? '#6B7280' : '#10B981') }}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-3">
-            {/* Header with project name and badges */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg text-gray-900">
-                  {isBlankWorksheet ? (
-                    workLog.clientName || 'Fiche vierge sans nom'
-                  ) : (
-                    project?.name || 'Chantier inconnu'
-                  )}
-                </h3>
-                {isBlankWorksheet && (
-                  <Badge variant="secondary" className="text-xs">
-                    <FileText className="h-3 w-3 mr-1" />
-                    Fiche vierge
+            {/* Header unifié */}
+            <div className="flex items-center gap-2 mb-1.5">
+              {isBlankWorksheet ? (
+                <FileBarChart className="h-4 w-4 text-primary" />
+              ) : (
+                <FileText className="h-4 w-4 text-primary" />
+              )}
+              <h3 className="font-medium">
+                {isBlankWorksheet ? (
+                  workLog.clientName || 'Fiche vierge sans nom'
+                ) : (
+                  project?.name || 'Chantier inconnu'
+                )}
+              </h3>
+              
+              {/* Badge du type de fiche */}
+              {isBlankWorksheet ? (
+                workLog.projectId && workLog.projectId.startsWith('DZFV') && (
+                  <Badge variant="secondary" className="ml-2 flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    {workLog.projectId}
+                  </Badge>
+                )
+              ) : (
+                <Badge variant="outline" className="ml-2 flex items-center gap-1">
+                  <FileText className="h-3 w-3" />
+                  Fiche de suivi
+                </Badge>
+              )}
+              
+              {/* Badges à droite */}
+              <div className="ml-auto flex items-center gap-2">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {formatDate(new Date(workLog.date))}
+                </Badge>
+                
+                {workLog.createdAt && (
+                  <Badge variant="outline" className="flex items-center gap-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    {new Date(workLog.createdAt).toLocaleTimeString('fr-FR', { 
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </Badge>
                 )}
               </div>
-              
+            </div>
+
+            {/* Team badge et statuts */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {team && <TeamBadge teamName={team.name} teamColor={team.color} />}
+              </div>
+              <div className="flex items-center gap-2">
                 {workLog.invoiced && (
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="outline" className="bg-green-100 text-green-800">
                     <Banknote className="h-3 w-3 mr-1" />
                     Facturé
                   </Badge>
                 )}
+                {workLog.isQuoteSigned && (
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Devis signé
+                  </Badge>
+                )}
               </div>
             </div>
 
-            {/* Project info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>{formatDate(new Date(workLog.date))}</span>
+            {/* Contenu principal */}
+            <div className="mt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                <div>
+                  <p className="text-xs text-muted-foreground">Heures équipe</p>
+                  <p className="font-medium">{totalTeamHours.toFixed(2)}h</p>
+                </div>
+                
+                <div>
+                  <p className="text-xs text-muted-foreground">Personnel</p>
+                  <p className="font-medium">{personnelCount} personne{personnelCount > 1 ? 's' : ''}</p>
+                </div>
+                
+                {workLog.hourlyRate && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Taux horaire</p>
+                    <p className="font-medium">{formatCurrency(workLog.hourlyRate)}/h</p>
+                  </div>
+                )}
+                
+                {workLog.signedQuoteAmount && workLog.signedQuoteAmount > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Devis signé</p>
+                    <p className="font-medium">{formatCurrency(workLog.signedQuoteAmount)}</p>
+                  </div>
+                )}
               </div>
               
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{workLog.timeTracking?.totalHours || workLog.duration || 0}h</span>
-              </div>
+              {/* Adresse */}
+              {(workLog.address || project?.address) && (
+                <p className="text-sm text-muted-foreground truncate mt-1">
+                  {workLog.address || project?.address}
+                </p>
+              )}
+            </div>
+
+            {/* Stats badges */}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {workLog.hourlyRate && (
+                <Badge variant="outline" className="bg-white">
+                  Taux: {formatCurrency(workLog.hourlyRate)}/h
+                </Badge>
+              )}
               
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                <span>{workLog.personnel.length} personne{workLog.personnel.length > 1 ? 's' : ''}</span>
-              </div>
+              {totalTeamHours > 0 && (
+                <Badge variant="outline" className="bg-white">
+                  {totalTeamHours.toFixed(1)}h d'équipe
+                </Badge>
+              )}
               
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span className="truncate">
-                  {workLog.address || project?.address || 'Adresse non renseignée'}
-                </span>
-              </div>
+              {workLog.hourlyRate && totalCost > 0 && (
+                <Badge variant="outline" className="bg-white">
+                  Total: {formatCurrency(totalCost)}
+                </Badge>
+              )}
+              
+              {workLog.signedQuoteAmount && workLog.signedQuoteAmount > 0 && (
+                <Badge 
+                  variant={workLog.isQuoteSigned ? "secondary" : "outline"} 
+                  className={workLog.isQuoteSigned ? "bg-green-100 text-green-800 border-green-200" : "bg-white"}
+                >
+                  {workLog.isQuoteSigned && <CheckCircle className="h-3 w-3 mr-1" />}
+                  Devis: {formatCurrency(workLog.signedQuoteAmount)}
+                </Badge>
+              )}
             </div>
 
             {/* Notes preview */}
             {workLog.notes && (
-              <p className="text-sm text-gray-600 line-clamp-2">
+              <p className="text-sm text-gray-600 line-clamp-2 mt-2">
                 {workLog.notes}
               </p>
             )}
