@@ -3,7 +3,7 @@ import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Building2, Clock, Home, Landmark, Users, Calendar, Timer, AlertCircle } from 'lucide-react';
-import { getDaysSinceLastVisit } from '@/utils/helpers';
+import { getDaysSinceLastEntry } from '@/utils/date-helpers';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -32,7 +32,7 @@ const ProjectReportCard = ({ project, workLogs, teamName }: ProjectReportCardPro
     : 0;
   
   // Fix: pass workLogs as array instead of string
-  const daysSinceLastVisit = getDaysSinceLastVisit(workLogs);
+  const daysSinceLastVisit = getDaysSinceLastEntry(workLogs);
   
   // Calculate average hours per visit using team hours
   const averageHoursPerVisit = workLogs.length > 0 ? totalTeamHours / workLogs.length : 0;

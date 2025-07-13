@@ -1,4 +1,5 @@
 export { LoadingSpinner } from './LoadingSpinner'
+export { LoadingSkeleton } from './LoadingSkeleton'
 export { LoadingButton } from './LoadingButton'
 export { LoadingOverlay } from './LoadingOverlay'
 export { PageLoading } from './PageLoading'

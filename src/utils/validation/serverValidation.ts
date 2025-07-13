@@ -21,7 +21,7 @@ export const validateUnique = async (
 ): Promise<boolean> => {
   try {
     let query = supabase
-      .from(tableName as any)
+      .from(tableName)
       .select('id')
       .eq(field, value)
 
@@ -53,7 +53,7 @@ export const validateExists = async (
 ): Promise<boolean> => {
   try {
     const { data, error } = await supabase
-      .from(tableName as any)
+      .from(tableName)
       .select('id')
       .eq(field, value)
       .maybeSingle()
