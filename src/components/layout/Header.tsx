@@ -1,21 +1,30 @@
 
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CalendarDaysIcon, Menu } from 'lucide-react';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import { useAuth } from '@/context/SupabaseAuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { LogOut, User, Menu, CalendarDaysIcon } from 'lucide-react';
 import CompanyLogo from '@/components/ui/company-logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const navItems = [
+interface MenuItem {
+  path: string;
+  label: string;
+  color: string;
+  adminOnly?: boolean;
+  requiredModule?: string;
+}
+
+const navItems: MenuItem[] = [
   { path: '/projects', label: 'Chantiers', color: 'emerald' },
   { path: '/schedule', label: 'Agenda', color: 'green' },
   { path: '/worklogs', label: 'Suivis', color: 'teal' },
@@ -25,35 +34,41 @@ const navItems = [
 ];
 
 const Header: React.FC = () => {
-  const { auth, logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { profile, signOut, isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
+  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
   };
 
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
   };
 
-  const userInitials = auth.currentUser && auth.currentUser.name 
-    ? auth.currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
-    : 'U';
+  // Get user initials from profile
+  const userInitials = profile && (profile.first_name || profile.last_name)
+    ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase()
+    : profile?.email?.[0]?.toUpperCase() || '?';
 
-  const filteredNavItems = navItems.filter(item => {
-    if (item.adminOnly && auth.currentUser?.role !== 'admin') {
+  // Check if user has access to menu item
+  const hasAccess = (item: MenuItem) => {
+    if (item.adminOnly && profile?.role !== 'admin') {
       return false;
     }
-    if (item.requiredModule && auth.currentUser?.permissions) {
-      return !!auth.currentUser.permissions[item.requiredModule];
+    if (item.requiredModule && profile?.permissions) {
+      return !!profile.permissions[item.requiredModule];
     }
     return true;
-  });
+  };
 
-  const getButtonStyles = (item: any, isActive: boolean) => {
+  const filteredNavItems = navItems.filter(hasAccess);
+
+  const getButtonStyles = (item: MenuItem, isActive: boolean) => {
     const baseStyles = "relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg border-2";
     
     const colorStyles = {
@@ -77,7 +92,7 @@ const Header: React.FC = () => {
         : "bg-gradient-to-r from-green-50 to-slate-50 text-green-900 border-green-200 hover:from-green-100 hover:to-slate-100 hover:border-green-300"
     };
     
-    return `${baseStyles} ${colorStyles[item.color] || colorStyles.green}`;
+    return `${baseStyles} ${colorStyles[item.color as keyof typeof colorStyles] || colorStyles.green}`;
   };
 
   return (
@@ -134,18 +149,32 @@ const Header: React.FC = () => {
                 className="w-56 bg-white shadow-xl border-0 rounded-xl p-2 animate-in slide-in-from-top-2 duration-200"
                 style={{ boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)' }}
               >
-                <div className="px-3 py-2 bg-gradient-to-r from-green-50 to-green-25 rounded-lg mb-2">
-                  <p className="text-sm font-medium text-gray-900">
-                    {auth.currentUser?.name || auth.currentUser?.username}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {auth.currentUser?.email}
-                  </p>
-                </div>
-                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {profile?.first_name && profile?.last_name 
+                        ? `${profile.first_name} ${profile.last_name}`
+                        : profile?.email
+                      }
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {profile?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profil</span>
+                  </Link>
+                </DropdownMenuItem>
                 
                 {isMobile && (
                   <>
+                    <DropdownMenuSeparator />
                     {filteredNavItems.map((item) => (
                       <DropdownMenuItem key={item.path} asChild>
                         <Link 
@@ -161,15 +190,17 @@ const Header: React.FC = () => {
                         </Link>
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuSeparator className="my-2" />
                   </>
                 )}
+                
+                <DropdownMenuSeparator />
                 
                 <DropdownMenuItem 
                   onClick={handleLogout} 
                   className="cursor-pointer text-red-600 hover:bg-red-50 transition-colors duration-200"
                 >
-                  Déconnexion
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Déconnexion</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
