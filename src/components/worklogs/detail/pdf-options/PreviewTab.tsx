@@ -12,7 +12,7 @@ const PreviewTab: React.FC<PreviewTabProps> = ({ theme, pdfOptions }) => {
   return (
     <div className="py-4">
       <div className="border rounded-md p-4 flex flex-col items-center">
-        <div className="w-full max-w-md bg-white shadow-sm rounded-md border p-6">
+        <div className="w-full max-w-md bg-card shadow-sm rounded-md border p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center">
               <CompanyLogo className="w-14 h-14 p-1" />

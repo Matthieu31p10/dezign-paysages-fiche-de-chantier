@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
+import AppBreadcrumbs from '../common/AppBreadcrumbs';
 import { useApp } from '@/context/AppContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -29,6 +30,7 @@ const Layout = () => {
   return (
     <div className={`min-h-screen flex flex-col ${getBackgroundStyle()}`}>
       <Header />
+      <AppBreadcrumbs />
       <main className={`flex-grow ${
         isMobile ? 'px-3 pb-6 pt-6' : 'px-4 pb-12 pt-8 sm:px-6 lg:px-8'
       } max-w-7xl mx-auto w-full transition-all duration-300`}>
@@ -38,7 +40,7 @@ const Layout = () => {
       </main>
       <footer className={`${
         isMobile ? 'px-3 py-4' : 'py-6 px-4 sm:px-6 lg:px-8'
-      } border-t border-gray-300/60 bg-white/85 backdrop-blur-sm transition-all duration-300`}>
+      } border-t border-border/60 bg-background/85 backdrop-blur-sm transition-all duration-300`}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-600">
           <p className="font-medium">© {currentYear} {companyName} - Tous droits réservés</p>
           <div className="flex gap-6">

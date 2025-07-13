@@ -76,7 +76,7 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
   }, [onTabChange]);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-card rounded-lg shadow-sm border border-border">
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
         <div className="border-b border-gray-200 px-6 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

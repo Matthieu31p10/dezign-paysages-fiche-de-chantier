@@ -103,7 +103,7 @@ const ModernTeamGroup: React.FC<ModernTeamGroupProps> = ({ teamGroup }) => {
                     <div className="border-t bg-gray-50/50">
                       <div className="p-4 space-y-2">
                         {events.map((event) => (
-                          <div key={event.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div key={event.id} className="flex items-center justify-between p-2 bg-card rounded border">
                             <div className="flex items-center gap-3">
                               <div className="text-sm font-medium">
                                 {format(new Date(event.date), 'dd/MM/yyyy')}

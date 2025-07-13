@@ -17,7 +17,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({ daysOfWeek, showWeekend
         <div 
           key={day} 
           className={`text-center font-semibold py-4 text-sm border-r border-gray-200 last:border-r-0 ${
-            showWeekends && index >= 5 ? 'bg-gray-50 text-gray-500' : 'bg-white text-gray-700'
+            showWeekends && index >= 5 ? 'bg-muted text-muted-foreground' : 'bg-card text-card-foreground'
           }`}
         >
           {day}

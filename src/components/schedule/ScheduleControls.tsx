@@ -114,7 +114,7 @@ const ScheduleControls: React.FC<ScheduleControlsProps> = ({
           </Label>
         </div>
 
-        <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+        <div className="inline-flex rounded-lg border border-border bg-card p-1">
           <Button 
             variant={viewMode === 'calendar' ? "default" : "ghost"} 
             size="sm"

@@ -81,7 +81,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 shadow-lg transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-lg transition-all duration-300">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
@@ -131,7 +131,7 @@ const Header: React.FC = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-56 bg-white shadow-xl border-0 rounded-xl p-2 animate-in slide-in-from-top-2 duration-200"
+                className="w-56 bg-card shadow-xl border-0 rounded-xl p-2 animate-in slide-in-from-top-2 duration-200"
                 style={{ boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)' }}
               >
                 <div className="px-3 py-2 bg-gradient-to-r from-green-50 to-green-25 rounded-lg mb-2">

@@ -37,9 +37,9 @@ const ModernCalendarDay: React.FC<ModernCalendarDayProps> = ({ date, events }) =
   };
 
   return (
-    <div className="border-r border-b bg-white hover:bg-gray-50 transition-colors min-h-[120px] p-2 flex flex-col">
+    <div className="border-r border-b bg-card hover:bg-muted transition-colors min-h-[120px] p-2 flex flex-col">
       <div className="flex justify-between items-start mb-2">
-        <span className={`text-sm font-medium ${isToday ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs' : 'text-gray-900'}`}>
+        <span className={`text-sm font-medium ${isToday ? 'bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs' : 'text-foreground'}`}>
           {dayNumber}
         </span>
         {events.length > 3 && (

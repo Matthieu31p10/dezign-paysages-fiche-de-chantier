@@ -33,13 +33,13 @@ const DistributionTable: React.FC<DistributionTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="sticky left-0 bg-white z-10 min-w-[200px]">Chantier</TableHead>
-            <TableHead className="sticky left-[200px] bg-white z-10 min-w-[150px]">Équipe</TableHead>
+            <TableHead className="sticky left-0 bg-background z-10 min-w-[200px]">Chantier</TableHead>
+            <TableHead className="sticky left-[200px] bg-background z-10 min-w-[150px]">Équipe</TableHead>
             {months.map((month, index) => (
               <TableHead key={month} className="text-center min-w-[80px]">
                 <div className="flex flex-col items-center">
                   <span className="font-medium">{month.substring(0, 3)}</span>
-                  <span className="text-xs text-gray-500">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="text-xs text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
                 </div>
               </TableHead>
             ))}
@@ -49,11 +49,11 @@ const DistributionTable: React.FC<DistributionTableProps> = ({
         <TableBody>
           {filteredRules.map((rule) => (
             <TableRow key={rule.projectId}>
-              <TableCell className="font-medium sticky left-0 bg-white z-10 whitespace-nowrap">
+              <TableCell className="font-medium sticky left-0 bg-background z-10 whitespace-nowrap">
                 {getProjectName(rule.projectId)}
               </TableCell>
-              <TableCell className="sticky left-[200px] bg-white z-10 whitespace-nowrap">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+              <TableCell className="sticky left-[200px] bg-background z-10 whitespace-nowrap">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
                   {getProjectTeam(rule.projectId)}
                 </span>
               </TableCell>
@@ -78,7 +78,7 @@ const DistributionTable: React.FC<DistributionTableProps> = ({
                   )}
                 </TableCell>
               ))}
-              <TableCell className="text-center font-bold bg-gray-50">
+              <TableCell className="text-center font-bold bg-muted">
                 {calculateAnnualTotal(rule)}
               </TableCell>
             </TableRow>
@@ -86,21 +86,21 @@ const DistributionTable: React.FC<DistributionTableProps> = ({
           
           {/* Ligne de totaux si plusieurs projets */}
           {filteredRules.length > 1 && (
-            <TableRow className="bg-blue-50 border-t-2 border-blue-200">
-              <TableCell className="font-bold sticky left-0 bg-blue-50 z-10">
+            <TableRow className="bg-primary/5 border-t-2 border-primary/20">
+              <TableCell className="font-bold sticky left-0 bg-primary/5 z-10">
                 TOTAL {selectedTeam === 'all' ? 'GÉNÉRAL' : teams.find(t => t.id === selectedTeam)?.name.toUpperCase()}
               </TableCell>
-              <TableCell className="sticky left-[200px] bg-blue-50 z-10">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-200 text-blue-900">
+              <TableCell className="sticky left-[200px] bg-primary/5 z-10">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/20 text-primary">
                   {filteredRules.length} chantier{filteredRules.length > 1 ? 's' : ''}
                 </span>
               </TableCell>
               {months.map((_, index) => (
-                <TableCell key={index} className="text-center font-bold text-blue-900">
+                <TableCell key={index} className="text-center font-bold text-primary">
                   {monthlyTotals[index.toString()]}
                 </TableCell>
               ))}
-              <TableCell className="text-center font-bold text-blue-900 bg-blue-100">
+              <TableCell className="text-center font-bold text-primary bg-primary/10">
                 {Object.values(monthlyTotals).reduce((sum, val) => sum + val, 0)}
               </TableCell>
             </TableRow>

@@ -4,7 +4,7 @@ import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Calendar, Clock, FileText, Home, Landmark, MapPin, Phone, User, ArrowRight } from 'lucide-react';
+import { Building2, Calendar, Clock, FileText, Home, Landmark, MapPin, Phone, User, ArrowRight, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -12,9 +12,10 @@ import { fr } from 'date-fns/locale';
 interface ProjectCardProps {
   project: ProjectInfo;
   onSelect?: (id: string) => void;
+  totalPersonnel?: number;
 }
 
-const ProjectCard = ({ project, onSelect }: ProjectCardProps) => {
+const ProjectCard = ({ project, onSelect, totalPersonnel = 0 }: ProjectCardProps) => {
   const navigate = useNavigate();
   
   const getProjectTypeConfig = () => {
@@ -63,7 +64,7 @@ const ProjectCard = ({ project, onSelect }: ProjectCardProps) => {
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-white/80 rounded-lg shadow-sm">
+              <div className="p-2 bg-card/80 rounded-lg shadow-sm">
                 {typeConfig.icon}
               </div>
               <div>
@@ -92,28 +93,24 @@ const ProjectCard = ({ project, onSelect }: ProjectCardProps) => {
       
       <CardContent className="pb-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-2 p-3 bg-white/60 rounded-lg">
-            <Clock className="h-4 w-4 text-blue-500" />
-            <div>
-              <span className="text-gray-500 text-xs block">Durée/passage</span>
-              <span className="font-semibold text-gray-900">{project.visitDuration}h</span>
-            </div>
+          <div className="flex items-center gap-2 p-3 bg-card/60 rounded-lg">
+            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">{totalPersonnel} membre{totalPersonnel > 1 ? 's' : ''}</span>
           </div>
           
-          <div className="flex items-center gap-2 p-3 bg-white/60 rounded-lg">
-            <Calendar className="h-4 w-4 text-green-500" />
-            <div>
-              <span className="text-gray-500 text-xs block">Passages/an</span>
-              <span className="font-semibold text-gray-900">{project.annualVisits}</span>
-            </div>
+          <div className="flex items-center gap-2 p-3 bg-card/60 rounded-lg">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">
+              {project.annualTotalHours || 0}h/an
+            </span>
           </div>
           
-          {project.contact.phone && (
-            <div className="col-span-2 flex items-center gap-2 p-3 bg-white/60 rounded-lg">
+          {(project.contactPhone || project.additionalInfo) && (
+            <div className="col-span-2 flex items-center gap-2 p-3 bg-card/60 rounded-lg">
               <Phone className="h-4 w-4 text-purple-500" />
               <div>
                 <span className="text-gray-500 text-xs block">Contact</span>
-                <span className="font-semibold text-gray-900">{project.contact.phone}</span>
+                <span className="font-semibold text-gray-900">{project.contactPhone}</span>
               </div>
             </div>
           )}
@@ -125,7 +122,7 @@ const ProjectCard = ({ project, onSelect }: ProjectCardProps) => {
           variant="outline"
           size="sm"
           onClick={() => navigate(`/projects/${project.id}`)}
-          className="flex-1 group/btn hover:bg-white hover:border-gray-300 transition-all duration-200"
+          className="flex-1 group/btn hover:bg-card hover:border-border transition-all duration-200"
         >
           Détails
           <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />

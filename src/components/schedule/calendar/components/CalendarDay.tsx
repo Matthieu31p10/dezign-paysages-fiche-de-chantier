@@ -47,7 +47,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   return (
     <div 
       className={`
-        min-h-[120px] p-2 border border-gray-200 bg-white relative
+        min-h-[120px] p-2 border border-border bg-card relative
         ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
         ${isLocked ? 'bg-red-50 border-red-200' : ''}
         ${isDropZoneActive ? 'bg-blue-100 border-blue-400 border-2 border-dashed' : ''}

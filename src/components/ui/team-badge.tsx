@@ -30,7 +30,7 @@ const TeamBadge: React.FC<TeamBadgeProps> = ({
   return (
     <Badge 
       variant="outline" 
-      className={`inline-flex items-center gap-1.5 border-gray-200 bg-white ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center gap-1.5 border-border bg-card ${sizeClasses[size]} ${className}`}
     >
       <div 
         className={`${dotSizes[size]} rounded-full`}

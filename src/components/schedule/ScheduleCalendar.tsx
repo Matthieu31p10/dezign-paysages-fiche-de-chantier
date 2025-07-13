@@ -51,7 +51,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ month, year, teamId
           />
         </div>
         
-        <Card className="overflow-hidden shadow-lg border-0 bg-white">
+        <Card className="overflow-hidden shadow-lg border-0 bg-card">
           <CardContent className="p-0">
             <CalendarHeader daysOfWeek={daysOfWeek} showWeekends={showWeekends} />
             <CalendarGrid 

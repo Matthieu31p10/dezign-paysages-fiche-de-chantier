@@ -20,7 +20,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <Badge variant="outline" className="bg-green-600 text-white border-green-600 font-bold text-xs">
+            <Badge variant="outline" className="bg-primary text-primary-foreground border-primary font-bold text-xs">
               #{event.passageNumber}/{event.totalPassages}
             </Badge>
             <h4 className="font-bold text-green-800 text-lg">{event.projectName}</h4>

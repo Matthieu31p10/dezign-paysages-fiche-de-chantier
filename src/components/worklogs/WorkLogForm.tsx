@@ -91,7 +91,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
             <WasteManagementSection />
             
             {selectedProject && (
-              <div className="bg-white p-3 rounded-md border border-green-100">
+              <div className="bg-card p-3 rounded-md border border-border">
                 <ProjectInfoSection />
               </div>
             )}

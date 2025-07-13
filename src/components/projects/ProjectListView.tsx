@@ -42,7 +42,7 @@ const ProjectListView = ({ projects, onSelect }: ProjectListViewProps) => {
   };
   
   return (
-    <div className="border rounded-xl overflow-hidden bg-white shadow-sm">
+    <div className="border rounded-xl overflow-hidden bg-card shadow-sm">
       <Table>
         <TableHeader>
           <TableRow className="bg-gradient-to-r from-gray-50 to-gray-25 border-b">
