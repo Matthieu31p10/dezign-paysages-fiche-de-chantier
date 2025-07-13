@@ -275,23 +275,56 @@ export type Database = {
         Row: {
           active: boolean | null
           created_at: string | null
+          driving_license: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          employee_id: string | null
+          hire_date: string | null
+          hourly_rate: number | null
           id: string
           name: string
+          notes: string | null
+          phone: string | null
           position: string | null
+          skills: string[] | null
+          updated_at: string
         }
         Insert: {
           active?: boolean | null
           created_at?: string | null
+          driving_license?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_id?: string | null
+          hire_date?: string | null
+          hourly_rate?: number | null
           id?: string
           name: string
+          notes?: string | null
+          phone?: string | null
           position?: string | null
+          skills?: string[] | null
+          updated_at?: string
         }
         Update: {
           active?: boolean | null
           created_at?: string | null
+          driving_license?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_id?: string | null
+          hire_date?: string | null
+          hourly_rate?: number | null
           id?: string
           name?: string
+          notes?: string | null
+          phone?: string | null
           position?: string | null
+          skills?: string[] | null
+          updated_at?: string
         }
         Relationships: []
       }
