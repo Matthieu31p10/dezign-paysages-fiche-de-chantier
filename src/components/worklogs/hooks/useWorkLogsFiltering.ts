@@ -23,6 +23,11 @@ export const useWorkLogsFiltering = (workLogs: WorkLog[]) => {
   
   // Filter logs based on selected criteria
   const filteredLogs = workLogs.filter(log => {
+    // First, exclude blank worksheets from regular work logs
+    if (log.isBlankWorksheet === true) {
+      return false;
+    }
+    
     const logDate = new Date(log.date);
     const matchesProject = selectedProjectId === 'all' || log.projectId === selectedProjectId;
     const matchesYear = logDate.getFullYear() === selectedYear;

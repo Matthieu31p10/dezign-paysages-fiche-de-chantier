@@ -24,8 +24,8 @@ const BlankWorkSheets: React.FC = () => {
   const [selectedWorkLogId, setSelectedWorkLogId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   
-  // Filter only blank worksheets using our consistent helper function
-  const blankWorksheets = workLogs.filter(log => isBlankWorksheet(log.projectId));
+  // Filter only blank worksheets using the isBlankWorksheet property
+  const blankWorksheets = workLogs.filter(log => log.isBlankWorksheet === true);
   
   const handleCreateNew = () => {
     setEditingWorkLogId(null);
