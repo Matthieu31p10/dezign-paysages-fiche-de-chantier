@@ -13,8 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LogOut, User, Menu, CalendarDaysIcon } from 'lucide-react';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import CompanyLogo from '@/components/ui/company-logo';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MenuItem {
   path: string;
@@ -37,7 +37,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, signOut, isAuthenticated } = useAuth();
-  const isMobile = useIsMobile();
+  const { isMobile, isTablet } = useBreakpoint();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -97,29 +97,29 @@ const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 shadow-lg transition-all duration-300">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link 
               to="/" 
               className="flex items-center hover:opacity-80 transition-all duration-200 transform hover:scale-105"
             >
-              <CompanyLogo className="h-8 w-auto" />
+              <CompanyLogo className="h-6 w-auto sm:h-8" />
             </Link>
           </div>
 
-          {!isMobile && (
-            <nav className="flex items-center space-x-2">
+          {!isMobile && !isTablet && (
+            <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
               {filteredNavItems.map((item) => (
                 <Link 
                   key={item.path} 
                   to={item.path} 
                   className={getButtonStyles(item, isActive(item.path))}
                 >
-                  <span className="relative z-10 flex items-center">
+                  <span className="relative z-10 flex items-center text-xs xl:text-sm">
                     {item.label}
                     {item.path === '/schedule' && (
-                      <CalendarDaysIcon className="inline-block ml-1.5 w-4 h-4" />
+                      <CalendarDaysIcon className="inline-block ml-1 xl:ml-1.5 w-3 h-3 xl:w-4 xl:h-4" />
                     )}
                   </span>
                   {isActive(item.path) && (
@@ -130,15 +130,15 @@ const Header: React.FC = () => {
             </nav>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="relative rounded-full h-10 w-10 p-0 hover:bg-green-100 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                  className="relative rounded-full h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-green-100 transition-all duration-200 hover:scale-105 hover:shadow-md"
                 >
-                  <Avatar className="h-9 w-9 ring-2 ring-green-200 ring-offset-2 transition-all duration-200">
-                    <AvatarFallback className="bg-gradient-to-br from-green-100 to-green-50 text-green-700 font-semibold">
+                  <Avatar className="h-7 w-7 sm:h-9 sm:w-9 ring-2 ring-green-200 ring-offset-2 transition-all duration-200">
+                    <AvatarFallback className="bg-gradient-to-br from-green-100 to-green-50 text-green-700 font-semibold text-xs sm:text-sm">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
@@ -166,13 +166,13 @@ const Header: React.FC = () => {
                 <DropdownMenuSeparator />
                 
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="cursor-pointer">
+                  <Link to="/profile" className="cursor-pointer flex items-center">
                     <User className="mr-2 h-4 w-4" />
                     <span>Profil</span>
                   </Link>
                 </DropdownMenuItem>
                 
-                {isMobile && (
+                {(isMobile || isTablet) && (
                   <>
                     <DropdownMenuSeparator />
                     {filteredNavItems.map((item) => (
