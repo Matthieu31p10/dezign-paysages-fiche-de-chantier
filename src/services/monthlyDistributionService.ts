@@ -34,7 +34,9 @@ export const monthlyDistributionService = {
   },
 
   async saveDistribution(projectId: string, monthlyVisits: Record<string, number>): Promise<void> {
-    const { error } = await supabase
+    console.log('Tentative de sauvegarde pour projet:', projectId, 'avec données:', monthlyVisits);
+    
+    const { data, error } = await supabase
       .from('monthly_passage_distributions')
       .upsert({
         project_id: projectId,
@@ -42,7 +44,8 @@ export const monthlyDistributionService = {
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'project_id'
-      });
+      })
+      .select();
 
     if (error) {
       console.error('Error saving monthly distribution:', error);
