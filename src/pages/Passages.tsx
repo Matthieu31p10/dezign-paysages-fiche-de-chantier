@@ -279,7 +279,7 @@ const Passages = () => {
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">{getProjectName(passage.projectId)}</h3>
                           {selectedProjectId === 'all' && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-primary text-primary">
                               {getProjectName(passage.projectId)}
                             </Badge>
                           )}
