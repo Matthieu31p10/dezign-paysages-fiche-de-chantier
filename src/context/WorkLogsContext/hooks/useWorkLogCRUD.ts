@@ -57,8 +57,7 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
         // Insérer dans la table work_logs
         const workLogData = {
           ...commonData,
-          project_id: workLog.projectId || '',
-          is_blank_worksheet: false
+          project_id: workLog.projectId || ''
         };
         
         console.log('Inserting work log:', workLogData);
@@ -176,8 +175,7 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
           .from('work_logs')
           .update({
             ...updateData,
-            project_id: workLogToUpdate.projectId,
-            is_blank_worksheet: false
+            project_id: workLogToUpdate.projectId
           })
           .eq('id', id);
         error = result.error;
