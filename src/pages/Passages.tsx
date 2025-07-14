@@ -14,12 +14,13 @@ const Passages = () => {
   // Filtrer les projets actifs
   const activeProjects = projectInfos.filter(p => !p.isArchived);
 
-  // Filtrer les passages selon le projet sélectionné
+  // Filtrer les passages selon le projet sélectionné (seulement les fiches de suivi, pas les blank worksheets)
   const filteredPassages = useMemo(() => {
+    const realWorkLogs = workLogs.filter(log => !log.isBlankWorksheet);
     if (selectedProjectId === 'all') {
-      return workLogs;
+      return realWorkLogs;
     }
-    return workLogs.filter(log => log.projectId === selectedProjectId);
+    return realWorkLogs.filter(log => log.projectId === selectedProjectId);
   }, [workLogs, selectedProjectId]);
 
   // Trier les passages par date (plus récent en premier)
