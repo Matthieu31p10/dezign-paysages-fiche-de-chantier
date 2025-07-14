@@ -180,23 +180,47 @@ const Passages = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Écart depuis le dernier passage</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-start gap-3">
               {stats.daysSinceLastPassage !== null ? (
                 <>
-                  <Badge variant={getDaysBadgeVariant(stats.daysSinceLastPassage)}>
-                    {stats.daysSinceLastPassage} jour{stats.daysSinceLastPassage > 1 ? 's' : ''}
+                  <div className="flex items-center gap-3">
+                    <div className="text-4xl font-bold">
+                      {stats.daysSinceLastPassage}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-medium">
+                        jour{stats.daysSinceLastPassage > 1 ? 's' : ''}
+                      </span>
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <Badge 
+                    variant={getDaysBadgeVariant(stats.daysSinceLastPassage)} 
+                    className="text-sm px-3 py-1 animate-pulse"
+                  >
+                    {stats.daysSinceLastPassage === 0 ? "Aujourd'hui" : 
+                     stats.daysSinceLastPassage === 1 ? "Hier" : 
+                     stats.daysSinceLastPassage <= 7 ? "Récent" :
+                     stats.daysSinceLastPassage <= 30 ? "À surveiller" :
+                     "Attention requise"}
                   </Badge>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
                 </>
               ) : (
-                <span className="text-muted-foreground">-</span>
+                <span className="text-2xl font-bold text-muted-foreground">-</span>
               )}
             </div>
+            {/* Indicateur visuel selon l'urgence */}
+            {stats.daysSinceLastPassage !== null && stats.daysSinceLastPassage > 30 && (
+              <div className="absolute top-0 right-0 w-2 h-full bg-destructive opacity-20"></div>
+            )}
+            {stats.daysSinceLastPassage !== null && stats.daysSinceLastPassage > 7 && stats.daysSinceLastPassage <= 30 && (
+              <div className="absolute top-0 right-0 w-2 h-full bg-yellow-500 opacity-20"></div>
+            )}
           </CardContent>
         </Card>
       </div>
