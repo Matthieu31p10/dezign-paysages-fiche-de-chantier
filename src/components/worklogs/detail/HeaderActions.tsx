@@ -17,7 +17,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ workLogId }) => {
   
   const handleEditClick = () => {
     console.log("Navigating to edit page for worklog:", workLogId);
-    navigate(`/worklogs/edit/${workLogId}`);
+    navigate(`/worklogs/${workLogId}/edit`);
   };
   
   return (
