@@ -110,7 +110,7 @@ const AppBreadcrumbs: React.FC = () => {
             const IconComponent = breadcrumb.icon;
             
             return (
-              <React.Fragment key={breadcrumb.path}>
+              <div key={breadcrumb.path}>
                 {/* Show collapsed items dropdown before the last items */}
                 {shouldCollapse && index === 1 && collapsedItems.length > 0 && (
                   <>
@@ -156,7 +156,7 @@ const AppBreadcrumbs: React.FC = () => {
                 </BreadcrumbItem>
                 
                 {!isLast && <BreadcrumbSeparator />}
-              </React.Fragment>
+              </div>
             );
           })}
         </BreadcrumbList>
