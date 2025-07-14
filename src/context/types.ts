@@ -1,4 +1,5 @@
 import { ProjectInfo, WorkLog, Team, AppSettings, User, UserRole, AuthState, Personnel, CustomTask, ClientConnection } from '@/types/models';
+import { SupabaseSettings } from '@/hooks/useSupabaseSettings';
 
 export interface ProjectsContextType {
   projectInfos: ProjectInfo[];
@@ -53,6 +54,14 @@ export interface SettingsContextType {
   updateClientConnection: (client: ClientConnection) => Promise<void>;
   deleteClientConnection: (id: string) => Promise<void>;
   getClientConnections: () => ClientConnection[];
+  // Supabase settings
+  supabaseSettings: SupabaseSettings;
+  saveSupabaseSettings: (settings: Partial<SupabaseSettings>) => Promise<SupabaseSettings>;
+  updateSetting: (key: keyof SupabaseSettings, value: any) => Promise<void>;
+  updateUserPreferences: (preferences: any) => Promise<void>;
+  updateAppConfiguration: (config: any) => Promise<void>;
+  updateNotificationPreferences: (preferences: any) => Promise<void>;
+  supabaseLoading: boolean;
 }
 
 export interface AuthContextType {

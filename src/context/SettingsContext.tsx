@@ -3,6 +3,7 @@ import { AppSettings, CustomTask, Personnel } from '@/types/models';
 import { SettingsContextType } from './types';
 import { toast } from 'sonner';
 import { useClientConnections } from '@/hooks/useClientConnections';
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -18,8 +19,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   const { clientConnections } = useClientConnections();
+  const { 
+    settings: supabaseSettings, 
+    saveSettings: saveSupabaseSettings,
+    updateSetting,
+    updateUserPreferences,
+    updateAppConfiguration,
+    updateNotificationPreferences,
+    loading: supabaseLoading 
+  } = useSupabaseSettings();
 
-  // Load settings from localStorage on mount (except clientConnections)
+  // Load settings from localStorage and Supabase
   useEffect(() => {
     const savedSettings = localStorage.getItem('appSettings');
     if (savedSettings) {
@@ -33,6 +43,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     }
   }, []);
+
+  // Sync with Supabase settings
+  useEffect(() => {
+    if (supabaseSettings && Object.keys(supabaseSettings).length > 0) {
+      setSettings(prev => ({
+        ...prev,
+        companyName: supabaseSettings.company_name || prev.companyName,
+        companyLogo: supabaseSettings.company_logo || prev.companyLogo,
+        loginBackgroundImage: supabaseSettings.login_background_image || prev.loginBackgroundImage,
+        // Add other mappings as needed
+      }));
+    }
+  }, [supabaseSettings]);
 
   // Update settings with clientConnections from Supabase
   useEffect(() => {
@@ -48,8 +71,25 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateSettings = async (newSettings: Partial<AppSettings>) => {
     // Don't allow updating clientConnections through this method
     const { clientConnections: _, ...settingsToUpdate } = newSettings;
+    
+    // Update local state
     setSettings(prev => ({ ...prev, ...settingsToUpdate }));
-    toast.success('Paramètres mis à jour');
+    
+    // Sync to Supabase
+    try {
+      const supabaseData: any = {};
+      if (settingsToUpdate.companyName) supabaseData.company_name = settingsToUpdate.companyName;
+      if (settingsToUpdate.companyLogo) supabaseData.company_logo = settingsToUpdate.companyLogo;
+      if (settingsToUpdate.loginBackgroundImage) supabaseData.login_background_image = settingsToUpdate.loginBackgroundImage;
+      
+      if (Object.keys(supabaseData).length > 0) {
+        await saveSupabaseSettings(supabaseData);
+      }
+    } catch (error) {
+      console.error('Error syncing settings to Supabase:', error);
+      // Keep local state updated even if Supabase sync fails
+      toast.success('Paramètres mis à jour localement');
+    }
   };
 
   const addCustomTask = async (taskName: string): Promise<CustomTask> => {
@@ -63,6 +103,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       customTasks: [...prev.customTasks, newTask]
     }));
 
+    // Sync to Supabase
+    try {
+      const currentTasks = supabaseSettings.app_configuration?.customTasks || [];
+      await updateAppConfiguration({ customTasks: [...currentTasks, newTask] });
+    } catch (error) {
+      console.error('Error syncing custom task to Supabase:', error);
+    }
+
     return newTask;
   };
 
@@ -71,6 +119,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ...prev,
       customTasks: prev.customTasks.filter(task => task.id !== id)
     }));
+
+    // Sync to Supabase
+    try {
+      const currentTasks = supabaseSettings.app_configuration?.customTasks || [];
+      const updatedTasks = currentTasks.filter((task: CustomTask) => task.id !== id);
+      await updateAppConfiguration({ customTasks: updatedTasks });
+    } catch (error) {
+      console.error('Error syncing custom task deletion to Supabase:', error);
+    }
   };
 
   const addPersonnel = async (name: string, position?: string): Promise<Personnel> => {
@@ -85,6 +142,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ...prev,
       personnel: [...prev.personnel, newPersonnel]
     }));
+
+    // Sync to Supabase
+    try {
+      const currentPersonnel = supabaseSettings.app_configuration?.personnel || [];
+      await updateAppConfiguration({ personnel: [...currentPersonnel, newPersonnel] });
+    } catch (error) {
+      console.error('Error syncing personnel to Supabase:', error);
+    }
 
     return newPersonnel;
   };
@@ -158,6 +223,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateClientConnection,
         deleteClientConnection,
         getClientConnections,
+        // Supabase settings methods
+        supabaseSettings,
+        saveSupabaseSettings,
+        updateSetting,
+        updateUserPreferences,
+        updateAppConfiguration,
+        updateNotificationPreferences,
+        supabaseLoading,
       }}
     >
       {children}

@@ -9,8 +9,9 @@ import LoginSettings from '@/components/settings/LoginSettings';
 import UserList from '@/components/settings/UserList';
 import AddUserDialog from '@/components/settings/AddUserDialog';
 import ClientConnectionsManagement from '@/components/settings/ClientConnectionsManagement';
-import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound, UserCheck, Bug } from 'lucide-react';
+import { UserCog, Users, LogIn, Building, ShieldCheck, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon } from 'lucide-react';
 import BackupRestoreSection from '@/components/settings/BackupRestoreSection';
+import AdvancedSettingsPanel from '@/components/settings/AdvancedSettingsPanel';
 import { DialogTrigger } from '@/components/ui/dialog';
 import TeamsManagement from '@/components/settings/TeamsManagement';
 import PersonnelManagement from '@/components/settings/PersonnelManagement';
@@ -34,7 +35,7 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="company">
-        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-8 lg:w-auto">
+        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-9 lg:w-auto">
           <TabsTrigger value="company" className="flex items-center gap-1.5">
             <Building className="h-4 w-4" />
             <span className="hidden sm:inline">Entreprise</span>
@@ -68,6 +69,11 @@ const Settings = () => {
           <TabsTrigger value="backup" className="flex items-center gap-1.5">
             <Database className="h-4 w-4" />
             <span className="hidden sm:inline">Sauvegarde</span>
+          </TabsTrigger>
+          
+          <TabsTrigger value="advanced" className="flex items-center gap-1.5">
+            <SettingsIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Avancé</span>
           </TabsTrigger>
           
           {process.env.NODE_ENV === 'development' && (
@@ -184,6 +190,10 @@ const Settings = () => {
         
         <TabsContent value="backup" className="space-y-4">
           <BackupRestoreSection />
+        </TabsContent>
+        
+        <TabsContent value="advanced" className="space-y-4">
+          <AdvancedSettingsPanel />
         </TabsContent>
         
         {process.env.NODE_ENV === 'development' && (

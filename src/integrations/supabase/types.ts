@@ -584,6 +584,8 @@ export type Database = {
       }
       settings: {
         Row: {
+          app_configuration: Json | null
+          auto_save_enabled: boolean | null
           company_address: string | null
           company_email: string | null
           company_logo: string | null
@@ -591,11 +593,21 @@ export type Database = {
           company_name: string | null
           company_phone: string | null
           created_at: string | null
+          default_break_time: string | null
+          default_work_end_time: string | null
+          default_work_start_time: string | null
+          hourly_rate: number | null
           id: string
           login_background_image: string | null
+          notification_preferences: Json | null
+          theme_preference: string | null
           updated_at: string | null
+          user_preferences: Json | null
+          vat_rate: string | null
         }
         Insert: {
+          app_configuration?: Json | null
+          auto_save_enabled?: boolean | null
           company_address?: string | null
           company_email?: string | null
           company_logo?: string | null
@@ -603,11 +615,21 @@ export type Database = {
           company_name?: string | null
           company_phone?: string | null
           created_at?: string | null
+          default_break_time?: string | null
+          default_work_end_time?: string | null
+          default_work_start_time?: string | null
+          hourly_rate?: number | null
           id?: string
           login_background_image?: string | null
+          notification_preferences?: Json | null
+          theme_preference?: string | null
           updated_at?: string | null
+          user_preferences?: Json | null
+          vat_rate?: string | null
         }
         Update: {
+          app_configuration?: Json | null
+          auto_save_enabled?: boolean | null
           company_address?: string | null
           company_email?: string | null
           company_logo?: string | null
@@ -615,9 +637,17 @@ export type Database = {
           company_name?: string | null
           company_phone?: string | null
           created_at?: string | null
+          default_break_time?: string | null
+          default_work_end_time?: string | null
+          default_work_start_time?: string | null
+          hourly_rate?: number | null
           id?: string
           login_background_image?: string | null
+          notification_preferences?: Json | null
+          theme_preference?: string | null
           updated_at?: string | null
+          user_preferences?: Json | null
+          vat_rate?: string | null
         }
         Relationships: []
       }
