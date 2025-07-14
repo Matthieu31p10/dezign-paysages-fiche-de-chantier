@@ -17,7 +17,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { path: '/projects', label: 'Chantiers', color: 'emerald' },
-  { path: '/schedule', label: 'Agenda', color: 'green' },
+  { path: '/passages', label: 'Passages', color: 'green' },
   { path: '/worklogs', label: 'Suivis', color: 'teal' },
   { path: '/blank-worksheets', label: 'Fiches vierges', requiredModule: 'blanksheets', color: 'lime' },
   { path: '/reports', label: 'Rapports', color: 'forest' },
@@ -103,7 +103,7 @@ const Header: React.FC = () => {
                 >
                   <span className="relative z-10 flex items-center">
                     {item.label}
-                    {item.path === '/schedule' && (
+                    {item.path === '/passages' && (
                       <CalendarDaysIcon className="inline-block ml-1.5 w-4 h-4" />
                     )}
                   </span>
@@ -155,7 +155,7 @@ const Header: React.FC = () => {
                           }`}
                         >
                           {item.label}
-                          {item.path === '/schedule' && (
+                          {item.path === '/passages' && (
                             <CalendarDaysIcon className="ml-auto h-4 w-4" />
                           )}
                         </Link>

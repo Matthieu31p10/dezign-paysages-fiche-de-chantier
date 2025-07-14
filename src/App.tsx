@@ -22,7 +22,7 @@ import { Toaster as SonnerToaster } from 'sonner';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
-import Schedule from './pages/Schedule';
+import Passages from './pages/Passages';
 import Index from './pages/Index';
 import './App.css';
 
@@ -46,8 +46,8 @@ function App() {
               <Route path="projects/:id" element={<ProjectDetail />} />
               <Route path="projects/:id/edit" element={<ProjectEdit />} />
               
-              {/* Planning/Schedule route */}
-              <Route path="schedule" element={<Schedule />} />
+              {/* Passages route */}
+              <Route path="passages" element={<Passages />} />
               
               <Route path="worklogs" element={<WorkLogs />} />
               <Route path="worklogs/new" element={<WorkLogNew />} />
