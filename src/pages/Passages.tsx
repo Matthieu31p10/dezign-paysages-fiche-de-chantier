@@ -1,16 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Search } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const Passages = () => {
   const { projectInfos, workLogs, teams } = useApp();
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
-  const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [projectSearch, setProjectSearch] = useState<string>('');
+  const [teamSearch, setTeamSearch] = useState<string>('');
 
   // Filtrer les projets actifs
   const activeProjects = projectInfos.filter(p => !p.isArchived);
@@ -18,31 +18,41 @@ const Passages = () => {
   // Utiliser les équipes définies dans les paramètres
   const activeTeams = teams.filter(team => team.name && team.name.trim() !== '');
 
-  // Filtrer les passages selon le projet et l'équipe sélectionnés (seulement les fiches de suivi, pas les blank worksheets)
+  // Filtrer les passages selon la recherche projet et équipe (seulement les fiches de suivi, pas les blank worksheets)
   const filteredPassages = useMemo(() => {
+    // Filtrer d'abord pour exclure les blank worksheets
     let realWorkLogs = workLogs.filter(log => !log.isBlankWorksheet);
     
-    // Filtrer par projet
-    if (selectedProjectId !== 'all') {
-      realWorkLogs = realWorkLogs.filter(log => log.projectId === selectedProjectId);
+    // Filtrer par recherche de projet
+    if (projectSearch.trim()) {
+      realWorkLogs = realWorkLogs.filter(log => {
+        const project = projectInfos.find(p => p.id === log.projectId);
+        return project?.name.toLowerCase().includes(projectSearch.toLowerCase());
+      });
     }
     
-    // Filtrer par équipe - chercher l'équipe dans les projets assignés à cette équipe
-    if (selectedTeam !== 'all') {
-      const selectedTeamData = teams.find(t => t.id === selectedTeam);
-      if (selectedTeamData) {
-        // On filtre les work logs qui appartiennent à des projets assignés à cette équipe
-        // Pour l'instant on garde la logique existante avec le personnel
-        realWorkLogs = realWorkLogs.filter(log => 
+    // Filtrer par recherche d'équipe
+    if (teamSearch.trim()) {
+      realWorkLogs = realWorkLogs.filter(log => {
+        // Chercher dans le personnel ou dans les équipes assignées au projet
+        const matchPersonnel = log.personnel && log.personnel.some(person => 
+          person.toLowerCase().includes(teamSearch.toLowerCase())
+        );
+        
+        // Chercher aussi dans les équipes assignées au projet
+        const matchTeam = teams.some(team => 
+          team.name.toLowerCase().includes(teamSearch.toLowerCase()) &&
           log.personnel && log.personnel.some(person => 
-            selectedTeamData.name === person || person.includes(selectedTeamData.name)
+            person.toLowerCase().includes(team.name.toLowerCase())
           )
         );
-      }
+        
+        return matchPersonnel || matchTeam;
+      });
     }
     
     return realWorkLogs;
-  }, [workLogs, selectedProjectId, selectedTeam, teams]);
+  }, [workLogs, projectSearch, teamSearch, teams, projectInfos]);
 
   // Trier les passages par date (plus récent en premier)
   const sortedPassages = useMemo(() => {
@@ -123,39 +133,30 @@ const Passages = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block text-foreground">Chantier</label>
-              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                <SelectTrigger className="bg-background border-border">
-                  <SelectValue placeholder="Choisir un chantier" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">Tous les chantiers</SelectItem>
-                  {activeProjects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-1 text-foreground">
+                <Search className="h-4 w-4" />
+                Rechercher un chantier
+              </label>
+              <Input
+                type="text"
+                placeholder="Nom du chantier..."
+                value={projectSearch}
+                onChange={(e) => setProjectSearch(e.target.value)}
+                className="bg-background border-border"
+              />
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block flex items-center gap-1 text-foreground">
                 <Users className="h-4 w-4" />
-                Équipe
+                Rechercher une équipe
               </label>
-              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                <SelectTrigger className="bg-background border-border">
-                  <SelectValue placeholder="Choisir une équipe" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border">
-                  <SelectItem value="all">Toutes les équipes</SelectItem>
-                  {activeTeams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                type="text"
+                placeholder="Nom de l'équipe..."
+                value={teamSearch}
+                onChange={(e) => setTeamSearch(e.target.value)}
+                className="bg-background border-border"
+              />
             </div>
           </div>
         </CardContent>
@@ -252,9 +253,9 @@ const Passages = () => {
             Historique des passages
           </CardTitle>
           <CardDescription>
-            {selectedProjectId === 'all' 
-              ? 'Tous les passages effectués sur l\'ensemble des chantiers'
-              : `Passages effectués sur ${getProjectName(selectedProjectId)}`
+            {projectSearch || teamSearch
+              ? `Passages filtrés ${projectSearch ? `pour "${projectSearch}"` : ''} ${teamSearch ? `équipe "${teamSearch}"` : ''}`
+              : 'Tous les passages effectués sur l\'ensemble des chantiers'
             }
           </CardDescription>
         </CardHeader>
@@ -262,7 +263,12 @@ const Passages = () => {
           {sortedPassages.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Aucun passage enregistré pour ce chantier</p>
+              <p>
+                {projectSearch || teamSearch
+                  ? 'Aucun passage trouvé pour ces critères de recherche'
+                  : 'Aucun passage enregistré'
+                }
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -277,11 +283,9 @@ const Passages = () => {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-foreground">{getProjectName(passage.projectId)}</h3>
-                          {selectedProjectId === 'all' && (
-                            <Badge variant="outline" className="text-xs border-primary text-primary">
-                              {getProjectName(passage.projectId)}
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className="text-xs border-primary text-primary">
+                            {getProjectName(passage.projectId)}
+                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {formatPassageDate(passage.date)}
