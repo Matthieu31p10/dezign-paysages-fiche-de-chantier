@@ -8,23 +8,15 @@ import { format, differenceInDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const Passages = () => {
-  const { projectInfos, workLogs } = useApp();
+  const { projectInfos, workLogs, teams } = useApp();
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
 
   // Filtrer les projets actifs
   const activeProjects = projectInfos.filter(p => !p.isArchived);
 
-  // Extraire toutes les équipes uniques des work logs
-  const allTeams = useMemo(() => {
-    const teams = new Set<string>();
-    workLogs.forEach(log => {
-      if (!log.isBlankWorksheet && log.personnel) {
-        log.personnel.forEach(person => teams.add(person));
-      }
-    });
-    return Array.from(teams).sort();
-  }, [workLogs]);
+  // Utiliser les équipes définies dans les paramètres
+  const activeTeams = teams.filter(team => team.name && team.name.trim() !== '');
 
   // Filtrer les passages selon le projet et l'équipe sélectionnés (seulement les fiches de suivi, pas les blank worksheets)
   const filteredPassages = useMemo(() => {
@@ -35,15 +27,22 @@ const Passages = () => {
       realWorkLogs = realWorkLogs.filter(log => log.projectId === selectedProjectId);
     }
     
-    // Filtrer par équipe
+    // Filtrer par équipe - chercher l'équipe dans les projets assignés à cette équipe
     if (selectedTeam !== 'all') {
-      realWorkLogs = realWorkLogs.filter(log => 
-        log.personnel && log.personnel.includes(selectedTeam)
-      );
+      const selectedTeamData = teams.find(t => t.id === selectedTeam);
+      if (selectedTeamData) {
+        // On filtre les work logs qui appartiennent à des projets assignés à cette équipe
+        // Pour l'instant on garde la logique existante avec le personnel
+        realWorkLogs = realWorkLogs.filter(log => 
+          log.personnel && log.personnel.some(person => 
+            selectedTeamData.name === person || person.includes(selectedTeamData.name)
+          )
+        );
+      }
     }
     
     return realWorkLogs;
-  }, [workLogs, selectedProjectId, selectedTeam]);
+  }, [workLogs, selectedProjectId, selectedTeam, teams]);
 
   // Trier les passages par date (plus récent en premier)
   const sortedPassages = useMemo(() => {
@@ -150,9 +149,9 @@ const Passages = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
                   <SelectItem value="all">Toutes les équipes</SelectItem>
-                  {allTeams.map((team) => (
-                    <SelectItem key={team} value={team}>
-                      {team}
+                  {activeTeams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
