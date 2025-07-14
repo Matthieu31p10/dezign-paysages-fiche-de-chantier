@@ -63,6 +63,15 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				passage: {
+					success: 'hsl(var(--passage-success))',
+					'success-light': 'hsl(var(--passage-success-light))',
+					recent: 'hsl(var(--passage-recent))',
+					'recent-light': 'hsl(var(--passage-recent-light))',
+					warning: 'hsl(var(--passage-warning))',
+					'warning-light': 'hsl(var(--passage-warning-light))',
+					accent: 'hsl(var(--passage-accent))'
+				},
 				brand: {
 					50: '#ecfdf5',
 					100: '#d1fae5',
