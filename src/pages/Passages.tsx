@@ -98,25 +98,25 @@ const Passages = () => {
   };
 
   const getPassageCardStyle = (days: number) => {
-    if (days === 0) return 'border-l-4 border-l-passage-success bg-passage-success-light';
-    if (days <= 7) return 'border-l-4 border-l-passage-recent bg-passage-recent-light';
-    if (days <= 30) return 'border-l-4 border-l-passage-warning bg-passage-warning-light';
-    return 'border-l-4 border-l-destructive bg-red-50';
+    if (days === 0) return 'border-l-4 border-l-passage-success bg-passage-success/5';
+    if (days <= 7) return 'border-l-4 border-l-passage-recent bg-passage-recent/5';
+    if (days <= 30) return 'border-l-4 border-l-passage-warning bg-passage-warning/5';
+    return 'border-l-4 border-l-destructive bg-destructive/5';
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Passages</h1>
-        <p className="text-gray-600 mt-2">
+      <div className="text-center py-6">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Passages</h1>
+        <p className="text-muted-foreground">
           Visualisez les passages effectués et leur fréquence
         </p>
       </div>
 
       {/* Filtres */}
-      <Card className="bg-gradient-to-br from-passage-accent via-green-50 to-passage-success-light border-passage-accent">
+      <Card className="bg-background border shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-passage-success">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <MapPin className="h-5 w-5" />
             Filtres
           </CardTitle>
@@ -124,12 +124,12 @@ const Passages = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Chantier</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Chantier</label>
               <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                <SelectTrigger className="border-passage-accent focus:ring-passage-success">
+                <SelectTrigger className="bg-background border-border">
                   <SelectValue placeholder="Choisir un chantier" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-border">
                   <SelectItem value="all">Tous les chantiers</SelectItem>
                   {activeProjects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
@@ -140,15 +140,15 @@ const Passages = () => {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block flex items-center gap-1">
+              <label className="text-sm font-medium mb-2 block flex items-center gap-1 text-foreground">
                 <Users className="h-4 w-4" />
                 Équipe
               </label>
               <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                <SelectTrigger className="border-passage-accent focus:ring-passage-success">
+                <SelectTrigger className="bg-background border-border">
                   <SelectValue placeholder="Choisir une équipe" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border-border">
                   <SelectItem value="all">Toutes les équipes</SelectItem>
                   {allTeams.map((team) => (
                     <SelectItem key={team} value={team}>
@@ -164,21 +164,21 @@ const Passages = () => {
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-passage-success-light to-green-50 border-passage-success/30">
+        <Card className="bg-background border shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-passage-success">Total des passages</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total des passages</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-passage-success">{stats.totalPassages}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.totalPassages}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-passage-recent-light to-green-25 border-passage-recent/30">
+        <Card className="bg-background border shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-passage-recent">Dernier passage</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Dernier passage</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-passage-recent">
+            <div className="text-2xl font-bold text-foreground">
               {stats.lastPassageDate 
                 ? format(stats.lastPassageDate, 'd MMM yyyy', { locale: fr })
                 : 'Aucun'
@@ -187,9 +187,9 @@ const Passages = () => {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-passage-accent border-green-300">
+        <Card className="relative overflow-hidden bg-background border shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-green-700">Écart depuis le dernier passage</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Écart depuis le dernier passage</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-start gap-3">
@@ -197,27 +197,27 @@ const Passages = () => {
                 <>
                   <div className="flex items-center gap-3">
                     <div className={`text-4xl font-bold ${
-                      stats.daysSinceLastPassage === 0 ? 'text-passage-success' :
-                      stats.daysSinceLastPassage <= 7 ? 'text-passage-recent' :
-                      stats.daysSinceLastPassage <= 30 ? 'text-passage-warning' :
-                      'text-destructive'
+                      stats.daysSinceLastPassage === 0 ? 'text-green-600' :
+                      stats.daysSinceLastPassage <= 7 ? 'text-blue-600' :
+                      stats.daysSinceLastPassage <= 30 ? 'text-orange-600' :
+                      'text-red-600'
                     }`}>
                       {stats.daysSinceLastPassage}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-lg font-medium text-green-700">
+                      <span className="text-lg font-medium text-foreground">
                         jour{stats.daysSinceLastPassage > 1 ? 's' : ''}
                       </span>
-                      <Clock className="h-5 w-5 text-green-600" />
+                      <Clock className="h-5 w-5 text-muted-foreground" />
                     </div>
                   </div>
                   <Badge 
                     variant={getDaysBadgeVariant(stats.daysSinceLastPassage)} 
-                    className={`text-sm px-3 py-1 animate-pulse ${
-                      stats.daysSinceLastPassage === 0 ? 'bg-passage-success text-white' :
-                      stats.daysSinceLastPassage <= 7 ? 'bg-passage-recent text-white' :
-                      stats.daysSinceLastPassage <= 30 ? 'bg-passage-warning text-white' :
-                      'bg-destructive text-white'
+                    className={`text-sm px-3 py-1 ${
+                      stats.daysSinceLastPassage === 0 ? 'bg-green-600 text-white' :
+                      stats.daysSinceLastPassage <= 7 ? 'bg-blue-600 text-white' :
+                      stats.daysSinceLastPassage <= 30 ? 'bg-orange-600 text-white' :
+                      'bg-red-600 text-white'
                     }`}
                   >
                     {stats.daysSinceLastPassage === 0 ? "Aujourd'hui" : 
@@ -233,22 +233,22 @@ const Passages = () => {
             </div>
             {/* Indicateur visuel selon l'urgence */}
             {stats.daysSinceLastPassage !== null && stats.daysSinceLastPassage > 30 && (
-              <div className="absolute top-0 right-0 w-2 h-full bg-destructive opacity-20"></div>
+              <div className="absolute top-0 right-0 w-2 h-full bg-red-500 opacity-30"></div>
             )}
             {stats.daysSinceLastPassage !== null && stats.daysSinceLastPassage > 7 && stats.daysSinceLastPassage <= 30 && (
-              <div className="absolute top-0 right-0 w-2 h-full bg-passage-warning opacity-20"></div>
+              <div className="absolute top-0 right-0 w-2 h-full bg-orange-500 opacity-30"></div>
             )}
             {stats.daysSinceLastPassage !== null && stats.daysSinceLastPassage <= 7 && (
-              <div className="absolute top-0 right-0 w-2 h-full bg-passage-success opacity-20"></div>
+              <div className="absolute top-0 right-0 w-2 h-full bg-green-500 opacity-30"></div>
             )}
           </CardContent>
         </Card>
       </div>
 
       {/* Liste des passages */}
-      <Card className="bg-gradient-to-br from-green-25 to-passage-accent border-green-200">
+      <Card className="bg-background border shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-passage-success">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Calendar className="h-5 w-5" />
             Historique des passages
           </CardTitle>
@@ -273,11 +273,11 @@ const Passages = () => {
                 const daysAgo = differenceInDays(today, passageDate);
                 
                 return (
-                  <div key={passage.id} className={`border rounded-lg p-4 hover:bg-passage-success-light/50 transition-all duration-300 hover:shadow-md ${getPassageCardStyle(daysAgo)}`}>
+                  <div key={passage.id} className={`border border-border rounded-lg p-4 bg-background hover:bg-muted/50 transition-all duration-300 hover:shadow-md ${getPassageCardStyle(daysAgo)}`}>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{getProjectName(passage.projectId)}</h3>
+                          <h3 className="font-medium text-foreground">{getProjectName(passage.projectId)}</h3>
                           {selectedProjectId === 'all' && (
                             <Badge variant="outline" className="text-xs border-primary text-primary">
                               {getProjectName(passage.projectId)}
@@ -297,17 +297,17 @@ const Passages = () => {
                         <Badge 
                           variant={getDaysBadgeVariant(daysAgo)}
                           className={
-                            daysAgo === 0 ? 'bg-passage-success text-white' :
-                            daysAgo <= 7 ? 'bg-passage-recent text-white' :
-                            daysAgo <= 30 ? 'bg-passage-warning text-white' :
-                            'bg-destructive text-white'
+                            daysAgo === 0 ? 'bg-green-600 text-white' :
+                            daysAgo <= 7 ? 'bg-blue-600 text-white' :
+                            daysAgo <= 30 ? 'bg-orange-600 text-white' :
+                            'bg-red-600 text-white'
                           }
                         >
                           {daysAgo === 0 ? "Aujourd'hui" : 
                            daysAgo === 1 ? "Hier" : 
                            `Il y a ${daysAgo} jours`}
                         </Badge>
-                        <div className="text-sm text-passage-success font-medium">
+                        <div className="text-sm text-foreground font-medium">
                           {passage.timeTracking?.totalHours || passage.duration || 0}h
                         </div>
                       </div>
