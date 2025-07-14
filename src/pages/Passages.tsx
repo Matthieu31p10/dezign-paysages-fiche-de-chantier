@@ -3,25 +3,47 @@ import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const Passages = () => {
   const { projectInfos, workLogs } = useApp();
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
+  const [selectedTeam, setSelectedTeam] = useState<string>('all');
 
   // Filtrer les projets actifs
   const activeProjects = projectInfos.filter(p => !p.isArchived);
 
-  // Filtrer les passages selon le projet sélectionné (seulement les fiches de suivi, pas les blank worksheets)
+  // Extraire toutes les équipes uniques des work logs
+  const allTeams = useMemo(() => {
+    const teams = new Set<string>();
+    workLogs.forEach(log => {
+      if (!log.isBlankWorksheet && log.personnel) {
+        log.personnel.forEach(person => teams.add(person));
+      }
+    });
+    return Array.from(teams).sort();
+  }, [workLogs]);
+
+  // Filtrer les passages selon le projet et l'équipe sélectionnés (seulement les fiches de suivi, pas les blank worksheets)
   const filteredPassages = useMemo(() => {
-    const realWorkLogs = workLogs.filter(log => !log.isBlankWorksheet);
-    if (selectedProjectId === 'all') {
-      return realWorkLogs;
+    let realWorkLogs = workLogs.filter(log => !log.isBlankWorksheet);
+    
+    // Filtrer par projet
+    if (selectedProjectId !== 'all') {
+      realWorkLogs = realWorkLogs.filter(log => log.projectId === selectedProjectId);
     }
-    return realWorkLogs.filter(log => log.projectId === selectedProjectId);
-  }, [workLogs, selectedProjectId]);
+    
+    // Filtrer par équipe
+    if (selectedTeam !== 'all') {
+      realWorkLogs = realWorkLogs.filter(log => 
+        log.personnel && log.personnel.includes(selectedTeam)
+      );
+    }
+    
+    return realWorkLogs;
+  }, [workLogs, selectedProjectId, selectedTeam]);
 
   // Trier les passages par date (plus récent en premier)
   const sortedPassages = useMemo(() => {
@@ -84,29 +106,51 @@ const Passages = () => {
         </p>
       </div>
 
-      {/* Filtre par projet */}
+      {/* Filtres */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
-            Sélection du chantier
+            Filtres
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="w-full max-w-md">
-            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choisir un chantier" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les chantiers</SelectItem>
-                {activeProjects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Chantier</label>
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir un chantier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les chantiers</SelectItem>
+                  {activeProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                Équipe
+              </label>
+              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir une équipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les équipes</SelectItem>
+                  {allTeams.map((team) => (
+                    <SelectItem key={team} value={team}>
+                      {team}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
