@@ -40,7 +40,7 @@ export const PassageFilters: React.FC<PassageFiltersProps> = ({
                 <SelectValue placeholder="Sélectionner un chantier" />
               </SelectTrigger>
               <SelectContent className="bg-background border-border">
-                <SelectItem value="">Tous les chantiers</SelectItem>
+                <SelectItem value="all">Tous les chantiers</SelectItem>
                 {activeProjects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
@@ -59,7 +59,7 @@ export const PassageFilters: React.FC<PassageFiltersProps> = ({
                 <SelectValue placeholder="Sélectionner une équipe" />
               </SelectTrigger>
               <SelectContent className="bg-background border-border">
-                <SelectItem value="">Toutes les équipes</SelectItem>
+                <SelectItem value="all">Toutes les équipes</SelectItem>
                 {activeTeams.map((team) => (
                   <SelectItem key={team.id} value={team.name}>
                     {team.name}

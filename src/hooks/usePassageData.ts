@@ -40,12 +40,12 @@ export const usePassageData = ({
     let realWorkLogs = workLogs.filter(log => !log.isBlankWorksheet);
     
     // Filtrer par projet sélectionné
-    if (selectedProject) {
+    if (selectedProject && selectedProject !== 'all') {
       realWorkLogs = realWorkLogs.filter(log => log.projectId === selectedProject);
     }
     
     // Filtrer par équipe sélectionnée
-    if (selectedTeam) {
+    if (selectedTeam && selectedTeam !== 'all') {
       realWorkLogs = realWorkLogs.filter(log => {
         // Chercher dans le personnel ou dans les équipes assignées au projet
         const matchPersonnel = log.personnel && log.personnel.some(person => 
