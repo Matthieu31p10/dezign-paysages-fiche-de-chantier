@@ -56,6 +56,13 @@ export type Database = {
             referencedRelation: "blank_worksheets"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_blank_worksheet_consumables_worksheet_id"
+            columns: ["blank_worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "blank_worksheets"
+            referencedColumns: ["id"]
+          },
         ]
       }
       blank_worksheets: {
@@ -140,7 +147,15 @@ export type Database = {
           waste_management?: string | null
           water_consumption?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_blank_worksheets_linked_project_id"
+            columns: ["linked_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_connections: {
         Row: {
@@ -269,7 +284,15 @@ export type Database = {
           project_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_monthly_passage_distributions_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       personnel: {
         Row: {
@@ -395,7 +418,15 @@ export type Database = {
           reason?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_project_day_locks_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_documents: {
         Row: {
@@ -461,6 +492,20 @@ export type Database = {
           team_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_project_teams_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_project_teams_team_id"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_teams_project_id_fkey"
             columns: ["project_id"]
