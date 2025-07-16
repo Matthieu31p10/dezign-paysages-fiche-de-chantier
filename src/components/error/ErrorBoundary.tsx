@@ -123,13 +123,5 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Version hook pour les composants fonctionnels
-export const useErrorHandler = () => {
-  const handleError = (error: Error, context?: Record<string, unknown>) => {
-    ErrorLogger.log(error, 'high', context);
-  };
-
-  return { handleError };
-};
 
 export default ErrorBoundary;
