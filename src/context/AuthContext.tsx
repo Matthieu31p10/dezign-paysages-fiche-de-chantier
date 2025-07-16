@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, AuthState, UserRole } from '@/types/models';
 import { AuthContextType } from './types';
 
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('authState', JSON.stringify(auth));
   }, [auth]);
 
-  const login = (username: string, password: string): boolean => {
+  const login = useCallback((username: string, password: string): boolean => {
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
       setAuth({
@@ -58,15 +58,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     }
     return false;
-  };
+  }, [users]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setAuth({
       isAuthenticated: false,
       currentUser: null
     });
     localStorage.removeItem('authState');
-  };
+  }, []);
 
   const getCurrentUser = (): User | null => {
     return auth.currentUser;

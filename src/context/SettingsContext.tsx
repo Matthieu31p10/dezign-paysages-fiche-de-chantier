@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AppSettings, CustomTask, Personnel } from '@/types/models';
 import { SettingsContextType } from './types';
 import { toast } from 'sonner';
@@ -74,7 +74,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('appSettings', JSON.stringify(settingsToSave));
   }, [settings]);
 
-  const updateSettings = async (newSettings: Partial<AppSettings>) => {
+  const updateSettings = useCallback(async (newSettings: Partial<AppSettings>) => {
     // Don't allow updating clientConnections through this method
     const { clientConnections: _, ...settingsToUpdate } = newSettings;
     
@@ -96,9 +96,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Keep local state updated even if Supabase sync fails
       toast.success('Paramètres mis à jour localement');
     }
-  };
+  }, [saveSupabaseSettings]);
 
-  const addCustomTask = async (taskName: string): Promise<CustomTask> => {
+  const addCustomTask = useCallback(async (taskName: string): Promise<CustomTask> => {
     const newTask: CustomTask = {
       id: crypto.randomUUID(),
       name: taskName
@@ -118,7 +118,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     return newTask;
-  };
+  }, [supabaseSettings.app_configuration?.customTasks, updateAppConfiguration]);
 
   const deleteCustomTask = async (id: string) => {
     setSettings(prev => ({

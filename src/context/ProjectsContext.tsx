@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { ProjectsContextType } from './types';
 import { toast } from 'sonner';
@@ -33,7 +33,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetchProjects();
   }, []);
 
-  const addProjectInfo = async (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
+  const addProjectInfo = useCallback(async (projectInfo: Omit<ProjectInfo, 'id' | 'createdAt'>) => {
     const newProjectInfo: ProjectInfo = {
       ...projectInfo,
       id: crypto.randomUUID(),
@@ -51,7 +51,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       toast.error('Erreur lors de la création du projet');
       throw error;
     }
-  };
+  }, [projectInfos]);
 
   const updateProjectInfo = async (projectInfo: ProjectInfo) => {
     const oldProject = projectInfos.find(p => p.id === projectInfo.id);
