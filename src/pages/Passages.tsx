@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { PassageFilters } from '@/components/passages/PassageFilters';
 import { PassageStats } from '@/components/passages/PassageStats';
-import { PassageList } from '@/components/passages/PassageList';
+import { PassageViewTabs } from '@/components/passages/PassageViewTabs';
 import { usePassageData } from '@/hooks/usePassageData';
 
 const Passages = () => {
@@ -42,7 +42,10 @@ const Passages = () => {
         daysSinceLastPassage={stats.daysSinceLastPassage}
       />
 
-      <PassageList
+      <PassageViewTabs
+        workLogs={workLogs}
+        projectInfos={projectInfos}
+        teams={teams}
         sortedPassages={sortedPassages}
         selectedProject={selectedProject}
         selectedTeam={selectedTeam}
