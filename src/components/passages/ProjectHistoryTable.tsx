@@ -113,10 +113,10 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
 
   const getDaysSinceBadgeColor = (days: number | null) => {
     if (days === null) return 'secondary';
-    if (days <= 3) return 'success';
-    if (days <= 7) return 'default';
-    if (days <= 30) return 'warning';
-    if (days <= 60) return 'danger';
+    if (days <= 8) return 'success';
+    if (days <= 13) return 'secondary';
+    if (days <= 15) return 'warning';
+    if (days > 20) return 'danger';
     return 'destructive';
   };
 
