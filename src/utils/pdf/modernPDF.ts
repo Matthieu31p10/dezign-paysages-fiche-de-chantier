@@ -39,60 +39,96 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   // Get theme
   const theme = typeof themeInput === 'string' 
     ? getTheme(themeInput) 
-    : themeInput;
+    : themeInput || getTheme();
 
-  // Create PDF document
+  // Create PDF document optimized for A4 portrait
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
+    compress: true
   });
 
-  // Initialize page coordinates
-  let y = 20;
+  // A4 dimensions: 210mm x 297mm
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const margins = { top: 15, bottom: 15, left: 15, right: 15 };
+  const contentWidth = pageWidth - margins.left - margins.right;
 
-  // Add company and project header
-  y = drawHeaderSection(doc, data, 20, y, theme);
+  // Initialize page coordinates with optimized margins
+  let y = margins.top;
+
+  // Déterminer si c'est une fiche vierge
+  const isBlankWorksheet = workLog.projectId?.startsWith('blank-') || workLog.projectId?.startsWith('DZFV');
   
-  // Add info boxes (date, total hours, etc)
-  if (pdfOptions.includeContactInfo !== false) {
-    y = drawInfoBoxesSection(doc, data, 20, y, 170);
+  // Titre principal uniforme
+  doc.setFont(theme.fonts.title.family, theme.fonts.title.style);
+  doc.setFontSize(16);
+  doc.setTextColor(theme.colors.primary[0], theme.colors.primary[1], theme.colors.primary[2]);
+  const title = isBlankWorksheet ? 'FICHE VIERGE D\'INTERVENTION' : 'FICHE DE SUIVI D\'INTERVENTION';
+  doc.text(title, pageWidth / 2, y + 5, { align: 'center' });
+  y += 15;
+
+  // Add company and project header with optimized spacing
+  y = drawHeaderSection(doc, data, margins.left, y, theme);
+  
+  // Vérifier si nouvelle page nécessaire
+  if (y > pageHeight - 50) {
+    doc.addPage();
+    y = margins.top;
   }
   
-  // Add project details
+  // Add info boxes (date, total hours, etc) with full content width
+  if (pdfOptions.includeContactInfo !== false) {
+    y = drawInfoBoxesSection(doc, data, margins.left, y, contentWidth);
+  }
+  
+  // Add project details with consistent layout
   y = drawDetailsSection(doc, workLog, project, y, theme);
   
-  // Add personnel section
-  if (pdfOptions.includePersonnel !== false && workLog.personnel?.length) {
-    y = drawPersonnelSection(doc, data, 20, y);
+  // Vérifier si nouvelle page nécessaire
+  if (y > pageHeight - 80) {
+    doc.addPage();
+    y = margins.top;
   }
   
-  // Add tasks section
+  // Add personnel section with optimized spacing
+  if (pdfOptions.includePersonnel !== false && workLog.personnel?.length) {
+    y = drawPersonnelSection(doc, data, margins.left, y);
+  }
+  
+  // Add tasks section with full content width
   if (pdfOptions.includeTasks !== false && (workLog.tasks?.length || customTasks?.length)) {
-    y = drawTasksSection(doc, data, 20, y, doc.internal.pageSize.width - 40, 170);
+    y = drawTasksSection(doc, data, margins.left, y, contentWidth, contentWidth);
   }
   
   // Add watering section for water consumption
   if (pdfOptions.includeWatering !== false && workLog.waterConsumption) {
-    y = drawWateringSection(doc, data, 20, y, 170);
+    y = drawWateringSection(doc, data, margins.left, y, contentWidth);
   }
   
-  // Add notes section
+  // Add notes section with better formatting
   if (pdfOptions.includeNotes !== false && workLog.notes) {
-    y = drawNotesSection(doc, data, 20, y, 170);
+    y = drawNotesSection(doc, data, margins.left, y, contentWidth);
   }
   
-  // Add time tracking section
+  // Vérifier si nouvelle page nécessaire avant le suivi du temps
+  if (y > pageHeight - 60) {
+    doc.addPage();
+    y = margins.top;
+  }
+  
+  // Add time tracking section with improved layout
   if (pdfOptions.includeTimeTracking !== false) {
-    y = drawTimeTrackingSection(doc, data, 20, y, 170);
+    y = drawTimeTrackingSection(doc, data, margins.left, y, contentWidth);
   }
   
   // Add consumables section if present and requested
   if (pdfOptions.includeConsumables !== false && consumables?.length) {
-    y = drawConsumablesSection(doc, data, 20, y, 170);
+    y = drawConsumablesSection(doc, data, margins.left, y, contentWidth);
   }
   
-  // Add summary section if requested
+  // Add summary section if requested with consistent styling
   if (pdfOptions.includeSummary !== false && (hourlyRate || (workLog.timeTracking && workLog.timeTracking.totalHours))) {
     y = addSummarySection(doc, {
       hourlyRate,

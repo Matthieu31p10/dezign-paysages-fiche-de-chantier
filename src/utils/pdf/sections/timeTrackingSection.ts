@@ -7,19 +7,29 @@ export const drawTimeTrackingSection = (pdf: any, data: PDFData, margin: number,
     return yPos;
   }
   
-  yPos += 10;
+  // Titre de section avec style uniforme
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
-  pdf.text("Suivi du temps", margin, yPos);
+  pdf.setTextColor(61, 90, 254); // Couleur primaire
+  pdf.text("SUIVI DU TEMPS", margin, yPos);
+  pdf.setTextColor(60, 60, 60); // Reset couleur
   
+  yPos += 8;
+  
+  // Ligne de séparation
+  pdf.setDrawColor(200, 200, 200);
+  pdf.line(margin, yPos, margin + contentWidth, yPos);
   yPos += 10;
-  const timeBoxWidth = contentWidth / 4; // Réduire la largeur pour tenir 4 éléments par ligne
   
-  // Première ligne: Départ, Arrivée, Fin, Pause (tous sur une seule ligne)
-  drawTimeBox(pdf, margin, yPos, timeBoxWidth - 3, "Départ", data.workLog?.timeTracking?.departure || "--:--");
-  drawTimeBox(pdf, margin + timeBoxWidth, yPos, timeBoxWidth - 3, "Arrivée", data.workLog?.timeTracking?.arrival || "--:--");
-  drawTimeBox(pdf, margin + timeBoxWidth * 2, yPos, timeBoxWidth - 3, "Fin", data.workLog?.timeTracking?.end || data.endTime || "--:--");
-  drawTimeBox(pdf, margin + timeBoxWidth * 3, yPos, timeBoxWidth - 3, "Pause", data.workLog?.timeTracking?.breakTime || "00:00");
+  // Configuration des boîtes de temps (4 par ligne, mais plus compactes)
+  const timeBoxWidth = (contentWidth - 15) / 4; // 4 colonnes avec espacement
+  const spacing = 5;
+  
+  // Première ligne: Départ, Arrivée, Fin, Pause
+  drawTimeBox(pdf, margin, yPos, timeBoxWidth, "Départ", data.workLog?.timeTracking?.departure || "--:--");
+  drawTimeBox(pdf, margin + (timeBoxWidth + spacing), yPos, timeBoxWidth, "Arrivée", data.workLog?.timeTracking?.arrival || "--:--");
+  drawTimeBox(pdf, margin + (timeBoxWidth + spacing) * 2, yPos, timeBoxWidth, "Fin", data.workLog?.timeTracking?.end || data.endTime || "--:--");
+  drawTimeBox(pdf, margin + (timeBoxWidth + spacing) * 3, yPos, timeBoxWidth, "Pause", data.workLog?.timeTracking?.breakTime || "00:00");
   
   yPos += 25;
   
