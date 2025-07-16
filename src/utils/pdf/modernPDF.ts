@@ -49,10 +49,10 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
     compress: true
   });
 
-  // A4 dimensions: 210mm x 297mm
+  // A4 dimensions: 210mm x 297mm - Optimisé pour une page
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  const margins = { top: 15, bottom: 15, left: 15, right: 15 };
+  const margins = { top: 10, bottom: 10, left: 12, right: 12 };
   const contentWidth = pageWidth - margins.left - margins.right;
 
   // Initialize page coordinates with optimized margins
@@ -61,13 +61,13 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   // Déterminer si c'est une fiche vierge
   const isBlankWorksheet = workLog.projectId?.startsWith('blank-') || workLog.projectId?.startsWith('DZFV');
   
-  // Titre principal uniforme
+  // Titre principal uniforme - compact
   doc.setFont(theme.fonts.title.family, theme.fonts.title.style);
-  doc.setFontSize(16);
+  doc.setFontSize(14);
   doc.setTextColor(theme.colors.primary[0], theme.colors.primary[1], theme.colors.primary[2]);
   const title = isBlankWorksheet ? 'FICHE VIERGE D\'INTERVENTION' : 'FICHE DE SUIVI D\'INTERVENTION';
-  doc.text(title, pageWidth / 2, y + 5, { align: 'center' });
-  y += 15;
+  doc.text(title, pageWidth / 2, y + 4, { align: 'center' });
+  y += 12;
 
   // Add company and project header with optimized spacing
   y = drawHeaderSection(doc, data, margins.left, y, theme);
@@ -83,39 +83,27 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
     y = drawInfoBoxesSection(doc, data, margins.left, y, contentWidth);
   }
   
-  // Add project details with consistent layout
+  // Add project details with compact layout
   y = drawDetailsSection(doc, workLog, project, y, theme);
   
-  // Vérifier si nouvelle page nécessaire
-  if (y > pageHeight - 80) {
-    doc.addPage();
-    y = margins.top;
-  }
-  
-  // Add personnel section with optimized spacing
+  // Add personnel section with compact spacing
   if (pdfOptions.includePersonnel !== false && workLog.personnel?.length) {
     y = drawPersonnelSection(doc, data, margins.left, y);
   }
   
-  // Add tasks section with full content width
+  // Add tasks section with reduced spacing
   if (pdfOptions.includeTasks !== false && (workLog.tasks?.length || customTasks?.length)) {
     y = drawTasksSection(doc, data, margins.left, y, contentWidth, contentWidth);
   }
   
-  // Add watering section for water consumption
+  // Add watering section compact
   if (pdfOptions.includeWatering !== false && workLog.waterConsumption) {
     y = drawWateringSection(doc, data, margins.left, y, contentWidth);
   }
   
-  // Add notes section with better formatting
+  // Add notes section compact
   if (pdfOptions.includeNotes !== false && workLog.notes) {
     y = drawNotesSection(doc, data, margins.left, y, contentWidth);
-  }
-  
-  // Vérifier si nouvelle page nécessaire avant le suivi du temps
-  if (y > pageHeight - 60) {
-    doc.addPage();
-    y = margins.top;
   }
   
   // Add time tracking section with improved layout

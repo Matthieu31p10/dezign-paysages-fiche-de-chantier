@@ -15,8 +15,8 @@ export const drawHeaderSection = (
     secondary: [70, 128, 131] 
   };
   
-  // Rectangle d'en-tête avec couleur d'arrière-plan subtile
-  const headerHeight = 35;
+  // Rectangle d'en-tête compact
+  const headerHeight = 28;
   pdf.setFillColor(248, 250, 252); // Arrière-plan très clair
   pdf.setDrawColor(200, 200, 200); // Bordure gris clair
   pdf.roundedRect(margin, yPos, pdf.internal.pageSize.width - margin * 2, headerHeight, 2, 2, 'FD');
@@ -89,5 +89,5 @@ export const drawHeaderSection = (
   // Reset des couleurs
   pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
   
-  return yPos + headerHeight + 8; // Espacement après l'en-tête
+  return yPos + headerHeight + 5; // Espacement réduit après l'en-tête
 }

@@ -41,11 +41,11 @@ export const drawDetailsSection = (
   // Définir la position Y initiale
   let y = startY;
 
-  // Ajouter l'en-tête des détails
+  // Ajouter l'en-tête des détails - compact
   doc.setFont(fonts.title.family, fonts.title.style);
-  doc.setFontSize(fonts.title.size);
+  doc.setFontSize(11);
   doc.text('Détails de l\'intervention', spacing.margin, y);
-  y += 8;
+  y += 6;
 
   // Configuration pour les éléments de détail
   doc.setFont(fonts.body.family, fonts.body.style);
@@ -75,7 +75,7 @@ export const drawDetailsSection = (
   doc.setFont(fonts.body.family, 'normal');
   doc.text(workLogWeather, margin + colWidth * 2 + 25, y);
   
-  y += spacing.paragraphGap;
+  y += 6; // Espacement réduit
 
   // Ligne 2 : Durée prévue, Temps total effectif - gérer les champs optionnels en toute sécurité
   const duration = workLog.duration || 0;
@@ -94,5 +94,5 @@ export const drawDetailsSection = (
     doc.text(`${totalHours} h`, margin + colWidth + 25, y);
   }
 
-  return y + spacing.sectionGap;
+  return y + 10; // Espacement réduit entre sections
 };
