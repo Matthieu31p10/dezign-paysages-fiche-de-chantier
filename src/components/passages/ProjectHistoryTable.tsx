@@ -6,6 +6,7 @@ import { CalendarDays, Clock, Building2 } from 'lucide-react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WorkLog, ProjectInfo } from '@/types/models';
+import { useProjectPrimaryTeams } from '@/hooks/useProjectPrimaryTeams';
 
 interface Team {
   id: string;
@@ -26,6 +27,7 @@ interface ProjectHistoryRow {
   daysSinceLastPassage: number | null;
   totalPassages: number;
   lastPassageTeam: string | null;
+  primaryTeam: string | null;
 }
 
 export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
@@ -34,6 +36,8 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
   teams,
   selectedTeam
 }) => {
+  const { getPrimaryTeamForProject } = useProjectPrimaryTeams();
+  
   const projectHistory = useMemo(() => {
     // Obtenir tous les projets actifs
     const activeProjects = projectInfos.filter(p => !p.isArchived);
@@ -96,12 +100,23 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
         lastPassageDate,
         daysSinceLastPassage,
         totalPassages: projectWorkLogs.length,
-        lastPassageTeam
+        lastPassageTeam,
+        primaryTeam: getPrimaryTeamForProject(project.id)
       };
     });
 
-    // Trier par date du dernier passage (plus récent en premier, null à la fin)
+    // Trier par équipe principale, puis par date du dernier passage
     return history.sort((a, b) => {
+      // Si un filtre d'équipe est sélectionné, prioriser les chantiers de cette équipe principale
+      if (selectedTeam && selectedTeam !== 'all') {
+        const aMatchesPrimary = a.primaryTeam?.toLowerCase().includes(selectedTeam.toLowerCase()) || false;
+        const bMatchesPrimary = b.primaryTeam?.toLowerCase().includes(selectedTeam.toLowerCase()) || false;
+        
+        if (aMatchesPrimary && !bMatchesPrimary) return -1;
+        if (!aMatchesPrimary && bMatchesPrimary) return 1;
+      }
+      
+      // Ensuite trier par date du dernier passage (plus récent en premier, null à la fin)
       if (a.lastPassageDate && b.lastPassageDate) {
         return b.lastPassageDate.getTime() - a.lastPassageDate.getTime();
       }
@@ -109,7 +124,7 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
       if (!a.lastPassageDate && b.lastPassageDate) return 1;
       return a.projectName.localeCompare(b.projectName);
     });
-  }, [workLogs, projectInfos, teams, selectedTeam]);
+  }, [workLogs, projectInfos, teams, selectedTeam, getPrimaryTeamForProject]);
 
   const getDaysSinceBadgeColor = (days: number | null) => {
     if (days === null) return 'secondary';
@@ -145,12 +160,13 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
                 <TableHead className="font-semibold text-center">Dernier passage</TableHead>
                 <TableHead className="font-semibold text-center">Écart (jours)</TableHead>
                 <TableHead className="font-semibold text-center">Équipe</TableHead>
+                <TableHead className="font-semibold text-center">Équipe principale</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projectHistory.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>
                       {selectedTeam && selectedTeam !== 'all'
@@ -196,6 +212,15 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
                       {project.lastPassageTeam ? (
                         <Badge variant="secondary" className="text-xs">
                           {project.lastPassageTeam}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {project.primaryTeam ? (
+                        <Badge variant="outline" className="text-xs font-medium">
+                          {project.primaryTeam}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground text-sm">-</span>
