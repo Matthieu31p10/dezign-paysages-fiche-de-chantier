@@ -39,39 +39,58 @@ export const PassageCard: React.FC<PassageCardProps> = ({ passage, getProjectNam
 
   return (
     <div className={`border border-border rounded-lg p-4 bg-background hover:bg-muted/50 transition-all duration-300 hover:shadow-md ${getPassageCardStyle(daysAgo)}`}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-foreground">{getProjectName(passage.projectId)}</h3>
-            <Badge variant="outline" className="text-xs border-primary text-primary">
-              {getProjectName(passage.projectId)}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-foreground text-lg">{getProjectName(passage.projectId)}</h3>
+            <Badge variant="default" className="text-xs font-medium bg-primary text-primary-foreground">
+              Chantier #{passage.projectId.slice(-6)}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {formatPassageDate(passage.date)}
-          </p>
-          {passage.personnel && passage.personnel.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Équipe: {passage.personnel.join(', ')}
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-medium text-foreground">
+              📅 {formatPassageDate(passage.date)}
             </p>
-          )}
+            {passage.personnel && passage.personnel.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                👥 Équipe: {passage.personnel.join(', ')}
+              </p>
+            )}
+            {passage.tasks && (
+              <p className="text-sm text-muted-foreground">
+                🔧 Tâches: {passage.tasks}
+              </p>
+            )}
+            {passage.address && (
+              <p className="text-xs text-muted-foreground">
+                📍 {passage.address}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-end gap-2">
           <Badge 
             variant={getDaysBadgeVariant(daysAgo)}
-            className={
+            className={`text-sm px-3 py-1 ${
               daysAgo === 0 ? 'bg-green-600 text-white' :
               daysAgo <= 7 ? 'bg-blue-600 text-white' :
               daysAgo <= 30 ? 'bg-orange-600 text-white' :
               'bg-red-600 text-white'
-            }
+            }`}
           >
             {daysAgo === 0 ? "Aujourd'hui" : 
              daysAgo === 1 ? "Hier" : 
              `Il y a ${daysAgo} jours`}
           </Badge>
-          <div className="text-sm text-foreground font-medium">
-            {passage.timeTracking?.totalHours || passage.duration || 0}h
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-foreground font-medium">
+              ⏱️ {passage.timeTracking?.totalHours || passage.duration || 0}h
+            </div>
+            {passage.waterConsumption && (
+              <div className="text-xs text-muted-foreground">
+                💧 {passage.waterConsumption}L
+              </div>
+            )}
           </div>
         </div>
       </div>
