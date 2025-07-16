@@ -82,16 +82,8 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
         lastPassageDate = new Date(lastLog.date);
         daysSinceLastPassage = differenceInDays(new Date(), lastPassageDate);
         
-        // Déterminer l'équipe du dernier passage
-        if (lastLog.personnel && lastLog.personnel.length > 0) {
-          // Chercher si le personnel correspond à une équipe connue
-          const teamFound = teams.find(team => 
-            lastLog.personnel.some(person => 
-              person.toLowerCase().includes(team.name.toLowerCase())
-            )
-          );
-          lastPassageTeam = teamFound ? teamFound.name : lastLog.personnel[0];
-        }
+        // Utiliser l'équipe principale du projet définie dans la fiche chantier
+        lastPassageTeam = getPrimaryTeamForProject(project.id);
       }
 
       return {
@@ -159,14 +151,13 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
                 <TableHead className="font-semibold text-center">Total passages</TableHead>
                 <TableHead className="font-semibold text-center">Dernier passage</TableHead>
                 <TableHead className="font-semibold text-center">Écart (jours)</TableHead>
-                <TableHead className="font-semibold text-center">Équipe</TableHead>
                 <TableHead className="font-semibold text-center">Équipe principale</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projectHistory.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>
                       {selectedTeam && selectedTeam !== 'all'
@@ -207,15 +198,6 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
                           {getDaysSinceText(project.daysSinceLastPassage)}
                         </Badge>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {project.lastPassageTeam ? (
-                        <Badge variant="secondary" className="text-xs">
-                          {project.lastPassageTeam}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">-</span>
-                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       {project.primaryTeam ? (
