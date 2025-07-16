@@ -59,7 +59,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Update settings with clientConnections from Supabase
   useEffect(() => {
-    setSettings(prev => ({ ...prev, clientConnections }));
+    // Only update if clientConnections actually changed to prevent infinite loop
+    setSettings(prev => {
+      if (JSON.stringify(prev.clientConnections) !== JSON.stringify(clientConnections)) {
+        return { ...prev, clientConnections };
+      }
+      return prev;
+    });
   }, [clientConnections]);
 
   // Save settings to localStorage whenever they change (except clientConnections)
