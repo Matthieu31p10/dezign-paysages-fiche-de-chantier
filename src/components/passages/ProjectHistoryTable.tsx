@@ -42,7 +42,15 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
     // Obtenir tous les projets actifs
     const activeProjects = projectInfos.filter(p => !p.isArchived);
     
-    const history: ProjectHistoryRow[] = activeProjects.map(project => {
+    // Filtrer les projets par équipe responsable (équipe principale) si une équipe est sélectionnée
+    const projectsToShow = selectedTeam && selectedTeam !== 'all' 
+      ? activeProjects.filter(project => {
+          const primaryTeam = getPrimaryTeamForProject(project.id);
+          return primaryTeam?.toLowerCase().includes(selectedTeam.toLowerCase());
+        })
+      : activeProjects;
+    
+    const history: ProjectHistoryRow[] = projectsToShow.map(project => {
       // Filtrer les work logs pour ce projet (exclure les blank worksheets)
       let projectWorkLogs = workLogs.filter(log => 
         log.projectId === project.id && !log.isBlankWorksheet

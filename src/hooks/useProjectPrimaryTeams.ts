@@ -20,7 +20,7 @@ export const useProjectPrimaryTeams = () => {
           .select(`
             project_id,
             team_id,
-            teams (
+            teams!fk_project_teams_team_id (
               name
             )
           `)
