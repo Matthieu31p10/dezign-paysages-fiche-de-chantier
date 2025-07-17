@@ -7,6 +7,7 @@ import { uploadProjectDocument } from '@/services/documentService';
 import { toast } from 'sonner';
 import { ProjectDocument } from '@/types/document';
 import { cn } from '@/lib/utils';
+import { handleFileUploadError } from '@/utils/errorHandler';
 
 interface DocumentUploaderProps {
   projectId: string;
@@ -50,7 +51,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
         onUploadSuccess?.(document);
       }
     } catch (error) {
-      console.error('Erreur de téléchargement:', error);
+      handleFileUploadError(error, 'documentUpload');
       toast.error('Erreur lors du téléchargement du document');
     } finally {
       setIsUploading(false);

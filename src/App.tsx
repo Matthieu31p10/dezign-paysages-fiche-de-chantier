@@ -19,7 +19,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import ClientDashboard from './pages/ClientDashboard';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
-import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+// Removed ErrorBoundary import - using new error handling system
 import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Passages from './pages/Passages';
@@ -28,8 +28,7 @@ import './App.css';
 
 function App() {
   return (
-    <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
-      <AppProviders>
+    <AppProviders>
         <Router>
           <Routes>
           {/* Public routes */}
@@ -68,7 +67,6 @@ function App() {
         <Toaster />
         <SonnerToaster position="top-right" richColors />
       </AppProviders>
-    </ErrorBoundary>
   );
 }
 

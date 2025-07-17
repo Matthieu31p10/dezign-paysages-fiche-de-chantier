@@ -15,7 +15,7 @@ import AdvancedSettingsPanel from '@/components/settings/AdvancedSettingsPanel';
 import { DialogTrigger } from '@/components/ui/dialog';
 import TeamsManagement from '@/components/settings/TeamsManagement';
 import PersonnelManagement from '@/components/settings/PersonnelManagement';
-import ErrorDashboard from '@/components/error/ErrorDashboard';
+// Removed ErrorDashboard import - using new error handling system
 
 const Settings = () => {
   const { canUserAccess } = useApp();
@@ -205,11 +205,14 @@ const Settings = () => {
                   Monitoring des erreurs
                 </CardTitle>
                 <CardDescription>
-                  Visualisez et gérez les erreurs de l'application (mode développement)
+                  Le nouveau système de gestion d'erreurs centralisé est activé.
+                  Les erreurs sont maintenant traitées automatiquement avec des notifications toast.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ErrorDashboard />
+                <p className="text-muted-foreground">
+                  Le système d'erreurs a été migré vers une approche centralisée plus moderne.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>

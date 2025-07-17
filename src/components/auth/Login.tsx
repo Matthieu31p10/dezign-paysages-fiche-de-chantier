@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { handleAuthError } from '@/utils/errorHandler';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +37,7 @@ const Login = () => {
       }
     } catch (err) {
       setError('Une erreur est survenue. Veuillez réessayer.');
-      console.error('Login error:', err);
+      handleAuthError(err, 'login');
     } finally {
       setIsLoading(false);
     }

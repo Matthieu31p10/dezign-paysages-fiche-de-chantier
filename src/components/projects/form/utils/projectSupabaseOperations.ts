@@ -3,6 +3,7 @@ import { ProjectInfo } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatProjectForDatabase } from '@/context/projects/storage/projectOperations';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 export const saveProjectToSupabase = async (project: ProjectInfo) => {
   try {
@@ -14,13 +15,13 @@ export const saveProjectToSupabase = async (project: ProjectInfo) => {
       .upsert(projectData, { onConflict: 'id' });
     
     if (error) {
-      console.error("Error saving project to Supabase:", error);
+      handleDatabaseError(error, 'saveProject', { projectName: project.name });
       throw error;
     }
     
     console.log("Project saved successfully to Supabase");
   } catch (error) {
-    console.error("Error in saveProjectToSupabase:", error);
+    handleDatabaseError(error, 'saveProjectToSupabase');
     toast.error("Erreur lors de l'enregistrement du projet dans Supabase");
     throw error;
   }
