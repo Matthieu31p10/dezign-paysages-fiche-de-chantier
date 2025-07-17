@@ -55,20 +55,24 @@ const ProjectCard = ({ project, onSelect, totalPersonnel = 0 }: ProjectCardProps
   const typeConfig = getProjectTypeConfig();
   
   return (
-    <Card className={cn(
-      "group transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl border-2 cursor-pointer",
-      typeConfig.bg,
-      project.isArchived && "opacity-60 grayscale"
-    )}>
+    <Card 
+      className={cn(
+        "group transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl border-2 cursor-pointer",
+        typeConfig.bg,
+        project.isArchived && "opacity-60 grayscale"
+      )}
+      role="article"
+      aria-label={`Chantier ${project.name}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-card/80 rounded-lg shadow-sm">
+              <div className="p-2 bg-card/80 rounded-lg shadow-sm" aria-hidden="true">
                 {typeConfig.icon}
               </div>
               <div>
-                <h3 className="font-bold text-lg line-clamp-1 text-gray-900 group-hover:text-gray-700 transition-colors">
+                <h3 className="font-bold text-lg line-clamp-1 text-gray-900 group-hover:text-gray-700 transition-colors" id={`project-title-${project.id}`}>
                   {project.name}
                 </h3>
                 <Badge variant="outline" className={`text-xs ${typeConfig.badge}`}>
@@ -78,8 +82,8 @@ const ProjectCard = ({ project, onSelect, totalPersonnel = 0 }: ProjectCardProps
               </div>
             </div>
             <div className="flex items-center text-sm text-gray-600 mt-2">
-              <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-              <span className="line-clamp-1">{project.address}</span>
+              <MapPin className="h-4 w-4 mr-2 text-gray-400" aria-hidden="true" />
+              <span className="line-clamp-1" aria-label={`Adresse: ${project.address}`}>{project.address}</span>
             </div>
           </div>
           
@@ -94,20 +98,20 @@ const ProjectCard = ({ project, onSelect, totalPersonnel = 0 }: ProjectCardProps
       <CardContent className="pb-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2 p-3 bg-card/60 rounded-lg">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-foreground">{totalPersonnel} membre{totalPersonnel > 1 ? 's' : ''}</span>
+            <Users className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <span className="text-sm text-foreground" aria-label={`${totalPersonnel} membre${totalPersonnel > 1 ? 's' : ''} assigné${totalPersonnel > 1 ? 's' : ''}`}>{totalPersonnel} membre{totalPersonnel > 1 ? 's' : ''}</span>
           </div>
           
           <div className="flex items-center gap-2 p-3 bg-card/60 rounded-lg">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-foreground">
+            <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <span className="text-sm text-foreground" aria-label={`${project.annualTotalHours || 0} heures par an`}>
               {project.annualTotalHours || 0}h/an
             </span>
           </div>
           
           {(project.contactPhone || project.additionalInfo) && (
             <div className="col-span-2 flex items-center gap-2 p-3 bg-card/60 rounded-lg">
-              <Phone className="h-4 w-4 text-purple-500" />
+              <Phone className="h-4 w-4 text-purple-500" aria-hidden="true" />
               <div>
                 <span className="text-gray-500 text-xs block">Contact</span>
                 <span className="font-semibold text-gray-900">{project.contactPhone}</span>
@@ -123,9 +127,10 @@ const ProjectCard = ({ project, onSelect, totalPersonnel = 0 }: ProjectCardProps
           size="sm"
           onClick={() => navigate(`/projects/${project.id}`)}
           className="flex-1 group/btn hover:bg-card hover:border-border transition-all duration-200"
+          aria-label={`Voir les détails du chantier ${project.name}`}
         >
           Détails
-          <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+          <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" aria-hidden="true" />
         </Button>
         
         {onSelect && (
@@ -133,8 +138,9 @@ const ProjectCard = ({ project, onSelect, totalPersonnel = 0 }: ProjectCardProps
             size="sm"
             onClick={() => onSelect(project.id)}
             className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all duration-200"
+            aria-label={`Sélectionner le chantier ${project.name} pour créer une fiche de suivi`}
           >
-            <User className="h-4 w-4 mr-1" />
+            <User className="h-4 w-4 mr-1" aria-hidden="true" />
             Sélectionner
           </Button>
         )}

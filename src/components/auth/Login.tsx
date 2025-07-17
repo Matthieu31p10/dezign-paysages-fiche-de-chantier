@@ -62,6 +62,8 @@ const Login = () => {
     <div 
       className="flex items-center justify-center min-h-screen bg-muted/30"
       style={backgroundStyle}
+      role="main"
+      aria-label="Page de connexion"
     >
       <div className="w-full max-w-md p-4">
         <Card className="w-full backdrop-blur-sm bg-background/90 shadow-lg">
@@ -73,30 +75,30 @@ const Login = () => {
           </CardHeader>
           <CardContent>
             {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
+              <Alert variant="destructive" className="mb-4" role="alert" id="login-error">
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             
-            <Tabs defaultValue="user" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="user" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
+            <Tabs defaultValue="user" className="w-full" aria-label="Type de connexion">
+              <TabsList className="grid w-full grid-cols-2" role="tablist" aria-label="Choix du type de connexion">
+                <TabsTrigger value="user" className="flex items-center gap-2" aria-label="Connexion utilisateur">
+                  <User className="h-4 w-4" aria-hidden="true" />
                   Utilisateur
                 </TabsTrigger>
-                <TabsTrigger value="client" className="flex items-center gap-2">
-                  <UserCheck className="h-4 w-4" />
+                <TabsTrigger value="client" className="flex items-center gap-2" aria-label="Connexion client">
+                  <UserCheck className="h-4 w-4" aria-hidden="true" />
                   Client
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="user" className="space-y-4 mt-4">
-                <form onSubmit={handleUserSubmit} className="space-y-4">
+              <TabsContent value="user" className="space-y-4 mt-4" role="tabpanel" aria-labelledby="user-tab">
+                <form onSubmit={handleUserSubmit} className="space-y-4" aria-label="Formulaire de connexion utilisateur">
                   <div className="space-y-2">
                     <Label htmlFor="username">Identifiant</Label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
                         <User className="h-4 w-4" />
                       </div>
                       <Input
@@ -106,6 +108,7 @@ const Login = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         className="pl-10"
                         placeholder="Votre identifiant"
+                        aria-describedby={error ? "login-error" : undefined}
                         required
                       />
                     </div>
@@ -113,7 +116,7 @@ const Login = () => {
                   <div className="space-y-2">
                     <Label htmlFor="password">Mot de passe</Label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
                         <Lock className="h-4 w-4" />
                       </div>
                       <Input
@@ -123,6 +126,7 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="pl-10"
                         placeholder="Votre mot de passe"
+                        aria-describedby={error ? "login-error" : undefined}
                         required
                       />
                     </div>
@@ -131,8 +135,16 @@ const Login = () => {
                     type="submit" 
                     className="w-full" 
                     disabled={isLoading}
+                    aria-describedby={isLoading ? "loading-status" : undefined}
                   >
-                    {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+                    {isLoading ? (
+                      <>
+                        <span id="loading-status" className="sr-only">Connexion en cours</span>
+                        Connexion en cours...
+                      </>
+                    ) : (
+                      'Se connecter'
+                    )}
                   </Button>
                 </form>
               </TabsContent>

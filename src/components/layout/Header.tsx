@@ -81,34 +81,37 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-lg transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-lg transition-all duration-300" role="banner">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
             <Link 
               to="/" 
               className="flex items-center hover:opacity-80 transition-all duration-200 transform hover:scale-105"
+              aria-label="Retour à l'accueil"
             >
               <CompanyLogo className="h-8 w-auto" />
             </Link>
           </div>
 
           {!isMobile && (
-            <nav className="flex items-center space-x-2">
+            <nav className="flex items-center space-x-2" role="navigation" aria-label="Navigation principale">
               {filteredNavItems.map((item) => (
                 <Link 
                   key={item.path} 
                   to={item.path} 
                   className={getButtonStyles(item, isActive(item.path))}
+                  aria-current={isActive(item.path) ? 'page' : undefined}
+                  aria-label={`Aller à ${item.label}`}
                 >
                   <span className="relative z-10 flex items-center">
                     {item.label}
                     {item.path === '/passages' && (
-                      <CalendarDaysIcon className="inline-block ml-1.5 w-4 h-4" />
+                      <CalendarDaysIcon className="inline-block ml-1.5 w-4 h-4" aria-hidden="true" />
                     )}
                   </span>
                   {isActive(item.path) && (
-                    <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-lg blur opacity-75" />
+                    <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/10 rounded-lg blur opacity-75" aria-hidden="true" />
                   )}
                 </Link>
               ))}
@@ -121,6 +124,7 @@ const Header: React.FC = () => {
                 <Button 
                   variant="ghost" 
                   className="relative rounded-full h-10 w-10 p-0 hover:bg-green-100 transition-all duration-200 hover:scale-105 hover:shadow-md"
+                  aria-label={`Menu utilisateur - ${auth.currentUser?.name || auth.currentUser?.username}`}
                 >
                   <Avatar className="h-9 w-9 ring-2 ring-green-200 ring-offset-2 transition-all duration-200">
                     <AvatarFallback className="bg-gradient-to-br from-green-100 to-green-50 text-green-700 font-semibold">
@@ -156,7 +160,7 @@ const Header: React.FC = () => {
                         >
                           {item.label}
                           {item.path === '/passages' && (
-                            <CalendarDaysIcon className="ml-auto h-4 w-4" />
+                            <CalendarDaysIcon className="ml-auto h-4 w-4" aria-hidden="true" />
                           )}
                         </Link>
                       </DropdownMenuItem>
@@ -168,6 +172,7 @@ const Header: React.FC = () => {
                 <DropdownMenuItem 
                   onClick={handleLogout} 
                   className="cursor-pointer text-red-600 hover:bg-red-50 transition-colors duration-200"
+                  aria-label="Se déconnecter de l'application"
                 >
                   Déconnexion
                 </DropdownMenuItem>
