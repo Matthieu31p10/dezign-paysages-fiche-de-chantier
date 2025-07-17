@@ -1,6 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AppProviders from './context/AppProviders';
+import { SupabaseAuthProvider } from './context/SupabaseAuthContext';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
 import WorkLogs from './pages/WorkLogs';
@@ -28,8 +29,9 @@ import './App.css';
 
 function App() {
   return (
-    <AppProviders>
-        <Router>
+    <SupabaseAuthProvider>
+      <AppProviders>
+          <Router>
           <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
@@ -63,10 +65,11 @@ function App() {
             </Route>
           </Route>
           </Routes>
-        </Router>
-        <Toaster />
-        <SonnerToaster position="top-right" richColors />
-      </AppProviders>
+          </Router>
+          <Toaster />
+          <SonnerToaster position="top-right" richColors />
+        </AppProviders>
+    </SupabaseAuthProvider>
   );
 }
 

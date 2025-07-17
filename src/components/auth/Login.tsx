@@ -1,43 +1,58 @@
-
-import React, { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { handleAuthError } from '@/utils/errorHandler';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, User, AlertCircle, UserCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Lock, User, Mail, UserCheck } from 'lucide-react';
 import ClientAuth from './ClientAuth';
+import { useSettings } from '@/context/SettingsContext';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const navigate = useNavigate();
+  const { signIn, signUp, user, loading } = useSupabaseAuth();
+  const { settings } = useSettings();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, settings } = useApp();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  const from = location.state?.from?.pathname || '/';
 
-  const handleUserSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
-      const success = login(username, password);
-      if (success) {
-        navigate(from, { replace: true });
+      if (isSignUp) {
+        const { error } = await signUp(email, password, { first_name: firstName, last_name: lastName });
+        if (!error) {
+          setIsSignUp(false);
+          setEmail('');
+          setPassword('');
+          setFirstName('');
+          setLastName('');
+        }
       } else {
-        setError('Identifiant ou mot de passe incorrect');
+        const { error } = await signIn(email, password);
+        if (!error) {
+          navigate('/');
+        }
       }
     } catch (err) {
-      setError('Une erreur est survenue. Veuillez réessayer.');
-      handleAuthError(err, 'login');
+      setError('Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +60,6 @@ const Login = () => {
 
   const handleClientLogin = (client: any) => {
     // La logique de connexion client est maintenant gérée dans ClientAuth
-    // Client connected successfully
   };
 
   const backgroundImage = settings.loginBackgroundImage;
@@ -68,85 +82,136 @@ const Login = () => {
       <div className="w-full max-w-md p-4">
         <Card className="w-full backdrop-blur-sm bg-background/90 shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center font-bold">Connexion</CardTitle>
-            <CardDescription className="text-center">
-              Choisissez votre type de connexion
-            </CardDescription>
+            <CardTitle className="text-2xl text-center font-bold">
+              {isSignUp ? 'Inscription' : 'Connexion'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {error && (
-              <Alert variant="destructive" className="mb-4" role="alert" id="login-error">
-                <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              <Alert variant="destructive" className="mb-4" role="alert">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             
-            <Tabs defaultValue="user" className="w-full" aria-label="Type de connexion">
-              <TabsList className="grid w-full grid-cols-2" role="tablist" aria-label="Choix du type de connexion">
-                <TabsTrigger value="user" className="flex items-center gap-2" aria-label="Connexion utilisateur">
+            <Tabs defaultValue="user" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="user" className="flex items-center gap-2">
                   <User className="h-4 w-4" aria-hidden="true" />
                   Utilisateur
                 </TabsTrigger>
-                <TabsTrigger value="client" className="flex items-center gap-2" aria-label="Connexion client">
+                <TabsTrigger value="client" className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4" aria-hidden="true" />
                   Client
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="user" className="space-y-4 mt-4" role="tabpanel" aria-labelledby="user-tab">
-                <form onSubmit={handleUserSubmit} className="space-y-4" aria-label="Formulaire de connexion utilisateur">
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Identifiant</Label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <Input
-                        id="username"
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="pl-10"
-                        placeholder="Votre identifiant"
-                        aria-describedby={error ? "login-error" : undefined}
-                        required
-                      />
-                    </div>
+              <TabsContent value="user" className="mt-6">
+                <div className="space-y-4">
+                  <div className="flex justify-center space-x-2">
+                    <Button
+                      type="button"
+                      variant={!isSignUp ? "default" : "outline"}
+                      onClick={() => setIsSignUp(false)}
+                      className="w-full"
+                    >
+                      Connexion
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={isSignUp ? "default" : "outline"}
+                      onClick={() => setIsSignUp(true)}
+                      className="w-full"
+                    >
+                      Inscription
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
-                        <Lock className="h-4 w-4" />
-                      </div>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                        placeholder="Votre mot de passe"
-                        aria-describedby={error ? "login-error" : undefined}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isLoading}
-                    aria-describedby={isLoading ? "loading-status" : undefined}
-                  >
-                    {isLoading ? (
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {isSignUp && (
                       <>
-                        <span id="loading-status" className="sr-only">Connexion en cours</span>
-                        Connexion en cours...
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Prénom
+                            </Label>
+                            <Input
+                              id="firstName"
+                              type="text"
+                              value={firstName}
+                              onChange={(e) => setFirstName(e.target.value)}
+                              placeholder="Votre prénom"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Nom
+                            </Label>
+                            <Input
+                              id="lastName"
+                              type="text"
+                              value={lastName}
+                              onChange={(e) => setLastName(e.target.value)}
+                              placeholder="Votre nom"
+                              required
+                            />
+                          </div>
+                        </div>
                       </>
-                    ) : (
-                      'Se connecter'
                     )}
-                  </Button>
-                </form>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" aria-hidden="true" />
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          placeholder="votre@email.com"
+                          required
+                          aria-describedby={error ? "error-message" : undefined}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Mot de passe
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" aria-hidden="true" />
+                        <Input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10"
+                          placeholder="Entrez votre mot de passe"
+                          required
+                          minLength={6}
+                          aria-describedby={error ? "error-message" : undefined}
+                        />
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={isLoading}
+                      aria-describedby={error ? "error-message" : undefined}
+                    >
+                      {isLoading 
+                        ? (isSignUp ? 'Création...' : 'Connexion...') 
+                        : (isSignUp ? 'Créer un compte' : 'Se connecter')
+                      }
+                    </Button>
+                  </form>
+                </div>
               </TabsContent>
               
               <TabsContent value="client" className="space-y-4 mt-4">
