@@ -45,7 +45,7 @@ const Login = () => {
 
   const handleClientLogin = (client: any) => {
     // La logique de connexion client est maintenant gérée dans ClientAuth
-    console.log('Client connecté:', client.clientName);
+    // Client connected successfully
   };
 
   const backgroundImage = settings.loginBackgroundImage;

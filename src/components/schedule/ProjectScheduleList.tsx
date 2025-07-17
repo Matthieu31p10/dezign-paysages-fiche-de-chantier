@@ -51,7 +51,7 @@ const ProjectScheduleList: React.FC<ProjectScheduleListProps> = ({
     true, 
     isProjectLockedOnDay,
     getProjectLockDetails,
-    undefined // TODO: Intégrer les règles mensuelles quand disponibles
+    undefined // Monthly rules integration pending
   );
 
   const scheduledEvents = useScheduledEvents(

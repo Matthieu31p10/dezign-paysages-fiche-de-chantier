@@ -34,7 +34,6 @@ const ProjectForm = ({ initialData, onSuccess, onCancel }: ProjectFormProps) => 
   const handleTeamsChange = (teams: any[]) => {
     // Mettre à jour les équipes dans formData
     // Cette logique sera implémentée dans le hook useProjectForm
-    console.log('Teams changed:', teams);
   };
   
   return (

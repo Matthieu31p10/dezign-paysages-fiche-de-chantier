@@ -18,16 +18,13 @@ const ScheduleHeader: React.FC = () => {
       ? [...new Set(activeLocks.map(lock => lock.projectId))].length 
       : 0;
     
-    console.log('Génération du planning avec les contraintes suivantes:');
-    console.log('- Nombre de chantiers:', projectInfos.filter(p => !p.isArchived).length);
-    console.log('- Nombre de verrouillages actifs:', activeLocks.length);
-    console.log('- Nombre de chantiers affectés par des verrouillages:', affectedProjects);
+    // Schedule generation with constraints
     
     if (activeLocks.length > 0) {
       activeLocks.forEach(lock => {
         const project = projectInfos.find(p => p.id === lock.projectId);
         const dayNames = ['', 'lundis', 'mardis', 'mercredis', 'jeudis', 'vendredis', 'samedis', 'dimanches'];
-        console.log(`- Verrouillage: ${project?.name || 'Chantier inconnu'} bloqué les ${dayNames[lock.dayOfWeek]} (${lock.reason})`);
+        // Project lock applied
       });
     }
 

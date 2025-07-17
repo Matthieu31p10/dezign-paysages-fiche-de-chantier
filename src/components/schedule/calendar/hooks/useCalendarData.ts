@@ -48,7 +48,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     showWeekends, 
     isProjectLockedOnDay,
     getProjectLockDetails,
-    undefined // TODO: Intégrer les règles mensuelles quand disponibles
+    undefined // Monthly rules integration pending
   );
   
   const getEventsForDay = (date: Date) => {
@@ -60,7 +60,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
     const yearlySchedule = getYearlyPassageSchedule(year);
     const dayOfWeek = getDay(date) === 0 ? 7 : getDay(date);
     
-    console.log(`Checking events for ${dateString}, day of week: ${dayOfWeek}`);
+    // Check for events on this day
     
     teamProjects.forEach(project => {
       // Les verrouillages avec délai minimum 0 bloquent complètement le jour
@@ -71,7 +71,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
         
         // Si délai minimum 0 ou undefined, bloquer complètement
         if (!minDays || minDays === 0) {
-          console.log(`Skipping project ${project.name} for ${dateString} due to complete lock (day ${dayOfWeek})`);
+          // Project locked on this day
           return;
         }
         // Sinon, les passages sont gérés par la logique de génération avec délais
@@ -80,7 +80,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
       const passageNumber = yearlySchedule[project.id]?.[dateString];
       
       if (passageNumber) {
-        console.log(`Adding event for project ${project.name} on ${dateString}, passage ${passageNumber} (weekday only)`);
+        // Add scheduled passage for this project
         events.push({
           id: `${project.id}-${dateString}`,
           projectId: project.id,
@@ -93,7 +93,7 @@ export const useCalendarData = (month: number, year: number, teamId: string, sho
       }
     });
     
-    console.log(`Total events for ${dateString}:`, events.length);
+    // Return events for this day
     return events;
   };
 

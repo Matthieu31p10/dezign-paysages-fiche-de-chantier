@@ -19,7 +19,7 @@ export const saveProjectToSupabase = async (project: ProjectInfo) => {
       throw error;
     }
     
-    console.log("Project saved successfully to Supabase");
+    // Project saved successfully
   } catch (error) {
     handleDatabaseError(error, 'saveProjectToSupabase');
     toast.error("Erreur lors de l'enregistrement du projet dans Supabase");
