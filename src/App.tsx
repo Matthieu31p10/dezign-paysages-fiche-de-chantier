@@ -31,7 +31,7 @@ function App() {
   return (
     <SupabaseAuthProvider>
       <AppProviders>
-          <Router>
+        <Router>
           <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
