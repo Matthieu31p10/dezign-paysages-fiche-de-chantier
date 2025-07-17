@@ -5,4 +5,4 @@ export {
   NetworkErrorFallback 
 } from './ErrorFallback';
 export { useErrorHandler } from '../../hooks/useErrorHandler';
-export { errorHandler, handleAuthError, handleDatabaseError, handleNetworkError, handleValidationError, handleFileUploadError } from '../../utils/errorHandler';
+export { errorHandler, handleAuthError, handleDatabaseError, handleNetworkError, handleValidationError, handleFileUploadError } from '../../utils/error';
