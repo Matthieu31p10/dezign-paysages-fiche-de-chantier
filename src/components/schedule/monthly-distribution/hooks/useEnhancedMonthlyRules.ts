@@ -52,14 +52,14 @@ export const useEnhancedMonthlyRules = (projects: any[]) => {
     if (monthlyRules.length === 0 && projects.length > 0) {
       generateDefaultRules();
     }
-  }, [projects, monthlyRules.length, generateDefaultRules]);
+  }, [projects.length, monthlyRules.length]); // Only depend on length to avoid re-runs
 
   // Générer les règles d'espacement par défaut si nécessaire
   useEffect(() => {
     if (spacingRules.length === 0 && projects.length > 0) {
       generateDefaultSpacingRules();
     }
-  }, [projects, spacingRules.length, generateDefaultSpacingRules]);
+  }, [projects.length, spacingRules.length]); // Only depend on length to avoid re-runs
 
   const handleMonthValueChange = useCallback((projectId: string, monthIndex: string, value: number) => {
     setMonthlyRules(prevRules => {

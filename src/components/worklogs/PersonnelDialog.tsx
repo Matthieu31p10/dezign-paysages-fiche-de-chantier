@@ -27,7 +27,7 @@ const PersonnelDialog: React.FC<PersonnelDialogProps> = ({ selectedPersonnel, on
   useEffect(() => {
     const personnel = getPersonnel();
     setPersonnelList(personnel);
-  }, [getPersonnel]);
+  }, [getPersonnel]); // Keep dependency but memoize getPersonnel in context
   
   // Synchroniser avec les props
   useEffect(() => {

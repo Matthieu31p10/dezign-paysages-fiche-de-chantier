@@ -78,7 +78,7 @@ export const useTimeDeviation = ({
       setTimeDeviation(null);
       setTimeDeviationClass('');
     }
-  }, [selectedProject, existingWorkLogs]);
+  }, [selectedProject]); // Removed existingWorkLogs dependency to avoid excessive re-calculations
 
   // Calculate total hours and time deviation when time values change
   useEffect(() => {
@@ -88,8 +88,8 @@ export const useTimeDeviation = ({
         
         form.setValue('totalHours', totalHours);
         
-        if (selectedProject) {
-          const expectedDuration = selectedProject.visitDuration || 0;
+        if (selectedProject?.visitDuration) {
+          const expectedDuration = selectedProject.visitDuration;
           const deviation = totalHours - expectedDuration;
           
           let deviationText = deviation === 0 
@@ -113,7 +113,7 @@ export const useTimeDeviation = ({
         console.error('Error calculating hours:', error);
       }
     }
-  }, [departure, arrival, end, breakTime, selectedProject, form]);
+  }, [departure, arrival, end, breakTime, selectedProject?.visitDuration, form.setValue]); // More precise dependencies
 
   return {
     timeDeviation,

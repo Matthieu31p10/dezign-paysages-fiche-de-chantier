@@ -72,7 +72,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const { clientConnections: _, ...settingsToSave } = settings;
     localStorage.setItem('appSettings', JSON.stringify(settingsToSave));
-  }, [settings]);
+  }, [settings.companyName, settings.companyLogo, settings.loginBackgroundImage, settings.customTasks, settings.personnel, settings.users]); // Specific dependencies to avoid excessive saves
 
   const updateSettings = useCallback(async (newSettings: Partial<AppSettings>) => {
     // Don't allow updating clientConnections through this method

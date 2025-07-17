@@ -56,7 +56,7 @@ export const useProjectSelection = ({
       setPreviousYearsHours(0);
       setCurrentYearTarget(0);
     }
-  }, [selectedProjectId, projectInfos, existingWorkLogs, form]);
+  }, [selectedProjectId, existingWorkLogs.length]); // More precise dependencies
 
   const handleTeamFilterChange = (teamId: string) => {
     form.setValue('teamFilter', teamId);

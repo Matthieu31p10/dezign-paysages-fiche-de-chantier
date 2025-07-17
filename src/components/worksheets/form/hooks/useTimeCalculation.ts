@@ -74,13 +74,15 @@ export const useTimeCalculation = (form: UseFormReturn<BlankWorkSheetValues>) =>
   
   // Calculate team hours when personnel or totalHours change
   useEffect(() => {
-    const totalHours = watch('totalHours');
-    const personnelCount = personnel?.length || 1;
-    
-    // Calculate total team hours
-    const totalTeamHours = totalHours * personnelCount;
-    
-    // Could be used if needed in the form
-    // setValue('totalTeamHours', totalTeamHours);
-  }, [watch, setValue, personnel]);
+    if (personnel?.length) {
+      const totalHours = form.getValues('totalHours');
+      const personnelCount = personnel.length;
+      
+      // Calculate total team hours
+      const totalTeamHours = totalHours * personnelCount;
+      
+      // Could be used if needed in the form
+      // setValue('totalTeamHours', totalTeamHours);
+    }
+  }, [personnel?.length, form]); // More precise dependencies
 };
