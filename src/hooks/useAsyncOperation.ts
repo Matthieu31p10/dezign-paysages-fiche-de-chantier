@@ -5,7 +5,7 @@ interface UseAsyncOperationOptions {
   successMessage?: string;
   errorMessage?: string;
   onSuccess?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: Error) => void;
 }
 
 export const useAsyncOperation = (options: UseAsyncOperationOptions = {}) => {
@@ -30,8 +30,9 @@ export const useAsyncOperation = (options: UseAsyncOperationOptions = {}) => {
       
       options.onSuccess?.();
       return result;
-    } catch (err: any) {
-      const errorMessage = options.errorMessage || err.message || 'An error occurred';
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('An error occurred');
+      const errorMessage = options.errorMessage || error.message;
       setError(errorMessage);
       
       toast({
@@ -40,7 +41,7 @@ export const useAsyncOperation = (options: UseAsyncOperationOptions = {}) => {
         variant: "destructive",
       });
       
-      options.onError?.(err);
+      options.onError?.(error);
       return null;
     } finally {
       setIsLoading(false);

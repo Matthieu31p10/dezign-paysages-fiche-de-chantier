@@ -83,7 +83,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     // Sync to Supabase
     try {
-      const supabaseData: any = {};
+      const supabaseData: Record<string, unknown> = {};
       if (settingsToUpdate.companyName) supabaseData.company_name = settingsToUpdate.companyName;
       if (settingsToUpdate.companyLogo) supabaseData.company_logo = settingsToUpdate.companyLogo;
       if (settingsToUpdate.loginBackgroundImage) supabaseData.login_background_image = settingsToUpdate.loginBackgroundImage;
@@ -111,14 +111,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Sync to Supabase
     try {
-      const currentTasks = supabaseSettings.app_configuration?.customTasks || [];
+      const appConfig = supabaseSettings.app_configuration as Record<string, unknown> | undefined;
+      const currentTasks = (appConfig?.customTasks as Array<{ id: string; name: string }>) || [];
       await updateAppConfiguration({ customTasks: [...currentTasks, newTask] });
     } catch (error) {
       console.error('Error syncing custom task to Supabase:', error);
     }
 
     return newTask;
-  }, [supabaseSettings.app_configuration?.customTasks, updateAppConfiguration]);
+  }, [supabaseSettings.app_configuration, updateAppConfiguration]);
 
   const deleteCustomTask = async (id: string) => {
     setSettings(prev => ({
@@ -128,8 +129,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Sync to Supabase
     try {
-      const currentTasks = supabaseSettings.app_configuration?.customTasks || [];
-      const updatedTasks = currentTasks.filter((task: CustomTask) => task.id !== id);
+      const appConfig = supabaseSettings.app_configuration as Record<string, unknown> | undefined;
+      const currentTasks = (appConfig?.customTasks as Array<{ id: string; name: string }>) || [];
+      const updatedTasks = currentTasks.filter((task: { id: string; name: string }) => task.id !== id);
       await updateAppConfiguration({ customTasks: updatedTasks });
     } catch (error) {
       console.error('Error syncing custom task deletion to Supabase:', error);
@@ -151,7 +153,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Sync to Supabase
     try {
-      const currentPersonnel = supabaseSettings.app_configuration?.personnel || [];
+      const appConfig = supabaseSettings.app_configuration as Record<string, unknown> | undefined;
+      const currentPersonnel = (appConfig?.personnel as Array<{ id: string; name: string; position?: string; active?: boolean }>) || [];
       await updateAppConfiguration({ personnel: [...currentPersonnel, newPersonnel] });
     } catch (error) {
       console.error('Error syncing personnel to Supabase:', error);

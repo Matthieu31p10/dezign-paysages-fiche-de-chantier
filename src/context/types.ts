@@ -57,10 +57,10 @@ export interface SettingsContextType {
   // Supabase settings
   supabaseSettings: SupabaseSettings;
   saveSupabaseSettings: (settings: Partial<SupabaseSettings>) => Promise<SupabaseSettings>;
-  updateSetting: (key: keyof SupabaseSettings, value: any) => Promise<void>;
-  updateUserPreferences: (preferences: any) => Promise<void>;
-  updateAppConfiguration: (config: any) => Promise<void>;
-  updateNotificationPreferences: (preferences: any) => Promise<void>;
+  updateSetting: (key: keyof SupabaseSettings, value: unknown) => Promise<void>;
+  updateUserPreferences: (preferences: Record<string, unknown>) => Promise<void>;
+  updateAppConfiguration: (config: Record<string, unknown>) => Promise<void>;
+  updateNotificationPreferences: (preferences: Record<string, unknown>) => Promise<void>;
   supabaseLoading: boolean;
 }
 

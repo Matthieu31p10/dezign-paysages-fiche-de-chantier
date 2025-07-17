@@ -1,6 +1,26 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
+
+export interface NotificationPreferences {
+  email?: boolean;
+  browser?: boolean;
+  reminders?: boolean;
+  [key: string]: unknown;
+}
+
+export interface UserPreferences {
+  theme?: string;
+  language?: string;
+  [key: string]: unknown;
+}
+
+export interface AppConfiguration {
+  customTasks?: Array<{ id: string; name: string }>;
+  personnel?: Array<{ id: string; name: string; position?: string; active?: boolean }>;
+  [key: string]: unknown;
+}
 
 export interface SupabaseSettings {
   id?: string;
@@ -18,9 +38,9 @@ export interface SupabaseSettings {
   default_break_time?: string;
   auto_save_enabled?: boolean;
   theme_preference?: string;
-  notification_preferences?: any;
-  user_preferences?: any;
-  app_configuration?: any;
+  notification_preferences?: Json;
+  user_preferences?: Json;
+  app_configuration?: Json;
   created_at?: string;
   updated_at?: string;
 }
@@ -48,9 +68,10 @@ export const useSupabaseSettings = () => {
         setSettings(data);
       }
       setError(null);
-    } catch (err: any) {
-      console.error('Error loading settings:', err);
-      setError(err.message);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      console.error('Error loading settings:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -91,37 +112,38 @@ export const useSupabaseSettings = () => {
       setSettings(result.data);
       toast.success('Paramètres sauvegardés avec succès');
       return result.data;
-    } catch (err: any) {
-      console.error('Error saving settings:', err);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      console.error('Error saving settings:', error);
       toast.error('Erreur lors de la sauvegarde des paramètres');
-      throw err;
+      throw error;
     }
   };
 
   // Update specific setting
-  const updateSetting = async (key: keyof SupabaseSettings, value: any) => {
+  const updateSetting = async (key: keyof SupabaseSettings, value: unknown) => {
     await saveSettings({ [key]: value });
   };
 
   // Update user preferences
-  const updateUserPreferences = async (preferences: any) => {
-    const currentPrefs = settings.user_preferences || {};
+  const updateUserPreferences = async (preferences: Record<string, unknown>) => {
+    const currentPrefs = (settings.user_preferences as Record<string, unknown>) || {};
     const newPrefs = { ...currentPrefs, ...preferences };
-    await updateSetting('user_preferences', newPrefs);
+    await updateSetting('user_preferences', newPrefs as Json);
   };
 
   // Update app configuration
-  const updateAppConfiguration = async (config: any) => {
-    const currentConfig = settings.app_configuration || {};
+  const updateAppConfiguration = async (config: Record<string, unknown>) => {
+    const currentConfig = (settings.app_configuration as Record<string, unknown>) || {};
     const newConfig = { ...currentConfig, ...config };
-    await updateSetting('app_configuration', newConfig);
+    await updateSetting('app_configuration', newConfig as Json);
   };
 
   // Update notification preferences
-  const updateNotificationPreferences = async (preferences: any) => {
-    const currentNotifs = settings.notification_preferences || {};
+  const updateNotificationPreferences = async (preferences: Record<string, unknown>) => {
+    const currentNotifs = (settings.notification_preferences as Record<string, unknown>) || {};
     const newNotifs = { ...currentNotifs, ...preferences };
-    await updateSetting('notification_preferences', newNotifs);
+    await updateSetting('notification_preferences', newNotifs as Json);
   };
 
   // Real-time subscription to settings changes

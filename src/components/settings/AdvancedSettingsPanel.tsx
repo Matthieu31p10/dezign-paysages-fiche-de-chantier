@@ -32,10 +32,13 @@ const AdvancedSettingsPanel: React.FC = () => {
     themePreference: supabaseSettings.theme_preference || 'system',
   });
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    email: supabaseSettings.notification_preferences?.email || true,
-    browser: supabaseSettings.notification_preferences?.browser || true,
-    reminders: supabaseSettings.notification_preferences?.reminders || true,
+  const [notificationSettings, setNotificationSettings] = useState(() => {
+    const notifs = supabaseSettings.notification_preferences as Record<string, unknown> | null;
+    return {
+      email: notifs?.email as boolean ?? true,
+      browser: notifs?.browser as boolean ?? true,
+      reminders: notifs?.reminders as boolean ?? true,
+    };
   });
 
   const handleSaveBasicSettings = async () => {
