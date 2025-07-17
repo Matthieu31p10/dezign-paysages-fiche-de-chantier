@@ -97,7 +97,7 @@ const WasteManagementSection: React.FC = () => {
         />
 
         {wasteType !== 'none' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-md border border-green-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-card p-4 rounded-md border border-green-200">
             <div>
               <FormLabel className="text-sm text-green-700">Quantité</FormLabel>
               <div className="flex items-center mt-1">

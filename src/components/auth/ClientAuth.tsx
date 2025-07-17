@@ -109,7 +109,7 @@ const ClientAuth = ({ onClientLogin }: ClientAuthProps) => {
       
       <button 
         type="submit" 
-        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 disabled:opacity-50"
+        className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 disabled:opacity-50"
         disabled={isLoading}
       >
         {isLoading ? 'Connexion...' : 'Se connecter'}

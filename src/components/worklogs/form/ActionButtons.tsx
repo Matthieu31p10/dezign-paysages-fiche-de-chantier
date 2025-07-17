@@ -31,7 +31,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onCancel, isEditing, isBl
       <Button 
         type="submit"
         disabled={isSubmitting}
-        className={`min-w-32 ${isBlankWorksheet ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6`}
+        className={`min-w-32 ${isBlankWorksheet ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-primary-foreground px-6`}
       >
         {isSubmitting ? (
           <>

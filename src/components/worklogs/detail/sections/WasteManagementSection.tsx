@@ -16,7 +16,7 @@ const WasteManagementSection: React.FC = () => {
         <Recycle className="w-4 h-4 text-green-600" />
         <span>Gestion des déchets</span>
       </h3>
-      <div className="flex items-center bg-white p-3 rounded-md">
+      <div className="flex items-center bg-card p-3 rounded-md border border-border">
         <Box className="w-5 h-5 mr-3 text-muted-foreground" />
         <span className={`font-medium ${wasteManagement === 'none' ? 'text-gray-500' : 'text-green-700'}`}>
           {formatWasteManagement(workLog.wasteManagement)}
