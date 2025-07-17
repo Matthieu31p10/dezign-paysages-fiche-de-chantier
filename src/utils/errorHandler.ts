@@ -178,6 +178,9 @@ class ErrorHandler {
 // Export singleton instance
 export const errorHandler = new ErrorHandler();
 
+// Temporary backward compatibility export (can be removed after cache clears)
+export const ErrorLogger = errorHandler;
+
 // Convenience functions for common use cases
 export const handleAuthError = (error: unknown, operation?: string) => {
   return errorHandler.handle(error, {
