@@ -1,7 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AppProviders from './context/AppProviders';
-import { SupabaseAuthProvider } from './context/SupabaseAuthContext';
 import Layout from './components/layout/Layout';
 import Projects from './pages/Projects';
 import WorkLogs from './pages/WorkLogs';
@@ -25,13 +24,11 @@ import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Passages from './pages/Passages';
 import Index from './pages/Index';
-import Dashboard from './pages/Dashboard';
 import './App.css';
 
 function App() {
   return (
-    <SupabaseAuthProvider>
-      <AppProviders>
+    <AppProviders>
         <Router>
           <Routes>
           {/* Public routes */}
@@ -43,7 +40,6 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
-              <Route path="dashboard" element={<Dashboard />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/new" element={<ProjectNew />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
@@ -67,11 +63,10 @@ function App() {
             </Route>
           </Route>
           </Routes>
-          </Router>
-          <Toaster />
-          <SonnerToaster position="top-right" richColors />
-        </AppProviders>
-    </SupabaseAuthProvider>
+        </Router>
+        <Toaster />
+        <SonnerToaster position="top-right" richColors />
+      </AppProviders>
   );
 }
 

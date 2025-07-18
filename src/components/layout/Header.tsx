@@ -16,7 +16,6 @@ import CompanyLogo from '@/components/ui/company-logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
-  { path: '/dashboard', label: 'Tableau de bord', color: 'blue' },
   { path: '/projects', label: 'Chantiers', color: 'emerald' },
   { path: '/passages', label: 'Passages', color: 'green' },
   { path: '/worklogs', label: 'Suivis', color: 'teal' },
@@ -58,9 +57,6 @@ const Header: React.FC = () => {
     const baseStyles = "relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg border-2";
     
     const colorStyles = {
-      blue: isActive 
-        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-600 shadow-blue-200" 
-        : "bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 border-blue-200 hover:from-blue-200 hover:to-blue-100 hover:border-blue-300",
       emerald: isActive 
         ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-emerald-600 shadow-emerald-200" 
         : "bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 border-emerald-200 hover:from-emerald-200 hover:to-emerald-100 hover:border-emerald-300",

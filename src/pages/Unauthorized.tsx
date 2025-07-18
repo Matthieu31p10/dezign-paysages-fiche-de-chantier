@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Lock, ArrowLeft, LogIn } from 'lucide-react';
+import { Lock, ArrowLeft } from 'lucide-react';
 
 const Unauthorized = () => {
   const navigate = useNavigate();
@@ -14,16 +14,14 @@ const Unauthorized = () => {
       <h1 className="text-3xl font-bold text-center mb-2">Accès non autorisé</h1>
       <p className="text-muted-foreground text-center mb-6">
         Vous n'avez pas les droits nécessaires pour accéder à cette page.
-        Veuillez vous connecter avec un compte autorisé.
       </p>
       <div className="flex gap-4">
-        <Button onClick={() => navigate('/login')} className="gap-2">
-          <LogIn className="h-4 w-4" />
-          Se connecter
-        </Button>
-        <Button onClick={() => navigate(-1)} variant="outline" className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
+        <Button onClick={() => navigate(-1)} variant="outline">
+          <ArrowLeft className="h-4 w-4 mr-2" />
           Retour
+        </Button>
+        <Button onClick={() => navigate('/')}>
+          Accueil
         </Button>
       </div>
     </div>

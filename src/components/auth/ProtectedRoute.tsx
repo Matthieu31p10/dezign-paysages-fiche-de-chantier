@@ -1,25 +1,21 @@
 import { useLocation, Navigate, Outlet } from 'react-router-dom';
-import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
+import { useApp } from '@/context/AppContext';
+import { UserRole } from '@/types/models';
 import { ReactElement } from 'react';
 
 interface ProtectedRouteProps {
-  requiredRole?: string;
+  requiredRole?: UserRole;
   requiredModule?: string;
   element?: ReactElement;
 }
 
 const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: ProtectedRouteProps) => {
-  const { user, profile, loading, canUserAccess } = useSupabaseAuth();
+  const { auth, canUserAccess } = useApp();
   const location = useLocation();
-
-  // Show loading while auth state is being determined
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
-  }
 
   try {
     // Check if the user is authenticated
-    if (!user) {
+    if (!auth.isAuthenticated) {
       // Redirect to the login page, but save the current location
       return <Navigate to="/login" state={{ from: location }} replace />;
     }
@@ -31,8 +27,11 @@ const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: Prot
 
     // If specific module access is required, check that too
     if (requiredModule) {
-      const hasAccess = profile?.role === 'admin' || 
-                       canUserAccess(requiredModule);
+      // This is where we would check module-specific permissions
+      // For now, we're just using role-based permissions
+      const hasAccess = auth.currentUser?.role === 'admin' || 
+                       (auth.currentUser?.role === 'manager') ||
+                       (requiredModule === 'projects' || requiredModule === 'worklogs' || requiredModule === 'blanksheets');
                        
       if (!hasAccess) {
         return <Navigate to="/unauthorized" replace />;
