@@ -1,8 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Users, Calendar, TrendingUp } from 'lucide-react';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 const Dashboard: React.FC = () => {
+  const { metrics, recentActivity, upcomingDeadlines } = useDashboardData();
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -16,8 +18,8 @@ const Dashboard: React.FC = () => {
             <BarChart3 className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">12</div>
-            <p className="text-xs text-muted-foreground">+2 depuis le mois dernier</p>
+            <div className="text-2xl font-bold text-foreground">{metrics.activeProjects}</div>
+            <p className="text-xs text-muted-foreground">{metrics.activeProjectsChange}</p>
           </CardContent>
         </Card>
 
@@ -27,8 +29,8 @@ const Dashboard: React.FC = () => {
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">8</div>
-            <p className="text-xs text-muted-foreground">+1 depuis la semaine dernière</p>
+            <div className="text-2xl font-bold text-foreground">{metrics.teamsOnSite}</div>
+            <p className="text-xs text-muted-foreground">{metrics.teamsChange}</p>
           </CardContent>
         </Card>
 
@@ -38,8 +40,8 @@ const Dashboard: React.FC = () => {
             <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">24</div>
-            <p className="text-xs text-muted-foreground">Cette semaine</p>
+            <div className="text-2xl font-bold text-foreground">{metrics.scheduledVisits}</div>
+            <p className="text-xs text-muted-foreground">{metrics.scheduledVisitsChange}</p>
           </CardContent>
         </Card>
 
@@ -49,8 +51,8 @@ const Dashboard: React.FC = () => {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">68%</div>
-            <p className="text-xs text-muted-foreground">+5% ce mois-ci</p>
+            <div className="text-2xl font-bold text-foreground">{metrics.globalProgress}%</div>
+            <p className="text-xs text-muted-foreground">{metrics.progressChange}</p>
           </CardContent>
         </Card>
       </div>
@@ -62,27 +64,24 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse-glow"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground">Nouveau passage planifié sur Chantier A</p>
-                  <p className="text-xs text-muted-foreground">Il y a 2 heures</p>
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${
+                      activity.type === 'project' ? 'bg-orange-500' : 
+                      activity.type === 'worklog' ? 'bg-blue-500' : 'bg-primary animate-pulse-glow'
+                    }`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground">{activity.title}</p>
+                      <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">Aucune activité récente</p>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground">Rapport de suivi complété</p>
-                  <p className="text-xs text-muted-foreground">Il y a 4 heures</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground">Nouveau chantier créé</p>
-                  <p className="text-xs text-muted-foreground">Hier</p>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -93,33 +92,21 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Passage Chantier B</p>
-                  <p className="text-xs text-muted-foreground">Demain, 14h00</p>
+              {upcomingDeadlines.map((deadline) => (
+                <div key={deadline.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{deadline.title}</p>
+                    <p className="text-xs text-muted-foreground">{deadline.date}</p>
+                  </div>
+                  <div className={`badge px-2 py-1 text-xs rounded ${
+                    deadline.priority === 'urgent' ? 'warning-state' :
+                    deadline.priority === 'normal' ? 'success-state' : 'info-state'
+                  }`}>
+                    {deadline.priority === 'urgent' ? 'Urgent' :
+                     deadline.priority === 'normal' ? 'Normal' : 'Planifié'}
+                  </div>
                 </div>
-                <div className="badge badge warning-state px-2 py-1 text-xs rounded">
-                  Urgent
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Rapport mensuel</p>
-                  <p className="text-xs text-muted-foreground">Dans 3 jours</p>
-                </div>
-                <div className="badge success-state px-2 py-1 text-xs rounded">
-                  Normal
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Réunion équipe</p>
-                  <p className="text-xs text-muted-foreground">Vendredi, 10h00</p>
-                </div>
-                <div className="badge info-state px-2 py-1 text-xs rounded">
-                  Planifié
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
