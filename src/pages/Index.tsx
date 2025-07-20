@@ -9,7 +9,7 @@ const Index = () => {
   useEffect(() => {
     // Légère animation de chargement avant la redirection
     const timer = setTimeout(() => {
-      navigate("/projects", { replace: true });
+      navigate("/dashboard", { replace: true });
     }, 300);
 
     return () => clearTimeout(timer);
