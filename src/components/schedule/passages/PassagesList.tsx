@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { usePassagesData } from './hooks/usePassagesData';
+import { useScheduledPassages } from './hooks/useScheduledPassages';
 import PassagesTimeFilter from './components/PassagesTimeFilter';
 import PassagesEmptyState from './components/PassagesEmptyState';
 import PassagesGroup from './components/PassagesGroup';
@@ -11,7 +11,7 @@ interface PassagesListProps {
 }
 
 const PassagesList: React.FC<PassagesListProps> = ({ selectedTeams, showWeekends }) => {
-  const { timeFilter, setTimeFilter, groupedEvents, getTeamInfo } = usePassagesData(
+  const { timeFilter, setTimeFilter, groupedEvents, getTeamInfo } = useScheduledPassages(
     selectedTeams,
     showWeekends
   );

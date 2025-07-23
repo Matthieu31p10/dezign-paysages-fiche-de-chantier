@@ -3,14 +3,14 @@ import { useApp } from '@/context/AppContext';
 import { PassageFilters } from '@/components/passages/PassageFilters';
 import { PassageStats } from '@/components/passages/PassageStats';
 import { PassageViewTabs } from '@/components/passages/PassageViewTabs';
-import { usePassageData } from '@/hooks/usePassageData';
+import { useProjectPassageHistory } from '@/hooks/useProjectPassageHistory';
 
 const Passages = () => {
   const { projectInfos, workLogs, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [selectedTeam, setSelectedTeam] = useState<string>('');
 
-  const { activeProjects, activeTeams, sortedPassages, stats, getProjectName } = usePassageData({
+  const { activeProjects, activeTeams, sortedPassages, stats, getProjectName } = useProjectPassageHistory({
     workLogs,
     projectInfos,
     teams,

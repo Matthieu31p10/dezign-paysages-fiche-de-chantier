@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { useModernScheduleData } from '../../modern/hooks/useModernScheduleData';
 import { parseISO, isToday, isTomorrow, startOfWeek, endOfWeek } from 'date-fns';
 
-export const usePassagesData = (selectedTeams: string[], showWeekends: boolean) => {
+export const useScheduledPassages = (selectedTeams: string[], showWeekends: boolean) => {
   const { teams } = useApp();
   const [timeFilter, setTimeFilter] = useState<'today' | 'tomorrow' | 'week' | 'month'>('week');
   

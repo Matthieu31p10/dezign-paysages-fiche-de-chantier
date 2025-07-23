@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { differenceInDays } from 'date-fns';
 import { WorkLog, ProjectInfo, Team } from '@/types/models';
 
-interface UsePassageDataProps {
+interface UseProjectPassageHistoryProps {
   workLogs: WorkLog[];
   projectInfos: ProjectInfo[];
   teams: Team[];
@@ -10,13 +10,13 @@ interface UsePassageDataProps {
   selectedTeam: string;
 }
 
-export const usePassageData = ({
+export const useProjectPassageHistory = ({
   workLogs,
   projectInfos,
   teams,
   selectedProject,
   selectedTeam
-}: UsePassageDataProps) => {
+}: UseProjectPassageHistoryProps) => {
   // Filtrer les projets actifs
   const activeProjects = useMemo(() => 
     projectInfos.filter(p => !p.isArchived), 
