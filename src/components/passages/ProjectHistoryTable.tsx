@@ -8,6 +8,7 @@ import { fr } from 'date-fns/locale';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { useProjectPrimaryTeams } from '@/hooks/useProjectPrimaryTeams';
 import { Team } from '@/types/models';
+import { filterProjectsByTeam, filterWorkLogsByTeam, isTeamMatch, getTeamById } from '@/utils/teamUtils';
 
 interface ProjectHistoryTableProps {
   workLogs: WorkLog[];
@@ -41,8 +42,8 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
     // Filtrer les projets par équipe responsable (équipe principale) si une équipe est sélectionnée
     const projectsToShow = selectedTeam && selectedTeam !== 'all' 
       ? activeProjects.filter(project => {
-          const primaryTeam = getPrimaryTeamForProject(project.id);
-          return primaryTeam?.toLowerCase().includes(selectedTeam.toLowerCase());
+          const primaryTeam = getTeamById(teams, project.team);
+          return isTeamMatch(primaryTeam, selectedTeam);
         })
       : activeProjects;
     
@@ -53,22 +54,7 @@ export const ProjectHistoryTable: React.FC<ProjectHistoryTableProps> = ({
       );
 
       // Filtrer par équipe si sélectionnée
-      if (selectedTeam && selectedTeam !== 'all') {
-        projectWorkLogs = projectWorkLogs.filter(log => {
-          const matchPersonnel = log.personnel && log.personnel.some(person => 
-            person.toLowerCase().includes(selectedTeam.toLowerCase())
-          );
-          
-          const matchTeam = teams.some(team => 
-            team.name.toLowerCase() === selectedTeam.toLowerCase() &&
-            log.personnel && log.personnel.some(person => 
-              person.toLowerCase().includes(team.name.toLowerCase())
-            )
-          );
-          
-          return matchPersonnel || matchTeam;
-        });
-      }
+      projectWorkLogs = filterWorkLogsByTeam(projectWorkLogs, selectedTeam, teams);
 
       // Trier par date (plus récent en premier)
       const sortedLogs = projectWorkLogs.sort((a, b) => {

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { differenceInDays } from 'date-fns';
 import { WorkLog, ProjectInfo, Team } from '@/types/models';
+import { filterWorkLogsByTeam } from '@/utils/teamUtils';
 
 interface UseProjectPassageHistoryProps {
   workLogs: WorkLog[];
@@ -40,24 +41,7 @@ export const useProjectPassageHistory = ({
     }
     
     // Filtrer par équipe sélectionnée
-    if (selectedTeam && selectedTeam !== 'all') {
-      realWorkLogs = realWorkLogs.filter(log => {
-        // Chercher dans le personnel ou dans les équipes assignées au projet
-        const matchPersonnel = log.personnel && log.personnel.some(person => 
-          person.toLowerCase().includes(selectedTeam.toLowerCase())
-        );
-        
-        // Chercher aussi dans les équipes assignées au projet
-        const matchTeam = teams.some(team => 
-          team.name.toLowerCase() === selectedTeam.toLowerCase() &&
-          log.personnel && log.personnel.some(person => 
-            person.toLowerCase().includes(team.name.toLowerCase())
-          )
-        );
-        
-        return matchPersonnel || matchTeam;
-      });
-    }
+    realWorkLogs = filterWorkLogsByTeam(realWorkLogs, selectedTeam, teams);
     
     return realWorkLogs;
   }, [workLogs, selectedProject, selectedTeam, teams]);
