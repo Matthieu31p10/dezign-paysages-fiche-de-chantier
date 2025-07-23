@@ -1,7 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { differenceInDays, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { safeFormatDate, safeDateDifference } from '@/utils/dateUtils';
 import { WorkLog } from '@/types/models';
 
 interface PassageCardProps {
@@ -11,16 +10,10 @@ interface PassageCardProps {
 
 export const PassageCard: React.FC<PassageCardProps> = ({ passage, getProjectName }) => {
   const today = new Date();
-  const passageDate = new Date(passage.date);
-  const daysAgo = differenceInDays(today, passageDate);
+  const daysAgo = safeDateDifference(today, passage.date) ?? 0;
 
   const formatPassageDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return format(date, 'EEEE d MMMM yyyy', { locale: fr });
-    } catch {
-      return dateString;
-    }
+    return safeFormatDate(dateString, 'EEEE d MMMM yyyy', 'Date invalide');
   };
 
   const getDaysBadgeVariant = (days: number) => {

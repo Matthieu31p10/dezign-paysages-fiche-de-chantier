@@ -2,7 +2,8 @@
 import { useMemo, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useModernScheduleData } from '../../modern/hooks/useModernScheduleData';
-import { parseISO, isToday, isTomorrow, startOfWeek, endOfWeek } from 'date-fns';
+import { isToday, isTomorrow, startOfWeek, endOfWeek } from 'date-fns';
+import { safeParseDateString } from '@/utils/dateUtils';
 
 export const useScheduledPassages = (selectedTeams: string[], showWeekends: boolean) => {
   const { teams } = useApp();
@@ -22,26 +23,26 @@ export const useScheduledPassages = (selectedTeams: string[], showWeekends: bool
     const now = new Date();
     
     let filteredByTime = scheduledEvents.filter(event => {
-      try {
-        const eventDate = parseISO(event.date);
-        
-        switch (timeFilter) {
-          case 'today':
-            return isToday(eventDate);
-          case 'tomorrow':
-            return isTomorrow(eventDate);
-          case 'week':
-            const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-            const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-            return eventDate >= weekStart && eventDate <= weekEnd;
-          case 'month':
-            return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-          default:
-            return true;
-        }
-      } catch (error) {
-        console.error('Error parsing event date:', event.date, error);
+      const eventDate = safeParseDateString(event.date);
+      
+      if (!eventDate) {
+        console.warn('Invalid event date:', event.date);
         return false;
+      }
+      
+      switch (timeFilter) {
+        case 'today':
+          return isToday(eventDate);
+        case 'tomorrow':
+          return isTomorrow(eventDate);
+        case 'week':
+          const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+          const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+          return eventDate >= weekStart && eventDate <= weekEnd;
+        case 'month':
+          return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+        default:
+          return true;
       }
     });
 
