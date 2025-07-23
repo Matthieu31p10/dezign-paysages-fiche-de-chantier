@@ -7,11 +7,7 @@ import { differenceInDays, format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WorkLog, ProjectInfo } from '@/types/models';
 import { useProjectPrimaryTeams } from '@/hooks/useProjectPrimaryTeams';
-
-interface Team {
-  id: string;
-  name: string;
-}
+import { Team } from '@/types/models';
 
 interface ProjectHistoryTableProps {
   workLogs: WorkLog[];

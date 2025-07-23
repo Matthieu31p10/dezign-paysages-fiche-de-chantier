@@ -1,11 +1,6 @@
 import { useMemo } from 'react';
 import { differenceInDays } from 'date-fns';
-import { WorkLog, ProjectInfo } from '@/types/models';
-
-interface Team {
-  id: string;
-  name: string;
-}
+import { WorkLog, ProjectInfo, Team } from '@/types/models';
 
 interface UsePassageDataProps {
   workLogs: WorkLog[];

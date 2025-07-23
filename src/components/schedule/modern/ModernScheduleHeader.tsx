@@ -8,12 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, ChevronRight, Calendar, List, Filter } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface Team {
-  id: string;
-  name: string;
-  color: string;
-}
+import { Team } from '@/types/models';
 
 interface ModernScheduleHeaderProps {
   selectedMonth: number;

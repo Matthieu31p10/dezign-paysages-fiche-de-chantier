@@ -3,12 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Building2 } from 'lucide-react';
 import { PassageList } from './PassageList';
 import { ProjectHistoryTable } from './ProjectHistoryTable';
-import { WorkLog, ProjectInfo } from '@/types/models';
-
-interface Team {
-  id: string;
-  name: string;
-}
+import { WorkLog, ProjectInfo, Team } from '@/types/models';
 
 interface PassageViewTabsProps {
   workLogs: WorkLog[];
