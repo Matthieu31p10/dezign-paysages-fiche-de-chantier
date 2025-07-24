@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { differenceInDays } from 'date-fns';
 import { WorkLog, ProjectInfo, Team } from '@/types/models';
 import { filterWorkLogsByTeam } from '@/utils/teamUtils';
+import { getProjectName, getActiveProjects } from '@/utils/projectUtils';
+import { getRealWorkLogs, sortWorkLogsByDate } from '@/utils/workLogUtils';
 
 interface UseProjectPassageHistoryProps {
   workLogs: WorkLog[];
@@ -20,7 +22,7 @@ export const useProjectPassageHistory = ({
 }: UseProjectPassageHistoryProps) => {
   // Filtrer les projets actifs
   const activeProjects = useMemo(() => 
-    projectInfos.filter(p => !p.isArchived), 
+    getActiveProjects(projectInfos), 
     [projectInfos]
   );
 
@@ -33,7 +35,7 @@ export const useProjectPassageHistory = ({
   // Filtrer les passages selon les sélections projet et équipe
   const filteredPassages = useMemo(() => {
     // Filtrer d'abord pour exclure les blank worksheets
-    let realWorkLogs = workLogs.filter(log => !log.isBlankWorksheet);
+    let realWorkLogs = getRealWorkLogs(workLogs);
     
     // Filtrer par projet sélectionné
     if (selectedProject && selectedProject !== 'all') {
@@ -48,11 +50,7 @@ export const useProjectPassageHistory = ({
 
   // Trier les passages par date (plus récent en premier)
   const sortedPassages = useMemo(() => {
-    return [...filteredPassages].sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateB.getTime() - dateA.getTime();
-    });
+    return sortWorkLogsByDate(filteredPassages);
   }, [filteredPassages]);
 
   // Calculer les statistiques
@@ -77,9 +75,8 @@ export const useProjectPassageHistory = ({
     };
   }, [sortedPassages]);
 
-  const getProjectName = (projectId: string) => {
-    const project = projectInfos.find(p => p.id === projectId);
-    return project?.name || 'Projet inconnu';
+  const getProjectNameHelper = (projectId: string) => {
+    return getProjectName(projectInfos, projectId);
   };
 
   return {
@@ -87,6 +84,6 @@ export const useProjectPassageHistory = ({
     activeTeams,
     sortedPassages,
     stats,
-    getProjectName
+    getProjectName: getProjectNameHelper
   };
 };
