@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useSettings } from '@/context/SettingsContext';
+import { usePersonnelManagement } from '@/hooks/usePersonnelManagement';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,8 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 
 const PersonnelManagement = () => {
-  const { getPersonnel, addPersonnel, updatePersonnel, deletePersonnel, togglePersonnelActive } = useSettings();
-  const personnel = getPersonnel();
+  const { personnel, addPersonnel, updatePersonnel, deletePersonnel, togglePersonnelActive, loading } = usePersonnelManagement();
   
   const [newName, setNewName] = useState('');
   const [newPosition, setNewPosition] = useState('');
@@ -128,7 +127,13 @@ const PersonnelManagement = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {personnel.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                  Chargement...
+                </TableCell>
+              </TableRow>
+            ) : personnel.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
                   Aucun personnel n'a été ajouté

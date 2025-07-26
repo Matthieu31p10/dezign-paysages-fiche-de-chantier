@@ -4,6 +4,8 @@ import { SettingsContextType } from './types';
 import { toast } from 'sonner';
 import { useClientConnections } from '@/hooks/useClientConnections';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
+import { usePersonnelManagement } from '@/hooks/usePersonnelManagement';
+import { useUserManagement } from '@/hooks/useUserManagement';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -28,6 +30,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updateNotificationPreferences,
     loading: supabaseLoading 
   } = useSupabaseSettings();
+  
+  const { 
+    personnel: supabasePersonnel,
+    addPersonnel: addSupabasePersonnel,
+    updatePersonnel: updateSupabasePersonnel,
+    deletePersonnel: deleteSupabasePersonnel,
+    togglePersonnelActive: toggleSupabasePersonnelActive
+  } = usePersonnelManagement();
+  
+  const { 
+    users: supabaseUsers,
+    updateUserPermissions: updateSupabaseUserPermissions
+  } = useUserManagement();
 
   // Load settings from localStorage and Supabase
   useEffect(() => {
@@ -57,16 +72,29 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [supabaseSettings]);
 
-  // Update settings with clientConnections from Supabase
+  // Update settings with data from Supabase
   useEffect(() => {
-    // Only update if clientConnections actually changed to prevent infinite loop
     setSettings(prev => {
+      const updates: Partial<AppSettings> = {};
+      
+      // Update clientConnections
       if (JSON.stringify(prev.clientConnections) !== JSON.stringify(clientConnections)) {
-        return { ...prev, clientConnections };
+        updates.clientConnections = clientConnections;
       }
-      return prev;
+      
+      // Update personnel from Supabase
+      if (JSON.stringify(prev.personnel) !== JSON.stringify(supabasePersonnel)) {
+        updates.personnel = supabasePersonnel;
+      }
+      
+      // Update users from Supabase
+      if (JSON.stringify(prev.users) !== JSON.stringify(supabaseUsers)) {
+        updates.users = supabaseUsers;
+      }
+      
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
     });
-  }, [clientConnections]);
+  }, [clientConnections, supabasePersonnel, supabaseUsers]);
 
   // Save settings to localStorage whenever they change (except clientConnections)
   useEffect(() => {
@@ -138,53 +166,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const addPersonnel = async (name: string, position?: string): Promise<Personnel> => {
-    const newPersonnel: Personnel = {
-      id: crypto.randomUUID(),
-      name,
-      position: position || '',
-      active: true
-    };
-
-    setSettings(prev => ({
-      ...prev,
-      personnel: [...prev.personnel, newPersonnel]
-    }));
-
-    // Sync to Supabase
-    try {
-      const appConfig = supabaseSettings.app_configuration as Record<string, unknown> | undefined;
-      const currentPersonnel = (appConfig?.personnel as Array<{ id: string; name: string; position?: string; active?: boolean }>) || [];
-      await updateAppConfiguration({ personnel: [...currentPersonnel, newPersonnel] });
-    } catch (error) {
-      console.error('Error syncing personnel to Supabase:', error);
-    }
-
-    return newPersonnel;
-  };
-
-  const updatePersonnel = async (personnel: Personnel) => {
-    setSettings(prev => ({
-      ...prev,
-      personnel: prev.personnel.map(p => p.id === personnel.id ? personnel : p)
-    }));
-  };
-
-  const deletePersonnel = async (id: string) => {
-    setSettings(prev => ({
-      ...prev,
-      personnel: prev.personnel.filter(p => p.id !== id)
-    }));
-  };
-
-  const togglePersonnelActive = async (id: string, isActive: boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      personnel: prev.personnel.map(p => 
-        p.id === id ? { ...p, active: isActive } : p
-      )
-    }));
-  };
+  // Use Supabase hooks for personnel management
+  const addPersonnel = addSupabasePersonnel;
+  const updatePersonnel = updateSupabasePersonnel;
+  const deletePersonnel = deleteSupabasePersonnel;
+  const togglePersonnelActive = toggleSupabasePersonnelActive;
 
   const getPersonnel = (): Personnel[] => {
     return settings.personnel || [];
@@ -228,6 +214,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         togglePersonnelActive,
         getCustomTasks,
         users: settings.users,
+        updateUserPermissions: updateSupabaseUserPermissions,
         addClientConnection,
         updateClientConnection,
         deleteClientConnection,
