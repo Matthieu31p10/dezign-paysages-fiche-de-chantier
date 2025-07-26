@@ -1,32 +1,18 @@
 
 import { useMemo } from 'react';
 import { ProjectDayLock } from '../types';
+import { isProjectLockedOnDay, getProjectLockDetails } from '@/utils/scheduleUtils';
 
 export const useProjectLocksQueries = (projectLocks: ProjectDayLock[]) => {
-  const isProjectLockedOnDay = useMemo(() => {
+  const isProjectLockedOnDayCallback = useMemo(() => {
     return (projectId: string, dayOfWeek: number): boolean => {
-      const lock = projectLocks.find(
-        l => l.projectId === projectId && 
-            l.dayOfWeek === dayOfWeek && 
-            l.isActive
-      );
-      return !!lock;
+      return isProjectLockedOnDay(projectLocks, projectId, dayOfWeek);
     };
   }, [projectLocks]);
 
-  const getProjectLockDetails = useMemo(() => {
+  const getProjectLockDetailsCallback = useMemo(() => {
     return (projectId: string, dayOfWeek: number): { minDaysBetweenVisits?: number } | null => {
-      const lock = projectLocks.find(
-        l => l.projectId === projectId && 
-            l.dayOfWeek === dayOfWeek && 
-            l.isActive
-      );
-      
-      if (!lock) return null;
-      
-      return {
-        minDaysBetweenVisits: lock.minDaysBetweenVisits
-      };
+      return getProjectLockDetails(projectLocks, projectId, dayOfWeek);
     };
   }, [projectLocks]);
 
@@ -43,8 +29,8 @@ export const useProjectLocksQueries = (projectLocks: ProjectDayLock[]) => {
   }, [projectLocks]);
 
   return {
-    isProjectLockedOnDay,
-    getProjectLockDetails,
+    isProjectLockedOnDay: isProjectLockedOnDayCallback,
+    getProjectLockDetails: getProjectLockDetailsCallback,
     getLocksForProject,
     getLocksForDay,
   };
