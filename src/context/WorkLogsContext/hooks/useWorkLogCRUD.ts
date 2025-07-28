@@ -1,9 +1,10 @@
 
 import { WorkLog } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToastService } from '@/hooks/useToastService';
 
 export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<React.SetStateAction<WorkLog[]>>) => {
+  const { workLogMessages } = useToastService();
   const addWorkLog = async (workLog: WorkLog): Promise<WorkLog> => {
     try {
       console.log('Adding worklog to database:', workLog);
@@ -111,9 +112,11 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
       };
 
       setWorkLogs((prev) => [newWorkLog, ...prev]);
+      workLogMessages.created();
       return newWorkLog;
     } catch (error) {
       console.error("Error adding work log:", error);
+      workLogMessages.error('créer');
       throw error;
     }
   };
@@ -184,10 +187,10 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
       if (error) throw error;
 
       setWorkLogs((prev) => prev.map((log) => (log.id === id ? workLogToUpdate : log)));
-      toast.success('Fiche mise à jour avec succès');
+      workLogMessages.updated();
     } catch (error) {
       console.error("Error updating work log:", error);
-      toast.error('Erreur lors de la mise à jour de la fiche');
+      workLogMessages.error('modifier');
       throw error;
     }
   };
@@ -207,10 +210,10 @@ export const useWorkLogCRUD = (workLogs: WorkLog[], setWorkLogs: React.Dispatch<
       if (error) throw error;
 
       setWorkLogs((prev) => prev.filter((log) => log.id !== id));
-      toast.success('Fiche supprimée avec succès');
+      workLogMessages.deleted();
     } catch (error) {
       console.error("Error deleting work log:", error);
-      toast.error('Erreur lors de la suppression de la fiche');
+      workLogMessages.error('supprimer');
       throw error;
     }
   };

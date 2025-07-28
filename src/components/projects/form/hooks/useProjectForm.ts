@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ProjectInfo } from '@/types/models';
 import { useApp } from '@/context/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useToastService } from '@/hooks/useToastService';
 import { validateProjectData } from '../utils/projectValidation';
 import { useProjectFormHandlers } from './useProjectFormHandlers';
 import { saveProjectToSupabase } from '../utils/projectSupabaseOperations';
@@ -20,6 +20,7 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
   const navigate = useNavigate();
   const { addProjectInfo, updateProjectInfo, teams } = useApp();
   const { archiveWorkLogsByProjectId } = useWorkLogs();
+  const { projectMessages } = useToastService();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<Omit<ProjectInfo, 'id' | 'createdAt'>>({
@@ -72,7 +73,7 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
       // Validation
       const validationResult = validateProjectData(formData);
       if (!validationResult.isValid) {
-        toast.error(validationResult.errorMessage);
+        projectMessages.error('valider');
         setIsSubmitting(false);
         return;
       }
@@ -100,28 +101,28 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
         await archiveWorkLogsByProjectId(projectId, true);
         
         if (shouldAutoArchive) {
-          toast.success('Projet archivé automatiquement (date de fin atteinte) avec toutes ses fiches');
+          projectMessages.archived();
         } else {
-          toast.success('Projet archivé avec toutes ses fiches de suivi');
+          projectMessages.archived();
         }
       } else if (!completeProjectInfo.isArchived && wasArchived) {
         // Désarchiver toutes les fiches de suivi et fiches vierges liées
         await archiveWorkLogsByProjectId(projectId, false);
-        toast.success('Projet désarchivé avec toutes ses fiches de suivi');
+        projectMessages.unarchived();
       }
       
       // Then update local state
       if (initialData) {
         updateProjectInfo(completeProjectInfo);
         if (!completeProjectInfo.isArchived || wasArchived) {
-          toast.success('Chantier mis à jour et sauvegardé dans Supabase');
+          projectMessages.updated();
         }
       } else {
         addProjectInfo(completeProjectInfo);
         if (shouldAutoArchive) {
-          toast.success('Chantier créé et archivé automatiquement (date de fin atteinte)');
+          projectMessages.archived();
         } else {
-          toast.success('Chantier ajouté et sauvegardé dans Supabase');
+          projectMessages.created();
         }
       }
       
@@ -132,7 +133,7 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Erreur lors de la création/mise à jour du chantier");
+      projectMessages.error(initialData ? 'modifier' : 'créer');
     } finally {
       setIsSubmitting(false);
     }

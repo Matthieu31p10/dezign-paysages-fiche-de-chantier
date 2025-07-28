@@ -1,11 +1,11 @@
-
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormValues } from './schema';
-import { toast } from 'sonner';
+import { useToastService } from '@/hooks/useToastService';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { useApp } from '@/context/AppContext';
 import { WorkLog, Consumable } from '@/types/models';
+import { useFormLoading } from '@/hooks/useLoadingState';
 
 interface WorkLogFormSubmitHandlerProps {
   children: React.ReactNode;
@@ -23,19 +23,21 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
   const methods = useFormContext<FormValues>();
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   const { getCurrentUser } = useApp();
+  const { workLogMessages, showError } = useToastService();
+  const { submitWithLoading, isSubmitting } = useFormLoading();
   
   const handleFormSubmit = async (formData: FormValues) => {
-    console.log('Form submission started with data:', formData);
-    
-    try {
+    return submitWithLoading(async () => {
+      console.log('Form submission started with data:', formData);
+      
       // Validation de base
       if (!isBlankWorksheet && !formData.projectId) {
-        toast.error("Veuillez sélectionner un projet");
+        showError("Veuillez sélectionner un projet");
         return;
       }
       
       if (!formData.personnel || formData.personnel.length === 0) {
-        toast.error("Veuillez sélectionner au moins une personne");
+        showError("Veuillez sélectionner au moins une personne");
         return;
       }
       
@@ -108,38 +110,17 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
       if (existingWorkLogId) {
         console.log('Updating existing worklog');
         await updateWorkLog(workLogData);
-        toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} mise à jour avec succès`);
       } else {
         console.log('Creating new worklog');
         const result = await addWorkLog(workLogData);
         console.log('Worklog created successfully:', result);
-        toast.success(`Fiche ${isBlankWorksheet ? 'vierge' : 'de suivi'} enregistrée avec succès`);
       }
       
       if (onSuccess) {
         console.log('Calling onSuccess callback');
         onSuccess();
       }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      
-      let errorMessage = 'Erreur inconnue';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        
-        if (errorMessage.includes('duplicate key')) {
-          errorMessage = 'Cette fiche existe déjà';
-        } else if (errorMessage.includes('foreign key')) {
-          errorMessage = 'Projet ou données liées non trouvées';
-        } else if (errorMessage.includes('not null')) {
-          errorMessage = 'Certains champs obligatoires sont manquants';
-        } else if (errorMessage.includes('permission denied')) {
-          errorMessage = 'Permissions insuffisantes pour cette action';
-        }
-      }
-      
-      toast.error(`Erreur lors de l'enregistrement: ${errorMessage}`);
-    }
+    });
   };
   
   return (
