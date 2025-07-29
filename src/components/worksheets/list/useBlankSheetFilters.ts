@@ -4,6 +4,7 @@ import { WorkLog } from '@/types/models';
 import { formatDate, getCurrentYear } from '@/utils/helpers';
 import { getYearsFromWorkLogs } from '@/utils/date-helpers';
 import { extractClientName, extractAddress, extractLinkedProjectId } from '@/utils/notes-extraction';
+import { SearchInput } from '@/components/ui/search-input';
 
 // Filter for blank worksheets
 const useBlankWorksheetFilter = (workLogs: WorkLog[]) => {

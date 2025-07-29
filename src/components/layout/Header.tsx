@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
+import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CalendarDaysIcon, Menu } from 'lucide-react';
+import { CalendarDaysIcon, Menu, Search } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -13,6 +15,8 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import CompanyLogo from '@/components/ui/company-logo';
+import GlobalSearchDialog from '@/components/search/GlobalSearchDialog';
+import { useKeyboardShortcuts, createCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
@@ -27,9 +31,20 @@ const navItems = [
 
 const Header: React.FC = () => {
   const { auth, logout } = useAuth();
+  const { projectInfos, teams } = useApp();
+  const { workLogs } = useWorkLogs();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: createCommonShortcuts({
+      onSearch: () => setIsSearchOpen(true),
+      onEscape: () => setIsSearchOpen(false)
+    })
+  });
 
   const handleLogout = () => {
     logout();
@@ -123,6 +138,31 @@ const Header: React.FC = () => {
           )}
 
           <div className="flex items-center gap-2">
+            {/* Search Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSearchOpen(true)}
+              className="hidden md:flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground"
+            >
+              <Search className="h-4 w-4" />
+              <span className="text-sm">Rechercher...</span>
+              <div className="ml-auto flex gap-1">
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                  <span className="text-xs">⌘</span>K
+                </kbd>
+              </div>
+            </Button>
+
+            {/* Mobile search button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSearchOpen(true)}
+              className="md:hidden h-10 w-10 p-0"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -185,6 +225,15 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Global Search Dialog */}
+      <GlobalSearchDialog
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        projects={projectInfos || []}
+        workLogs={workLogs || []}
+        teams={teams || []}
+      />
     </header>
   );
 };
