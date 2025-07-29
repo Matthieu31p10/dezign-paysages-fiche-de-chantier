@@ -7,6 +7,7 @@ import { getCurrentYear } from '@/utils/date-utils';
 import { getYearsFromWorkLogs } from '@/utils/statistics';
 import WaterConsumptionReport from '@/components/reports/WaterConsumptionReport';
 import BlankSheetAnalysis from '@/components/reports/blank-sheet-analysis';
+import AnalyticsDashboard from '@/components/reports/analytics-dashboard';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 
 const StatsTab = () => {
@@ -32,6 +33,7 @@ const StatsTab = () => {
 
   const tabs = [
     { id: 'global', label: 'Statistiques globales' },
+    { id: 'analytics', label: 'Analytics avancé' },
     { id: 'blank', label: 'Analyse fiches vierges' },
     { id: 'water', label: 'Consommation d\'eau' }
   ];
@@ -74,6 +76,15 @@ const StatsTab = () => {
       
       {selectedTab === 'global' && (
         <GlobalStats 
+          projects={activeProjects} 
+          workLogs={validWorkLogs} 
+          teams={validTeams} 
+          selectedYear={selectedYear} 
+        />
+      )}
+
+      {selectedTab === 'analytics' && (
+        <AnalyticsDashboard 
           projects={activeProjects} 
           workLogs={validWorkLogs} 
           teams={validTeams} 
