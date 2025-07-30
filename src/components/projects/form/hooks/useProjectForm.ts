@@ -9,6 +9,7 @@ import { useProjectFormHandlers } from './useProjectFormHandlers';
 import { saveProjectToSupabase } from '../utils/projectSupabaseOperations';
 import { convertToProjectInfo } from '../utils/projectDataTransformers';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
+import { useAuditedEntity } from '@/hooks/useAuditedEntity';
 
 interface UseProjectFormProps {
   initialData?: ProjectInfo;
@@ -22,6 +23,12 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
   const { archiveWorkLogsByProjectId } = useWorkLogs();
   const { projectMessages } = useToastService();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Audit tracking
+  const { trackCreate, trackUpdate, trackArchive, trackRestore } = useAuditedEntity({
+    entityType: 'project',
+    entityId: initialData?.id || 'new'
+  });
   
   const [formData, setFormData] = useState<Omit<ProjectInfo, 'id' | 'createdAt'>>({
     name: initialData?.name || '',
@@ -111,13 +118,22 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
         projectMessages.unarchived();
       }
       
-      // Then update local state
+      // Track audit changes
       if (initialData) {
+        await trackUpdate(initialData, completeProjectInfo);
         updateProjectInfo(completeProjectInfo);
+        
+        if (completeProjectInfo.isArchived && !wasArchived) {
+          await trackArchive(completeProjectInfo);
+        } else if (!completeProjectInfo.isArchived && wasArchived) {
+          await trackRestore(completeProjectInfo);
+        }
+        
         if (!completeProjectInfo.isArchived || wasArchived) {
           projectMessages.updated();
         }
       } else {
+        await trackCreate(completeProjectInfo);
         addProjectInfo(completeProjectInfo);
         if (shouldAutoArchive) {
           projectMessages.archived();

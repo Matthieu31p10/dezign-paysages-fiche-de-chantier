@@ -7,6 +7,7 @@ import { ArrowLeft, Edit, Trash, Calendar } from 'lucide-react';
 import { ProjectInfo } from '@/types/models';
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { AuditButton } from '@/components/audit/AuditButton';
 
 interface ProjectDetailHeaderProps {
   project: ProjectInfo;
@@ -69,6 +70,12 @@ const ProjectDetailHeader: React.FC<ProjectDetailHeaderProps> = ({
             </Button>
           </AlertDialogTrigger>
         </AlertDialog>
+        
+        <AuditButton
+          entityType="project"
+          entityId={project.id}
+          size="sm"
+        />
         
         <Button size="sm" className={isMobile ? "w-full mt-2" : ""} onClick={() => navigate(`/worklogs/new?projectId=${project.id}`)}>
           <Calendar className="w-4 h-4 mr-2" />
