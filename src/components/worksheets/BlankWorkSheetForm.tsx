@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { FileBarChart, Users } from 'lucide-react';
+import AutoSaveIndicator from '@/components/common/AutoSaveIndicator';
+import DraftRecoveryDialog from '@/components/common/DraftRecoveryDialog';
 
 // Import schema and custom hooks
 import { useFormInitialization } from './form/hooks/useFormInitialization';
@@ -60,7 +62,9 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
     handleClearProject,
     isSubmitting,
     handleSubmit,
-    handleCancel
+    handleCancel,
+    autoSave,
+    draftRecovery
   } = useBlankWorksheetForm({
     initialData,
     onSuccess,
@@ -69,10 +73,29 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
   });
   
   return (
-    <FormProvider {...form}>
-      <form onSubmit={handleSubmit} className="w-full">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="md:col-span-2 space-y-6">
+    <>
+      <DraftRecoveryDialog
+        isOpen={draftRecovery.showRecoveryDialog}
+        onRestore={draftRecovery.restoreDraft}
+        onDismiss={draftRecovery.dismissDraft}
+        draftAge={draftRecovery.formatDraftAge()}
+      />
+      
+      <FormProvider {...form}>
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="mb-4 flex justify-between items-center">
+            <h2 className="text-lg font-semibold">
+              {initialData ? 'Modifier la fiche vierge' : 'Nouvelle fiche vierge'}
+            </h2>
+            <AutoSaveIndicator
+              lastSaved={autoSave.lastSaved}
+              isSaving={autoSave.isSaving}
+              hasUnsavedChanges={autoSave.hasUnsavedChanges}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="md:col-span-2 space-y-6">
             <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
               <TabsList className="w-full">
                 <TabsTrigger value="project" className="flex-1">
@@ -143,10 +166,11 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               formValues={form.watch()} 
               projectName={selectedProject?.name} 
             />
+            </div>
           </div>
-        </div>
-      </form>
-    </FormProvider>
+        </form>
+      </FormProvider>
+    </>
   );
 };
 

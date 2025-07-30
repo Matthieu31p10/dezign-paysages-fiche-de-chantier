@@ -8,6 +8,8 @@ import { useFormActions } from './hooks/useFormActions';
 import { WorkLog } from '@/types/models';
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { useDraftRecovery } from '@/hooks/useDraftRecovery';
 
 interface UseBlankWorksheetFormProps {
   initialData?: any;
@@ -127,6 +129,26 @@ export const useBlankWorksheetForm = ({
     handleClearProject
   });
   
+  // Auto-save pour les feuilles vierges
+  const storageKey = `worksheet-draft-${initialData?.id || 'new'}`;
+  const autoSave = useAutoSave(form, {
+    storageKey,
+    enabled: true,
+    interval: 15000 // 15 secondes pour les feuilles vierges
+  });
+
+  // Récupération automatique des brouillons
+  const draftRecovery = useDraftRecovery({
+    storageKey,
+    onRestore: (data) => {
+      form.reset(data);
+      // Restaurer aussi le projet sélectionné si présent
+      if (data.linkedProjectId) {
+        handleProjectSelect(data.linkedProjectId);
+      }
+    }
+  });
+
   return {
     form,
     loadWorkLogData,
@@ -135,6 +157,8 @@ export const useBlankWorksheetForm = ({
     handleProjectSelect,
     handleClearProject,
     calculateTotalHours,
+    autoSave,
+    draftRecovery,
     ...formActions,
   };
 };
