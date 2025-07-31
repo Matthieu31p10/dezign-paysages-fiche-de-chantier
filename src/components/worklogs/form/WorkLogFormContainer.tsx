@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { WorkLogFormProvider } from './WorkLogFormContext';
@@ -6,8 +6,13 @@ import WorkLogFormSubmitHandler from './WorkLogFormSubmitHandler';
 import { useWorkLogFormState } from './useWorkLogForm';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useDraftRecovery } from '@/hooks/useDraftRecovery';
+import { useTemplates } from '@/hooks/useTemplates';
+import { useProductivityShortcuts } from '@/hooks/useProductivityShortcuts';
 import AutoSaveIndicator from '@/components/common/AutoSaveIndicator';
 import DraftRecoveryDialog from '@/components/common/DraftRecoveryDialog';
+import { TemplateSelector } from '@/components/templates/TemplateSelector';
+import { DuplicationMenu } from '@/components/worklogs/DuplicationMenu';
+import { Button } from '@/components/ui/button';
 
 interface WorkLogFormContainerProps {
   initialData?: WorkLog;
@@ -58,6 +63,39 @@ const WorkLogFormContainer: React.FC<WorkLogFormContainerProps> = ({
       form.reset(data);
     }
   });
+
+  // Templates et productivité
+  const { workLogTemplates, applyTemplate, deleteTemplate } = useTemplates();
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+
+  const handleApplyTemplate = (templateId: string) => {
+    const templateData = applyTemplate(templateId, 'worklog');
+    if (templateData) {
+      Object.entries(templateData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          form.setValue(key as any, value);
+        }
+      });
+      setSelectedTemplateId(templateId);
+    }
+  };
+
+  const handleDuplicate = () => {
+    // Cette fonction sera appelée par le raccourci clavier
+    if (initialData) {
+      // Logic de duplication sera gérée par le parent
+      console.log('Duplication demandée pour:', initialData.id);
+    }
+  };
+
+  // Raccourcis clavier
+  useProductivityShortcuts({
+    onSave: () => form.handleSubmit(() => {})(),
+    onDuplicate: handleDuplicate,
+    onTemplateMenu: () => setShowTemplateSelector(!showTemplateSelector),
+    enabled: true
+  });
   
   return (
     <>
@@ -83,12 +121,46 @@ const WorkLogFormContainer: React.FC<WorkLogFormContainerProps> = ({
               <h2 className="text-lg font-semibold">
                 {initialData ? 'Modifier la fiche' : 'Nouvelle fiche'}
               </h2>
-              <AutoSaveIndicator
-                lastSaved={autoSave.lastSaved}
-                isSaving={autoSave.isSaving}
-                hasUnsavedChanges={autoSave.hasUnsavedChanges}
-              />
+              <div className="flex items-center gap-2">
+                <AutoSaveIndicator
+                  lastSaved={autoSave.lastSaved}
+                  isSaving={autoSave.isSaving}
+                  hasUnsavedChanges={autoSave.hasUnsavedChanges}
+                />
+                {initialData && (
+                  <DuplicationMenu 
+                    workLog={initialData}
+                    onDuplicate={(duplicated) => {
+                      // Sera géré par le parent
+                      console.log('Fiche dupliquée:', duplicated);
+                    }}
+                  />
+                )}
+              </div>
             </div>
+            
+            {/* Templates Section */}
+            {showTemplateSelector && (
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-medium">Templates de fiches</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowTemplateSelector(false)}
+                  >
+                    ×
+                  </Button>
+                </div>
+                <TemplateSelector
+                  type="worklog"
+                  templates={workLogTemplates}
+                  onApplyTemplate={handleApplyTemplate}
+                  onDeleteTemplate={(id) => deleteTemplate(id, 'worklog')}
+                  selectedTemplateId={selectedTemplateId}
+                />
+              </div>
+            )}
             
             <WorkLogFormSubmitHandler 
               onSuccess={() => {
