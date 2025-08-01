@@ -6,11 +6,12 @@ import AccessControl from './AccessControl';
 import LoginSettings from './LoginSettings';
 import UserList from './UserList';
 import ClientConnectionsManagement from './ClientConnectionsManagement';
-import { User, UsersRound, UserCheck, Bug, ShieldCheck } from 'lucide-react';
+import { User, UsersRound, UserCheck, Bug, ShieldCheck, History } from 'lucide-react';
 import BackupRestoreSection from './BackupRestoreSection';
 import AdvancedSettingsPanel from './AdvancedSettingsPanel';
 import TeamsManagement from './TeamsManagement';
 import PersonnelManagement from './PersonnelManagement';
+import LoginHistoryTab from './LoginHistoryTab';
 
 interface SettingsTabsContentProps {
   canManageUsers: boolean;
@@ -122,6 +123,10 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
             <LoginSettings />
           </CardContent>
         </Card>
+      </TabsContent>
+      
+      <TabsContent value="history" className="space-y-4">
+        <LoginHistoryTab />
       </TabsContent>
       
       <TabsContent value="backup" className="space-y-4">

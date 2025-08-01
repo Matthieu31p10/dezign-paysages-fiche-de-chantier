@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface LoginRecord {
   id: string;
@@ -11,24 +10,21 @@ export interface LoginRecord {
   ip_address?: string;
 }
 
+const STORAGE_KEY = 'login_history';
+
 export const useLoginHistory = () => {
   const [loginHistory, setLoginHistory] = useState<LoginRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadLoginHistory = async () => {
+  const loadLoginHistory = () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const { data, error: fetchError } = await supabase
-        .from('login_history')
-        .select('*')
-        .order('login_time', { ascending: false });
-
-      if (fetchError) throw fetchError;
-      
-      setLoginHistory(data || []);
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const history = stored ? JSON.parse(stored) : [];
+      setLoginHistory(history);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
       console.error('Error loading login history:', err);
@@ -39,40 +35,33 @@ export const useLoginHistory = () => {
 
   const recordLogin = async (userEmail: string, userName: string, userId: string) => {
     try {
-      const loginRecord = {
+      const loginRecord: LoginRecord = {
+        id: `login_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         user_id: userId,
         user_email: userEmail,
         user_name: userName,
         login_time: new Date().toISOString(),
         user_agent: navigator.userAgent,
-        ip_address: null // Could be populated server-side
+        ip_address: undefined
       };
 
-      const { error } = await supabase
-        .from('login_history')
-        .insert([loginRecord]);
-
-      if (error) throw error;
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const history = stored ? JSON.parse(stored) : [];
+      const updatedHistory = [loginRecord, ...history];
       
-      // Refresh history after recording
-      await loadLoginHistory();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
+      setLoginHistory(updatedHistory);
     } catch (err) {
       console.error('Error recording login:', err);
     }
   };
 
-  const clearHistory = async () => {
+  const clearHistory = () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const { error } = await supabase
-        .from('login_history')
-        .delete()
-        .neq('id', ''); // Delete all records
-
-      if (error) throw error;
-      
+      localStorage.removeItem(STORAGE_KEY);
       setLoginHistory([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');

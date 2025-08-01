@@ -1,5 +1,5 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserCog, Users, LogIn, Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon } from 'lucide-react';
+import { UserCog, Users, LogIn, Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon, History } from 'lucide-react';
 
 interface SettingsTabsListProps {
   canManageUsers: boolean;
@@ -7,7 +7,7 @@ interface SettingsTabsListProps {
 
 const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
   return (
-    <TabsList className="w-full grid grid-cols-3 sm:grid-cols-9 lg:w-auto">
+    <TabsList className="w-full grid grid-cols-3 sm:grid-cols-10 lg:w-auto">
       <TabsTrigger value="company" className="flex items-center gap-1.5">
         <Building className="h-4 w-4" />
         <span className="hidden sm:inline">Entreprise</span>
@@ -36,6 +36,11 @@ const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
       <TabsTrigger value="login" className="flex items-center gap-1.5">
         <LogIn className="h-4 w-4" />
         <span className="hidden sm:inline">Connexion</span>
+      </TabsTrigger>
+      
+      <TabsTrigger value="history" disabled={!canManageUsers} className="flex items-center gap-1.5">
+        <History className="h-4 w-4" />
+        <span className="hidden sm:inline">Historique</span>
       </TabsTrigger>
       
       <TabsTrigger value="backup" className="flex items-center gap-1.5">

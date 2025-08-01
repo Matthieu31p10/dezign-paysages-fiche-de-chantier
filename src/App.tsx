@@ -24,7 +24,7 @@ import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Passages from './pages/Passages';
 import Index from './pages/Index';
-import Dashboard from './pages/Dashboard';
+
 import './App.css';
 
 function App() {
@@ -41,7 +41,6 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
-              <Route path="dashboard" element={<Dashboard />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/new" element={<ProjectNew />} />
               <Route path="projects/:id" element={<ProjectDetail />} />

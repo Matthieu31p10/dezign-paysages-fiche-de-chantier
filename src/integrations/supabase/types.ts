@@ -262,6 +262,39 @@ export type Database = {
         }
         Relationships: []
       }
+      login_history: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          login_time: string
+          user_agent: string | null
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          login_time?: string
+          user_agent?: string | null
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          login_time?: string
+          user_agent?: string | null
+          user_email?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       monthly_passage_distributions: {
         Row: {
           created_at: string
@@ -824,7 +857,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

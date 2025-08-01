@@ -28,10 +28,10 @@ export const useProductivityShortcuts = ({
     {
       key: '1',
       ctrlKey: true,
-      description: 'Aller au tableau de bord',
+      description: 'Aller aux chantiers',
       action: () => {
-        navigate('/');
-        toast.success('Navigation: Tableau de bord');
+        navigate('/projects');
+        toast.success('Navigation: Chantiers');
       }
     },
     {

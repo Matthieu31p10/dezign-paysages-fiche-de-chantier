@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { handleAuthError } from '@/utils/errorHandler';
+import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, settings } = useApp();
+  const { login, settings, auth } = useApp();
+  const { recordLogin } = useLoginHistory();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -31,6 +33,17 @@ const Login = () => {
     try {
       const success = login(username, password);
       if (success) {
+        // Record the login
+        setTimeout(async () => {
+          if (auth.currentUser) {
+            await recordLogin(
+              auth.currentUser.email || username,
+              auth.currentUser.name || username,
+              auth.currentUser.id || username
+            );
+          }
+        }, 100);
+        
         navigate(from, { replace: true });
       } else {
         setError('Identifiant ou mot de passe incorrect');

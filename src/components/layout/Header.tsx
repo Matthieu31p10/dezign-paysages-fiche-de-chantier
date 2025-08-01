@@ -20,7 +20,6 @@ import { useKeyboardShortcuts, createCommonShortcuts } from '@/hooks/useKeyboard
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
-  { path: '/dashboard', label: 'Tableau de bord', color: 'blue' },
   { path: '/projects', label: 'Chantiers', color: 'emerald' },
   { path: '/passages', label: 'Passages', color: 'green' },
   { path: '/worklogs', label: 'Suivis', color: 'teal' },
