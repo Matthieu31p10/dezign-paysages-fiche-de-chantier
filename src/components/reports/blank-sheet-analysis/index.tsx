@@ -18,7 +18,7 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
 }) => {
   // Filter for blank sheets only and for the selected year
   const blankSheets = useMemo(() => {
-    return workLogs.filter(log => {
+    const filtered = workLogs.filter(log => {
       const isBlankSheet = log.projectId && 
         (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
       
@@ -28,6 +28,14 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
       
       return isBlankSheet && matchesYear;
     });
+    
+    console.log(`🔍 Analyse fiches vierges ${selectedYear}:`, {
+      totalWorkLogs: workLogs.length,
+      blankSheetsFound: filtered.length,
+      blankSheetIds: filtered.map(f => f.projectId)
+    });
+    
+    return filtered;
   }, [workLogs, selectedYear]);
   
   // Calculate total amount from all blank sheets
