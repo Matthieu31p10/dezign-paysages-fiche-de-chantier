@@ -19,8 +19,8 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
   // Filter for blank sheets only and for the selected year
   const blankSheets = useMemo(() => {
     const filtered = workLogs.filter(log => {
-      const isBlankSheet = log.projectId && 
-        (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
+      // Use the isBlankWorksheet property instead of projectId check
+      const isBlankSheet = log.isBlankWorksheet === true;
       
       // Check if the year matches the selected year
       const logYear = new Date(log.date).getFullYear();
@@ -32,7 +32,7 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
     console.log(`🔍 Analyse fiches vierges ${selectedYear}:`, {
       totalWorkLogs: workLogs.length,
       blankSheetsFound: filtered.length,
-      blankSheetIds: filtered.map(f => f.projectId)
+      blankSheetData: filtered.map(f => ({ id: f.id, isBlankWorksheet: f.isBlankWorksheet, date: f.date }))
     });
     
     return filtered;
