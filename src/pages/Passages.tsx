@@ -3,6 +3,7 @@ import { useApp } from '@/context/AppContext';
 import { MobilePassageFilters } from '@/components/passages/MobilePassageFilters';
 import { AdvancedPassageStats } from '@/components/passages/AdvancedPassageStats';
 import { PassageCharts } from '@/components/passages/PassageCharts';
+import { AdvancedPassageFeatures } from '@/components/passages/AdvancedPassageFeatures';
 import { PassageViewTabs } from '@/components/passages/PassageViewTabs';
 import { useProjectPassageHistory } from '@/hooks/useProjectPassageHistory';
 
@@ -53,6 +54,19 @@ const Passages = () => {
         daysSinceLastPassage={stats.daysSinceLastPassage}
         passages={sortedPassages}
         getProjectName={getProjectName}
+      />
+
+      {/* Fonctionnalités avancées */}
+      <AdvancedPassageFeatures
+        passages={sortedPassages}
+        getProjectName={getProjectName}
+        onProjectSelect={setSelectedProject}
+        currentFilters={{
+          selectedProject,
+          selectedTeam,
+          searchQuery,
+          periodFilter
+        }}
       />
 
       {/* Graphiques - masqués sur mobile pour économiser l'espace */}
