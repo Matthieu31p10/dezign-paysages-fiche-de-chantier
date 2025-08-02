@@ -10,6 +10,7 @@ import { WorkLogDashboard } from '@/components/worklogs/dashboard/WorkLogDashboa
 import { WorkLogAnalytics } from '@/components/worklogs/analytics/WorkLogAnalytics';
 import { WorkLogAdvancedFilters } from '@/components/worklogs/filters/WorkLogAdvancedFilters';
 import { WorkLogCalendarView } from '@/components/worklogs/calendar/WorkLogCalendarView';
+import { WorkLogFinancialManagement } from '@/components/worklogs/financial/WorkLogFinancialManagement';
 import { useAdvancedWorkLogsFiltering } from '@/components/worklogs/hooks/useAdvancedWorkLogsFiltering';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -47,9 +48,10 @@ const WorkLogs = () => {
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="calendar">Calendrier</TabsTrigger>
           <TabsTrigger value="list">Liste des fiches</TabsTrigger>
         </TabsList>
@@ -75,6 +77,10 @@ const WorkLogs = () => {
         
         <TabsContent value="dashboard" className="space-y-6">
           <WorkLogDashboard workLogs={workLogs} teams={teams} />
+        </TabsContent>
+
+        <TabsContent value="financial" className="space-y-6">
+          <WorkLogFinancialManagement workLogs={workLogs} />
         </TabsContent>
         
         <TabsContent value="list" className="space-y-6">
