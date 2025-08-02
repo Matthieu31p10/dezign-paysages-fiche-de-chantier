@@ -27,7 +27,6 @@ const WorkLogs = () => {
     log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
   
   const workLogsSuivi = workLogs.filter(log => !isBlankWorksheet(log));
-  const workLogsVierges = workLogs.filter(log => isBlankWorksheet(log));
 
   const {
     selectedProjectId,
@@ -47,7 +46,7 @@ const WorkLogs = () => {
     loadFilter,
     deleteFilter,
     filteredLogs
-  } = useAdvancedWorkLogsFiltering(workLogs);
+  } = useAdvancedWorkLogsFiltering(workLogsSuivi);
 
   // Fonction pour obtenir le nom d'un projet
   const getProjectName = (projectId: string) => {
@@ -71,7 +70,7 @@ const WorkLogs = () => {
           <TabsTrigger value="suivi">Fiches Suivi</TabsTrigger>
         </TabsList>
         <TabsContent value="analytics" className="space-y-6">
-          <WorkLogAnalytics workLogs={workLogs} teams={teams} />
+          <WorkLogAnalytics workLogs={workLogsSuivi} teams={teams} />
         </TabsContent>
         <TabsContent value="calendar" className="space-y-6">
           <WorkLogAdvancedFilters
@@ -91,20 +90,20 @@ const WorkLogs = () => {
         </TabsContent>
         
         <TabsContent value="dashboard" className="space-y-6">
-          <WorkLogDashboard workLogs={workLogs} teams={teams} />
+          <WorkLogDashboard workLogs={workLogsSuivi} teams={teams} />
         </TabsContent>
 
         <TabsContent value="financial" className="space-y-6">
-          <WorkLogFinancialManagement workLogs={workLogs} />
+          <WorkLogFinancialManagement workLogs={workLogsSuivi} />
         </TabsContent>
 
         <TabsContent value="export" className="space-y-6">
-          <WorkLogExportManager workLogs={workLogs} />
+          <WorkLogExportManager workLogs={workLogsSuivi} />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
           <WorkLogNotifications 
-            workLogs={workLogs} 
+            workLogs={workLogsSuivi} 
             projects={projectInfos} 
             teams={teams} 
           />
@@ -112,7 +111,7 @@ const WorkLogs = () => {
 
         <TabsContent value="automation" className="space-y-6">
           <WorkLogAutomation 
-            workLogs={workLogs} 
+            workLogs={workLogsSuivi} 
             projects={projectInfos} 
             teams={teams} 
           />
@@ -209,14 +208,7 @@ const WorkLogs = () => {
               <CardTitle className="flex items-center">
                 <span>Fiches de suivi</span>
                 <span className="ml-2 bg-blue-100 text-blue-800 text-sm rounded-full px-2 py-0.5">
-                  {workLogsSuivi.filter(log => {
-                    // Appliquer les mêmes filtres que filteredLogs mais seulement sur les fiches de suivi
-                    if (selectedProjectId !== 'all' && log.projectId !== selectedProjectId) return false;
-                    if (selectedTeamId !== 'all' && !log.personnel?.some(p => p.includes(teams.find(t => t.id === selectedTeamId)?.name || ''))) return false;
-                    if (selectedMonth !== 'all' && new Date(log.date).getMonth() + 1 !== selectedMonth) return false;
-                    if (selectedYear && new Date(log.date).getFullYear() !== selectedYear) return false;
-                    return true;
-                  }).length}
+                  {filteredLogs.length}
                 </span>
               </CardTitle>
               <CardDescription>
@@ -228,13 +220,7 @@ const WorkLogs = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <WorkLogList workLogs={workLogsSuivi.filter(log => {
-                if (selectedProjectId !== 'all' && log.projectId !== selectedProjectId) return false;
-                if (selectedTeamId !== 'all' && !log.personnel?.some(p => p.includes(teams.find(t => t.id === selectedTeamId)?.name || ''))) return false;
-                if (selectedMonth !== 'all' && new Date(log.date).getMonth() + 1 !== selectedMonth) return false;
-                if (selectedYear && new Date(log.date).getFullYear() !== selectedYear) return false;
-                return true;
-              })} />
+              <WorkLogList workLogs={filteredLogs} />
             </CardContent>
           </Card>
         </TabsContent>
