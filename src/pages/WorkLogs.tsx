@@ -13,6 +13,7 @@ import { WorkLogCalendarView } from '@/components/worklogs/calendar/WorkLogCalen
 import { WorkLogFinancialManagement } from '@/components/worklogs/financial/WorkLogFinancialManagement';
 import { WorkLogExportManager } from '@/components/worklogs/export/WorkLogExportManager';
 import { WorkLogNotifications } from '@/components/worklogs/notifications/WorkLogNotifications';
+import { WorkLogAutomation } from '@/components/worklogs/automation/WorkLogAutomation';
 import { useAdvancedWorkLogsFiltering } from '@/components/worklogs/hooks/useAdvancedWorkLogsFiltering';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -50,12 +51,13 @@ const WorkLogs = () => {
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="export">Export</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="automation">Automation</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="list">WorkLogs</TabsTrigger>
         </TabsList>
@@ -93,6 +95,14 @@ const WorkLogs = () => {
 
         <TabsContent value="notifications" className="space-y-6">
           <WorkLogNotifications 
+            workLogs={workLogs} 
+            projects={projectInfos} 
+            teams={teams} 
+          />
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-6">
+          <WorkLogAutomation 
             workLogs={workLogs} 
             projects={projectInfos} 
             teams={teams} 
