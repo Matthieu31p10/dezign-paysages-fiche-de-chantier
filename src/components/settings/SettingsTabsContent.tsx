@@ -12,6 +12,8 @@ import TeamsSection from '@/components/settings/sections/TeamsSection';
 import UsersSection from '@/components/settings/sections/UsersSection';
 import SecuritySection from '@/components/settings/sections/SecuritySection';
 import UXDemoSection from '@/components/settings/sections/UXDemoSection';
+import PermissionsDemo from '@/components/settings/sections/PermissionsDemo';
+import PerformanceDemoSection from '@/components/settings/sections/PerformanceDemoSection';
 
 interface SettingsTabsContentProps {
   canManageUsers: boolean;
@@ -100,9 +102,21 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Cette section sera bientôt disponible pour visualiser et tester les permissions.
-            </p>
+            <PermissionsDemo />
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="performance-demo" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Démonstration des performances</CardTitle>
+            <CardDescription>
+              Optimisations de performance et métriques en temps réel
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PerformanceDemoSection />
           </CardContent>
         </Card>
       </TabsContent>

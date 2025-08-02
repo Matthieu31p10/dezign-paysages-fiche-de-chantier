@@ -1,7 +1,8 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import SaveIndicator from '@/components/ui/save-indicator';
 import { useSaveStatus } from '@/hooks/useSaveStatus';
+import { usePerformance } from '@/context/PerformanceContext';
 
 interface SettingsSectionProps {
   title: string;
@@ -34,6 +35,14 @@ const SettingsSection = ({
   } = useSaveStatus({
     successMessage: `${title} sauvegardé`,
     autoSaveDelay: autoSave ? 2000 : 0
+  });
+
+  const { measureRender } = usePerformance();
+
+  // Mesure des performances de rendu
+  useEffect(() => {
+    const endMeasure = measureRender(`SettingsSection-${title}`);
+    return endMeasure;
   });
 
   const handleChange = () => {
