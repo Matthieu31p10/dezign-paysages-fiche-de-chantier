@@ -45,102 +45,20 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
     <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" 
           style={{ borderLeftColor: team?.color || (isBlankWorksheet ? '#6B7280' : '#10B981') }}>
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 space-y-3">
-            {/* Header unifié */}
-            <div className="flex items-center gap-2 mb-1.5">
-              {isBlankWorksheet ? (
-                <FileBarChart className="h-4 w-4 text-primary" />
-              ) : (
-                <FileText className="h-4 w-4 text-primary" />
-              )}
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <FileText className="h-4 w-4 text-primary" />
               <h3 className="font-medium">
-                {isBlankWorksheet ? (
-                  workLog.clientName || 'Fiche vierge sans nom'
-                ) : (
-                  project?.name || 'Chantier inconnu'
-                )}
+                {project?.name || 'Chantier inconnu'}
               </h3>
-              
-              {/* Badge du type de fiche */}
-              {isBlankWorksheet ? (
-                workLog.projectId && workLog.projectId.startsWith('DZFV') && (
-                  <Badge variant="secondary" className="ml-2 flex items-center gap-1">
-                    <Tag className="h-3 w-3" />
-                    {workLog.projectId}
-                  </Badge>
-                )
-              ) : (
-                <Badge variant="outline" className="ml-2 flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
-                  Fiche de suivi
-                </Badge>
-              )}
-              
-              {/* Badges à droite */}
-              <div className="ml-auto flex items-center gap-2">
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {formatDate(new Date(workLog.date))}
-                </Badge>
-                
-                {workLog.createdAt && (
-                  <Badge variant="outline" className="flex items-center gap-1 text-xs">
-                    <Clock className="h-3 w-3" />
-                    {new Date(workLog.createdAt).toLocaleTimeString('fr-FR', { 
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </Badge>
-                )}
-              </div>
+              <Badge variant="outline" className="text-xs">
+                {formatDate(new Date(workLog.date))}
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                {totalTeamHours.toFixed(1)}h
+              </span>
             </div>
-
-            {/* Team badge et statuts */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {team && <TeamBadge teamName={team.name} teamColor={team.color} />}
-              </div>
-              <div className="flex items-center gap-2">
-                {workLog.isQuoteSigned && (
-                  <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Devis signé
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Contenu principal */}
-            <div className="mt-2">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
-                <div>
-                  <p className="text-xs text-muted-foreground">Heures équipe</p>
-                  <p className="font-medium">{totalTeamHours.toFixed(2)}h</p>
-                </div>
-                
-                <div>
-                  <p className="text-xs text-muted-foreground">Personnel</p>
-                  <p className="font-medium">{personnelCount} personne{personnelCount > 1 ? 's' : ''}</p>
-                </div>
-                
-              </div>
-              
-              {/* Adresse */}
-              {(workLog.address || project?.address) && (
-                <p className="text-sm text-muted-foreground truncate mt-1">
-                  {workLog.address || project?.address}
-                </p>
-              )}
-            </div>
-
-
-            {/* Notes preview */}
-            {workLog.notes && (
-              <p className="text-sm text-gray-600 line-clamp-2 mt-2">
-                {workLog.notes}
-              </p>
-            )}
           </div>
 
           {/* Action button */}
