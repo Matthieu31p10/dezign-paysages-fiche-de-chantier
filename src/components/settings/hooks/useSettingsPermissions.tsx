@@ -1,15 +1,19 @@
-import { useApp } from '@/context/AppContext';
+import { useAdvancedPermissions } from '@/hooks/usePermissions';
 
+/**
+ * Hook spécialisé pour les permissions des paramètres
+ * @deprecated Utilisez useAdvancedPermissions à la place
+ */
 export const useSettingsPermissions = () => {
-  const { canUserAccess } = useApp();
+  const permissions = useAdvancedPermissions();
 
   return {
-    canManageUsers: canUserAccess('admin'),
-    canEditCompanySettings: canUserAccess('admin'),
-    canManageTeams: canUserAccess('admin'),
-    canViewAdvancedSettings: canUserAccess('admin'),
-    canManageBackup: canUserAccess('admin'),
-    canViewLoginHistory: canUserAccess('admin'),
-    canViewErrors: process.env.NODE_ENV === 'development'
+    canManageUsers: permissions.canManageUsers,
+    canEditCompanySettings: permissions.canEditCompanySettings,
+    canManageTeams: permissions.canManageTeams,
+    canViewAdvancedSettings: permissions.canViewAdvancedSettings,
+    canManageBackup: permissions.canManageBackup,
+    canViewLoginHistory: permissions.canViewLoginHistory,
+    canViewErrors: permissions.canViewErrors
   };
 };

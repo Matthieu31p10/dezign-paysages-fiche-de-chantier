@@ -6,6 +6,7 @@ import { SettingsProvider } from './SettingsContext';
 import { WorkLogsProvider } from './WorkLogsContext/WorkLogsContext';
 import { AppProvider } from './AppContext';
 import { AuthProvider } from './AuthContext';
+import { PermissionsProvider } from './PermissionsContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -30,7 +31,9 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
             <WorkLogsProvider>
               <ProjectsProvider>
                 <AppProvider>
-                  {children}
+                  <PermissionsProvider>
+                    {children}
+                  </PermissionsProvider>
                 </AppProvider>
               </ProjectsProvider>
             </WorkLogsProvider>

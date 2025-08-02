@@ -85,6 +85,22 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
       <TabsContent value="advanced" className="space-y-4">
         <AdvancedSettingsPanel />
       </TabsContent>
+
+      <TabsContent value="permissions-demo" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Démonstration des permissions</CardTitle>
+            <CardDescription>
+              Aperçu du nouveau système de permissions avancé
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Cette section sera bientôt disponible pour visualiser et tester les permissions.
+            </p>
+          </CardContent>
+        </Card>
+      </TabsContent>
       
       {permissions.canViewErrors && (
         <TabsContent value="errors" className="space-y-4">
