@@ -1,17 +1,16 @@
 import { TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import LogoSettings from './LogoSettings';
-import AccessControl from './AccessControl';
-import LoginSettings from './LoginSettings';
-import UserList from './UserList';
+import PersonnelManagement from './PersonnelManagement';
 import ClientConnectionsManagement from './ClientConnectionsManagement';
-import { User, UsersRound, UserCheck, Bug, ShieldCheck, History } from 'lucide-react';
 import BackupRestoreSection from './BackupRestoreSection';
 import AdvancedSettingsPanel from './AdvancedSettingsPanel';
-import TeamsManagement from './TeamsManagement';
-import PersonnelManagement from './PersonnelManagement';
 import LoginHistoryTab from './LoginHistoryTab';
+import { User, UserCheck, Bug } from 'lucide-react';
+import { useSettingsPermissions } from '@/components/settings/hooks/useSettingsPermissions';
+import CompanySection from '@/components/settings/sections/CompanySection';
+import TeamsSection from '@/components/settings/sections/TeamsSection';
+import UsersSection from '@/components/settings/sections/UsersSection';
+import SecuritySection from '@/components/settings/sections/SecuritySection';
 
 interface SettingsTabsContentProps {
   canManageUsers: boolean;
@@ -19,37 +18,15 @@ interface SettingsTabsContentProps {
 }
 
 const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsContentProps) => {
+  const permissions = useSettingsPermissions();
   return (
     <>
       <TabsContent value="company" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Informations de l'entreprise</CardTitle>
-            <CardDescription>
-              Personnalisez les informations de votre entreprise qui apparaîtront sur les fiches de suivi
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <LogoSettings />
-          </CardContent>
-        </Card>
+        <CompanySection />
       </TabsContent>
       
       <TabsContent value="teams" className="space-y-4">
-        <Card>
-          <CardHeader className="bg-gradient-to-r from-green-50 to-white">
-            <CardTitle className="flex items-center text-green-800">
-              <UsersRound className="h-5 w-5 mr-2 text-green-600" />
-              Gestion des équipes
-            </CardTitle>
-            <CardDescription>
-              Gérez les équipes pour les fiches de suivi et fiches vierges
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TeamsManagement />
-          </CardContent>
-        </Card>
+        <TeamsSection />
       </TabsContent>
       
       <TabsContent value="personnel" className="space-y-4">
@@ -87,42 +64,14 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
       </TabsContent>
       
       <TabsContent value="users" className="space-y-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Utilisateurs</CardTitle>
-              <CardDescription>
-                Gérez les utilisateurs ayant accès à l'application
-              </CardDescription>
-            </div>
-            
-            <Button onClick={onAddUserClick}>
-              Ajouter un utilisateur
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <UserList isAdmin={canManageUsers} />
-          </CardContent>
-        </Card>
-        
-        <AccessControl />
+        <UsersSection 
+          canManageUsers={canManageUsers}
+          onAddUserClick={onAddUserClick}
+        />
       </TabsContent>
       
       <TabsContent value="login" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-              Paramètres de connexion
-            </CardTitle>
-            <CardDescription>
-              Gérez les paramètres de connexion à l'application
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <LoginSettings />
-          </CardContent>
-        </Card>
+        <SecuritySection canManageUsers={canManageUsers} />
       </TabsContent>
       
       <TabsContent value="history" className="space-y-4">
@@ -137,22 +86,21 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
         <AdvancedSettingsPanel />
       </TabsContent>
       
-      {process.env.NODE_ENV === 'development' && (
+      {permissions.canViewErrors && (
         <TabsContent value="errors" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bug className="h-5 w-5 text-destructive" />
-                Monitoring des erreurs
+                <Bug className="h-5 w-5 text-muted-foreground" />
+                Rapport d'erreurs
               </CardTitle>
               <CardDescription>
-                Le nouveau système de gestion d'erreurs centralisé est activé.
-                Les erreurs sont maintenant traitées automatiquement avec des notifications toast.
+                Consultez les erreurs de l'application en mode développement
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Le système d'erreurs a été migré vers une approche centralisée plus moderne.
+              <p className="text-sm text-muted-foreground">
+                Le système d'erreurs est disponible uniquement en mode développement.
               </p>
             </CardContent>
           </Card>

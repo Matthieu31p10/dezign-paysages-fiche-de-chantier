@@ -1,11 +1,13 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserCog, Users, LogIn, Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon, History } from 'lucide-react';
+import { useSettingsPermissions } from '@/components/settings/hooks/useSettingsPermissions';
+import { Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon, History, Users, LogIn } from 'lucide-react';
 
 interface SettingsTabsListProps {
   canManageUsers: boolean;
 }
 
 const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
+  const permissions = useSettingsPermissions();
   return (
     <TabsList className="w-full grid grid-cols-3 sm:grid-cols-10 lg:w-auto">
       <TabsTrigger value="company" className="flex items-center gap-1.5">
@@ -28,7 +30,7 @@ const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
         <span className="hidden sm:inline">Clients</span>
       </TabsTrigger>
       
-      <TabsTrigger value="users" disabled={!canManageUsers} className="flex items-center gap-1.5">
+      <TabsTrigger value="users" disabled={!permissions.canManageUsers} className="flex items-center gap-1.5">
         <Users className="h-4 w-4" />
         <span className="hidden sm:inline">Utilisateurs</span>
       </TabsTrigger>
@@ -38,7 +40,7 @@ const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
         <span className="hidden sm:inline">Connexion</span>
       </TabsTrigger>
       
-      <TabsTrigger value="history" disabled={!canManageUsers} className="flex items-center gap-1.5">
+      <TabsTrigger value="history" disabled={!permissions.canViewLoginHistory} className="flex items-center gap-1.5">
         <History className="h-4 w-4" />
         <span className="hidden sm:inline">Historique</span>
       </TabsTrigger>
@@ -53,7 +55,7 @@ const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
         <span className="hidden sm:inline">Avancé</span>
       </TabsTrigger>
       
-      {process.env.NODE_ENV === 'development' && (
+      {permissions.canViewErrors && (
         <TabsTrigger value="errors" className="flex items-center gap-1.5">
           <Bug className="h-4 w-4" />
           <span className="hidden sm:inline">Erreurs</span>
