@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { PassageFilters } from '@/components/passages/PassageFilters';
+import { MobilePassageFilters } from '@/components/passages/MobilePassageFilters';
 import { AdvancedPassageStats } from '@/components/passages/AdvancedPassageStats';
 import { PassageCharts } from '@/components/passages/PassageCharts';
 import { PassageViewTabs } from '@/components/passages/PassageViewTabs';
@@ -24,15 +24,15 @@ const Passages = () => {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="text-center py-6">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Passages</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 md:space-y-6 animate-fade-in p-4 md:p-0">
+      <div className="text-center py-4 md:py-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Passages</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Visualisez les passages effectués et leur fréquence
         </p>
       </div>
 
-      <PassageFilters
+      <MobilePassageFilters
         selectedProject={selectedProject}
         setSelectedProject={setSelectedProject}
         selectedTeam={selectedTeam}
@@ -55,10 +55,13 @@ const Passages = () => {
         getProjectName={getProjectName}
       />
 
-      <PassageCharts
-        passages={sortedPassages}
-        getProjectName={getProjectName}
-      />
+      {/* Graphiques - masqués sur mobile pour économiser l'espace */}
+      <div className="hidden md:block">
+        <PassageCharts
+          passages={sortedPassages}
+          getProjectName={getProjectName}
+        />
+      </div>
 
       <PassageViewTabs
         workLogs={workLogs}

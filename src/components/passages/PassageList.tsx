@@ -5,7 +5,7 @@ import { Calendar } from 'lucide-react';
 import { PassageCard } from './PassageCard';
 import { PassageCardCompact } from './PassageCardCompact';
 import { PassageTable } from './PassageTable';
-import { PassageViewControls } from './PassageViewControls';
+import { MobilePassageViewControls } from './MobilePassageViewControls';
 import { WorkLog } from '@/types/models';
 
 interface PassageListProps {
@@ -128,7 +128,7 @@ export const PassageList: React.FC<PassageListProps> = ({
           </div>
         ) : (
           <>
-            <PassageViewControls
+            <MobilePassageViewControls
               viewMode={viewMode}
               setViewMode={setViewMode}
               sortBy={sortBy}
@@ -139,12 +139,21 @@ export const PassageList: React.FC<PassageListProps> = ({
             />
             
             {viewMode === 'table' ? (
-              <PassageTable 
-                passages={paginatedData} 
-                getProjectName={getProjectName} 
-              />
-            ) : (
-              <div className={viewMode === 'compact' ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'space-y-4'}>
+              <div className="hidden md:block">
+                <PassageTable 
+                  passages={paginatedData} 
+                  getProjectName={getProjectName} 
+                />
+              </div>
+            ) : null}
+
+            {/* Vue mobile optimisée */}
+            {viewMode !== 'table' && (
+              <div className={`${
+                viewMode === 'compact' 
+                  ? 'grid grid-cols-1 gap-3' 
+                  : 'space-y-3 md:space-y-4'
+              }`}>
                 {paginatedData.map((passage) => 
                   viewMode === 'compact' ? (
                     <PassageCardCompact 
@@ -160,6 +169,20 @@ export const PassageList: React.FC<PassageListProps> = ({
                     />
                   )
                 )}
+              </div>
+            )}
+
+            {/* Message pour la vue tableau sur mobile */}
+            {viewMode === 'table' && (
+              <div className="md:hidden text-center py-8 text-muted-foreground">
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <p className="text-sm">
+                    La vue tableau n'est disponible que sur les écrans plus larges.
+                  </p>
+                  <p className="text-xs mt-1">
+                    Utilisez la vue compacte ou détaillée pour naviguer sur mobile.
+                  </p>
+                </div>
               </div>
             )}
             
