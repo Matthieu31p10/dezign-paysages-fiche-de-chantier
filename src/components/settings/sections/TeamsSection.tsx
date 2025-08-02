@@ -1,15 +1,20 @@
 import TeamsManagement from '@/components/settings/TeamsManagement';
-import SettingsCard from '@/components/settings/components/SettingsCard';
+import SettingsSection from '@/components/settings/components/SettingsSection';
 
 const TeamsSection = () => {
+  const handleSave = async () => {
+    // Simuler la sauvegarde des équipes
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  };
   return (
     <div className="space-y-6">
-      <SettingsCard 
+      <SettingsSection 
         title="Gestion des équipes"
         description="Créez et gérez vos équipes de travail"
+        onSave={handleSave}
       >
         <TeamsManagement />
-      </SettingsCard>
+      </SettingsSection>
     </div>
   );
 };

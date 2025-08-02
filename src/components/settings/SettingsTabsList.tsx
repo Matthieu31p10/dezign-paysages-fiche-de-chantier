@@ -9,7 +9,7 @@ interface SettingsTabsListProps {
 const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
   const permissions = useSettingsPermissions();
   return (
-    <TabsList className="w-full grid grid-cols-3 sm:grid-cols-10 lg:w-auto">
+    <TabsList className="w-full grid grid-cols-3 sm:grid-cols-11 lg:w-auto">
       <TabsTrigger value="company" className="flex items-center gap-1.5">
         <Building className="h-4 w-4" />
         <span className="hidden sm:inline">Entreprise</span>
@@ -53,6 +53,11 @@ const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
       <TabsTrigger value="advanced" className="flex items-center gap-1.5">
         <SettingsIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Avancé</span>
+      </TabsTrigger>
+
+      <TabsTrigger value="ux-demo" className="flex items-center gap-1.5">
+        <Users className="h-4 w-4" />
+        <span className="hidden sm:inline">Démo UX</span>
       </TabsTrigger>
       
       {permissions.canViewErrors && (

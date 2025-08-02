@@ -11,6 +11,7 @@ import CompanySection from '@/components/settings/sections/CompanySection';
 import TeamsSection from '@/components/settings/sections/TeamsSection';
 import UsersSection from '@/components/settings/sections/UsersSection';
 import SecuritySection from '@/components/settings/sections/SecuritySection';
+import UXDemoSection from '@/components/settings/sections/UXDemoSection';
 
 interface SettingsTabsContentProps {
   canManageUsers: boolean;
@@ -84,6 +85,10 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
       
       <TabsContent value="advanced" className="space-y-4">
         <AdvancedSettingsPanel />
+      </TabsContent>
+
+      <TabsContent value="ux-demo" className="space-y-4">
+        <UXDemoSection />
       </TabsContent>
 
       <TabsContent value="permissions-demo" className="space-y-4">
