@@ -16,7 +16,6 @@ import {
   MapPin, 
   Eye,
   FileText,
-  Banknote,
   FileBarChart,
   Tag,
   CheckCircle
@@ -41,8 +40,6 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
     navigate(`/worklogs/${workLog.id}`);
   };
 
-  // Calcul du coût total si taux horaire disponible
-  const totalCost = workLog.hourlyRate ? totalTeamHours * workLog.hourlyRate : 0;
 
   return (
     <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" 
@@ -105,12 +102,6 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
                 {team && <TeamBadge teamName={team.name} teamColor={team.color} />}
               </div>
               <div className="flex items-center gap-2">
-                {workLog.invoiced && (
-                  <Badge variant="outline" className="bg-green-100 text-green-800">
-                    <Banknote className="h-3 w-3 mr-1" />
-                    Facturé
-                  </Badge>
-                )}
                 {workLog.isQuoteSigned && (
                   <Badge variant="outline" className="bg-blue-100 text-blue-800">
                     <CheckCircle className="h-3 w-3 mr-1" />
@@ -133,19 +124,6 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
                   <p className="font-medium">{personnelCount} personne{personnelCount > 1 ? 's' : ''}</p>
                 </div>
                 
-                {workLog.hourlyRate && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Taux horaire</p>
-                    <p className="font-medium">{formatCurrency(workLog.hourlyRate)}/h</p>
-                  </div>
-                )}
-                
-                {workLog.signedQuoteAmount && workLog.signedQuoteAmount > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Devis signé</p>
-                    <p className="font-medium">{formatCurrency(workLog.signedQuoteAmount)}</p>
-                  </div>
-                )}
               </div>
               
               {/* Adresse */}
@@ -156,36 +134,6 @@ const WorkLogItem: React.FC<WorkLogItemProps> = ({ workLog, project }) => {
               )}
             </div>
 
-            {/* Stats badges */}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {workLog.hourlyRate && (
-                <Badge variant="outline" className="bg-white">
-                  Taux: {formatCurrency(workLog.hourlyRate)}/h
-                </Badge>
-              )}
-              
-              {totalTeamHours > 0 && (
-                <Badge variant="outline" className="bg-white">
-                  {totalTeamHours.toFixed(1)}h d'équipe
-                </Badge>
-              )}
-              
-              {workLog.hourlyRate && totalCost > 0 && (
-                <Badge variant="outline" className="bg-white">
-                  Total: {formatCurrency(totalCost)}
-                </Badge>
-              )}
-              
-              {workLog.signedQuoteAmount && workLog.signedQuoteAmount > 0 && (
-                <Badge 
-                  variant={workLog.isQuoteSigned ? "secondary" : "outline"} 
-                  className={workLog.isQuoteSigned ? "bg-green-100 text-green-800 border-green-200" : "bg-white"}
-                >
-                  {workLog.isQuoteSigned && <CheckCircle className="h-3 w-3 mr-1" />}
-                  Devis: {formatCurrency(workLog.signedQuoteAmount)}
-                </Badge>
-              )}
-            </div>
 
             {/* Notes preview */}
             {workLog.notes && (
