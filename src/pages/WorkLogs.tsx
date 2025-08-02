@@ -12,6 +12,7 @@ import { WorkLogAdvancedFilters } from '@/components/worklogs/filters/WorkLogAdv
 import { WorkLogCalendarView } from '@/components/worklogs/calendar/WorkLogCalendarView';
 import { WorkLogFinancialManagement } from '@/components/worklogs/financial/WorkLogFinancialManagement';
 import { WorkLogExportManager } from '@/components/worklogs/export/WorkLogExportManager';
+import { WorkLogNotifications } from '@/components/worklogs/notifications/WorkLogNotifications';
 import { useAdvancedWorkLogsFiltering } from '@/components/worklogs/hooks/useAdvancedWorkLogsFiltering';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -49,13 +50,14 @@ const WorkLogs = () => {
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="export">Export</TabsTrigger>
-          <TabsTrigger value="calendar">Calendrier</TabsTrigger>
-          <TabsTrigger value="list">Liste des fiches</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          <TabsTrigger value="list">WorkLogs</TabsTrigger>
         </TabsList>
         <TabsContent value="analytics" className="space-y-6">
           <WorkLogAnalytics workLogs={workLogs} teams={teams} />
@@ -87,6 +89,14 @@ const WorkLogs = () => {
 
         <TabsContent value="export" className="space-y-6">
           <WorkLogExportManager workLogs={workLogs} />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-6">
+          <WorkLogNotifications 
+            workLogs={workLogs} 
+            projects={projectInfos} 
+            teams={teams} 
+          />
         </TabsContent>
         
         <TabsContent value="list" className="space-y-6">
