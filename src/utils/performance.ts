@@ -131,7 +131,7 @@ export const useDataCache = <T>(
       return fetcher();
     }
 
-    const cached = memoryCache.get<T>(key);
+    const cached = memoryCache.get(key) as T | null;
     if (cached !== null) {
       return cached;
     }

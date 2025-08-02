@@ -44,7 +44,7 @@ export const usePerformanceOptimization = <T = any,>(
 
   const { data: cachedData, fetchData: fetchCachedData } = useDataCache(
     cacheKey || 'default',
-    () => operationRef.current(),
+    async () => await Promise.resolve(operationRef.current()),
     { ttl: cacheTTL, enabled: enableCache && !!cacheKey }
   );
 

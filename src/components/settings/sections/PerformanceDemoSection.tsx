@@ -81,7 +81,7 @@ const PerformanceDemoSection = () => {
   const handleExpensiveOperation = async () => {
     setIsLoadingData(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const results = optimizedSearch(searchTerm);
+    const results = optimizedSearch(searchTerm) as DemoItem[];
     console.log(`Recherche terminée: ${results.length} résultats`);
     setIsLoadingData(false);
   };

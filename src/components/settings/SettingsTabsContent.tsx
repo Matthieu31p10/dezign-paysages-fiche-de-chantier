@@ -14,6 +14,7 @@ import SecuritySection from '@/components/settings/sections/SecuritySection';
 import UXDemoSection from '@/components/settings/sections/UXDemoSection';
 import PermissionsDemo from '@/components/settings/sections/PermissionsDemo';
 import PerformanceDemoSection from '@/components/settings/sections/PerformanceDemoSection';
+import MonitoringDashboard from '@/components/settings/sections/MonitoringDashboard';
 
 interface SettingsTabsContentProps {
   canManageUsers: boolean;
@@ -117,6 +118,20 @@ const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsCon
           </CardHeader>
           <CardContent>
             <PerformanceDemoSection />
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="monitoring" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Monitoring et Analytics</CardTitle>
+            <CardDescription>
+              Surveillance système et analyse des performances
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MonitoringDashboard />
           </CardContent>
         </Card>
       </TabsContent>

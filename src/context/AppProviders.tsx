@@ -8,6 +8,7 @@ import { AppProvider } from './AppContext';
 import { AuthProvider } from './AuthContext';
 import { PermissionsProvider } from './PermissionsContext';
 import { PerformanceProvider } from './PerformanceContext';
+import { AnalyticsProvider } from './AnalyticsContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -34,7 +35,9 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
                 <AppProvider>
                   <PermissionsProvider>
                     <PerformanceProvider>
-                      {children}
+                      <AnalyticsProvider enableAutoTracking={true}>
+                        {children}
+                      </AnalyticsProvider>
                     </PerformanceProvider>
                   </PermissionsProvider>
                 </AppProvider>

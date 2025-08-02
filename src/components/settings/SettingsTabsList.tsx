@@ -1,6 +1,6 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSettingsPermissions } from '@/components/settings/hooks/useSettingsPermissions';
-import { Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon, History, Users, LogIn, Palette, ShieldCheck, Zap } from 'lucide-react';
+import { Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon, History, Users, LogIn, Palette, ShieldCheck, Zap, Activity } from 'lucide-react';
 
 interface SettingsTabsListProps {
   canManageUsers: boolean;
@@ -9,7 +9,7 @@ interface SettingsTabsListProps {
 const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
   const permissions = useSettingsPermissions();
   return (
-    <TabsList className="w-full grid grid-cols-3 sm:grid-cols-14 lg:w-auto">
+    <TabsList className="w-full grid grid-cols-3 sm:grid-cols-15 lg:w-auto">
       <TabsTrigger value="company" className="flex items-center gap-1.5">
         <Building className="h-4 w-4" />
         <span className="hidden sm:inline">Entreprise</span>
@@ -68,6 +68,11 @@ const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
       <TabsTrigger value="performance-demo" className="flex items-center gap-1.5">
         <Zap className="h-4 w-4" />
         <span className="hidden sm:inline">Performance</span>
+      </TabsTrigger>
+
+      <TabsTrigger value="monitoring" className="flex items-center gap-1.5">
+        <Activity className="h-4 w-4" />
+        <span className="hidden sm:inline">Monitoring</span>
       </TabsTrigger>
       
       {permissions.canViewErrors && (

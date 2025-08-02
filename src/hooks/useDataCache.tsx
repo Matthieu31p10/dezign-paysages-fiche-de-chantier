@@ -41,7 +41,7 @@ export const useDataCache = <T,>(
     if (!enabled) return;
 
     if (!forceRefresh) {
-      const cached = memoryCache.get<T>(key);
+      const cached = memoryCache.get(key) as T | null;
       if (cached !== null) {
         setState(prev => ({
           ...prev,
@@ -142,7 +142,7 @@ export const usePrefetch = <T,>(
   const prefetch = useCallback(async () => {
     const { ttl = 5 * 60 * 1000 } = options;
     
-    const cached = memoryCache.get<T>(key);
+    const cached = memoryCache.get(key) as T | null;
     if (cached !== null) return cached;
 
     try {
