@@ -23,12 +23,30 @@ import { formatCurrency } from '@/utils/format-utils';
 interface WorkLogAnalyticsProps {
   workLogs: WorkLog[];
   teams: Array<{ id: string; name: string; color: string }>;
+  viewType?: 'all' | 'suivi' | 'vierges';
 }
 
 export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
   workLogs,
-  teams
+  teams,
+  viewType = 'all'
 }) => {
+  // Filtrer les données selon le type de vue
+  const filteredWorkLogs = useMemo(() => {
+    if (viewType === 'all') return workLogs;
+    
+    const isBlankWorksheet = (log: WorkLog) => 
+      log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
+    
+    if (viewType === 'suivi') {
+      return workLogs.filter(log => !isBlankWorksheet(log));
+    } else if (viewType === 'vierges') {
+      return workLogs.filter(log => isBlankWorksheet(log));
+    }
+    
+    return workLogs;
+  }, [workLogs, viewType]);
+
   const analyticsData = useMemo(() => {
     const now = new Date();
     
@@ -40,7 +58,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekEnd.getDate() + 6);
       
-      const weekLogs = workLogs.filter(log => {
+      const weekLogs = filteredWorkLogs.filter(log => {
         const logDate = parseISO(log.date);
         return logDate >= weekStart && logDate <= weekEnd;
       });
@@ -54,7 +72,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
       const weekRevenue = weekLogs.reduce((sum, log) => {
         const hours = log.timeTracking?.totalHours || log.duration || 0;
         const personnel = log.personnel?.length || 1;
-        const rate = log.hourlyRate || 0;
+        const rate = log.hourlyRate || 45;
         return sum + (hours * personnel * rate);
       }, 0);
       
@@ -74,7 +92,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
     }).map(monthStart => {
       const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
       
-      const monthLogs = workLogs.filter(log => {
+      const monthLogs = filteredWorkLogs.filter(log => {
         const logDate = parseISO(log.date);
         return logDate >= monthStart && logDate <= monthEnd;
       });
@@ -88,7 +106,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
       const monthRevenue = monthLogs.reduce((sum, log) => {
         const hours = log.timeTracking?.totalHours || log.duration || 0;
         const personnel = log.personnel?.length || 1;
-        const rate = log.hourlyRate || 0;
+        const rate = log.hourlyRate || 45;
         return sum + (hours * personnel * rate);
       }, 0);
       
@@ -103,7 +121,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
 
     // Répartition par équipe
     const teamData = teams.map(team => {
-      const teamLogs = workLogs.filter(log => log.personnel?.[0] === team.name);
+      const teamLogs = filteredWorkLogs.filter(log => log.personnel?.[0] === team.name);
       const teamHours = teamLogs.reduce((sum, log) => {
         const hours = log.timeTracking?.totalHours || log.duration || 0;
         const personnel = log.personnel?.length || 1;
@@ -113,7 +131,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
       const teamRevenue = teamLogs.reduce((sum, log) => {
         const hours = log.timeTracking?.totalHours || log.duration || 0;
         const personnel = log.personnel?.length || 1;
-        const rate = log.hourlyRate || 0;
+        const rate = log.hourlyRate || 45;
         return sum + (hours * personnel * rate);
       }, 0);
       
@@ -128,7 +146,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
 
     // Analyse des projets les plus actifs
     const projectStats = new Map();
-    workLogs.forEach(log => {
+    filteredWorkLogs.forEach(log => {
       const key = log.projectId;
       if (!projectStats.has(key)) {
         projectStats.set(key, {
@@ -142,7 +160,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
       const stats = projectStats.get(key);
       const hours = log.timeTracking?.totalHours || log.duration || 0;
       const personnel = log.personnel?.length || 1;
-      const rate = log.hourlyRate || 0;
+      const rate = log.hourlyRate || 45;
       
       stats.fiches += 1;
       stats.heures += hours * personnel;
@@ -162,12 +180,12 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
     const invoicingData = [
       { 
         statut: 'Facturé', 
-        nombre: workLogs.filter(log => log.invoiced).length,
+        nombre: filteredWorkLogs.filter(log => log.invoiced).length,
         color: '#10B981'
       },
       { 
         statut: 'En attente', 
-        nombre: workLogs.filter(log => !log.invoiced).length,
+        nombre: filteredWorkLogs.filter(log => !log.invoiced).length,
         color: '#F59E0B'
       }
     ];
@@ -179,7 +197,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
       topProjects,
       invoicingData
     };
-  }, [workLogs, teams]);
+  }, [filteredWorkLogs, teams]);
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
@@ -424,7 +442,7 @@ export const WorkLogAnalytics: React.FC<WorkLogAnalyticsProps> = ({
             
             <div className="text-center p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
               <div className="text-2xl font-bold text-purple-600 mb-2">
-                {((analyticsData.invoicingData[0]?.nombre || 0) / workLogs.length * 100).toFixed(0)}%
+                {((analyticsData.invoicingData[0]?.nombre || 0) / filteredWorkLogs.length * 100).toFixed(0)}%
               </div>
               <p className="text-sm text-purple-700 dark:text-purple-300">Taux facturation</p>
               <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">

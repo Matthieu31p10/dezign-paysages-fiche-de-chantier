@@ -10,11 +10,28 @@ import { formatCurrency } from '@/lib/utils';
 
 interface WorkLogFinancialManagementProps {
   workLogs: WorkLog[];
+  viewType?: 'all' | 'suivi' | 'vierges';
 }
 
 export const WorkLogFinancialManagement: React.FC<WorkLogFinancialManagementProps> = ({
-  workLogs
+  workLogs,
+  viewType = 'all'
 }) => {
+  // Filtrer les données selon le type de vue
+  const filteredWorkLogs = useMemo(() => {
+    if (viewType === 'all') return workLogs;
+    
+    const isBlankWorksheet = (log: WorkLog) => 
+      log.projectId && (log.projectId.startsWith('blank-') || log.projectId.startsWith('DZFV'));
+    
+    if (viewType === 'suivi') {
+      return workLogs.filter(log => !isBlankWorksheet(log));
+    } else if (viewType === 'vierges') {
+      return workLogs.filter(log => isBlankWorksheet(log));
+    }
+    
+    return workLogs;
+  }, [workLogs, viewType]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-month');
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
@@ -31,34 +48,34 @@ export const WorkLogFinancialManagement: React.FC<WorkLogFinancialManagementProp
     const now = new Date();
     const currentYear = parseInt(selectedYear);
     
-    let filteredLogs = workLogs.filter(log => {
+    let periodFilteredLogs = filteredWorkLogs.filter(log => {
       const logDate = new Date(log.date);
       return logDate.getFullYear() === currentYear;
     });
 
     if (selectedPeriod === 'current-month') {
-      filteredLogs = filteredLogs.filter(log => {
+      periodFilteredLogs = periodFilteredLogs.filter(log => {
         const logDate = new Date(log.date);
         return logDate.getMonth() === now.getMonth();
       });
     } else if (selectedPeriod === 'last-quarter') {
       const quarterStart = new Date(currentYear, Math.floor(now.getMonth() / 3) * 3 - 3, 1);
       const quarterEnd = new Date(currentYear, Math.floor(now.getMonth() / 3) * 3, 0);
-      filteredLogs = filteredLogs.filter(log => {
+      periodFilteredLogs = periodFilteredLogs.filter(log => {
         const logDate = new Date(log.date);
         return logDate >= quarterStart && logDate <= quarterEnd;
       });
     }
 
     // Calculate revenue metrics
-    const totalRevenue = filteredLogs.reduce((sum, log) => {
+    const totalRevenue = periodFilteredLogs.reduce((sum, log) => {
       const hourlyRate = log.hourlyRate || 45;
       const personnel = log.personnel?.length || 1;
       const hours = log.timeTracking?.totalHours || 0;
       return sum + (hourlyRate * hours * personnel);
     }, 0);
 
-    const invoicedRevenue = filteredLogs
+    const invoicedRevenue = periodFilteredLogs
       .filter(log => log.invoiced)
       .reduce((sum, log) => {
         const hourlyRate = log.hourlyRate || 45;
@@ -70,19 +87,19 @@ export const WorkLogFinancialManagement: React.FC<WorkLogFinancialManagementProp
     const pendingRevenue = totalRevenue - invoicedRevenue;
 
     // Calculate costs
-    const totalConsumablesCost = filteredLogs.reduce((sum, log) => {
+    const totalConsumablesCost = periodFilteredLogs.reduce((sum, log) => {
       return sum + (log.consumables?.reduce((cSum, c) => cSum + c.totalPrice, 0) || 0);
     }, 0);
 
     // Calculate total hours and projects
-    const totalHours = filteredLogs.reduce((sum, log) => {
+    const totalHours = periodFilteredLogs.reduce((sum, log) => {
       const personnel = log.personnel?.length || 1;
       const hours = log.timeTracking?.totalHours || 0;
       return sum + (hours * personnel);
     }, 0);
 
-    const uniqueProjects = new Set(filteredLogs.map(log => log.projectId)).size;
-    const totalVisits = filteredLogs.length;
+    const uniqueProjects = new Set(periodFilteredLogs.map(log => log.projectId)).size;
+    const totalVisits = periodFilteredLogs.length;
 
     // Calculate profit margins
     const grossProfit = totalRevenue - totalConsumablesCost;
@@ -97,7 +114,7 @@ export const WorkLogFinancialManagement: React.FC<WorkLogFinancialManagementProp
 
     // Monthly breakdown
     const monthlyData = Array.from({ length: 12 }, (_, i) => {
-      const monthLogs = workLogs.filter(log => {
+      const monthLogs = filteredWorkLogs.filter(log => {
         const logDate = new Date(log.date);
         return logDate.getFullYear() === currentYear && logDate.getMonth() === i;
       });
@@ -141,7 +158,7 @@ export const WorkLogFinancialManagement: React.FC<WorkLogFinancialManagementProp
       invoicingRate,
       monthlyData
     };
-  }, [workLogs, selectedPeriod, selectedYear]);
+  }, [filteredWorkLogs, selectedPeriod, selectedYear]);
 
   const handleExportFinancialReport = () => {
     const reportData = {
