@@ -58,12 +58,12 @@ const WorkLogs = () => {
     <div className="space-y-6 animate-fade-in">
       <WorkLogsHeader projectInfos={projectInfos} />
       
-      <Tabs defaultValue="analytics" className="w-full">
+      <Tabs defaultValue="suivi" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="suivi">Fiches Suivi</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="export">Export</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="suivi">Fiches Suivi</TabsTrigger>
         </TabsList>
         <TabsContent value="analytics" className="space-y-6">
           <WorkLogAnalytics workLogs={workLogsSuivi} teams={teams} />
