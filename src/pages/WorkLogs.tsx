@@ -8,7 +8,9 @@ import WorkLogsHeader from '@/components/worklogs/list/WorkLogsHeader';
 import TimeFilterTabs from '@/components/worklogs/list/TimeFilterTabs';
 import { WorkLogDashboard } from '@/components/worklogs/dashboard/WorkLogDashboard';
 import { WorkLogAnalytics } from '@/components/worklogs/analytics/WorkLogAnalytics';
-import { useWorkLogsFiltering } from '@/components/worklogs/hooks/useWorkLogsFiltering';
+import { WorkLogAdvancedFilters } from '@/components/worklogs/filters/WorkLogAdvancedFilters';
+import { WorkLogCalendarView } from '@/components/worklogs/calendar/WorkLogCalendarView';
+import { useAdvancedWorkLogsFiltering } from '@/components/worklogs/hooks/useAdvancedWorkLogsFiltering';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WorkLogs = () => {
@@ -25,21 +27,50 @@ const WorkLogs = () => {
     setSelectedYear,
     timeFilter,
     setTimeFilter,
+    advancedFilters,
+    setAdvancedFilters,
+    savedFilters,
+    saveFilter,
+    loadFilter,
+    deleteFilter,
     filteredLogs
-  } = useWorkLogsFiltering(workLogs);
+  } = useAdvancedWorkLogsFiltering(workLogs);
+
+  // Fonction pour obtenir le nom d'un projet
+  const getProjectName = (projectId: string) => {
+    const project = projectInfos.find(p => p.id === projectId);
+    return project?.name || 'Projet inconnu';
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="calendar">Calendrier</TabsTrigger>
           <TabsTrigger value="list">Liste des fiches</TabsTrigger>
         </TabsList>
         <TabsContent value="analytics" className="space-y-6">
           <WorkLogAnalytics workLogs={workLogs} teams={teams} />
+        </TabsContent>
+        <TabsContent value="calendar" className="space-y-6">
+          <WorkLogAdvancedFilters
+            filters={advancedFilters}
+            onFiltersChange={setAdvancedFilters}
+            teams={teams}
+            projects={projectInfos}
+            savedFilters={savedFilters}
+            onSaveFilter={saveFilter}
+            onLoadFilter={loadFilter}
+            onDeleteFilter={deleteFilter}
+          />
+          <WorkLogCalendarView
+            workLogs={filteredLogs}
+            getProjectName={getProjectName}
+          />
         </TabsContent>
         
         <TabsContent value="dashboard" className="space-y-6">
@@ -47,6 +78,17 @@ const WorkLogs = () => {
         </TabsContent>
         
         <TabsContent value="list" className="space-y-6">
+          <WorkLogAdvancedFilters
+            filters={advancedFilters}
+            onFiltersChange={setAdvancedFilters}
+            teams={teams}
+            projects={projectInfos}
+            savedFilters={savedFilters}
+            onSaveFilter={saveFilter}
+            onLoadFilter={loadFilter}
+            onDeleteFilter={deleteFilter}
+          />
+          
           <TimeFilterTabs 
             value={timeFilter} 
             onChange={setTimeFilter} 
@@ -139,6 +181,10 @@ const WorkLogs = () => {
                 {` - ${selectedYear}`}
                 {timeFilter === 'today' && ' - Aujourd\'hui'}
                 {timeFilter === 'week' && ' - Cette semaine'}
+                {advancedFilters.searchQuery && ` - Recherche: "${advancedFilters.searchQuery}"`}
+                {advancedFilters.invoiceStatus !== 'all' && ` - ${advancedFilters.invoiceStatus === 'invoiced' ? 'Facturées' : 'Non facturées'}`}
+                {advancedFilters.selectedTeams.length > 0 && ` - ${advancedFilters.selectedTeams.length} équipe(s) sélectionnée(s)`}
+                {advancedFilters.selectedProjects.length > 0 && ` - ${advancedFilters.selectedProjects.length} projet(s) sélectionné(s)`}
               </CardDescription>
             </CardHeader>
             <CardContent>
