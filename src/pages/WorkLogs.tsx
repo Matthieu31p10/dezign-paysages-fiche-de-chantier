@@ -7,6 +7,7 @@ import WorkLogList from '@/components/worklogs/WorkLogList';
 import WorkLogsHeader from '@/components/worklogs/list/WorkLogsHeader';
 import TimeFilterTabs from '@/components/worklogs/list/TimeFilterTabs';
 import { WorkLogDashboard } from '@/components/worklogs/dashboard/WorkLogDashboard';
+import { WorkLogAnalytics } from '@/components/worklogs/analytics/WorkLogAnalytics';
 import { useWorkLogsFiltering } from '@/components/worklogs/hooks/useWorkLogsFiltering';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -32,10 +33,14 @@ const WorkLogs = () => {
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="list">Liste des fiches</TabsTrigger>
         </TabsList>
+        <TabsContent value="analytics" className="space-y-6">
+          <WorkLogAnalytics workLogs={workLogs} teams={teams} />
+        </TabsContent>
         
         <TabsContent value="dashboard" className="space-y-6">
           <WorkLogDashboard workLogs={workLogs} teams={teams} />
