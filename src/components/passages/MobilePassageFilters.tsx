@@ -153,12 +153,12 @@ export const MobilePassageFilters: React.FC<MobilePassageFiltersProps> = ({
                             <MapPin className="h-4 w-4" />
                             Chantier
                           </label>
-                          <Select value={selectedProject} onValueChange={setSelectedProject}>
+                          <Select value={selectedProject || "all"} onValueChange={(value) => setSelectedProject(value === "all" ? "" : value)}>
                             <SelectTrigger>
                               <SelectValue placeholder="Tous les chantiers" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Tous les chantiers</SelectItem>
+                              <SelectItem value="all">Tous les chantiers</SelectItem>
                               {activeProjects.map((project) => (
                                 <SelectItem key={project.id} value={project.id}>
                                   {project.name}
@@ -174,12 +174,12 @@ export const MobilePassageFilters: React.FC<MobilePassageFiltersProps> = ({
                             <Users className="h-4 w-4" />
                             Équipe
                           </label>
-                          <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                          <Select value={selectedTeam || "all"} onValueChange={(value) => setSelectedTeam(value === "all" ? "" : value)}>
                             <SelectTrigger>
                               <SelectValue placeholder="Toutes les équipes" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Toutes les équipes</SelectItem>
+                              <SelectItem value="all">Toutes les équipes</SelectItem>
                               {activeTeams.map((team) => (
                                 <SelectItem key={team.id} value={team.name}>
                                   {team.name}
@@ -316,12 +316,12 @@ export const MobilePassageFilters: React.FC<MobilePassageFiltersProps> = ({
                   <MapPin className="h-4 w-4" />
                   Chantier
                 </label>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
+                <Select value={selectedProject || "all"} onValueChange={(value) => setSelectedProject(value === "all" ? "" : value)}>
                   <SelectTrigger className="bg-background border-border">
                     <SelectValue placeholder="Tous les chantiers" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border-border">
-                    <SelectItem value="">Tous les chantiers</SelectItem>
+                    <SelectItem value="all">Tous les chantiers</SelectItem>
                     {activeProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
@@ -335,12 +335,12 @@ export const MobilePassageFilters: React.FC<MobilePassageFiltersProps> = ({
                   <Users className="h-4 w-4" />
                   Équipe
                 </label>
-                <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                <Select value={selectedTeam || "all"} onValueChange={(value) => setSelectedTeam(value === "all" ? "" : value)}>
                   <SelectTrigger className="bg-background border-border">
                     <SelectValue placeholder="Toutes les équipes" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border-border">
-                    <SelectItem value="">Toutes les équipes</SelectItem>
+                    <SelectItem value="all">Toutes les équipes</SelectItem>
                     {activeTeams.map((team) => (
                       <SelectItem key={team.id} value={team.name}>
                         {team.name}
