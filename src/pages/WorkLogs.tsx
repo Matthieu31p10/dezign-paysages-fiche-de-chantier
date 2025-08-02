@@ -58,14 +58,10 @@ const WorkLogs = () => {
     <div className="space-y-6 animate-fade-in">
       <WorkLogsHeader projectInfos={projectInfos} />
       
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-8">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+      <Tabs defaultValue="analytics" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="export">Export</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="automation">Automation</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="suivi">Fiches Suivi</TabsTrigger>
         </TabsList>
@@ -89,32 +85,8 @@ const WorkLogs = () => {
           />
         </TabsContent>
         
-        <TabsContent value="dashboard" className="space-y-6">
-          <WorkLogDashboard workLogs={workLogsSuivi} teams={teams} />
-        </TabsContent>
-
-        <TabsContent value="financial" className="space-y-6">
-          <WorkLogFinancialManagement workLogs={workLogsSuivi} />
-        </TabsContent>
-
         <TabsContent value="export" className="space-y-6">
           <WorkLogExportManager workLogs={workLogsSuivi} />
-        </TabsContent>
-
-        <TabsContent value="notifications" className="space-y-6">
-          <WorkLogNotifications 
-            workLogs={workLogsSuivi} 
-            projects={projectInfos} 
-            teams={teams} 
-          />
-        </TabsContent>
-
-        <TabsContent value="automation" className="space-y-6">
-          <WorkLogAutomation 
-            workLogs={workLogsSuivi} 
-            projects={projectInfos} 
-            teams={teams} 
-          />
         </TabsContent>
 
         <TabsContent value="suivi" className="space-y-6">
