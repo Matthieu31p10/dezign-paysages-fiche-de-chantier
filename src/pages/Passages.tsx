@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { PassageFilters } from '@/components/passages/PassageFilters';
-import { PassageStats } from '@/components/passages/PassageStats';
+import { AdvancedPassageStats } from '@/components/passages/AdvancedPassageStats';
+import { PassageCharts } from '@/components/passages/PassageCharts';
 import { PassageViewTabs } from '@/components/passages/PassageViewTabs';
 import { useProjectPassageHistory } from '@/hooks/useProjectPassageHistory';
 
@@ -46,10 +47,17 @@ const Passages = () => {
         filteredCount={sortedPassages.length}
       />
 
-      <PassageStats
+      <AdvancedPassageStats
         totalPassages={stats.totalPassages}
         lastPassageDate={stats.lastPassageDate}
         daysSinceLastPassage={stats.daysSinceLastPassage}
+        passages={sortedPassages}
+        getProjectName={getProjectName}
+      />
+
+      <PassageCharts
+        passages={sortedPassages}
+        getProjectName={getProjectName}
       />
 
       <PassageViewTabs
