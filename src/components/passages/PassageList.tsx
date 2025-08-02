@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Calendar } from 'lucide-react';
 import { PassageCard } from './PassageCard';
 import { PassageCardCompact } from './PassageCardCompact';
+import { PassageTable } from './PassageTable';
 import { PassageViewControls } from './PassageViewControls';
 import { WorkLog } from '@/types/models';
 
@@ -20,14 +21,41 @@ export const PassageList: React.FC<PassageListProps> = ({
   selectedTeam,
   getProjectName
 }) => {
-  const [viewMode, setViewMode] = useState<'compact' | 'detailed'>('detailed');
-  const [sortBy, setSortBy] = useState<'date' | 'project' | 'duration'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Load preferences from localStorage
+  const [viewMode, setViewMode] = useState<'compact' | 'detailed' | 'table'>(() => {
+    return (localStorage.getItem('passageViewMode') as 'compact' | 'detailed' | 'table') || 'detailed';
+  });
+  const [sortBy, setSortBy] = useState<'date' | 'project' | 'duration' | 'team' | 'daysSince'>(() => {
+    return (localStorage.getItem('passageSortBy') as 'date' | 'project' | 'duration' | 'team' | 'daysSince') || 'date';
+  });
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+    return (localStorage.getItem('passageSortOrder') as 'asc' | 'desc') || 'desc';
+  });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = viewMode === 'table' ? 15 : 10;
+
+  // Save preferences to localStorage
+  useEffect(() => {
+    localStorage.setItem('passageViewMode', viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem('passageSortBy', sortBy);
+  }, [sortBy]);
+
+  useEffect(() => {
+    localStorage.setItem('passageSortOrder', sortOrder);
+  }, [sortOrder]);
 
   // Sort passages
   const sortedData = useMemo(() => {
+    const getDaysSincePassage = (date: string) => {
+      const passageDate = new Date(date);
+      const today = new Date();
+      const diffTime = Math.abs(today.getTime() - passageDate.getTime());
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    };
+
     const sorted = [...sortedPassages].sort((a, b) => {
       let aValue, bValue;
       
@@ -39,6 +67,14 @@ export const PassageList: React.FC<PassageListProps> = ({
         case 'duration':
           aValue = a.timeTracking?.totalHours || a.duration || 0;
           bValue = b.timeTracking?.totalHours || b.duration || 0;
+          break;
+        case 'team':
+          aValue = a.personnel?.[0] || '';
+          bValue = b.personnel?.[0] || '';
+          break;
+        case 'daysSince':
+          aValue = getDaysSincePassage(a.date);
+          bValue = getDaysSincePassage(b.date);
           break;
         case 'date':
         default:
@@ -102,23 +138,30 @@ export const PassageList: React.FC<PassageListProps> = ({
               totalResults={sortedData.length}
             />
             
-            <div className={viewMode === 'compact' ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'space-y-4'}>
-              {paginatedData.map((passage) => 
-                viewMode === 'compact' ? (
-                  <PassageCardCompact 
-                    key={passage.id} 
-                    passage={passage} 
-                    getProjectName={getProjectName} 
-                  />
-                ) : (
-                  <PassageCard 
-                    key={passage.id} 
-                    passage={passage} 
-                    getProjectName={getProjectName} 
-                  />
-                )
-              )}
-            </div>
+            {viewMode === 'table' ? (
+              <PassageTable 
+                passages={paginatedData} 
+                getProjectName={getProjectName} 
+              />
+            ) : (
+              <div className={viewMode === 'compact' ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'space-y-4'}>
+                {paginatedData.map((passage) => 
+                  viewMode === 'compact' ? (
+                    <PassageCardCompact 
+                      key={passage.id} 
+                      passage={passage} 
+                      getProjectName={getProjectName} 
+                    />
+                  ) : (
+                    <PassageCard 
+                      key={passage.id} 
+                      passage={passage} 
+                      getProjectName={getProjectName} 
+                    />
+                  )
+                )}
+              </div>
+            )}
             
             {totalPages > 1 && (
               <Pagination className="mt-6">

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Grid3X3, List, SortDesc } from 'lucide-react';
+import { Grid3X3, List, Table, SortDesc } from 'lucide-react';
 
 interface PassageViewControlsProps {
-  viewMode: 'compact' | 'detailed';
-  setViewMode: (mode: 'compact' | 'detailed') => void;
-  sortBy: 'date' | 'project' | 'duration';
-  setSortBy: (sort: 'date' | 'project' | 'duration') => void;
+  viewMode: 'compact' | 'detailed' | 'table';
+  setViewMode: (mode: 'compact' | 'detailed' | 'table') => void;
+  sortBy: 'date' | 'project' | 'duration' | 'team' | 'daysSince';
+  setSortBy: (sort: 'date' | 'project' | 'duration' | 'team' | 'daysSince') => void;
   sortOrder: 'asc' | 'desc';
   setSortOrder: (order: 'asc' | 'desc') => void;
   totalResults: number;
@@ -33,14 +33,16 @@ export const PassageViewControls: React.FC<PassageViewControlsProps> = ({
       <div className="flex items-center gap-3">
         {/* Tri */}
         <div className="flex items-center gap-2">
-          <Select value={sortBy} onValueChange={(value: 'date' | 'project' | 'duration') => setSortBy(value)}>
-            <SelectTrigger className="w-40 h-8 text-xs">
+          <Select value={sortBy} onValueChange={(value: 'date' | 'project' | 'duration' | 'team' | 'daysSince') => setSortBy(value)}>
+            <SelectTrigger className="w-44 h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="date">Date</SelectItem>
               <SelectItem value="project">Projet</SelectItem>
               <SelectItem value="duration">Durée</SelectItem>
+              <SelectItem value="team">Équipe</SelectItem>
+              <SelectItem value="daysSince">Jours écoulés</SelectItem>
             </SelectContent>
           </Select>
           
@@ -60,7 +62,7 @@ export const PassageViewControls: React.FC<PassageViewControlsProps> = ({
             variant={viewMode === 'compact' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('compact')}
-            className="h-8 px-3 rounded-r-none"
+            className="h-8 px-3 rounded-r-none border-r border-border"
           >
             <Grid3X3 className="h-4 w-4" />
           </Button>
@@ -68,9 +70,17 @@ export const PassageViewControls: React.FC<PassageViewControlsProps> = ({
             variant={viewMode === 'detailed' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('detailed')}
-            className="h-8 px-3 rounded-l-none"
+            className="h-8 px-3 rounded-none border-r border-border"
           >
             <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+            className="h-8 px-3 rounded-l-none"
+          >
+            <Table className="h-4 w-4" />
           </Button>
         </div>
       </div>
