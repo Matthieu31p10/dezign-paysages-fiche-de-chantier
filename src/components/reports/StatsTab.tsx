@@ -40,16 +40,16 @@ const StatsTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex flex-wrap gap-2">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
-              className={`px-4 py-2 rounded-md ${
+              className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-sm ${
                 selectedTab === tab.id 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  ? 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/25' 
+                  : 'bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border/50'
               }`}
             >
               {tab.label}
