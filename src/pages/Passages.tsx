@@ -9,13 +9,17 @@ const Passages = () => {
   const { projectInfos, workLogs, teams } = useApp();
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [selectedTeam, setSelectedTeam] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [periodFilter, setPeriodFilter] = useState<string>('all');
 
   const { activeProjects, activeTeams, sortedPassages, stats, getProjectName } = useProjectPassageHistory({
     workLogs,
     projectInfos,
     teams,
     selectedProject,
-    selectedTeam
+    selectedTeam,
+    searchQuery,
+    periodFilter
   });
 
   return (
@@ -34,6 +38,12 @@ const Passages = () => {
         setSelectedTeam={setSelectedTeam}
         activeProjects={activeProjects}
         activeTeams={activeTeams}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        periodFilter={periodFilter}
+        setPeriodFilter={setPeriodFilter}
+        totalPassages={workLogs.length}
+        filteredCount={sortedPassages.length}
       />
 
       <PassageStats

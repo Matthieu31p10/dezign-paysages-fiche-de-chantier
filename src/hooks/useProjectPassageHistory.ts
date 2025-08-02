@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, subDays } from 'date-fns';
 import { WorkLog, ProjectInfo, Team } from '@/types/models';
 import { filterWorkLogsByTeam } from '@/utils/teamUtils';
 import { getProjectName, getActiveProjects } from '@/utils/projectUtils';
@@ -11,6 +11,8 @@ interface UseProjectPassageHistoryProps {
   teams: Team[];
   selectedProject: string;
   selectedTeam: string;
+  searchQuery: string;
+  periodFilter: string;
 }
 
 export const useProjectPassageHistory = ({
@@ -18,7 +20,9 @@ export const useProjectPassageHistory = ({
   projectInfos,
   teams,
   selectedProject,
-  selectedTeam
+  selectedTeam,
+  searchQuery,
+  periodFilter
 }: UseProjectPassageHistoryProps) => {
   // Filtrer les projets actifs
   const activeProjects = useMemo(() => 
@@ -38,15 +42,35 @@ export const useProjectPassageHistory = ({
     let realWorkLogs = getRealWorkLogs(workLogs);
     
     // Filtrer par projet sélectionné
-    if (selectedProject && selectedProject !== 'all') {
+    if (selectedProject && selectedProject !== '') {
       realWorkLogs = realWorkLogs.filter(log => log.projectId === selectedProject);
     }
     
     // Filtrer par équipe sélectionnée
     realWorkLogs = filterWorkLogsByTeam(realWorkLogs, selectedTeam, teams);
     
+    // Filtrer par recherche textuelle
+    if (searchQuery && searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      realWorkLogs = realWorkLogs.filter(log => {
+        const projectName = getProjectName(projectInfos, log.projectId).toLowerCase();
+        const address = projectInfos.find(p => p.id === log.projectId)?.address?.toLowerCase() || '';
+        return projectName.includes(query) || address.includes(query);
+      });
+    }
+    
+    // Filtrer par période
+    if (periodFilter && periodFilter !== 'all') {
+      const days = parseInt(periodFilter);
+      const cutoffDate = subDays(new Date(), days);
+      realWorkLogs = realWorkLogs.filter(log => {
+        const logDate = new Date(log.date);
+        return logDate >= cutoffDate;
+      });
+    }
+    
     return realWorkLogs;
-  }, [workLogs, selectedProject, selectedTeam, teams]);
+  }, [workLogs, selectedProject, selectedTeam, teams, searchQuery, periodFilter, projectInfos]);
 
   // Trier les passages par date (plus récent en premier)
   const sortedPassages = useMemo(() => {
