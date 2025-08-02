@@ -60,7 +60,7 @@ const WorkLogs = () => {
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-9">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
@@ -69,7 +69,6 @@ const WorkLogs = () => {
           <TabsTrigger value="automation">Automation</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="suivi">Fiches Suivi</TabsTrigger>
-          <TabsTrigger value="vierges">Fiches Vierges</TabsTrigger>
         </TabsList>
         <TabsContent value="analytics" className="space-y-6">
           <WorkLogAnalytics workLogs={workLogs} teams={teams} />
@@ -240,102 +239,6 @@ const WorkLogs = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="vierges" className="space-y-6">
-          <WorkLogAdvancedFilters
-            filters={advancedFilters}
-            onFiltersChange={setAdvancedFilters}
-            teams={teams}
-            projects={projectInfos}
-            savedFilters={savedFilters}
-            onSaveFilter={saveFilter}
-            onLoadFilter={loadFilter}
-            onDeleteFilter={deleteFilter}
-          />
-          
-          <TimeFilterTabs 
-            value={timeFilter} 
-            onChange={setTimeFilter} 
-          />
-          
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full md:w-64">
-              <label className="text-sm font-medium block mb-2">Filtrer par équipe</label>
-              <Select
-                value={selectedTeamId}
-                onValueChange={setSelectedTeamId}
-              >
-                <SelectTrigger className="bg-white border-teal-200">
-                  <SelectValue placeholder="Toutes les équipes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les équipes</SelectItem>
-                  {teams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="w-full md:w-64">
-              <label className="text-sm font-medium block mb-2">Mois</label>
-              <Select
-                value={selectedMonth.toString()}
-                onValueChange={(value) => setSelectedMonth(value === 'all' ? 'all' : Number(value))}
-              >
-                <SelectTrigger className="bg-white border-teal-200">
-                  <SelectValue placeholder="Tous les mois" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les mois</SelectItem>
-                  <SelectItem value="1">Janvier</SelectItem>
-                  <SelectItem value="2">Février</SelectItem>
-                  <SelectItem value="3">Mars</SelectItem>
-                  <SelectItem value="4">Avril</SelectItem>
-                  <SelectItem value="5">Mai</SelectItem>
-                  <SelectItem value="6">Juin</SelectItem>
-                  <SelectItem value="7">Juillet</SelectItem>
-                  <SelectItem value="8">Août</SelectItem>
-                  <SelectItem value="9">Septembre</SelectItem>
-                  <SelectItem value="10">Octobre</SelectItem>
-                  <SelectItem value="11">Novembre</SelectItem>
-                  <SelectItem value="12">Décembre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <Card className="border-teal-200 shadow-md overflow-hidden">
-            <CardHeader className="pb-3 bg-gradient-to-r from-teal-50 to-white">
-              <CardTitle className="flex items-center">
-                <span>Fiches vierges</span>
-                <span className="ml-2 bg-teal-100 text-teal-800 text-sm rounded-full px-2 py-0.5">
-                  {workLogsVierges.filter(log => {
-                    if (selectedTeamId !== 'all' && !log.personnel?.some(p => p.includes(teams.find(t => t.id === selectedTeamId)?.name || ''))) return false;
-                    if (selectedMonth !== 'all' && new Date(log.date).getMonth() + 1 !== selectedMonth) return false;
-                    if (selectedYear && new Date(log.date).getFullYear() !== selectedYear) return false;
-                    return true;
-                  }).length}
-                </span>
-              </CardTitle>
-              <CardDescription>
-                Fiches vierges pour interventions ponctuelles
-                {selectedTeamId !== 'all' && ` - Équipe ${teams.find(t => t.id === selectedTeamId)?.name}`}
-                {selectedMonth !== 'all' && ` - ${new Date(0, Number(selectedMonth) - 1).toLocaleString('fr-FR', { month: 'long' })}`}
-                {` - ${selectedYear}`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <WorkLogList workLogs={workLogsVierges.filter(log => {
-                if (selectedTeamId !== 'all' && !log.personnel?.some(p => p.includes(teams.find(t => t.id === selectedTeamId)?.name || ''))) return false;
-                if (selectedMonth !== 'all' && new Date(log.date).getMonth() + 1 !== selectedMonth) return false;
-                if (selectedYear && new Date(log.date).getFullYear() !== selectedYear) return false;
-                return true;
-              })} />
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
