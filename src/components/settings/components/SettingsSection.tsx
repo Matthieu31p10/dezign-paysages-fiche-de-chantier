@@ -37,12 +37,22 @@ const SettingsSection = ({
     autoSaveDelay: autoSave ? 2000 : 0
   });
 
-  const { measureRender } = usePerformance();
+  // Hook de performance optionnel
+  let measureRender: ((componentName: string) => () => void) | null = null;
+  try {
+    const performance = usePerformance();
+    measureRender = performance.measureRender;
+  } catch (error) {
+    // PerformanceProvider n'est pas disponible, on ignore les métriques
+    measureRender = () => () => {};
+  }
 
-  // Mesure des performances de rendu
+  // Mesure des performances de rendu si disponible
   useEffect(() => {
-    const endMeasure = measureRender(`SettingsSection-${title}`);
-    return endMeasure;
+    if (measureRender) {
+      const endMeasure = measureRender(`SettingsSection-${title}`);
+      return endMeasure;
+    }
   });
 
   const handleChange = () => {
