@@ -3,7 +3,7 @@ import { ProjectInfo } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatProjectForDatabase } from '@/context/projects/storage/projectOperations';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { handleDatabaseError } from '@/utils/error';
 
 export const saveProjectToSupabase = async (project: ProjectInfo) => {
   try {
