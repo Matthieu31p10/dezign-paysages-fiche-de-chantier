@@ -65,7 +65,7 @@ export const measurePerformance = (name: string) => {
   return {
     end: () => {
       const end = performance.now();
-      console.log(`[Performance] ${name}: ${end - start}ms`);
+      // Performance logging disabled in production
     }
   };
 };
@@ -80,7 +80,7 @@ export const useRenderPerformance = (componentName: string) => {
   const timeSinceLastRender = currentTime - lastRenderTime.current;
   lastRenderTime.current = currentTime;
 
-  console.log(`[Render] ${componentName} - Count: ${renderCount.current}, Time since last: ${timeSinceLastRender}ms`);
+  // Performance logging disabled in production
 };
 
 // Cache simple en mémoire
@@ -113,6 +113,17 @@ class MemoryCache<T> {
 
   delete(key: string): void {
     this.cache.delete(key);
+  }
+
+  size(): number {
+    return this.cache.size;
+  }
+
+  getStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys())
+    };
   }
 }
 

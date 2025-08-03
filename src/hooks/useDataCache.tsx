@@ -150,7 +150,6 @@ export const usePrefetch = <T,>(
       memoryCache.set(key, data, ttl);
       return data;
     } catch (error) {
-      console.warn(`Failed to prefetch data for key: ${key}`, error);
       throw error;
     }
   }, [key, options]);

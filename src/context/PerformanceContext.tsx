@@ -87,7 +87,7 @@ export const PerformanceProvider = ({
         const newAverageRenderTime = newTotalRenderTime / newRenderCount;
 
         if (settings.logPerformance) {
-          console.log(`[Performance] ${componentName}: ${renderTime.toFixed(2)}ms`);
+          // Performance logging disabled in production
         }
 
         return {
@@ -110,8 +110,9 @@ export const PerformanceProvider = ({
 
   const getCacheStats = useCallback(() => {
     const hitRate = cacheRequests.current > 0 ? (cacheHits.current / cacheRequests.current) * 100 : 0;
+    const cacheStats = memoryCache.getStats();
     return {
-      size: 0, // TODO: Implémenter le comptage de taille du cache
+      size: cacheStats.size,
       hitRate
     };
   }, []);
