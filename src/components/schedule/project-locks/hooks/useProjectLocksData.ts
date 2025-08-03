@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectDayLock } from '../types';
+import { handleDatabaseError } from '@/utils/error';
 
 export const useProjectLocksData = () => {
   const [projectLocks, setProjectLocks] = useState<ProjectDayLock[]>([]);
@@ -10,7 +11,6 @@ export const useProjectLocksData = () => {
 
   const fetchProjectLocks = useCallback(async () => {
     try {
-      console.log('Fetching project locks...');
       setIsLoading(true);
       setError(null);
 
@@ -20,12 +20,9 @@ export const useProjectLocksData = () => {
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        console.error('Erreur lors de la récupération des verrouillages:', fetchError);
-        setError('Erreur lors de la récupération des verrouillages');
+        handleDatabaseError(fetchError, 'fetchProjectLocks');
         return;
       }
-
-      console.log('Raw project locks data:', data);
 
       const locks: ProjectDayLock[] = data.map(row => ({
         id: row.id,
@@ -38,18 +35,15 @@ export const useProjectLocksData = () => {
         minDaysBetweenVisits: row.min_days_between_visits,
       }));
 
-      console.log('Processed project locks:', locks);
       setProjectLocks(locks);
     } catch (error) {
-      console.error('Erreur lors de la récupération des verrouillages:', error);
-      setError('Erreur lors de la récupération des verrouillages');
+      handleDatabaseError(error, 'fetchProjectLocks');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const refreshLocks = useCallback(() => {
-    console.log('Refreshing project locks...');
     fetchProjectLocks();
   }, [fetchProjectLocks]);
 
