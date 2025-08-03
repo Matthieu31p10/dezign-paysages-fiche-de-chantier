@@ -46,7 +46,6 @@ const ProtectedRoute = ({ requiredRole = 'user', requiredModule, element }: Prot
     // Otherwise, render the child routes
     return <Outlet />;
   } catch (error) {
-    console.error('Error in ProtectedRoute:', error);
     return <Navigate to="/login" replace />;
   }
 };

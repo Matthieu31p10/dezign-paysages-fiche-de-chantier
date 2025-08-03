@@ -19,7 +19,7 @@ export const useYearlyPassageSchedule = (
       
       const yearlySchedule: Record<string, Record<string, number>> = {};
       
-      console.log('Generating yearly schedule with priority locks, minimum delays and monthly distribution (weekdays only)...');
+      
       
       teamProjects.forEach(project => {
         const annualVisits = project.annualVisits || 12;
@@ -45,7 +45,7 @@ export const useYearlyPassageSchedule = (
           }
         }
         
-        console.log(`Project ${project.name}: Monthly distribution:`, monthlyDistribution);
+        
         
         const scheduledDates: Date[] = [];
         let totalScheduled = 0;
@@ -84,10 +84,10 @@ export const useYearlyPassageSchedule = (
             availableDays = lockedDays;
           }
           
-          console.log(`Month ${month + 1}: ${availableDays.length} available weekdays for ${visitsThisMonth} visits`);
+          
           
           if (availableDays.length === 0) {
-            console.warn(`No available weekdays for project ${project.name} in month ${month + 1}`);
+            
             continue;
           }
           
@@ -128,7 +128,7 @@ export const useYearlyPassageSchedule = (
                   
                   if (tooClose) {
                     canSchedule = false;
-                    console.log(`Cannot schedule ${format(candidateDay, 'yyyy-MM-dd')} for project ${project.name} - violates minimum ${minDays} days rule`);
+                    
                   }
                 }
               }
@@ -151,7 +151,7 @@ export const useYearlyPassageSchedule = (
                 const dateKey = format(candidateDay, 'yyyy-MM-dd');
                 yearlySchedule[project.id][dateKey] = totalScheduled + 1;
                 
-                console.log(`✓ Scheduled visit ${totalScheduled + 1} for ${project.name} on ${dateKey} (month ${month + 1}, weekday)`);
+                
                 
                 monthScheduled++;
                 totalScheduled++;
@@ -162,12 +162,12 @@ export const useYearlyPassageSchedule = (
             }
             
             if (!scheduled) {
-              console.warn(`Could not schedule visit ${visit + 1} for project ${project.name} in month ${month + 1} due to constraints`);
+              
             }
           }
         }
         
-        console.log(`Final: Project ${project.name} scheduled ${totalScheduled}/${annualVisits} visits (weekdays only)`);
+        
       });
       
       return yearlySchedule;

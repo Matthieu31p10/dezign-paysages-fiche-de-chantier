@@ -29,11 +29,6 @@ const BlankSheetAnalysis: React.FC<BlankSheetAnalysisProps> = ({
       return isBlankSheet && matchesYear;
     });
     
-    console.log(`🔍 Analyse fiches vierges ${selectedYear}:`, {
-      totalWorkLogs: workLogs.length,
-      blankSheetsFound: filtered.length,
-      blankSheetData: filtered.map(f => ({ id: f.id, isBlankWorksheet: f.isBlankWorksheet, date: f.date }))
-    });
     
     return filtered;
   }, [workLogs, selectedYear]);

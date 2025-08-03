@@ -40,7 +40,6 @@ export const AdvancedPassageFeatures: React.FC<AdvancedPassageFeaturesProps> = (
         toast.error(result.error || 'Erreur lors de l\'export PDF');
       }
     } catch (error) {
-      console.error('Erreur export PDF:', error);
       toast.error('Erreur lors de l\'export PDF');
     } finally {
       setIsExporting(false);

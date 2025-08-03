@@ -26,7 +26,6 @@ const SessionManager = ({ children }: { children: React.ReactNode }) => {
             navigate('/login');
           }
         } catch (error) {
-          console.error('Erreur lors de la vérification de session:', error);
           localStorage.removeItem('clientSession');
           navigate('/login');
         }

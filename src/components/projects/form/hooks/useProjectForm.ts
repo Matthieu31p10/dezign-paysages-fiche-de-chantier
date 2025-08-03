@@ -148,7 +148,6 @@ export const useProjectForm = ({ initialData, onSuccess, onCancel }: UseProjectF
         navigate('/projects');
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
       projectMessages.error(initialData ? 'modifier' : 'créer');
     } finally {
       setIsSubmitting(false);

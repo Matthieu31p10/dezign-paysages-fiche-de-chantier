@@ -15,13 +15,11 @@ export const useDragAndDrop = () => {
 
   const handleDragStart = useCallback((project: DraggedProject) => {
     setDraggedProject(project);
-    console.log('Début du glissement:', project.name);
   }, []);
 
   const handleDragEnd = useCallback(() => {
     setDraggedProject(null);
     setIsDropZoneActive(false);
-    console.log('Fin du glissement');
   }, []);
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
@@ -38,7 +36,6 @@ export const useDragAndDrop = () => {
     setIsDropZoneActive(false);
     
     if (draggedProject) {
-      console.log(`Chantier ${draggedProject.name} déplacé vers ${targetDate}`);
       toast.success(
         `Chantier "${draggedProject.name}" programmé`,
         {

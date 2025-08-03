@@ -70,7 +70,6 @@ const ClientAuth = ({ onClientLogin }: ClientAuthProps) => {
         toast.error('Identifiants incorrects ou compte inactif');
       }
     } catch (error) {
-      console.error('Erreur de connexion client:', error);
       toast.error('Erreur de connexion');
     } finally {
       setIsLoading(false);

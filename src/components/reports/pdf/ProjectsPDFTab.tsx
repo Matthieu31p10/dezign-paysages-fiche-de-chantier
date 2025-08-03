@@ -36,7 +36,6 @@ const ProjectsPDFTab = () => {
       });
     } catch (error) {
       toast.error('Erreur lors de la génération du PDF');
-      console.error(error);
     }
   };
   

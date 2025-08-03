@@ -18,12 +18,6 @@ export const useScheduleUpdater = (projects: ProjectInfo[]) => {
       const locksWithMinDays = activeLocks.filter(lock => lock.minDaysBetweenVisits && lock.minDaysBetweenVisits > 0);
       const completeBlocks = activeLocks.filter(lock => !lock.minDaysBetweenVisits || lock.minDaysBetweenVisits === 0);
       
-      console.log('Mise à jour de l\'agenda avec contraintes prioritaires (lundi-vendredi uniquement):');
-      console.log('- Nombre de chantiers:', projects.filter(p => !p.isArchived).length);
-      console.log('- Verrouillages complets (priorité absolue):', completeBlocks.length);
-      console.log('- Verrouillages avec délai minimum:', locksWithMinDays.length);
-      console.log('- Distribution mensuelle prise en compte');
-      console.log('- Programmation uniquement en semaine (lundi-vendredi)');
       
       // Simulate schedule update process with priority logic
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -44,7 +38,6 @@ export const useScheduleUpdater = (projects: ProjectInfo[]) => {
         }
       );
     } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
       toast.error("Erreur lors de la mise à jour de l'agenda");
     } finally {
       setIsUpdating(false);

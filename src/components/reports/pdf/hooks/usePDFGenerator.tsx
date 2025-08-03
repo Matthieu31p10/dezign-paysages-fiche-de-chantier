@@ -75,7 +75,6 @@ export const usePDFGenerator = () => {
       await generatePDF(pdfData);
       toast.success('PDF généré avec succès');
     } catch (error) {
-      console.error('Erreur lors de la génération du PDF:', error);
       toast.error('Échec de génération du PDF');
     } finally {
       setIsGenerating(false);

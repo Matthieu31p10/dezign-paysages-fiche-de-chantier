@@ -46,7 +46,6 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
       if (distribution && Object.keys(distribution.monthlyVisits).length > 0) {
         // Charger la distribution sauvegardée
         setMonthlyDistribution(distribution.monthlyVisits);
-        console.log('Distribution chargée depuis la base:', distribution.monthlyVisits);
       } else {
         // Générer une distribution par défaut
         const project = projects.find(p => p.id === projectId);
@@ -60,11 +59,9 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
           });
           
           setMonthlyDistribution(defaultDistribution);
-          console.log('Distribution par défaut générée:', defaultDistribution);
         }
       }
     } catch (error) {
-      console.error('Erreur lors du chargement de la distribution:', error);
       toast.error('Erreur lors du chargement de la distribution');
     } finally {
       setIsLoading(false);
@@ -102,7 +99,6 @@ const AnnualDistributionDialog: React.FC<AnnualDistributionDialogProps> = ({
       toast.success(`Distribution sauvegardée pour ${selectedProject.name} (${total} passages/an)`);
       onOpenChange(false);
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde de la distribution');
     } finally {
       setIsSaving(false);

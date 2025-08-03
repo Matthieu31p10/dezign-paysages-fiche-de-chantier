@@ -60,11 +60,9 @@ const ScheduleTabs: React.FC<ScheduleTabsProps> = ({
         
         if (typeof tab === 'string' && typeof onTabChange === 'function') {
           onTabChange(tab);
-        } else {
-          console.error('Invalid tab navigation event:', customEvent.detail);
         }
       } catch (error) {
-        console.error('Error handling tab navigation:', error);
+        // Navigation error handled silently
       }
     };
 
