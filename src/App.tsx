@@ -55,8 +55,8 @@ function App() {
               <Route path="worklogs/:id/edit" element={<WorkLogEdit />} />
               
               {/* Blank worksheets routes */}
-              <Route path="blank-worksheets" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheets />} />} />
-              <Route path="blank-worksheets/new" element={<ProtectedRoute requiredModule="blanksheets" element={<BlankWorkSheetNew />} />} />
+              <Route path="blank-worksheets" element={<BlankWorkSheets />} />
+              <Route path="blank-worksheets/new" element={<BlankWorkSheetNew />} />
               
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
