@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { useProjectsPerformance } from '@/hooks/useProjectsPerformance';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import ProjectsFilters from '@/components/projects/ProjectsFilters';
@@ -9,42 +10,51 @@ import ProjectsViewToggle from '@/components/projects/ProjectsViewToggle';
 import ProjectsTabs from '@/components/projects/ProjectsTabs';
 import ProjectsEmptyState from '@/components/projects/ProjectsEmptyState';
 import ProjectsGrid from '@/components/projects/ProjectsGrid';
+import PerformanceIndicator from '@/components/projects/PerformanceIndicator';
 
 const Projects = () => {
   const navigate = useNavigate();
-  const { projectInfos, selectProject, getActiveProjects, getArchivedProjects, teams } = useApp();
+  const { projectInfos, selectProject, getActiveProjects, getArchivedProjects, teams, workLogs } = useApp();
+  
+  // Hook de performance optimisé
+  const {
+    filterProjects,
+    sortProjects,
+    startRenderMeasure,
+    endRenderMeasure,
+    clearCache,
+    getCacheStats,
+    metrics
+  } = useProjectsPerformance(projectInfos, workLogs);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('active');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortOption, setSortOption] = useState<string>('name');
+  const [showPerformanceIndicator, setShowPerformanceIndicator] = useState<boolean>(false);
   
   const activeProjects = getActiveProjects();
   const archivedProjects = getArchivedProjects();
 
-  const getFilteredProjects = () => {
+  // Utilisation des fonctions optimisées
+  const getFilteredAndSortedProjects = () => {
+    startRenderMeasure();
+    
     const projectsToFilter = activeTab === 'active' ? activeProjects : archivedProjects;
     
-    return projectsToFilter.filter(project => {
-      // Filter by search term
-      const matchesSearch = !search ? true : (
-        project.name.toLowerCase().includes(search.toLowerCase()) ||
-        project.address.toLowerCase().includes(search.toLowerCase()) ||
-        project.additionalInfo.toLowerCase().includes(search.toLowerCase())
-      );
-      
-      // Filter by project type
-      const matchesType = selectedType === 'all' || project.projectType === selectedType;
-      
-      // Filter by team
-      const matchesTeam = selectedTeam === 'all' || project.team === selectedTeam;
-      
-      return matchesSearch && matchesType && matchesTeam;
-    });
+    // Filtrage optimisé avec cache
+    const filtered = filterProjects(projectsToFilter, selectedTeam, selectedType, search);
+    
+    // Tri optimisé avec cache
+    const sorted = sortProjects(filtered, sortOption);
+    
+    endRenderMeasure();
+    return sorted;
   };
   
-  const filteredProjects = getFilteredProjects();
+  const filteredProjects = getFilteredAndSortedProjects();
   
   const handleSelectProject = (id: string) => {
     selectProject(id);
@@ -54,6 +64,15 @@ const Projects = () => {
   const handleFormSuccess = () => {
     setIsFormDialogOpen(false);
   };
+
+  const handleClearCache = () => {
+    clearCache();
+  };
+
+  // Mesure de performance au changement des dépendances
+  useEffect(() => {
+    endRenderMeasure();
+  }, [filteredProjects.length, endRenderMeasure]);
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -61,6 +80,14 @@ const Projects = () => {
         isFormDialogOpen={isFormDialogOpen}
         onFormDialogChange={setIsFormDialogOpen}
         onFormSuccess={handleFormSuccess}
+      />
+
+      {/* Indicateur de performance (développement) */}
+      <PerformanceIndicator
+        metrics={metrics}
+        cacheStats={getCacheStats()}
+        onClearCache={handleClearCache}
+        visible={showPerformanceIndicator}
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -80,6 +107,15 @@ const Projects = () => {
               viewMode={viewMode}
               onViewModeChange={setViewMode}
             />
+
+            {/* Toggle pour les métriques de performance */}
+            <button
+              onClick={() => setShowPerformanceIndicator(!showPerformanceIndicator)}
+              className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+              title="Afficher/masquer les métriques de performance"
+            >
+              📊
+            </button>
             
             <ProjectsTabs
               activeProjectsCount={activeProjects.length}
@@ -100,6 +136,8 @@ const Projects = () => {
               projects={filteredProjects}
               viewMode={viewMode}
               onSelectProject={handleSelectProject}
+              enableVirtualization={true}
+              virtualizationThreshold={20}
             />
           )}
         </TabsContent>
@@ -116,6 +154,8 @@ const Projects = () => {
               projects={filteredProjects}
               viewMode={viewMode}
               onSelectProject={handleSelectProject}
+              enableVirtualization={true}
+              virtualizationThreshold={20}
             />
           )}
         </TabsContent>
