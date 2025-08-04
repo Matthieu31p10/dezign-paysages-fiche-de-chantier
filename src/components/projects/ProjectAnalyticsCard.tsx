@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,7 @@ const ProjectAnalyticsCard: React.FC<ProjectAnalyticsCardProps> = ({
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('30d');
 
   // Calcul des métriques
-  const analytics: AnalyticsData = React.useMemo(() => {
+  const analytics: AnalyticsData = useMemo(() => {
     const now = new Date();
     const periodDays = selectedPeriod === '7d' ? 7 : selectedPeriod === '30d' ? 30 : 90;
     const periodStart = new Date(now.getTime() - (periodDays * 24 * 60 * 60 * 1000));
