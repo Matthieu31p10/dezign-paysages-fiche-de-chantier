@@ -11,6 +11,9 @@ interface ProjectsGridProps {
   onSelectProject: (id: string) => void;
   enableVirtualization?: boolean;
   virtualizationThreshold?: number;
+  selectedProjects?: string[];
+  onProjectSelection?: (projectId: string, selected: boolean) => void;
+  showSelectionMode?: boolean;
 }
 
 const ProjectsGrid = ({ 
@@ -18,7 +21,10 @@ const ProjectsGrid = ({
   viewMode, 
   onSelectProject,
   enableVirtualization = true,
-  virtualizationThreshold = 50 
+  virtualizationThreshold = 50,
+  selectedProjects = [],
+  onProjectSelection,
+  showSelectionMode = false
 }: ProjectsGridProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 1200, height: 800 });
@@ -63,7 +69,7 @@ const ProjectsGrid = ({
 
     return (
       <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <ProjectCard
             key={project.id}
             project={project}
