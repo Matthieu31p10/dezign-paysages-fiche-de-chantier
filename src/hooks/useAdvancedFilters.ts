@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 
 export interface FilterPreset {
   id: string;
@@ -171,7 +171,7 @@ export const useAdvancedFilters = ({
   }, [activeFilters, filteredData.length, data.length]);
 
   // Notify parent component of filter changes
-  useMemo(() => {
+  useEffect(() => {
     onFilterChange?.(filteredData);
   }, [filteredData, onFilterChange]);
 
