@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
 
 interface CacheItem<T> {
   data: T;
@@ -77,7 +77,7 @@ export const useMemoryCache = () => {
   const cache = useMemo(() => new MemoryCache(), []);
 
   // Nettoyage automatique toutes les 5 minutes
-  useMemo(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       cache.cleanup();
     }, 5 * 60 * 1000);
