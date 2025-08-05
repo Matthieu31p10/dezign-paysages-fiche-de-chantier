@@ -35,7 +35,7 @@ export const useProjectSync = () => {
   useEffect(() => {
     const handleOnline = () => {
       setSyncStatus(prev => ({ ...prev, isOnline: true }));
-      syncPendingChanges();
+      // Remove immediate sync call to prevent loop
     };
 
     const handleOffline = () => {
@@ -66,7 +66,7 @@ export const useProjectSync = () => {
         clearInterval(syncIntervalRef.current);
       }
     };
-  }, [syncStatus.isOnline]);
+  }, [syncStatus.isOnline]); // Removedependent on syncPendingChanges
 
   const addPendingChange = useCallback((
     type: 'create' | 'update' | 'delete',
@@ -86,11 +86,9 @@ export const useProjectSync = () => {
       pendingChanges: pendingChangesRef.current.length 
     }));
 
-    // Try immediate sync if online
-    if (syncStatus.isOnline && !syncStatus.syncInProgress) {
-      syncPendingChanges();
-    }
-  }, [syncStatus.isOnline, syncStatus.syncInProgress]);
+    // Remove immediate sync to prevent loops
+    // syncPendingChanges will be called by the interval
+  }, []);
 
   const syncPendingChanges = useCallback(async () => {
     if (!syncStatus.isOnline || syncStatus.syncInProgress || pendingChangesRef.current.length === 0) {
@@ -154,7 +152,7 @@ export const useProjectSync = () => {
     if (errors.length > 0) {
       toast.error(`${errors.length} erreur(s) de synchronisation`);
     }
-  }, [syncStatus.isOnline, syncStatus.syncInProgress]);
+  }, []);
 
   const forcSync = useCallback(async () => {
     await syncPendingChanges();
