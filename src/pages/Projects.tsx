@@ -6,6 +6,7 @@ import { useProjectsPerformance } from '@/hooks/useProjectsPerformance';
 import { ProjectInfo } from '@/types/models';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import ProjectsFilters from '@/components/projects/ProjectsFilters';
 import ProjectsViewToggle from '@/components/projects/ProjectsViewToggle';
@@ -20,6 +21,9 @@ import AdvancedFiltersPanel from '@/components/projects/AdvancedFiltersPanel';
 import GlobalSearchDialog from '@/components/projects/GlobalSearchDialog';
 import FilterPresetsManager from '@/components/projects/FilterPresetsManager';
 import ProjectExportDialog from '@/components/projects/ProjectExportDialog';
+import { ProjectDataManager } from '@/components/projects/ProjectDataManager';
+import { useProjectDataValidation } from '@/hooks/useProjectDataValidation';
+import { useProjectSync } from '@/hooks/useProjectSync';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -48,6 +52,11 @@ const Projects = () => {
   const [showBulkActions, setShowBulkActions] = useState<boolean>(false);
   const [advancedFilteredProjects, setAdvancedFilteredProjects] = useState<ProjectInfo[]>([]);
   const [useAdvancedFilters, setUseAdvancedFilters] = useState<boolean>(false);
+  const [showDataManager, setShowDataManager] = useState<boolean>(false);
+
+  // Data validation and sync hooks
+  const { validateBeforeSave } = useProjectDataValidation();
+  const { syncStatus, addPendingChange } = useProjectSync();
   
   const activeProjects = getActiveProjects();
   const archivedProjects = getArchivedProjects();
@@ -254,6 +263,15 @@ const Projects = () => {
             >
               📊
             </button>
+
+            {/* Data Manager Toggle */}
+            <button
+              onClick={() => setShowDataManager(!showDataManager)}
+              className="px-2 py-1 text-xs bg-purple-50 text-purple-600 rounded hover:bg-purple-100 transition-colors"
+              title="Gestionnaire de données"
+            >
+              🗂️
+            </button>
             
             <ProjectsTabs
               activeProjectsCount={activeProjects.length}
@@ -340,6 +358,38 @@ const Projects = () => {
         onSelectAll={handleSelectAll}
         isVisible={showBulkActions && selectedProjects.length > 0}
       />
+
+      {/* Data Manager Dialog */}
+      {showDataManager && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Gestionnaire de données</h2>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowDataManager(false)}
+              >
+                ✕
+              </Button>
+            </div>
+            <div className="p-4">
+              <ProjectDataManager
+                projects={projectInfos}
+                workLogs={workLogs}
+                onProjectsUpdate={(updatedProjects) => {
+                  // Handle projects update
+                  console.log('Projects updated:', updatedProjects);
+                }}
+                onWorkLogsUpdate={(updatedWorkLogs) => {
+                  // Handle work logs update
+                  console.log('Work logs updated:', updatedWorkLogs);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
