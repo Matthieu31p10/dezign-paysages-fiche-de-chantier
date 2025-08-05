@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useProjectsPerformance } from '@/hooks/useProjectsPerformance';
+import { ProjectInfo } from '@/types/models';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
@@ -15,6 +16,10 @@ import PerformanceIndicator from '@/components/projects/PerformanceIndicator';
 import BulkActionsBar from '@/components/projects/BulkActionsBar';
 import ProjectAnalyticsCard from '@/components/projects/ProjectAnalyticsCard';
 import ProjectSkeleton from '@/components/projects/ProjectSkeleton';
+import AdvancedFiltersPanel from '@/components/projects/AdvancedFiltersPanel';
+import GlobalSearchDialog from '@/components/projects/GlobalSearchDialog';
+import FilterPresetsManager from '@/components/projects/FilterPresetsManager';
+import ProjectExportDialog from '@/components/projects/ProjectExportDialog';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -41,6 +46,8 @@ const Projects = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState<boolean>(false);
+  const [advancedFilteredProjects, setAdvancedFilteredProjects] = useState<ProjectInfo[]>([]);
+  const [useAdvancedFilters, setUseAdvancedFilters] = useState<boolean>(false);
   
   const activeProjects = getActiveProjects();
   const archivedProjects = getArchivedProjects();
@@ -51,10 +58,18 @@ const Projects = () => {
     
     const projectsToFilter = activeTab === 'active' ? activeProjects : archivedProjects;
     
-    // Filtrage optimisé avec cache
-    const filtered = filterProjects(projectsToFilter, selectedTeam, selectedType, search);
+    // Si les filtres avancés sont actifs, utiliser les résultats filtrés avancés
+    if (useAdvancedFilters && advancedFilteredProjects.length > 0) {
+      const filtered = advancedFilteredProjects.filter(project => 
+        projectsToFilter.some(p => p.id === project.id)
+      );
+      const sorted = sortProjects(filtered, sortOption);
+      endRenderMeasure();
+      return sorted;
+    }
     
-    // Tri optimisé avec cache
+    // Sinon utiliser le filtrage standard
+    const filtered = filterProjects(projectsToFilter, selectedTeam, selectedType, search);
     const sorted = sortProjects(filtered, sortOption);
     
     endRenderMeasure();
@@ -123,6 +138,17 @@ const Projects = () => {
     // Logique d'export
   };
 
+  // Gestion des filtres avancés
+  const handleAdvancedFilterChange = (filtered: ProjectInfo[]) => {
+    setAdvancedFilteredProjects(filtered);
+    setUseAdvancedFilters(true);
+  };
+
+  const handleAdvancedFilterReset = () => {
+    setAdvancedFilteredProjects([]);
+    setUseAdvancedFilters(false);
+  };
+
   // Effet pour afficher/masquer la barre d'actions
   useEffect(() => {
     setShowBulkActions(selectedProjects.length > 0);
@@ -157,18 +183,50 @@ const Projects = () => {
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-          <ProjectsFilters
-            search={search}
-            onSearchChange={setSearch}
-            selectedType={selectedType}
-            onTypeChange={setSelectedType}
-            selectedTeam={selectedTeam}
-            onTeamChange={setSelectedTeam}
-            teams={teams}
-          />
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-4">
+          {/* Recherche et filtres de base */}
+          <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+            <ProjectsFilters
+              search={search}
+              onSearchChange={setSearch}
+              selectedType={selectedType}
+              onTypeChange={setSelectedType}
+              selectedTeam={selectedTeam}
+              onTeamChange={setSelectedTeam}
+              teams={teams}
+            />
+            
+            {/* Recherche globale et filtres avancés */}
+            <div className="flex items-center gap-2">
+              <GlobalSearchDialog
+                projects={projectInfos}
+                workLogs={workLogs}
+                teams={teams}
+                onSelectProject={handleSelectProject}
+              />
+              
+              <AdvancedFiltersPanel
+                projects={activeTab === 'active' ? activeProjects : archivedProjects}
+                onFilteredDataChange={handleAdvancedFilterChange}
+                teams={teams}
+              />
+              
+              <FilterPresetsManager
+                presets={[]}
+                currentPreset=""
+                onLoadPreset={() => {}}
+                onSavePreset={() => {}}
+                onDeletePreset={() => {}}
+              />
+              
+              <ProjectExportDialog
+                projects={filteredProjects}
+                selectedProjects={selectedProjects}
+              />
+            </div>
+          </div>
           
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <ProjectsViewToggle
               viewMode={viewMode}
               onViewModeChange={setViewMode}
@@ -203,6 +261,26 @@ const Projects = () => {
             />
           </div>
         </div>
+
+        {/* Indicateur de filtres avancés actifs */}
+        {useAdvancedFilters && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-blue-700">
+                Filtres avancés actifs
+              </span>
+              <span className="text-xs text-blue-600">
+                {filteredProjects.length} résultat{filteredProjects.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            <button
+              onClick={handleAdvancedFilterReset}
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              Réinitialiser
+            </button>
+          </div>
+        )}
         
         <TabsContent value="active" className="mt-0">
           {isLoading ? (
