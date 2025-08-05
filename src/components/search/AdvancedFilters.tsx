@@ -79,14 +79,14 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       case 'select':
         return (
           <Select 
-            value={value || ''} 
-            onValueChange={(newValue) => updateFilter(config.key, newValue)}
+            value={value || 'all'} 
+            onValueChange={(newValue) => updateFilter(config.key, newValue === 'all' ? '' : newValue)}
           >
             <SelectTrigger>
               <SelectValue placeholder={`Sélectionner ${config.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous</SelectItem>
+              <SelectItem value="all">Tous</SelectItem>
               {(config.options || getUniqueValues(config.key).map(v => ({ value: v, label: v }))).map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

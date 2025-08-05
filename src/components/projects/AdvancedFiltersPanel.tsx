@@ -155,14 +155,14 @@ export const AdvancedFiltersPanel: React.FC<AdvancedFiltersPanelProps> = ({
       case 'select':
         return (
           <Select
-            value={value || ''}
-            onValueChange={(newValue) => updateFilter(config.key, newValue)}
+            value={value || 'all'}
+            onValueChange={(newValue) => updateFilter(config.key, newValue === 'all' ? '' : newValue)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder={`Choisir ${config.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous</SelectItem>
+              <SelectItem value="all">Tous</SelectItem>
               {config.options?.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

@@ -56,8 +56,8 @@ const entityTypeLabels = {
 
 export const AuditLogPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEntityType, setSelectedEntityType] = useState<string>('');
-  const [selectedAction, setSelectedAction] = useState<string>('');
+  const [selectedEntityType, setSelectedEntityType] = useState<string>('all');
+  const [selectedAction, setSelectedAction] = useState<string>('all');
   
   const { auditLog, isLoading, refetch } = useAuditTrail({
     limit: 200
@@ -72,8 +72,8 @@ export const AuditLogPage: React.FC = () => {
         key.toLowerCase().includes(searchTerm.toLowerCase())
       );
     
-    const matchesEntityType = !selectedEntityType || entry.entityType === selectedEntityType;
-    const matchesAction = !selectedAction || entry.action === selectedAction;
+    const matchesEntityType = !selectedEntityType || selectedEntityType === 'all' || entry.entityType === selectedEntityType;
+    const matchesAction = !selectedAction || selectedAction === 'all' || entry.action === selectedAction;
     
     return matchesSearch && matchesEntityType && matchesAction;
   });
@@ -138,7 +138,7 @@ export const AuditLogPage: React.FC = () => {
                 <SelectValue placeholder="Type d'entité" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les types</SelectItem>
+                <SelectItem value="all">Tous les types</SelectItem>
                 {Object.entries(entityTypeLabels).map(([key, label]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
@@ -150,7 +150,7 @@ export const AuditLogPage: React.FC = () => {
                 <SelectValue placeholder="Type d'action" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les actions</SelectItem>
+                <SelectItem value="all">Toutes les actions</SelectItem>
                 {Object.entries(actionLabels).map(([key, label]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}

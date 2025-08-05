@@ -34,11 +34,11 @@ export const PassageFilters: React.FC<PassageFiltersProps> = ({
   totalPassages,
   filteredCount
 }) => {
-  const hasActiveFilters = selectedProject !== '' || selectedTeam !== '' || searchQuery !== '' || periodFilter !== 'all';
+  const hasActiveFilters = selectedProject !== 'all' || selectedTeam !== 'all' || searchQuery !== '' || periodFilter !== 'all';
   
   const clearAllFilters = () => {
-    setSelectedProject('');
-    setSelectedTeam('');
+    setSelectedProject('all');
+    setSelectedTeam('all');
     setSearchQuery('');
     setPeriodFilter('all');
   };
@@ -116,7 +116,7 @@ export const PassageFilters: React.FC<PassageFiltersProps> = ({
                 <SelectValue placeholder="Tous les chantiers" />
               </SelectTrigger>
               <SelectContent className="bg-background border-border">
-                <SelectItem value="">Tous les chantiers</SelectItem>
+                <SelectItem value="all">Tous les chantiers</SelectItem>
                 {activeProjects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
@@ -135,7 +135,7 @@ export const PassageFilters: React.FC<PassageFiltersProps> = ({
                 <SelectValue placeholder="Toutes les équipes" />
               </SelectTrigger>
               <SelectContent className="bg-background border-border">
-                <SelectItem value="">Toutes les équipes</SelectItem>
+                <SelectItem value="all">Toutes les équipes</SelectItem>
                 {activeTeams.map((team) => (
                   <SelectItem key={team.id} value={team.name}>
                     {team.name}
@@ -177,24 +177,24 @@ export const PassageFilters: React.FC<PassageFiltersProps> = ({
                 </button>
               </Badge>
             )}
-            {selectedProject && (
+            {selectedProject !== 'all' && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 Projet: {activeProjects.find(p => p.id === selectedProject)?.name}
                 <button
-                  onClick={() => setSelectedProject('')}
+                  onClick={() => setSelectedProject('all')}
                   className="ml-1 hover:text-destructive"
                 >
                   ×
                 </button>
               </Badge>
             )}
-            {selectedTeam && (
+            {selectedTeam !== 'all' && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
                 Équipe: {selectedTeam}
                 <button
-                  onClick={() => setSelectedTeam('')}
+                  onClick={() => setSelectedTeam('all')}
                   className="ml-1 hover:text-destructive"
                 >
                   ×
