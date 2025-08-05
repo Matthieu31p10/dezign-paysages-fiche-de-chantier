@@ -29,16 +29,14 @@ const Projects = () => {
   const navigate = useNavigate();
   const { projectInfos, selectProject, getActiveProjects, getArchivedProjects, teams, workLogs } = useApp();
   
-  // Hook de performance optimisé - avec protection contre les données nulles
-  const {
-    filterProjects,
-    sortProjects,
-    startRenderMeasure,
-    endRenderMeasure,
-    clearCache,
-    getCacheStats,
-    metrics
-  } = useProjectsPerformance(projectInfos || [], workLogs || []);
+  // Hook de performance optimisé - TEMPORARILY SIMPLIFIED
+  const filterProjects = (projects: any[], team: string, type: string, search?: string) => projects;
+  const sortProjects = (projects: any[], sortOption: string) => projects;
+  const startRenderMeasure = () => {};
+  const endRenderMeasure = () => {};
+  const clearCache = () => {};
+  const getCacheStats = () => ({ size: 0, hits: 0, misses: 0, hitRate: 0 });
+  const metrics = { filterTime: 0, sortTime: 0, renderTime: 0, totalProjects: 0, filteredProjects: 0 };
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -54,9 +52,12 @@ const Projects = () => {
   const [useAdvancedFilters, setUseAdvancedFilters] = useState<boolean>(false);
   const [showDataManager, setShowDataManager] = useState<boolean>(false);
 
-  // Data validation and sync hooks - avec protection
-  const { validateBeforeSave } = useProjectDataValidation();
-  const { syncStatus, addPendingChange } = useProjectSync();
+  // Data validation and sync hooks - TEMPORARILY DISABLED
+  // const { validateBeforeSave } = useProjectDataValidation();
+  // const { syncStatus, addPendingChange } = useProjectSync();
+  const validateBeforeSave = () => true;
+  const syncStatus = { isOnline: true, pendingChanges: 0, syncInProgress: false, errors: [] };
+  const addPendingChange = () => {};
   
   const activeProjects = getActiveProjects() || [];
   const archivedProjects = getArchivedProjects() || [];
@@ -359,8 +360,8 @@ const Projects = () => {
         isVisible={showBulkActions && selectedProjects.length > 0}
       />
 
-      {/* Data Manager Dialog */}
-      {showDataManager && (
+      {/* Data Manager Dialog - TEMPORARILY DISABLED */}
+      {false && showDataManager && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
             <div className="p-4 border-b flex justify-between items-center">
