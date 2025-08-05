@@ -29,7 +29,7 @@ const Projects = () => {
   const navigate = useNavigate();
   const { projectInfos, selectProject, getActiveProjects, getArchivedProjects, teams, workLogs } = useApp();
   
-  // Hook de performance optimisé
+  // Hook de performance optimisé - avec protection contre les données nulles
   const {
     filterProjects,
     sortProjects,
@@ -38,7 +38,7 @@ const Projects = () => {
     clearCache,
     getCacheStats,
     metrics
-  } = useProjectsPerformance(projectInfos, workLogs);
+  } = useProjectsPerformance(projectInfos || [], workLogs || []);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -54,12 +54,12 @@ const Projects = () => {
   const [useAdvancedFilters, setUseAdvancedFilters] = useState<boolean>(false);
   const [showDataManager, setShowDataManager] = useState<boolean>(false);
 
-  // Data validation and sync hooks
+  // Data validation and sync hooks - avec protection
   const { validateBeforeSave } = useProjectDataValidation();
   const { syncStatus, addPendingChange } = useProjectSync();
   
-  const activeProjects = getActiveProjects();
-  const archivedProjects = getArchivedProjects();
+  const activeProjects = getActiveProjects() || [];
+  const archivedProjects = getArchivedProjects() || [];
 
   // Utilisation des fonctions optimisées
   const getFilteredAndSortedProjects = () => {

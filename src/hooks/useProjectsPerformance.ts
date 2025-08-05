@@ -16,7 +16,7 @@ interface PerformanceIndicators {
   totalTime: number;
 }
 
-export const useProjectsPerformance = (projects: ProjectInfo[], workLogs: WorkLog[]) => {
+export const useProjectsPerformance = (projects: ProjectInfo[] = [], workLogs: WorkLog[] = []) => {
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     filterTime: 0,
     sortTime: 0,
