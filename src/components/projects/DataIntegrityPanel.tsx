@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ProjectInfo, WorkLog } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ export const DataIntegrityPanel: React.FC<DataIntegrityPanelProps> = ({
     validateDataIntegrity 
   } = useProjectSync();
 
-  const runIntegrityCheck = async () => {
+  const runIntegrityCheck = useCallback(async () => {
     setIntegrityCheck(prev => ({ ...prev, checking: true }));
     
     try {
@@ -76,7 +76,7 @@ export const DataIntegrityPanel: React.FC<DataIntegrityPanelProps> = ({
       }));
       toast.error('Échec de la vérification d\'intégrité');
     }
-  };
+  }, [projects, workLogs, validateDataIntegrity]);
 
   // Auto-check on mount and when data changes
   useEffect(() => {
@@ -85,7 +85,7 @@ export const DataIntegrityPanel: React.FC<DataIntegrityPanelProps> = ({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [projects.length, workLogs.length]);
+  }, [projects.length, workLogs.length, runIntegrityCheck]);
 
   const getSyncStatusIcon = () => {
     if (!syncStatus.isOnline) {

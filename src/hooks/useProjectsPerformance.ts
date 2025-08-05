@@ -122,7 +122,7 @@ export const useProjectsPerformance = (projects: ProjectInfo[], workLogs: WorkLo
     });
   }, [measurePerformance]);
 
-  // Track render performance
+  // Track render performance - only run once on mount to avoid loops
   useEffect(() => {
     const start = performance.now();
     
@@ -134,7 +134,7 @@ export const useProjectsPerformance = (projects: ProjectInfo[], workLogs: WorkLo
         renderTime: end - start
       }));
     });
-  }, [projects]);
+  }, []); // Empty dependency array to run only once
 
   // Memoized performance indicators
   const performanceIndicators = useMemo((): PerformanceIndicators => {
