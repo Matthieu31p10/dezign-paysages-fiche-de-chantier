@@ -87,7 +87,7 @@ export const PerformanceProvider = ({
         const newAverageRenderTime = newTotalRenderTime / newRenderCount;
 
         if (settings.logPerformance) {
-          // Performance logging disabled in production
+          console.log(`[Performance] ${componentName}: ${renderTime.toFixed(2)}ms`);
         }
 
         return {

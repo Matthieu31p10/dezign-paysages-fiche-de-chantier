@@ -65,7 +65,9 @@ export const measurePerformance = (name: string) => {
   return {
     end: () => {
       const end = performance.now();
-      // Performance logging disabled in production
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Performance] ${name}: ${(end - start).toFixed(2)}ms`);
+      }
     }
   };
 };
@@ -80,7 +82,9 @@ export const useRenderPerformance = (componentName: string) => {
   const timeSinceLastRender = currentTime - lastRenderTime.current;
   lastRenderTime.current = currentTime;
 
-  // Performance logging disabled in production
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Render Performance] ${componentName}: render #${renderCount.current}, time since last: ${timeSinceLastRender.toFixed(2)}ms`);
+  }
 };
 
 // Cache simple en mémoire
