@@ -1,6 +1,5 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button-enhanced';
 import ProjectsFilters from './ProjectsFilters';
 import ProjectsViewToggle from './ProjectsViewToggle';
 import ProjectsTabs from './ProjectsTabs';
@@ -136,41 +135,36 @@ export const ProjectsControls: React.FC<ProjectsControlsProps> = ({
 
         {/* Toggle pour mode sélection */}
         <Button
-          variant="outline"
+          variant={showBulkActions ? "gradient-primary" : "outline"}
           size="sm"
           onClick={onToggleBulkActions}
-          className={cn(
-            "transition-colors",
-            showBulkActions 
-              ? "bg-primary text-primary-foreground" 
-              : "bg-secondary"
-          )}
           aria-label="Activer le mode sélection multiple"
           title="Mode sélection multiple"
+          animation="hover"
         >
           ☑️
         </Button>
 
         {/* Toggle pour les métriques de performance */}
         <Button
-          variant="outline"
+          variant={showPerformanceIndicator ? "gradient-primary" : "outline"}
           size="sm"
           onClick={onTogglePerformanceIndicator}
-          className="bg-secondary"
           aria-label="Afficher les métriques de performance"
           title="Afficher/masquer les métriques de performance"
+          animation="hover"
         >
           📊
         </Button>
 
         {/* Data Manager Toggle */}
         <Button
-          variant="outline"
+          variant={showDataManager ? "gradient-primary" : "outline"}
           size="sm"
           onClick={onToggleDataManager}
-          className="bg-secondary"
           aria-label="Ouvrir le gestionnaire de données"
           title="Gestionnaire de données"
+          animation="hover"
         >
           🗂️
         </Button>
@@ -183,12 +177,12 @@ export const ProjectsControls: React.FC<ProjectsControlsProps> = ({
 
       {/* Indicateur de filtres avancés actifs */}
       {useAdvancedFilters && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-blue-700">
+            <span className="text-sm font-medium text-primary">
               Filtres avancés actifs
             </span>
-            <span className="text-xs text-blue-600">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary">
               {filteredProjects.length} résultat{filteredProjects.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -196,8 +190,8 @@ export const ProjectsControls: React.FC<ProjectsControlsProps> = ({
             variant="ghost"
             size="sm"
             onClick={onAdvancedFilterReset}
-            className="text-xs text-blue-600 hover:text-blue-800 underline h-auto p-0"
             aria-label="Réinitialiser les filtres avancés"
+            animation="hover"
           >
             Réinitialiser
           </Button>
