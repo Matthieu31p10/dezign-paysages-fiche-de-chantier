@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { handleAuthError } from '@/utils/errorHandler';
 import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/ui/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,7 +79,7 @@ const Login = () => {
       aria-label="Page de connexion"
     >
       <div className="w-full max-w-md p-4">
-        <Card className="w-full backdrop-blur-sm bg-background/90 shadow-lg">
+        <Card className="w-full backdrop-blur-sm bg-background/90 shadow-lg border-border/20 hover:shadow-xl transition-all duration-300">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center font-bold">Connexion</CardTitle>
             <CardDescription className="text-center">
@@ -144,21 +144,15 @@ const Login = () => {
                       />
                     </div>
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isLoading}
-                    aria-describedby={isLoading ? "loading-status" : undefined}
+                  <LoadingButton
+                    type="submit"
+                    className="w-full hover:scale-105 transition-transform duration-200"
+                    loading={isLoading}
+                    loadingText="Connexion en cours..."
+                    variant="default"
                   >
-                    {isLoading ? (
-                      <>
-                        <span id="loading-status" className="sr-only">Connexion en cours</span>
-                        Connexion en cours...
-                      </>
-                    ) : (
-                      'Se connecter'
-                    )}
-                  </Button>
+                    Se connecter
+                  </LoadingButton>
                 </form>
               </TabsContent>
               
