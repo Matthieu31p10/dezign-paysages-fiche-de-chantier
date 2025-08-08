@@ -175,7 +175,10 @@ const HeaderSection: React.FC<HeaderSectionProps> = ({
                 <FormControl>
                   <PersonnelDialog 
                     selectedPersonnel={selectedPersonnel}
-                    onChange={handlePersonnelChange}
+                    onChange={(personnel) => {
+                      field.onChange(personnel);
+                      handlePersonnelChange(personnel);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

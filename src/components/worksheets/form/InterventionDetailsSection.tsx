@@ -26,7 +26,7 @@ const InterventionDetailsSection: React.FC = () => {
   };
   
   const handlePersonnelChange = (selectedPersonnel: string[]) => {
-    setValue('personnel', selectedPersonnel);
+    setValue('personnel', selectedPersonnel, { shouldValidate: true, shouldDirty: true });
   };
   
   return (
@@ -107,7 +107,10 @@ const InterventionDetailsSection: React.FC = () => {
                 <FormControl>
                   <PersonnelDialog 
                     selectedPersonnel={selectedPersonnel}
-                    onChange={handlePersonnelChange}
+                    onChange={(personnel) => {
+                      field.onChange(personnel);
+                      handlePersonnelChange(personnel);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

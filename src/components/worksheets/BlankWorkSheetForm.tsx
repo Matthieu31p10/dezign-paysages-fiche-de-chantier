@@ -192,7 +192,7 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
             <PersonnelSection 
               control={form.control}
               selectedPersonnel={form.watch('personnel') || []}
-              onPersonnelChange={(personnel) => form.setValue('personnel', personnel)}
+              onPersonnelChange={(personnel) => form.setValue('personnel', personnel, { shouldValidate: true, shouldDirty: true })}
             />
             
             <TimeTrackingSection />

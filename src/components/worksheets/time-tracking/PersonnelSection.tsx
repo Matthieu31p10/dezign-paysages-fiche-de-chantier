@@ -31,17 +31,20 @@ export const PersonnelSection: React.FC<PersonnelSectionProps> = ({
         <FormField
           control={control}
           name="personnel"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <PersonnelDialog
-                  selectedPersonnel={selectedPersonnel}
-                  onChange={onPersonnelChange}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <PersonnelDialog
+                    selectedPersonnel={selectedPersonnel}
+                    onChange={(personnel) => {
+                      field.onChange(personnel);
+                      onPersonnelChange(personnel);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
         />
         
         {selectedPersonnel.length > 0 && (

@@ -25,7 +25,7 @@ export const useWorkLogPersonnel = ({
   
   // Handle selection changes
   const handlePersonnelChange = useCallback((personnel: string[]) => {
-    form.setValue('personnel', personnel, { shouldValidate: true });
+    form.setValue('personnel', personnel, { shouldValidate: true, shouldDirty: true });
   }, [form]);
   
   return {
