@@ -9,9 +9,41 @@ export const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-// Validation des mots de passe
+// Validation renforcée des mots de passe
 export const isValidPassword = (password: string): boolean => {
-  return password.length >= 8;
+  // Au moins 8 caractères
+  if (password.length < 8) return false;
+  
+  // Au moins une majuscule
+  if (!/[A-Z]/.test(password)) return false;
+  
+  // Au moins une minuscule  
+  if (!/[a-z]/.test(password)) return false;
+  
+  // Au moins un chiffre
+  if (!/\d/.test(password)) return false;
+  
+  // Au moins un caractère spécial
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
+  
+  return true;
+};
+
+// Vérification de la force du mot de passe
+export const getPasswordStrength = (password: string): 'weak' | 'medium' | 'strong' => {
+  let score = 0;
+  
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[A-Z]/.test(password)) score += 1;
+  if (/[a-z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+  if (password.length >= 16) score += 1;
+  
+  if (score <= 3) return 'weak';
+  if (score <= 5) return 'medium';
+  return 'strong';
 };
 
 // Sanitisation des entrées utilisateur
@@ -41,4 +73,40 @@ export const validateClientAccess = (clientSession: any, projectId: string): boo
     return false;
   }
   return clientSession.assignedProjects.includes(projectId);
+};
+
+// Détection de tentatives de brute force
+export const checkBruteForce = (attempts: number, lastAttempt: Date): boolean => {
+  const maxAttempts = 5;
+  const lockoutTime = 15 * 60 * 1000; // 15 minutes
+  
+  if (attempts >= maxAttempts) {
+    const timeSinceLastAttempt = Date.now() - lastAttempt.getTime();
+    return timeSinceLastAttempt < lockoutTime;
+  }
+  
+  return false;
+};
+
+// Validation des tokens de session
+export const validateSessionToken = (token: string): boolean => {
+  if (!token || token.length < 32) return false;
+  
+  // Vérifier le format du token
+  const tokenRegex = /^[a-zA-Z0-9+/]+=*$/;
+  return tokenRegex.test(token);
+};
+
+// Nettoyage sécurisé des données sensibles
+export const sanitizeSensitiveData = (data: any): any => {
+  const sensitiveFields = ['password', 'token', 'secret', 'key', 'private'];
+  const cleaned = { ...data };
+  
+  for (const field of sensitiveFields) {
+    if (cleaned[field]) {
+      cleaned[field] = '***REDACTED***';
+    }
+  }
+  
+  return cleaned;
 };

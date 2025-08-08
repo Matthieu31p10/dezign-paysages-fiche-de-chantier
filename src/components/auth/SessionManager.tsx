@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useSecurity } from '@/hooks/useSecurity';
 
 interface SessionData {
   sessionExpiry: string;
@@ -10,6 +11,7 @@ interface SessionData {
 
 const SessionManager = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
+  const { validateSession, cleanSensitiveData } = useSecurity();
 
   useEffect(() => {
     const checkClientSession = () => {
@@ -24,9 +26,33 @@ const SessionManager = ({ children }: { children: React.ReactNode }) => {
             localStorage.removeItem('clientSession');
             toast.error('Session expirée, veuillez vous reconnecter');
             navigate('/login');
+            return;
           }
+
+          // Validation sécurisée de la session
+          if (session.sessionToken && !validateSession(session.sessionToken)) {
+            localStorage.removeItem('clientSession');
+            navigate('/login');
+            return;
+          }
+
+          // Vérifier l'intégrité des données de session
+          const requiredFields = ['sessionExpiry', 'userId'];
+          const missingFields = requiredFields.filter(field => !session[field]);
+          
+          if (missingFields.length > 0) {
+            console.error('Session corrompue - champs manquants:', missingFields);
+            localStorage.removeItem('clientSession');
+            toast.error('Session corrompue, veuillez vous reconnecter');
+            navigate('/login');
+            return;
+          }
+
         } catch (error) {
+          // Logger l'erreur de manière sécurisée (sans données sensibles)
+          console.error('Erreur de session:', cleanSensitiveData(error));
           localStorage.removeItem('clientSession');
+          toast.error('Erreur de session, veuillez vous reconnecter');
           navigate('/login');
         }
       }
