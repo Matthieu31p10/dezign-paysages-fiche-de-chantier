@@ -8,6 +8,7 @@ import { drawDetailsSection } from './sections/detailsSection';
 import { drawPersonnelSection } from './sections/personnelSection';
 import { drawTasksSection } from './sections/tasksSection';
 import { drawWateringSection } from './sections/wateringSection';
+import { drawWasteManagementSection } from './sections/wasteManagementSection';
 import { drawNotesSection } from './sections/notesSection';
 import { drawTimeTrackingSection } from './sections/timeTrackingSection';
 import { drawConsumablesSection } from './sections/consumablesSection';
@@ -99,6 +100,11 @@ export const generateModernWorkLogPDF = (data: PDFData): string => {
   // Add watering section compact
   if (pdfOptions.includeWatering !== false && workLog.waterConsumption) {
     y = drawWateringSection(doc, data, margins.left, y, contentWidth);
+  }
+  
+  // Add waste management section compact
+  if (pdfOptions.includeWasteManagement !== false && workLog.wasteManagement && workLog.wasteManagement !== 'none') {
+    y = drawWasteManagementSection(doc, data, margins.left, y, contentWidth);
   }
   
   // Add notes section compact

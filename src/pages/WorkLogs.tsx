@@ -59,8 +59,9 @@ const WorkLogs = () => {
       <WorkLogsHeader projectInfos={projectInfos} />
       
       <Tabs defaultValue="suivi" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="suivi">Fiches Suivi</TabsTrigger>
+          <TabsTrigger value="vierges">Fiches Vierges</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="export">Export</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
@@ -87,6 +88,25 @@ const WorkLogs = () => {
         
         <TabsContent value="export" className="space-y-6">
           <WorkLogExportManager workLogs={workLogsSuivi} />
+        </TabsContent>
+
+        <TabsContent value="vierges" className="space-y-6">
+          <Card className="border-purple-200 shadow-md overflow-hidden">
+            <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-white">
+              <CardTitle className="flex items-center">
+                <span>Fiches vierges</span>
+                <span className="ml-2 bg-purple-100 text-purple-800 text-sm rounded-full px-2 py-0.5">
+                  {workLogs.filter(isBlankWorksheet).length}
+                </span>
+              </CardTitle>
+              <CardDescription>
+                Fiches de travail vierges et templates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <WorkLogList workLogs={workLogs.filter(isBlankWorksheet)} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="suivi" className="space-y-6">

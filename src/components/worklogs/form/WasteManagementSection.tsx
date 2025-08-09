@@ -31,13 +31,8 @@ const WasteManagementSection: React.FC = () => {
   
   // Update combined waste management value
   const updateWasteManagement = (type: string, qty: string = '1') => {
-    if (type === 'none') {
-      form.setValue('wasteManagement', 'none');
-    } else {
-      form.setValue('wasteManagement', `${type}_${qty}`);
-    }
-    // Trigger validation
-    form.trigger('wasteManagement');
+    const newValue = type === 'none' ? 'none' : `${type}_${qty}`;
+    form.setValue('wasteManagement', newValue, { shouldValidate: true, shouldDirty: true });
   };
 
   // Waste type options
@@ -70,7 +65,11 @@ const WasteManagementSection: React.FC = () => {
               <FormControl>
                 <Select 
                   value={wasteType} 
-                  onValueChange={(value) => updateWasteManagement(value, quantity)}
+                  onValueChange={(value) => {
+                    const newValue = value === 'none' ? 'none' : `${value}_${quantity}`;
+                    field.onChange(newValue);
+                    updateWasteManagement(value, quantity);
+                  }}
                 >
                   <SelectTrigger className="w-full bg-white border-green-200 focus:ring-green-500">
                     <SelectValue placeholder="Sélectionner un type de déchet" />
@@ -107,8 +106,10 @@ const WasteManagementSection: React.FC = () => {
                   max="99"
                   value={quantity}
                   onChange={(e) => {
-                    const value = e.target.value || "1";
-                    updateWasteManagement(wasteType, value);
+                    const newQuantity = e.target.value || "1";
+                    const newValue = wasteType === 'none' ? 'none' : `${wasteType}_${newQuantity}`;
+                    form.setValue('wasteManagement', newValue, { shouldValidate: true, shouldDirty: true });
+                    updateWasteManagement(wasteType, newQuantity);
                   }}
                   className="border-green-300 focus:border-green-500"
                 />
