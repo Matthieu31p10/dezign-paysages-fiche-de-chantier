@@ -19,6 +19,13 @@ export const useWorkLogFormState = ({
   projectInfos,
   existingWorkLogs
 }: UseWorkLogFormStateProps) => {
+  // Récupérer le dernier projet utilisé si pas de données initiales
+  const getLastUsedProject = () => {
+    if (initialData?.projectId) return initialData.projectId;
+    const stored = localStorage.getItem('lastUsedProjectId');
+    return stored || '';
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData ? {
@@ -41,7 +48,7 @@ export const useWorkLogFormState = ({
       consumables: initialData.consumables || [],
       invoiced: initialData.invoiced || false,
     } : {
-      projectId: '',
+      projectId: getLastUsedProject(),
       date: new Date(),
       personnel: [],
       teamFilter: "all",

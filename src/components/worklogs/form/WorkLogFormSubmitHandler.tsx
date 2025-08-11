@@ -114,6 +114,10 @@ const WorkLogFormSubmitHandler: React.FC<WorkLogFormSubmitHandlerProps> = ({
         console.log('Creating new worklog');
         const result = await addWorkLog(workLogData);
         console.log('Worklog created successfully:', result);
+        // Sauvegarder le projet pour la prochaine fiche
+        if (workLogData.projectId) {
+          localStorage.setItem('lastUsedProjectId', workLogData.projectId);
+        }
       }
       
       if (onSuccess) {

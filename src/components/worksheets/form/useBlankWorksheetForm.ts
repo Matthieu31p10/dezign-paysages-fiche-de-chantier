@@ -30,6 +30,13 @@ export const useBlankWorksheetForm = ({
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const { addWorkLog, updateWorkLog } = useWorkLogs();
   
+  // Récupérer le dernier projet lié utilisé
+  const getLastUsedLinkedProject = () => {
+    if (initialData?.linkedProjectId) return initialData.linkedProjectId;
+    const stored = localStorage.getItem('lastUsedLinkedProjectId');
+    return stored || null;
+  };
+  
   // Initialize the form with default values and validation
   const form = useForm<BlankWorkSheetValues>({
     resolver: zodResolver(BlankWorkSheetSchema),
@@ -53,7 +60,7 @@ export const useBlankWorksheetForm = ({
       hourlyRate: initialData?.hourlyRate || 45, // Default hourly rate
       signedQuoteAmount: initialData?.signedQuoteAmount || 0,
       isQuoteSigned: initialData?.isQuoteSigned || false,
-      linkedProjectId: initialData?.linkedProjectId || null,
+      linkedProjectId: initialData?.linkedProjectId || getLastUsedLinkedProject(),
       teamFilter: initialData?.teamFilter || 'all',
       invoiced: initialData?.invoiced || false
     }

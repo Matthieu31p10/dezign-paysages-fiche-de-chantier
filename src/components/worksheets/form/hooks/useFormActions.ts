@@ -113,6 +113,10 @@ export const useFormActions = ({
         console.log('Creating new blank worksheet');
         const result = await addWorkLog(workLogData);
         console.log('Blank worksheet created successfully:', result);
+        // Sauvegarder le projet lié pour la prochaine fiche vierge
+        if (workLogData.linkedProjectId) {
+          localStorage.setItem('lastUsedLinkedProjectId', workLogData.linkedProjectId);
+        }
         toast.success('Fiche vierge enregistrée avec succès');
       }
       
