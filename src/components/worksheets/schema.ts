@@ -39,6 +39,12 @@ export const BlankWorkSheetSchema = z.object({
   vatRate: z.string().optional().default('20'),
   quoteValue: z.number().optional(),
   invoiced: z.boolean().default(false),
+  attachedDocuments: z.array(z.object({
+    name: z.string(),
+    size: z.number(),
+    type: z.string(),
+    lastModified: z.number()
+  })).optional().default([]),
 });
 
 // Create a type from the schema

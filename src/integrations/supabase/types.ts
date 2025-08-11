@@ -754,6 +754,7 @@ export type Database = {
         Row: {
           address: string | null
           arrival: string | null
+          attached_documents: Json | null
           break_time: string | null
           client_name: string | null
           client_signature: string | null
@@ -782,6 +783,7 @@ export type Database = {
         Insert: {
           address?: string | null
           arrival?: string | null
+          attached_documents?: Json | null
           break_time?: string | null
           client_name?: string | null
           client_signature?: string | null
@@ -810,6 +812,7 @@ export type Database = {
         Update: {
           address?: string | null
           arrival?: string | null
+          attached_documents?: Json | null
           break_time?: string | null
           client_name?: string | null
           client_signature?: string | null

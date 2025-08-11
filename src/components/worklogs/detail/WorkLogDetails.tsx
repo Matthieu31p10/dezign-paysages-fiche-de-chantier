@@ -11,6 +11,7 @@ import TimeTrackingSection from './sections/TimeTrackingSection';
 import TasksSection from './sections/TasksSection';
 import WaterConsumptionSection from './sections/WaterConsumptionSection';
 import TimeDeviationSection from './sections/TimeDeviationSection';
+import DocumentsDetailSection from './sections/DocumentsSection';
 
 const WorkLogDetails: React.FC = () => {
   const { workLog } = useWorkLogDetail();
@@ -57,6 +58,14 @@ const WorkLogDetails: React.FC = () => {
         <>
           <Separator />
           <WaterConsumptionSection />
+        </>
+      )}
+      
+      {/* Documents Section */}
+      {workLog.attachedDocuments && workLog.attachedDocuments.length > 0 && (
+        <>
+          <Separator />
+          <DocumentsDetailSection />
         </>
       )}
     </div>

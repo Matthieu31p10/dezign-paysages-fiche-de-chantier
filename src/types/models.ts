@@ -122,6 +122,14 @@ export interface WorkLog {
   isBlankWorksheet?: boolean;
   createdAt?: Date;
   createdBy?: string;
+  attachedDocuments?: Array<{
+    name: string;
+    size: number;
+    type: string;
+    lastModified: number;
+    path?: string;
+    url?: string;
+  }>;
 }
 
 export interface Team {

@@ -99,7 +99,15 @@ export const useFormActions = ({
         signedQuoteAmount: data.signedQuoteAmount,
         isQuoteSigned: data.isQuoteSigned,
         linkedProjectId: data.linkedProjectId,
-        clientSignature: data.clientSignature
+        clientSignature: data.clientSignature,
+        attachedDocuments: (data.attachedDocuments || []).map((doc: any) => ({
+          name: doc.name || '',
+          size: doc.size || 0,
+          type: doc.type || '',
+          lastModified: doc.lastModified || Date.now(),
+          path: doc.path || undefined,
+          url: doc.url || undefined
+        }))
       };
       
       console.log('WorkLog data prepared for submission:', workLogData);

@@ -62,7 +62,8 @@ export const useBlankWorksheetForm = ({
       isQuoteSigned: initialData?.isQuoteSigned || false,
       linkedProjectId: initialData?.linkedProjectId || getLastUsedLinkedProject(),
       teamFilter: initialData?.teamFilter || 'all',
-      invoiced: initialData?.invoiced || false
+      invoiced: initialData?.invoiced || false,
+      attachedDocuments: initialData?.attachedDocuments || []
     }
   });
   

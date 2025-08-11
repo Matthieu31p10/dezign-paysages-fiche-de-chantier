@@ -37,6 +37,7 @@ import { useProjectLinkHook } from './form/useProjectLinkHook';
 import ProjectLinkSection from './form/ProjectLinkSection';
 import { useBlankWorksheetForm } from './form/useBlankWorksheetForm';
 import { PersonnelSection } from './time-tracking/PersonnelSection';
+import DocumentsSection from './form/DocumentsSection';
 
 interface BlankWorkSheetFormProps {
   initialData?: WorkLog;
@@ -201,15 +202,17 @@ const BlankWorkSheetForm: React.FC<BlankWorkSheetFormProps> = ({
               customTasks={[]}
             />
             
-            <WasteManagementSection />
-            
-            <ConsumablesSection />
-            
-            <Card className="p-4 border-green-200 bg-green-50">
-              <FinancialSummarySection />
-            </Card>
-            
-            <NotesSection />
+                  <WasteManagementSection />
+                  
+                  <DocumentsSection isBlankWorksheet={true} />
+                  
+                  <ConsumablesSection />
+                  
+                  <Card className="p-4 border-green-200 bg-green-50">
+                    <FinancialSummarySection />
+                  </Card>
+                  
+                  <NotesSection />
             
             <ClientSignatureSection />
             
