@@ -1,14 +1,18 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/context/AppContext";
-import { FileText, Calendar, BarChart3, ExternalLink } from "lucide-react";
+import { FileText, Calendar, BarChart3, ExternalLink, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatNumber } from "@/utils/helpers";
+import EnhancedDashboard from "@/components/dashboard/EnhancedDashboard";
 
 const Home = () => {
   const navigate = useNavigate();
   const { projectInfos, workLogs } = useApp();
+  const [activeTab, setActiveTab] = useState("enhanced");
   
   // Basic statistics
   const totalProjects = projectInfos.length;
@@ -26,13 +30,31 @@ const Home = () => {
     .slice(0, 3);
   
   return (
-    <div className="space-y-8 pb-6 animate-fade-in">
+    <div className="space-y-6 pb-6 animate-fade-in">
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold">Bienvenue sur Vertos Chantiers</h1>
         <p className="text-muted-foreground">
           Gérez facilement vos chantiers d'espaces verts
         </p>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="enhanced" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Dashboard Avancé
+          </TabsTrigger>
+          <TabsTrigger value="simple" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Vue Simplifiée
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="enhanced">
+          <EnhancedDashboard />
+        </TabsContent>
+
+        <TabsContent value="simple" className="space-y-6">
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="hover-scale">
@@ -231,6 +253,8 @@ const Home = () => {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
