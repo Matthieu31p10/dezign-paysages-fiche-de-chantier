@@ -8,11 +8,13 @@ import {
   BarChart3, 
   Settings,
   Search,
-  User
+  User,
+  Star
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useAuth } from '@/context/AuthContext'
 import { useApp } from '@/context/AppContext'
+import { useFavorites } from '@/hooks/useFavorites'
 import {
   Sidebar,
   SidebarContent,
@@ -30,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import CompanyLogo from "@/components/ui/company-logo"
-import GlobalSearchDialog from "@/components/search/GlobalSearchDialog"
+import { EnhancedGlobalSearch } from "@/components/search/EnhancedGlobalSearch"
 import { useWorkLogs } from '@/context/WorkLogsContext/WorkLogsContext'
 
 const navItems = [
@@ -80,7 +82,7 @@ export function AppSidebar() {
   const { auth, logout } = useAuth()
   const { projectInfos, teams } = useApp()
   const { workLogs } = useWorkLogs()
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { getRecentFavorites } = useFavorites()
   
   const currentPath = location.pathname
   const isActive = (path: string, exact?: boolean) => 
@@ -141,19 +143,48 @@ export function AppSidebar() {
 
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => setIsSearchOpen(true)}
-                    tooltip={state === "collapsed" ? "Rechercher" : undefined}
-                  >
-                    <Search className="h-4 w-4" />
-                    <span>Rechercher</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
+              <div className="px-2">
+                <EnhancedGlobalSearch 
+                  projects={projectInfos || []}
+                  workLogs={workLogs || []}
+                  teams={teams || []}
+                />
+              </div>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {/* Favorites Section */}
+          {getRecentFavorites(4).length > 0 && (
+            <>
+              <SidebarSeparator />
+              <SidebarGroup>
+                <SidebarGroupLabel className="flex items-center gap-2">
+                  <Star className="h-3 w-3 text-yellow-500" />
+                  Favoris
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {getRecentFavorites(4).map((favorite) => (
+                      <SidebarMenuItem key={favorite.id}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={state === "collapsed" ? favorite.title : undefined}
+                        >
+                          <NavLink 
+                            to={`/${favorite.type}s/${favorite.id}`}
+                            className="flex items-center gap-2"
+                          >
+                            <Star className="h-3 w-3 fill-current text-yellow-500" />
+                            <span className="truncate text-sm">{favorite.title}</span>
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </>
+          )}
         </SidebarContent>
 
         <SidebarFooter className="border-t border-sidebar-border">
@@ -184,13 +215,6 @@ export function AppSidebar() {
         </SidebarFooter>
       </Sidebar>
 
-      <GlobalSearchDialog
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        projects={projectInfos || []}
-        workLogs={workLogs || []}
-        teams={teams || []}
-      />
     </>
   )
 }
