@@ -64,6 +64,11 @@ const navItems = [
     requiredModule: 'blanksheets'
   },
   { 
+    title: "Analytics", 
+    url: "/analytics", 
+    icon: BarChart3 
+  },
+  { 
     title: "Rapports", 
     url: "/reports", 
     icon: BarChart3 

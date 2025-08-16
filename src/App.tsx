@@ -24,6 +24,7 @@ import BlankWorkSheets from './pages/BlankWorkSheets';
 import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Passages from './pages/Passages';
 import Index from './pages/Index';
+import AnalyticsPage from './pages/AnalyticsPage';
 
 import './App.css';
 
@@ -58,6 +59,7 @@ function App() {
               <Route path="blank-worksheets" element={<BlankWorkSheets />} />
               <Route path="blank-worksheets/new" element={<BlankWorkSheetNew />} />
               
+              <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
