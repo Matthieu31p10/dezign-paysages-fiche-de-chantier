@@ -73,3 +73,61 @@ textarea:focus-visible,
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Mobile PWA optimizations */
+.mobile-optimized {
+  /* Improve touch targets */
+  --min-touch-target: 44px;
+}
+
+.mobile-optimized button,
+.mobile-optimized a,
+.mobile-optimized [role="button"] {
+  min-height: var(--min-touch-target);
+  min-width: var(--min-touch-target);
+}
+
+.touch-optimized {
+  /* Reduce hover effects for touch devices */
+  pointer-events: auto;
+}
+
+.touch-optimized *:hover {
+  /* Disable hover effects on touch devices */
+  transition: none;
+}
+
+/* Safe area support for PWA */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* PWA install button accessibility */
+.pwa-install-prompt {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Offline indicator */
+.offline-indicator {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

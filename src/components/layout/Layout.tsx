@@ -6,6 +6,11 @@ import AppBreadcrumbs from '../common/AppBreadcrumbs';
 import { useApp } from '@/context/AppContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SkipLink } from '../accessibility/AccessibilityComponents';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
+import OfflineIndicator from '@/components/pwa/OfflineIndicator';
+import MobileOptimizedView from '@/components/pwa/MobileOptimizedView';
+import { usePWA } from '@/hooks/usePWA';
+import { useState, useEffect } from 'react';
 
 const Layout = () => {
   const { settings } = useApp();
@@ -13,6 +18,19 @@ const Layout = () => {
   const location = useLocation();
   const companyName = settings.companyName || 'Vertos Chantiers';
   const currentYear = new Date().getFullYear();
+  const { isInstallable, isInstalled } = usePWA();
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
+  useEffect(() => {
+    // Show install prompt after 30 seconds if app is installable but not installed
+    const timer = setTimeout(() => {
+      if (isInstallable && !isInstalled) {
+        setShowInstallPrompt(true);
+      }
+    }, 30000);
+
+    return () => clearTimeout(timer);
+  }, [isInstallable, isInstalled]);
   
   // Enhanced background styles based on path with more vibrant colors
   const getBackgroundStyle = () => {
@@ -30,7 +48,7 @@ const Layout = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <MobileOptimizedView className="min-h-screen flex w-full">
         <SkipLink targetId="main-content">Aller au contenu principal</SkipLink>
         
         <AppSidebar />
@@ -59,7 +77,7 @@ const Layout = () => {
           
           <footer 
             className={`${
-              isMobile ? 'px-3 py-4' : 'py-6 px-4 sm:px-6 lg:px-8'
+              isMobile ? 'px-3 py-4 pb-safe' : 'py-6 px-4 sm:px-6 lg:px-8'
             } border-t border-border/60 bg-background/85 backdrop-blur-sm transition-all duration-300`}
             role="contentinfo"
             aria-label="Informations sur l'entreprise et liens légaux"
@@ -85,7 +103,13 @@ const Layout = () => {
             </div>
           </footer>
         </SidebarInset>
-      </div>
+        
+        {/* PWA Components */}
+        <OfflineIndicator />
+        {showInstallPrompt && (
+          <InstallPrompt onDismiss={() => setShowInstallPrompt(false)} />
+        )}
+      </MobileOptimizedView>
     </SidebarProvider>
   );
 };

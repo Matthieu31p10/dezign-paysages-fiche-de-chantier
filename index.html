@@ -2,23 +2,54 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chantier-vertos</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Dezign Paysages - Fiche de Chantier</title>
+    <meta name="description" content="Application de gestion des fiches de chantier pour Dezign Paysages" />
+    <meta name="author" content="Dezign Paysages" />
 
-    <meta property="og:title" content="Lovable Generated Project" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Dezign Paysages" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#10b981" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="/placeholder.svg" />
+    <link rel="icon" type="image/svg+xml" href="/placeholder.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Dezign Paysages - Fiche de Chantier" />
+    <meta property="og:description" content="Application de gestion des fiches de chantier pour Dezign Paysages" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/placeholder.svg" />
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="Dezign Paysages" />
+    <meta name="twitter:description" content="Application de gestion des fiches de chantier" />
+    <meta name="twitter:image" content="/placeholder.svg" />
   </head>
 
   <body>
     <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+    
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
