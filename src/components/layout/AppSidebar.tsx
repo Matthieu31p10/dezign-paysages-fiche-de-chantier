@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useIsMobile } from '@/hooks/use-mobile'
 import { 
   Home, 
   FolderOpen, 
@@ -87,6 +88,7 @@ export function AppSidebar() {
   const { auth, logout } = useAuth()
   const { projectInfos, teams } = useApp()
   const { workLogs } = useWorkLogs()
+  const isMobile = useIsMobile()
   const { getRecentFavorites } = useFavorites()
   
   const currentPath = location.pathname
@@ -109,12 +111,16 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar collapsible="left" className="border-r border-sidebar-border">
+      <Sidebar 
+        collapsible="left"
+        className="border-r border-sidebar-border"
+        variant={isMobile ? "floating" : "sidebar"}
+      >
         <SidebarHeader className="border-b border-sidebar-border">
-          <div className="flex items-center gap-2 px-2 py-2">
-            <CompanyLogo className="h-8 w-8 shrink-0" />
+          <div className={`flex items-center gap-2 ${isMobile ? 'px-3 py-3' : 'px-2 py-2'}`}>
+            <CompanyLogo className={`${isMobile ? 'h-10 w-10' : 'h-8 w-8'} shrink-0`} />
             {state === "expanded" && (
-              <h1 className="text-lg font-semibold text-sidebar-foreground">
+              <h1 className={`${isMobile ? 'text-xl' : 'text-lg'} font-semibold text-sidebar-foreground`}>
                 Vertos Chantiers
               </h1>
             )}
@@ -148,7 +154,7 @@ export function AppSidebar() {
 
           <SidebarGroup>
             <SidebarGroupContent>
-              <div className="px-2">
+              <div className={isMobile ? 'px-3' : 'px-2'}>
                 <EnhancedGlobalSearch 
                   projects={projectInfos || []}
                   workLogs={workLogs || []}
@@ -198,18 +204,19 @@ export function AppSidebar() {
               <SidebarMenuButton
                 onClick={logout}
                 tooltip={state === "collapsed" ? "Déconnexion" : undefined}
+                className={isMobile ? 'h-12 touch-target' : ''}
               >
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback className="text-xs">
+                <Avatar className={isMobile ? 'h-8 w-8' : 'h-6 w-6'}>
+                  <AvatarFallback className={isMobile ? 'text-sm' : 'text-xs'}>
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 {state === "expanded" && (
                   <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">
+                    <span className={`${isMobile ? 'text-base' : 'text-sm'} font-medium`}>
                       {auth.currentUser?.name || auth.currentUser?.username}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>
                       Déconnexion
                     </span>
                   </div>

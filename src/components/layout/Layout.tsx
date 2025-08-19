@@ -47,16 +47,16 @@ const Layout = () => {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!isMobile}>
       <MobileOptimizedView className="min-h-screen flex w-full">
         <SkipLink targetId="main-content">Aller au contenu principal</SkipLink>
         
         <AppSidebar />
         
         <SidebarInset className={getBackgroundStyle()}>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex-1">
+          <header className={`flex ${isMobile ? 'h-14' : 'h-16'} shrink-0 items-center gap-2 border-b ${isMobile ? 'px-3' : 'px-4'}`}>
+            <SidebarTrigger className={`${isMobile ? 'p-2' : '-ml-1'} touch-target`} />
+            <div className="flex-1 min-w-0">
               <AppBreadcrumbs />
             </div>
           </header>
@@ -65,36 +65,40 @@ const Layout = () => {
             id="main-content"
             role="main"
             tabIndex={-1}
-            className={`flex-1 ${
-              isMobile ? 'px-3 pb-6 pt-6' : 'px-4 pb-12 pt-8 sm:px-6 lg:px-8'
+            className={`flex-1 overflow-auto ${
+              isMobile 
+                ? 'px-3 pb-safe-6 pt-4' 
+                : 'px-4 pb-12 pt-8 sm:px-6 lg:px-8'
             } transition-all duration-300`}
             aria-label="Contenu principal de l'application"
           >
-            <div className="animate-fade-in">
+            <div className="animate-fade-in max-w-full">
               <Outlet />
             </div>
           </main>
           
           <footer 
             className={`${
-              isMobile ? 'px-3 py-4 pb-safe' : 'py-6 px-4 sm:px-6 lg:px-8'
-            } border-t border-border/60 bg-background/85 backdrop-blur-sm transition-all duration-300`}
+              isMobile 
+                ? 'px-3 py-3 pb-safe text-center' 
+                : 'py-6 px-4 sm:px-6 lg:px-8'
+            } border-t border-border/60 bg-background/95 backdrop-blur-sm transition-all duration-300`}
             role="contentinfo"
             aria-label="Informations sur l'entreprise et liens légaux"
           >
-            <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-600">
-              <p className="font-medium">© {currentYear} {companyName} - Tous droits réservés</p>
-              <div className="flex gap-6">
+            <div className={`flex ${isMobile ? 'flex-col' : 'flex-col md:flex-row'} justify-between items-center gap-2 text-sm text-muted-foreground`}>
+              <p className="font-medium">© {currentYear} {companyName}</p>
+              <div className={`flex ${isMobile ? 'flex-col gap-2' : 'gap-6'}`}>
                 <a 
                   href="#" 
-                  className="hover:text-green-700 transition-colors duration-200 hover:underline"
+                  className="hover:text-primary transition-colors duration-200 hover:underline touch-target"
                   aria-label="Consulter les mentions légales"
                 >
                   Mentions légales
                 </a>
                 <a 
                   href="#" 
-                  className="hover:text-green-700 transition-colors duration-200 hover:underline"
+                  className="hover:text-primary transition-colors duration-200 hover:underline touch-target"
                   aria-label="Nous contacter"
                 >
                   Contact

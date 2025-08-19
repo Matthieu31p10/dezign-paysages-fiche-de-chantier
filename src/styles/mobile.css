@@ -1,0 +1,206 @@
+/* Optimisations spécifiques mobile et tablette */
+
+/* Variables pour les breakpoints personnalisés */
+:root {
+  --mobile-max: 768px;
+  --tablet-max: 1024px;
+  --desktop-min: 1025px;
+}
+
+/* Optimisations générales pour écrans tactiles */
+@media (hover: none) and (pointer: coarse) {
+  /* Augmentation des zones de clic */
+  button, a, [role="button"] {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Désactivation des hover states sur tactile */
+  .hover\:bg-muted:hover {
+    background-color: inherit;
+  }
+  
+  /* États actifs pour les interactions tactiles */
+  button:active, [role="button"]:active {
+    @apply scale-95 opacity-80;
+    transition: transform 0.1s, opacity 0.1s;
+  }
+}
+
+/* Optimisations pour petits écrans (téléphones) */
+@media (max-width: 640px) {
+  /* Réduction des espacements */
+  .container {
+    @apply px-4;
+  }
+  
+  /* Taille de police adaptée */
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+  
+  h3 {
+    @apply text-lg;
+  }
+  
+  /* Adaptation des cartes */
+  .card {
+    @apply mx-0 rounded-lg;
+  }
+  
+  /* Tables responsive */
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+  
+  .table-responsive table {
+    @apply min-w-full whitespace-nowrap;
+  }
+  
+  /* Formulaires optimisés */
+  .form-input {
+    @apply h-12 text-base;
+  }
+  
+  .form-button {
+    @apply h-12 px-6 text-base;
+  }
+}
+
+/* Optimisations pour tablettes */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Grilles adaptées */
+  .grid-responsive {
+    @apply grid-cols-2 gap-4;
+  }
+  
+  /* Navigation latérale */
+  .sidebar-tablet {
+    @apply w-16;
+  }
+  
+  .sidebar-tablet .sidebar-text {
+    @apply hidden;
+  }
+}
+
+/* Optimisations pour grandes tablettes et petits laptops */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .grid-responsive {
+    @apply grid-cols-3 gap-6;
+  }
+}
+
+/* Masquage intelligent pour mobiles */
+@media (max-width: 640px) {
+  .hidden-mobile {
+    @apply hidden;
+  }
+  
+  .mobile-only {
+    @apply block;
+  }
+}
+
+@media (min-width: 641px) {
+  .mobile-only {
+    @apply hidden;
+  }
+}
+
+/* Optimisations pour les modales sur mobile */
+@media (max-width: 640px) {
+  .modal-mobile {
+    @apply m-0 h-full w-full rounded-none;
+  }
+  
+  .modal-content-mobile {
+    @apply p-4 h-full overflow-y-auto;
+  }
+}
+
+/* Adaptation des barres de défilement sur mobile */
+@media (max-width: 640px) {
+  .scrollbar-thin {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Optimisations pour les gestes de balayage */
+@media (hover: none) and (pointer: coarse) {
+  .swipe-indicator {
+    @apply relative;
+  }
+  
+  .swipe-indicator::after {
+    content: '';
+    @apply absolute bottom-0 left-1/2 transform -translate-x-1/2;
+    @apply w-8 h-1 bg-muted-foreground/50 rounded-full;
+  }
+}
+
+/* Adaptation des menus déroulants pour mobile */
+@media (max-width: 640px) {
+  .dropdown-mobile {
+    @apply fixed inset-x-0 bottom-0 rounded-t-lg;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .dropdown-mobile.open {
+    transform: translateY(0);
+  }
+}
+
+/* Optimisations d'animations pour les appareils à performances réduites */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mode paysage sur mobile */
+@media (max-width: 640px) and (orientation: landscape) {
+  .landscape-mobile {
+    @apply py-2;
+  }
+  
+  .landscape-mobile .sidebar {
+    @apply w-14;
+  }
+  
+  .landscape-mobile .main-content {
+    @apply px-3;
+  }
+}
+
+/* Support pour les écrans avec encoche */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Optimisations pour le pinch-to-zoom */
+@media (hover: none) and (pointer: coarse) {
+  .prevent-zoom {
+    touch-action: pan-x pan-y;
+  }
+  
+  input[type="number"] {
+    font-size: 16px; /* Empêche le zoom automatique sur iOS */
+  }
+}

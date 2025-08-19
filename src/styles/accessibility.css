@@ -102,8 +102,23 @@ textarea:focus-visible,
   padding-bottom: env(safe-area-inset-bottom, 1rem);
 }
 
+.pb-safe-6 {
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+}
+
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Amélioration des zones de clic/touch pour mobile et tactile */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+}
+
+@media (pointer: coarse) {
+  .touch-target {
+    @apply min-h-[48px] min-w-[48px];
+  }
 }
 
 /* PWA install button accessibility */
@@ -130,4 +145,15 @@ textarea:focus-visible,
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Optimisations tactiles */
+@media (hover: none) and (pointer: coarse) {
+  .hover-scale:hover {
+    transform: none;
+  }
+  
+  .hover-scale:active {
+    transform: scale(0.95);
+  }
 }
