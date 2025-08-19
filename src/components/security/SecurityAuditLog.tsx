@@ -83,7 +83,7 @@ const SecurityAuditLog = () => {
           id: `event-${i}`,
           timestamp: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)),
           event: template.event,
-          category: template.category,
+          category: template.category as AuditEvent['category'],
           severity,
           user,
           details: template.details,

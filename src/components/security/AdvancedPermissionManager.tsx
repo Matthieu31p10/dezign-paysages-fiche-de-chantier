@@ -413,7 +413,7 @@ const AdvancedPermissionManager = () => {
                             <CardContent className="p-4">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-sm mb-1">{permission.name}</h4>
+                                  <h4 className="font-medium text-sm mb-1">{permission.description}</h4>
                                   <p className="text-xs text-muted-foreground mb-2">
                                     {permission.description}
                                   </p>
@@ -461,7 +461,7 @@ const AdvancedPermissionManager = () => {
                               const perm = SYSTEM_PERMISSIONS.find(p => p.id === permId);
                               return perm ? (
                                 <Badge key={permId} variant="secondary" className="text-xs">
-                                  {perm.name}
+                                  {perm.description}
                                 </Badge>
                               ) : null;
                             })}
