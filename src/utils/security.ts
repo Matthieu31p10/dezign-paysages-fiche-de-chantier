@@ -9,10 +9,10 @@ export const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-// Validation renforcée des mots de passe
+// Validation renforcée des mots de passe (conformité ANSSI/CNIL)
 export const isValidPassword = (password: string): boolean => {
-  // Au moins 8 caractères
-  if (password.length < 8) return false;
+  // Au moins 12 caractères (recommandation ANSSI renforcée)
+  if (password.length < 12) return false;
   
   // Au moins une majuscule
   if (!/[A-Z]/.test(password)) return false;
@@ -23,26 +23,52 @@ export const isValidPassword = (password: string): boolean => {
   // Au moins un chiffre
   if (!/\d/.test(password)) return false;
   
-  // Au moins un caractère spécial
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
+  // Au moins un caractère spécial étendu
+  if (!/[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\\/~`]/.test(password)) return false;
+  
+  // Pas de séquences répétitives (AAA, BBB, etc.)
+  if (/(.)\1{2,}/.test(password)) return false;
+  
+  // Pas de séquences clavier communes
+  const commonSequences = ['123456', 'abcdef', 'qwerty', 'azerty', 'password', 'motdepasse'];
+  const lowerPassword = password.toLowerCase();
+  for (const seq of commonSequences) {
+    if (lowerPassword.includes(seq)) return false;
+  }
   
   return true;
 };
 
-// Vérification de la force du mot de passe
+// Vérification avancée de la force du mot de passe
 export const getPasswordStrength = (password: string): 'weak' | 'medium' | 'strong' => {
   let score = 0;
   
-  if (password.length >= 8) score += 1;
-  if (password.length >= 12) score += 1;
+  // Longueur (critères renforcés)
+  if (password.length >= 12) score += 2;
+  if (password.length >= 16) score += 2;
+  if (password.length >= 20) score += 1;
+  
+  // Complexité des caractères
   if (/[A-Z]/.test(password)) score += 1;
   if (/[a-z]/.test(password)) score += 1;
   if (/\d/.test(password)) score += 1;
-  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
-  if (password.length >= 16) score += 1;
+  if (/[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\\/~`]/.test(password)) score += 2;
   
-  if (score <= 3) return 'weak';
-  if (score <= 5) return 'medium';
+  // Diversité (bonus pour mélange de types)
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasDigit = /\d/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\\/~`]/.test(password);
+  const diversity = [hasUpper, hasLower, hasDigit, hasSpecial].filter(Boolean).length;
+  if (diversity >= 4) score += 2;
+  
+  // Pénalités pour faiblesses
+  if (/(.)\1{2,}/.test(password)) score -= 2; // Répétitions
+  if (/123456|abcdef|qwerty|azerty|password|motdepasse/i.test(password)) score -= 3;
+  
+  // Classification sécurisée
+  if (score < 6) return 'weak';
+  if (score < 10) return 'medium';
   return 'strong';
 };
 
