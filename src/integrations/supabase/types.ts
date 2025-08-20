@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          device_fingerprint: string | null
+          expires_at: string
+          geolocation: Json | null
+          id: string
+          ip_address: unknown
+          is_suspicious: boolean | null
+          last_activity: string
+          login_time: string
+          mfa_verified: boolean | null
+          session_token_hash: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          device_fingerprint?: string | null
+          expires_at: string
+          geolocation?: Json | null
+          id?: string
+          ip_address: unknown
+          is_suspicious?: boolean | null
+          last_activity?: string
+          login_time?: string
+          mfa_verified?: boolean | null
+          session_token_hash: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          device_fingerprint?: string | null
+          expires_at?: string
+          geolocation?: Json | null
+          id?: string
+          ip_address?: unknown
+          is_suspicious?: boolean | null
+          last_activity?: string
+          login_time?: string
+          mfa_verified?: boolean | null
+          session_token_hash?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       blank_worksheet_consumables: {
         Row: {
           blank_worksheet_id: string | null
@@ -259,6 +304,51 @@ export type Database = {
           created_at?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      data_access_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          ip_address: unknown | null
+          operation: string
+          query_hash: string | null
+          record_ids: string[] | null
+          row_count: number | null
+          success: boolean
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          ip_address?: unknown | null
+          operation: string
+          query_hash?: string | null
+          record_ids?: string[] | null
+          row_count?: number | null
+          success: boolean
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          ip_address?: unknown | null
+          operation?: string
+          query_hash?: string | null
+          record_ids?: string[] | null
+          row_count?: number | null
+          success?: boolean
+          table_name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -660,6 +750,60 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string
+          event_details: Json
+          event_type: string
+          geolocation: Json | null
+          id: string
+          ip_address: unknown | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resource_accessed: string | null
+          risk_score: number | null
+          session_id: string | null
+          severity: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_details?: Json
+          event_type: string
+          geolocation?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resource_accessed?: string | null
+          risk_score?: number | null
+          session_id?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_details?: Json
+          event_type?: string
+          geolocation?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resource_accessed?: string | null
+          risk_score?: number | null
+          session_id?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           app_configuration: Json | null
@@ -860,6 +1004,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_audit_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
