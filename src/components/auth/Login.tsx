@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { handleAuthError } from '@/utils/errorHandler';
+import { handleAuthError } from '@/utils/error';
 import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingButton } from '@/components/ui/loading-button';
