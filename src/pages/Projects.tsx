@@ -17,7 +17,7 @@ import ProjectsViewToggle from '@/components/projects/ProjectsViewToggle';
 import AdvancedFiltersPanel from '@/components/projects/AdvancedFiltersPanel';
 import GlobalSearchDialog from '@/components/projects/GlobalSearchDialog';
 import FilterPresetsManager from '@/components/projects/FilterPresetsManager';
-import ProjectExportDialog from '@/components/projects/ProjectExportDialog';
+import ProjectExcelManager from '@/components/projects/ProjectExcelManager';
 import { useApp } from '@/context/AppContext';
 import { usePerformance } from '@/context/PerformanceContext';
 import { ProjectInfo } from '@/types/models';
@@ -239,7 +239,7 @@ const Projects = () => {
               onDeletePreset={() => {}}
             />
             
-            <ProjectExportDialog
+            <ProjectExcelManager
               projects={filteredProjects}
               selectedProjects={selectedProjects}
             />
