@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ProjectsProvider } from './ProjectsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
@@ -11,20 +11,20 @@ import { PerformanceProvider } from './PerformanceContext';
 import { AnalyticsProvider } from './AnalyticsContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 interface AppProvidersProps {
   children: React.ReactNode;
 }
 
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
+  const queryClient = useMemo(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }), []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SettingsProvider>
