@@ -103,7 +103,7 @@ export function NavigationDropdown() {
         <Button 
           variant="outline" 
           size="sm"
-          className="flex items-center gap-2 h-10 px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+          className="flex items-center gap-2 h-10 px-3 bg-background border"
         >
           <Menu className="h-4 w-4" />
           <span className="hidden sm:inline">Navigation</span>
@@ -112,7 +112,7 @@ export function NavigationDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="start" 
-        className="w-80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border shadow-lg"
+        className="w-80 bg-background border shadow-lg z-50"
         sideOffset={8}
       >
         {/* Search Section */}
