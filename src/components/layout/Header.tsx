@@ -18,6 +18,7 @@ import CompanyLogo from '@/components/ui/company-logo';
 import GlobalSearchDialog from '@/components/search/GlobalSearchDialog';
 import { useKeyboardShortcuts, createCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { NavigationDropdown } from './NavigationDropdown';
 
 const navItems = [
   { path: '/projects', label: 'Chantiers', color: 'emerald' },
@@ -110,6 +111,7 @@ const Header: React.FC = () => {
             >
               <CompanyLogo className="h-8 w-auto" />
             </Link>
+            <NavigationDropdown />
           </div>
 
           {!isMobile && (
