@@ -180,7 +180,7 @@ const Header: React.FC = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-56 bg-card shadow-xl border-0 rounded-xl p-2 animate-in slide-in-from-top-2 duration-200"
+                className="w-56 bg-background border shadow-xl rounded-xl p-2 animate-in slide-in-from-top-2 duration-200 z-50"
                 style={{ boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)' }}
               >
                 <div className="px-3 py-2 bg-gradient-to-r from-green-50 to-green-25 rounded-lg mb-2">
