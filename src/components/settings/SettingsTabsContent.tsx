@@ -6,7 +6,7 @@ import BackupRestoreSection from './BackupRestoreSection';
 import AdvancedSettingsPanel from './AdvancedSettingsPanel';
 import LoginHistoryTab from './LoginHistoryTab';
 import { User, UserCheck, Bug } from 'lucide-react';
-import { useSettingsPermissions } from '@/components/settings/hooks/useSettingsPermissions';
+import { useAdvancedPermissions } from '@/hooks/usePermissions';
 import CompanySection from '@/components/settings/sections/CompanySection';
 import TeamsSection from '@/components/settings/sections/TeamsSection';
 import UsersSection from '@/components/settings/sections/UsersSection';
@@ -22,7 +22,7 @@ interface SettingsTabsContentProps {
 }
 
 const SettingsTabsContent = ({ canManageUsers, onAddUserClick }: SettingsTabsContentProps) => {
-  const permissions = useSettingsPermissions();
+  const permissions = useAdvancedPermissions();
   return (
     <>
       <TabsContent value="company" className="space-y-4">

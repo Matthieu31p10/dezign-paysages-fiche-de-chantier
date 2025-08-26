@@ -1,5 +1,5 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSettingsPermissions } from '@/components/settings/hooks/useSettingsPermissions';
+import { useAdvancedPermissions } from '@/hooks/usePermissions';
 import { Building, Database, User, UsersRound, UserCheck, Bug, Settings as SettingsIcon, History, Users, LogIn, Palette, ShieldCheck, Zap, Activity } from 'lucide-react';
 
 interface SettingsTabsListProps {
@@ -7,7 +7,7 @@ interface SettingsTabsListProps {
 }
 
 const SettingsTabsList = ({ canManageUsers }: SettingsTabsListProps) => {
-  const permissions = useSettingsPermissions();
+  const permissions = useAdvancedPermissions();
   return (
     <div className="w-full overflow-x-auto">
       <TabsList className="inline-flex h-12 items-center justify-start rounded-xl bg-muted p-1 text-muted-foreground min-w-max gap-1">

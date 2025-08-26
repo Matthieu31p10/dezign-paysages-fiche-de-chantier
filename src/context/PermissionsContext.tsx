@@ -1,5 +1,5 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useApp } from '@/context/AppContext';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { PermissionLevel, UserPermissions } from '@/types/permissions';
 import { checkPermission, findPermission, getUserAvailablePermissions } from '@/utils/permissions';
 
@@ -18,10 +18,39 @@ interface PermissionsProviderProps {
 }
 
 export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
-  const { canUserAccess } = useApp();
+  const [userLevel, setUserLevel] = useState<PermissionLevel>('user');
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Déterminer le niveau utilisateur basé sur les permissions existantes
-  const userLevel: PermissionLevel = canUserAccess('admin') ? 'admin' : 'user';
+  // Récupérer le niveau utilisateur depuis Supabase
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setUserLevel('readonly');
+          setIsLoading(false);
+          return;
+        }
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        const role = (profile?.role as PermissionLevel) || 'user';
+        setUserLevel(role);
+        
+      } catch (error) {
+        console.error('Erreur lors de la récupération du rôle:', error);
+        setUserLevel('user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
   
   const userPermissions: UserPermissions = {
     level: userLevel,

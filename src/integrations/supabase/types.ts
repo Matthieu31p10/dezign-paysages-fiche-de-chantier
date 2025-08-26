@@ -1012,7 +1012,19 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: string
+      }
+      has_permission_level: {
+        Args: { required_level: string; user_id: string }
+        Returns: boolean
+      }
       is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_manager_or_admin: {
         Args: { user_id: string }
         Returns: boolean
       }
