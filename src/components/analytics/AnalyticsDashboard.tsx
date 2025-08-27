@@ -9,7 +9,7 @@ import {
   FileBarChart,
   Calendar as CalendarIcon
 } from 'lucide-react';
-import AdvancedAnalytics from './AdvancedAnalytics';
+import { AdvancedAnalytics } from './AdvancedAnalytics';
 import PerformanceFlowChart from './PerformanceFlowChart';
 import AdvancedReports from './AdvancedReports';
 
