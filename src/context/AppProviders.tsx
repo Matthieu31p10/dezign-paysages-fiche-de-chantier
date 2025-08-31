@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ProjectsProvider } from './ProjectsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
@@ -9,6 +9,7 @@ import { AuthProvider } from './AuthContext';
 import { PermissionsProvider } from './PermissionsContext';
 import { PerformanceProvider } from './PerformanceContext';
 import { AnalyticsProvider } from './AnalyticsContext';
+import { ErrorProvider } from './ErrorContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 interface AppProvidersProps {
@@ -16,7 +17,7 @@ interface AppProvidersProps {
 }
 
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  const [queryClient] = React.useState(() => new QueryClient({
+  const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
         retry: 1,
@@ -26,27 +27,29 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   }));
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SettingsProvider>
-        <AuthProvider>
-          <TeamsProvider>
-            <WorkLogsProvider>
-              <ProjectsProvider>
-                <AppProvider>
-                  <PermissionsProvider>
-                    <PerformanceProvider>
-                      <AnalyticsProvider enableAutoTracking={true}>
-                        {children}
-                      </AnalyticsProvider>
-                    </PerformanceProvider>
-                  </PermissionsProvider>
-                </AppProvider>
-              </ProjectsProvider>
-            </WorkLogsProvider>
-          </TeamsProvider>
-        </AuthProvider>
-      </SettingsProvider>
-    </QueryClientProvider>
+    <ErrorProvider>
+      <QueryClientProvider client={queryClient}>
+        <SettingsProvider>
+          <AuthProvider>
+            <TeamsProvider>
+              <WorkLogsProvider>
+                <ProjectsProvider>
+                  <AppProvider>
+                    <PermissionsProvider>
+                      <PerformanceProvider>
+                        <AnalyticsProvider enableAutoTracking={true}>
+                          {children}
+                        </AnalyticsProvider>
+                      </PerformanceProvider>
+                    </PermissionsProvider>
+                  </AppProvider>
+                </ProjectsProvider>
+              </WorkLogsProvider>
+            </TeamsProvider>
+          </AuthProvider>
+        </SettingsProvider>
+      </QueryClientProvider>
+    </ErrorProvider>
   );
 };
 
