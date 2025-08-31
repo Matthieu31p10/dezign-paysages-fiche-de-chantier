@@ -25,6 +25,7 @@ import BlankWorkSheetNew from './pages/BlankWorkSheetNew';
 import Passages from './pages/Passages';
 import Index from './pages/Index';
 import AnalyticsPage from './pages/AnalyticsPage';
+import Phase4Components from './components/Phase4Components';
 
 import './App.css';
 
@@ -60,6 +61,7 @@ function App() {
               <Route path="blank-worksheets/new" element={<BlankWorkSheetNew />} />
               
               <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="phase4" element={<Phase4Components />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />

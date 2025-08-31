@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { 
   Home, Calendar, Users, FileText, Settings,
-  BarChart3, Search, Bell, Wrench, Archive
+  BarChart3, Search, Bell, Wrench, Archive, Rocket
 } from 'lucide-react';
 
 const navigationItems = [
@@ -23,6 +23,7 @@ const navigationItems = [
   { title: 'Personnel', url: '/personnel', icon: Users },
   { title: 'Passages', url: '/passages', icon: Wrench },
   { title: 'Analytics', url: '/analytics', icon: BarChart3 },
+  { title: 'Phase 4 - Entreprise', url: '/phase4', icon: Rocket },
   { title: 'Recherche', url: '/search', icon: Search },
   { title: 'Notifications', url: '/notifications', icon: Bell },
   { title: 'Archives', url: '/archives', icon: Archive },
