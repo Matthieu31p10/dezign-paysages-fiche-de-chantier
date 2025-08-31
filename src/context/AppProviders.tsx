@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { ProjectsProvider } from './ProjectsContext';
 import { TeamsProvider } from './TeamsContext';
 import { SettingsProvider } from './SettingsContext';
@@ -16,14 +16,14 @@ interface AppProvidersProps {
 }
 
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  const queryClient = useMemo(() => new QueryClient({
+  const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: 1,
         refetchOnWindowFocus: false,
       },
     },
-  }), []);
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
