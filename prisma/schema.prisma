@@ -8,133 +8,373 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = 
+  url      = env("DATABASE_URL")
+}
 
-model User {
-  id            String    @id @default(uuid())
-  username      String    @unique
-  password      String
-  role          String    // 'admin' | 'manager' | 'user'
-  name          String?
-  email         String?
-  phone         String?
-  position      String?
-  drivingLicense String?
-  createdAt     DateTime  @default(now())
-  permissions   Json?     // Stored as JSON for custom permissions
+// Authentication and User Management
+model Profile {
+  id          String    @id @default(uuid())
+  firstName   String?   @map("first_name")
+  lastName    String?   @map("last_name")
+  email       String?
+  role        String?   @default("user")
+  permissions Json?     @default("{}")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model ActiveSession {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  sessionTokenHash  String    @map("session_token_hash")
+  ipAddress         String    @map("ip_address")
+  userAgent         String?   @map("user_agent")
+  deviceFingerprint String?   @map("device_fingerprint")
+  geolocation       Json?
+  loginTime         DateTime  @default(now()) @map("login_time")
+  lastActivity      DateTime  @default(now()) @map("last_activity")
+  expiresAt         DateTime  @map("expires_at")
+  mfaVerified       Boolean?  @default(false) @map("mfa_verified")
+  isSuspicious      Boolean?  @default(false) @map("is_suspicious")
+
+  @@map("active_sessions")
+}
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  userEmail String   @map("user_email")
+  userName  String   @map("user_name")
+  loginTime DateTime @default(now()) @map("login_time")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("login_history")
+}
+
+// Security and Audit
+model SecurityEvent {
+  id               String    @id @default(uuid())
+  eventType        String    @map("event_type")
+  severity         String    @default("medium")
+  userId           String?   @map("user_id")
+  userEmail        String?   @map("user_email")
+  ipAddress        String?   @map("ip_address")
+  userAgent        String?   @map("user_agent")
+  sessionId        String?   @map("session_id")
+  resourceAccessed String?   @map("resource_accessed")
+  eventDetails     Json      @default("{}") @map("event_details")
+  riskScore        Int?      @default(0) @map("risk_score")
+  geolocation      Json?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  resolvedAt       DateTime? @map("resolved_at")
+  resolutionNotes  String?   @map("resolution_notes")
+
+  @@map("security_events")
+}
+
+model DataAccessLog {
+  id              String   @id @default(uuid())
+  userId          String?  @map("user_id")
+  tableName       String   @map("table_name")
+  operation       String
+  recordIds       String[] @map("record_ids")
+  success         Boolean
+  errorMessage    String?  @map("error_message")
+  executionTimeMs Int?     @map("execution_time_ms")
+  queryHash       String?  @map("query_hash")
+  ipAddress       String?  @map("ip_address")
+  rowCount        Int?     @default(0) @map("row_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("data_access_log")
+}
+
+// Teams and Personnel
+model Team {
+  id           String        @id @default(uuid())
+  name         String
+  color        String?       @default("#10B981")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  projectTeams ProjectTeam[]
+
+  @@map("teams")
 }
 
 model Personnel {
-  id       String  @id @default(uuid())
-  name     String
-  position String?
-  active   Boolean @default(true)
+  id                     String   @id @default(uuid())
+  name                   String
+  position               String?
+  phone                  String?
+  email                  String?
+  employeeId             String?  @map("employee_id")
+  drivingLicense         String?  @map("driving_license")
+  hourlyRate             Decimal? @map("hourly_rate")
+  hireDate               DateTime? @map("hire_date")
+  emergencyContactName   String?  @map("emergency_contact_name")
+  emergencyContactPhone  String?  @map("emergency_contact_phone")
+  skills                 String[]
+  notes                  String?
+  active                 Boolean? @default(true)
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("personnel")
 }
 
-model Team {
-  id        String    @id @default(uuid())
-  name      String
-  projects  Project[]
-}
-
-model CustomTask {
-  id   String @id @default(uuid())
-  name String
-}
-
+// Projects
 model Project {
-  id               String    @id @default(uuid())
-  name             String
-  clientName       String?
-  address          String
-  contactPhone     String?
-  contactEmail     String?
-  contactName      String?
-  contractDetails  String
-  contractDocUrl   String?
-  irrigation       String?   // 'irrigation' | 'none' | 'disabled'
-  mowerType        String?   // 'large' | 'small' | 'both'
-  annualVisits     Int
-  annualTotalHours Int
-  visitDuration    Int
-  additionalInfo   String
-  team             Team      @relation(fields: [teamId], references: [id])
-  teamId           String
-  projectType      String    // 'residence' | 'particular' | 'enterprise' | ''
-  startDate        DateTime?
-  endDate          DateTime?
-  isArchived       Boolean   @default(false)
-  createdAt        DateTime  @default(now())
-  workLogs         WorkLog[]
-  documents        Document[]
+  id                  String              @id @default(uuid())
+  name                String
+  clientName          String?             @map("client_name")
+  address             String
+  contactPhone        String?             @map("contact_phone")
+  contactEmail        String?             @map("contact_email")
+  contactName         String?             @map("contact_name")
+  contractDetails     String?             @map("contract_details")
+  contractDocumentUrl String?             @map("contract_document_url")
+  irrigation          String?
+  mowerType           String?             @map("mower_type")
+  annualVisits        Int?                @default(0) @map("annual_visits")
+  annualTotalHours    Decimal?            @default(0) @map("annual_total_hours")
+  visitDuration       Decimal?            @default(0) @map("visit_duration")
+  additionalInfo      String?             @map("additional_info")
+  projectType         String?             @map("project_type")
+  startDate           DateTime?           @map("start_date")
+  endDate             DateTime?           @map("end_date")
+  isArchived          Boolean?            @default(false) @map("is_archived")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  
+  projectTeams        ProjectTeam[]
+  workLogs            WorkLog[]
+  projectDocuments    ProjectDocument[]
+  projectDayLocks     ProjectDayLock[]
+  monthlyDistribution MonthlyPassageDistribution[]
+
+  @@map("projects")
 }
 
-model Document {
-  id         String   @id @default(uuid())
-  name       String
-  type       String
-  url        String
-  uploadDate DateTime @default(now())
-  project    Project  @relation(fields: [projectId], references: [id])
-  projectId  String
+model ProjectTeam {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  teamId    String   @map("team_id")
+  isPrimary Boolean? @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  team    Team    @relation(fields: [teamId], references: [id])
+
+  @@map("project_teams")
 }
 
-model Consumable {
-  id          String   @id @default(uuid())
-  supplier    String
-  product     String
-  unit        String
-  quantity    Float
-  unitPrice   Float
-  totalPrice  Float
-  workLogId   String?
-  workLog     WorkLog? @relation(fields: [workLogId], references: [id])
-  savedForReuse Boolean @default(false)
+model ProjectDocument {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  name      String
+  filePath  String   @map("file_path")
+  fileType  String   @map("file_type")
+  fileSize  Int?     @map("file_size")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("project_documents")
 }
 
+model ProjectDayLock {
+  id                   String   @id @default(uuid())
+  projectId            String   @map("project_id")
+  dayOfWeek            Int      @map("day_of_week")
+  reason               String
+  description          String?
+  minDaysBetweenVisits Int?     @map("min_days_between_visits")
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("project_day_locks")
+}
+
+model MonthlyPassageDistribution {
+  id            String   @id @default(uuid())
+  projectId     String   @map("project_id")
+  monthlyVisits Json     @default("{}") @map("monthly_visits")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("monthly_passage_distributions")
+}
+
+// Work Logs
 model WorkLog {
-  id              String       @id @default(uuid())
-  projectId       String
-  project         Project      @relation(fields: [projectId], references: [id])
-  date            DateTime
-  personnel       String[]
-  departure       String?
-  arrival         String?
-  end             String?
-  breakTime       String?
-  totalHours      Float
-  tasks           String?
-  wasteManagement String?
-  notes           String?
-  clientSignature String?
-  consumables     Consumable[]
-  waterConsumption Float?
-  createdAt       DateTime     @default(now())
-  invoiced        Boolean      @default(false)
-  isArchived      Boolean      @default(false)
-  hourlyRate      Float?
-  clientName      String?
-  address         String?
-  contactPhone    String?
-  contactEmail    String?
-  linkedProjectId String?
-  signedQuoteAmount Float?
-  isQuoteSigned   Boolean      @default(false)
-  vatRate         String?
+  id                String       @id @default(uuid())
+  projectId         String       @map("project_id")
+  date              String
+  personnel         String[]
+  departure         String?
+  arrival           String?
+  endTime           String?      @map("end_time")
+  breakTime         String?      @map("break_time")
+  totalHours        Decimal      @default(0) @map("total_hours")
+  tasks             String?
+  wasteManagement   String?      @map("waste_management")
+  notes             String?
+  clientName        String?      @map("client_name")
+  address           String?
+  contactPhone      String?      @map("contact_phone")
+  contactEmail      String?      @map("contact_email")
+  clientSignature   String?      @map("client_signature")
+  waterConsumption  Decimal?     @map("water_consumption")
+  hourlyRate        Decimal?     @map("hourly_rate")
+  linkedProjectId   String?      @map("linked_project_id")
+  signedQuoteAmount Decimal?     @map("signed_quote_amount")
+  isQuoteSigned     Boolean?     @default(false) @map("is_quote_signed")
+  invoiced          Boolean?     @default(false)
+  isArchived        Boolean?     @default(false) @map("is_archived")
+  attachedDocuments Json?        @default("[]") @map("attached_documents")
+  createdBy         String?      @map("created_by")
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  project     Project     @relation(fields: [projectId], references: [id])
+  consumables Consumable[]
+
+  @@map("work_logs")
 }
 
-model RecurringClient {
-  id      String @id @default(uuid())
-  name    String
-  address String?
-  phone   String?
-  email   String?
+// Blank Worksheets
+model BlankWorksheet {
+  id                String                      @id @default(uuid())
+  clientName        String?                     @map("client_name")
+  address           String?
+  contactPhone      String?                     @map("contact_phone")
+  contactEmail      String?                     @map("contact_email")
+  date              String
+  personnel         String[]
+  departure         String?
+  arrival           String?
+  endTime           String?                     @map("end_time")
+  breakTime         String?                     @map("break_time")
+  totalHours        Decimal                     @default(0) @map("total_hours")
+  tasks             String?
+  wasteManagement   String?                     @default("none") @map("waste_management")
+  notes             String?
+  clientSignature   String?                     @map("client_signature")
+  waterConsumption  Decimal?                    @default(0) @map("water_consumption")
+  hourlyRate        Decimal?                    @map("hourly_rate")
+  linkedProjectId   String?                     @map("linked_project_id")
+  signedQuoteAmount Decimal?                    @map("signed_quote_amount")
+  isQuoteSigned     Boolean?                    @default(false) @map("is_quote_signed")
+  invoiced          Boolean?                    @default(false)
+  isArchived        Boolean?                    @default(false) @map("is_archived")
+  createdBy         String?                     @map("created_by")
+  createdAt         DateTime                    @default(now()) @map("created_at")
+
+  consumables BlankWorksheetConsumable[]
+
+  @@map("blank_worksheets")
 }
 
-model AppSettings {
-  id               String  @id @default(1)
-  companyName      String?
-  companyLogo      String?
-  loginBackground  String?
-  companyInfo      Json?   // Stored as JSON
+model BlankWorksheetConsumable {
+  id                String         @id @default(uuid())
+  blankWorksheetId  String?        @map("blank_worksheet_id")
+  supplier          String
+  product           String
+  unit              String
+  quantity          Decimal
+  unitPrice         Decimal        @map("unit_price")
+  totalPrice        Decimal        @map("total_price")
+  savedForReuse     Boolean?       @default(false) @map("saved_for_reuse")
+
+  blankWorksheet BlankWorksheet? @relation(fields: [blankWorksheetId], references: [id])
+
+  @@map("blank_worksheet_consumables")
+}
+
+// Consumables
+model Consumable {
+  id            String   @id @default(uuid())
+  workLogId     String?  @map("work_log_id")
+  supplier      String
+  product       String
+  unit          String
+  quantity      Decimal
+  unitPrice     Decimal  @map("unit_price")
+  totalPrice    Decimal  @map("total_price")
+  savedForReuse Boolean? @default(false) @map("saved_for_reuse")
+
+  workLog WorkLog? @relation(fields: [workLogId], references: [id])
+
+  @@map("consumables")
+}
+
+model SavedConsumable {
+  id            String   @id @default(uuid())
+  supplier      String
+  product       String
+  unit          String
+  quantity      Decimal
+  unitPrice     Decimal  @map("unit_price")
+  totalPrice    Decimal  @map("total_price")
+  savedForReuse Boolean? @default(true) @map("saved_for_reuse")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("saved_consumables")
+}
+
+// Tasks
+model CustomTask {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("custom_tasks")
+}
+
+// Client Management
+model ClientConnection {
+  id                    String   @id @default(uuid())
+  clientName            String   @map("client_name")
+  email                 String
+  password              String
+  assignedProjects      String[] @map("assigned_projects")
+  visibilityPermissions Json?    @default("{\"showProjectName\": true, \"showAddress\": true, \"showTasks\": true, \"showWorkLogs\": true}") @map("visibility_permissions")
+  isActive              Boolean? @default(true) @map("is_active")
+  lastLogin             DateTime? @map("last_login")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("client_connections")
+}
+
+// Settings
+model Settings {
+  id                      String   @id @default(uuid())
+  companyName             String?  @map("company_name")
+  companyLogo             String?  @map("company_logo")
+  loginBackgroundImage    String?  @map("login_background_image")
+  companyAddress          String?  @map("company_address")
+  companyManagerName      String?  @map("company_manager_name")
+  companyPhone            String?  @map("company_phone")
+  companyEmail            String?  @map("company_email")
+  vatRate                 String?  @default("20") @map("vat_rate")
+  defaultWorkStartTime    String?  @default("08:00") @map("default_work_start_time")
+  defaultWorkEndTime      String?  @default("17:00") @map("default_work_end_time")
+  defaultBreakTime        String?  @default("30") @map("default_break_time")
+  themePreference         String?  @default("system") @map("theme_preference")
+  appConfiguration        Json?    @default("{}") @map("app_configuration")
+  userPreferences         Json?    @default("{}") @map("user_preferences")
+  notificationPreferences Json?    @default("{\"email\": true, \"browser\": true, \"reminders\": true}") @map("notification_preferences")
+  autoSaveEnabled         Boolean? @default(true) @map("auto_save_enabled")
+  hourlyRate              Decimal? @default(45) @map("hourly_rate")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("settings")
 }
