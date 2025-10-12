@@ -51,8 +51,46 @@ export const textSchema = z
   .string()
   .max(1000, 'Maximum 1000 caractères')
   .trim()
+  .refine(
+    (val) => !/<script|javascript:|on\w+=/i.test(val),
+    'Contenu non autorisé détecté'
+  )
 
 export const longTextSchema = z
   .string()
   .max(5000, 'Maximum 5000 caractères')
   .trim()
+  .refine(
+    (val) => !/<script|javascript:|on\w+=/i.test(val),
+    'Contenu non autorisé détecté'
+  )
+
+// Schéma de validation pour les mots de passe sécurisés
+export const passwordSchema = z
+  .string()
+  .min(12, 'Le mot de passe doit contenir au moins 12 caractères')
+  .max(128, 'Le mot de passe ne peut pas dépasser 128 caractères')
+  .refine(
+    (val) => /[A-Z]/.test(val),
+    'Le mot de passe doit contenir au moins une majuscule'
+  )
+  .refine(
+    (val) => /[a-z]/.test(val),
+    'Le mot de passe doit contenir au moins une minuscule'
+  )
+  .refine(
+    (val) => /\d/.test(val),
+    'Le mot de passe doit contenir au moins un chiffre'
+  )
+  .refine(
+    (val) => /[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\\/~`]/.test(val),
+    'Le mot de passe doit contenir au moins un caractère spécial'
+  )
+  .refine(
+    (val) => !/(.)\1{2,}/.test(val),
+    'Le mot de passe ne doit pas contenir de caractères répétitifs'
+  )
+  .refine(
+    (val) => !/123456|abcdef|qwerty|azerty|password|motdepasse/i.test(val),
+    'Le mot de passe ne doit pas contenir de séquences communes'
+  )

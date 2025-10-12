@@ -212,6 +212,7 @@ export type Database = {
           is_active: boolean | null
           last_login: string | null
           password: string
+          password_hash: string | null
           visibility_permissions: Json | null
         }
         Insert: {
@@ -223,6 +224,7 @@ export type Database = {
           is_active?: boolean | null
           last_login?: string | null
           password: string
+          password_hash?: string | null
           visibility_permissions?: Json | null
         }
         Update: {
@@ -234,6 +236,7 @@ export type Database = {
           is_active?: boolean | null
           last_login?: string | null
           password?: string
+          password_hash?: string | null
           visibility_permissions?: Json | null
         }
         Relationships: []
@@ -894,6 +897,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       work_logs: {
         Row: {
           address: string | null
@@ -1016,21 +1043,51 @@ export type Database = {
         Args: { user_id: string }
         Returns: string
       }
+      get_user_role_secure: {
+        Args: { _user_id: string }
+        Returns: string
+      }
       has_permission_level: {
         Args: { required_level: string; user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
         Returns: boolean
       }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_admin_secure: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_manager_or_admin: {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_manager_or_admin_secure: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      verify_client_password: {
+        Args: { _email: string; _password: string }
+        Returns: {
+          assigned_projects: string[]
+          client_name: string
+          email: string
+          id: string
+          is_active: boolean
+          visibility_permissions: Json
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "user" | "readonly"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1157,6 +1214,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "user", "readonly"],
+    },
   },
 } as const

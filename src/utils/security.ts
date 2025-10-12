@@ -72,9 +72,75 @@ export const getPasswordStrength = (password: string): 'weak' | 'medium' | 'stro
   return 'strong';
 };
 
-// Sanitisation des entrées utilisateur
+// Sanitisation avancée des entrées utilisateur
 export const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>\"']/g, '');
+  if (typeof input !== 'string') {
+    throw new Error('Input must be a string');
+  }
+  
+  // Remove dangerous characters and patterns
+  return input
+    .trim()
+    .replace(/[<>\"'`]/g, '') // Remove HTML/JS injection chars
+    .replace(/javascript:/gi, '') // Remove JS URLs
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/data:text\/html/gi, ''); // Remove data URLs
+};
+
+// Sanitisation HTML pour affichage sécurisé
+export const sanitizeHtml = (html: string): string => {
+  if (typeof html !== 'string') {
+    throw new Error('Input must be a string');
+  }
+  
+  // Encode HTML entities
+  return html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
+// Validation renforcée des emails
+export const sanitizeEmail = (email: string): string => {
+  if (typeof email !== 'string') {
+    throw new Error('Email must be a string');
+  }
+  
+  const sanitized = email.trim().toLowerCase();
+  
+  // Validation stricte du format email
+  if (!isValidEmail(sanitized)) {
+    throw new Error('Invalid email format');
+  }
+  
+  if (sanitized.length > 255) {
+    throw new Error('Email too long (max 255 characters)');
+  }
+  
+  return sanitized;
+};
+
+// Validation et sanitisation des noms
+export const sanitizeName = (name: string, maxLength: number = 100): string => {
+  if (typeof name !== 'string') {
+    throw new Error('Name must be a string');
+  }
+  
+  const sanitized = name.trim();
+  
+  if (sanitized.length === 0) {
+    throw new Error('Name cannot be empty');
+  }
+  
+  if (sanitized.length > maxLength) {
+    throw new Error(`Name too long (max ${maxLength} characters)`);
+  }
+  
+  // Remove special characters that could be dangerous
+  return sanitized.replace(/[<>\"'`]/g, '');
 };
 
 // Validation des IDs UUID

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientConnection } from '@/types/models';
-import { isValidEmail, sanitizeInput } from '@/utils/security';
+import { isValidEmail, sanitizeEmail } from '@/utils/security';
 import { toast } from 'sonner';
 import { clientConnectionsService } from '@/services/clientConnectionsService';
 
@@ -33,8 +33,10 @@ const ClientAuth = ({ onClientLogin }: ClientAuthProps) => {
     setIsLoading(true);
 
     try {
-      const sanitizedEmail = sanitizeInput(email.toLowerCase());
+      // Sanitize and validate email
+      const sanitizedEmail = sanitizeEmail(email);
       
+      // Password is not sanitized - needs to match hash exactly
       const client = await clientConnectionsService.findByEmailAndPassword(
         sanitizedEmail, 
         password

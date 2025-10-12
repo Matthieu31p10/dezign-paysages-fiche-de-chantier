@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ClientConnection, ClientVisibilityPermissions } from '@/types/models';
+import { hashPassword, verifyPassword } from '@/utils/passwordHashing';
 
 export const clientConnectionsService = {
   async getAll(): Promise<ClientConnection[]> {
@@ -33,12 +34,16 @@ export const clientConnectionsService = {
   },
 
   async create(clientData: Omit<ClientConnection, 'id' | 'createdAt'>): Promise<ClientConnection> {
+    // Hash the password before storing
+    const passwordHash = await hashPassword(clientData.password);
+    
     const { data, error } = await supabase
       .from('client_connections')
       .insert({
         client_name: clientData.clientName,
         email: clientData.email,
-        password: clientData.password,
+        password: clientData.password, // Keep for backward compatibility (temporary)
+        password_hash: passwordHash,
         assigned_projects: clientData.assignedProjects,
         is_active: clientData.isActive,
         visibility_permissions: (clientData.visibilityPermissions || {
@@ -60,7 +65,7 @@ export const clientConnectionsService = {
       id: data.id,
       clientName: data.client_name,
       email: data.email,
-      password: data.password,
+      password: '***REDACTED***', // Never return password
       assignedProjects: data.assigned_projects || [],
       isActive: data.is_active,
       visibilityPermissions: (data.visibility_permissions as ClientVisibilityPermissions) || {
@@ -79,7 +84,11 @@ export const clientConnectionsService = {
     
     if (clientData.clientName !== undefined) updateData.client_name = clientData.clientName;
     if (clientData.email !== undefined) updateData.email = clientData.email;
-    if (clientData.password !== undefined) updateData.password = clientData.password;
+    if (clientData.password !== undefined) {
+      // Hash password if being updated
+      updateData.password_hash = await hashPassword(clientData.password);
+      updateData.password = clientData.password; // Keep for backward compatibility (temporary)
+    }
     if (clientData.assignedProjects !== undefined) updateData.assigned_projects = clientData.assignedProjects;
     if (clientData.isActive !== undefined) updateData.is_active = clientData.isActive;
     if (clientData.visibilityPermissions !== undefined) updateData.visibility_permissions = clientData.visibilityPermissions as any;
@@ -113,7 +122,6 @@ export const clientConnectionsService = {
       .from('client_connections')
       .select('*')
       .eq('email', email.toLowerCase())
-      .eq('password', password)
       .eq('is_active', true)
       .single();
 
@@ -126,11 +134,35 @@ export const clientConnectionsService = {
       throw error;
     }
 
+    // Verify password using bcrypt
+    let isPasswordValid = false;
+    
+    if (data.password_hash) {
+      // Use hashed password verification
+      isPasswordValid = await verifyPassword(password, data.password_hash);
+    } else if (data.password) {
+      // Fallback to plaintext comparison for unmigrated accounts
+      isPasswordValid = data.password === password;
+      
+      // If plaintext password matches, migrate it to hashed version
+      if (isPasswordValid) {
+        const passwordHash = await hashPassword(password);
+        await supabase
+          .from('client_connections')
+          .update({ password_hash: passwordHash })
+          .eq('id', data.id);
+      }
+    }
+
+    if (!isPasswordValid) {
+      return null;
+    }
+
     return {
       id: data.id,
       clientName: data.client_name,
       email: data.email,
-      password: data.password,
+      password: '***REDACTED***', // Never return password
       assignedProjects: data.assigned_projects || [],
       isActive: data.is_active,
       visibilityPermissions: (data.visibility_permissions as ClientVisibilityPermissions) || {
