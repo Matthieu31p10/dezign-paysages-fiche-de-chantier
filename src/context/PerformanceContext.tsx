@@ -72,8 +72,11 @@ export const PerformanceProvider = ({
     setSettings(prev => ({ ...prev, ...newSettings }));
   }, []);
 
+  const enableMetrics = settings.enableMetrics;
+  const logPerformance = settings.logPerformance;
+
   const measureRender = useCallback((componentName: string) => {
-    if (!settings.enableMetrics) return () => {};
+    if (!enableMetrics) return () => {};
 
     const startTime = performance.now();
     
@@ -86,7 +89,7 @@ export const PerformanceProvider = ({
         const newTotalRenderTime = prev.totalRenderTime + renderTime;
         const newAverageRenderTime = newTotalRenderTime / newRenderCount;
 
-        if (settings.logPerformance) {
+        if (logPerformance) {
           console.log(`[Performance] ${componentName}: ${renderTime.toFixed(2)}ms`);
         }
 
@@ -99,7 +102,7 @@ export const PerformanceProvider = ({
         };
       });
     };
-  }, [settings.enableMetrics, settings.logPerformance]);
+  }, [enableMetrics, logPerformance]);
 
   const clearCache = useCallback(() => {
     memoryCache.clear();
@@ -125,7 +128,7 @@ export const PerformanceProvider = ({
 
   // Mise à jour périodique des métriques de cache
   useEffect(() => {
-    if (!settings.enableMetrics) return;
+    if (!enableMetrics) return;
 
     const interval = setInterval(() => {
       const stats = getCacheStats();
@@ -137,7 +140,7 @@ export const PerformanceProvider = ({
     }, 5000); // Mise à jour toutes les 5 secondes
 
     return () => clearInterval(interval);
-  }, [settings.enableMetrics, getCacheStats]);
+  }, [enableMetrics, getCacheStats]);
 
   const value: PerformanceContextType = {
     metrics,
@@ -181,7 +184,7 @@ export const withPerformanceMonitoring = <P extends object>(
     useEffect(() => {
       const endMeasure = measureRender(name);
       return endMeasure;
-    });
+    }, [measureRender, name]);
 
     return <WrappedComponent {...props} />;
   });

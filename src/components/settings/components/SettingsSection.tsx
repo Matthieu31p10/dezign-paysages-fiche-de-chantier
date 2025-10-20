@@ -53,7 +53,7 @@ const SettingsSection = ({
       const endMeasure = measureRender(`SettingsSection-${title}`);
       return endMeasure;
     }
-  });
+  }, [measureRender, title]);
 
   const handleChange = () => {
     markAsChanged();
