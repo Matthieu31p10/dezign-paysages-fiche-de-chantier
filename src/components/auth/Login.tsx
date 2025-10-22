@@ -1,56 +1,81 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { handleAuthError } from '@/utils/error';
-import { useLoginHistory } from '@/hooks/useLoginHistory';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, User, AlertCircle, UserCheck } from 'lucide-react';
+import { Lock, User, AlertCircle, UserCheck, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ClientAuth from './ClientAuth';
+import { toast } from 'sonner';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, settings, auth } = useApp();
-  const { recordLogin } = useLoginHistory();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { settings } = useApp();
+  const { signIn, signUp, user, loading } = useSupabaseAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/';
 
-  const handleUserSubmit = (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, loading, navigate, from]);
+
+  const handleUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     
     try {
-      const success = login(username, password);
-      if (success) {
-        // Record the login
-        setTimeout(async () => {
-          if (auth.currentUser) {
-            await recordLogin(
-              auth.currentUser.email || username,
-              auth.currentUser.name || username,
-              auth.currentUser.id || username
-            );
-          }
-        }, 100);
-        
-        navigate(from, { replace: true });
+      if (isSignUp) {
+        // Sign up
+        const { error: signUpError } = await signUp(email, password, {
+          firstName,
+          lastName
+        });
+
+        if (signUpError) {
+          setError(signUpError.message);
+          toast.error(signUpError.message);
+        } else {
+          toast.success('Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte.');
+          setIsSignUp(false);
+          setFirstName('');
+          setLastName('');
+          setPassword('');
+        }
       } else {
-        setError('Identifiant ou mot de passe incorrect');
+        // Sign in
+        const { error: signInError } = await signIn(email, password);
+
+        if (signInError) {
+          setError(signInError.message);
+          toast.error(signInError.message);
+        } else {
+          toast.success('Connexion réussie');
+          navigate(from, { replace: true });
+        }
       }
-    } catch (err) {
-      setError('Une erreur est survenue. Veuillez réessayer.');
-      handleAuthError(err, 'login');
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Une erreur est survenue. Veuillez réessayer.';
+      setError(errorMessage);
+      handleAuthError(err, isSignUp ? 'signup' : 'login');
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -107,20 +132,58 @@ const Login = () => {
               </TabsList>
               
               <TabsContent value="user" className="space-y-4 mt-4" role="tabpanel" aria-labelledby="user-tab">
-                <form onSubmit={handleUserSubmit} className="space-y-4" aria-label="Formulaire de connexion utilisateur">
+                <form onSubmit={handleUserSubmit} className="space-y-4" aria-label="Formulaire d'authentification utilisateur">
+                  {isSignUp && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Prénom</Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
+                            <User className="h-4 w-4" />
+                          </div>
+                          <Input
+                            id="firstName"
+                            type="text"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className="pl-10"
+                            placeholder="Votre prénom"
+                            required={isSignUp}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Nom</Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
+                            <User className="h-4 w-4" />
+                          </div>
+                          <Input
+                            id="lastName"
+                            type="text"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="pl-10"
+                            placeholder="Votre nom"
+                            required={isSignUp}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="space-y-2">
-                    <Label htmlFor="username">Identifiant</Label>
+                    <Label htmlFor="email">Email</Label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground" aria-hidden="true">
-                        <User className="h-4 w-4" />
+                        <Mail className="h-4 w-4" />
                       </div>
                       <Input
-                        id="username"
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
-                        placeholder="Votre identifiant"
+                        placeholder="votre@email.com"
                         aria-describedby={error ? "login-error" : undefined}
                         required
                       />
@@ -143,16 +206,31 @@ const Login = () => {
                         required
                       />
                     </div>
+                    {isSignUp && (
+                      <p className="text-xs text-muted-foreground">
+                        12+ caractères, majuscules, minuscules, chiffres et caractères spéciaux
+                      </p>
+                    )}
                   </div>
                   <LoadingButton
                     type="submit"
                     className="w-full hover:scale-105 transition-transform duration-200"
-                    loading={isLoading}
-                    loadingText="Connexion en cours..."
+                    loading={isLoading || loading}
+                    loadingText={isSignUp ? "Création..." : "Connexion..."}
                     variant="default"
                   >
-                    Se connecter
+                    {isSignUp ? 'Créer un compte' : 'Se connecter'}
                   </LoadingButton>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSignUp(!isSignUp);
+                      setError('');
+                    }}
+                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {isSignUp ? 'Déjà un compte ? Se connecter' : 'Pas de compte ? S\'inscrire'}
+                  </button>
                 </form>
               </TabsContent>
               
